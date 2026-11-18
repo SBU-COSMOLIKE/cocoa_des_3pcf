@@ -212,12 +212,40 @@ def shifted_sources(z, sources, shifts):
     return output
 
 
-def camb_tables(parameters, k, z, sources, los_z, halofit_version="takahashi"):
+def _camb_power_limits(k, h, kmax_boltzmann, extrap_kmax):
+    """Separate the solved transfer range from the spectrum's extrapolated tail.
+
+    The output k array uses h/Mpc, while both limits use physical 1/Mpc,
+    matching the LSST likelihood. For example k=1000 h/Mpc at h=0.7 is a
+    query at 700/Mpc, not a request to integrate Boltzmann modes to 700/Mpc.
+    The default solver cutoff is supplied independently by the caller.
+    """
+    if (isinstance(kmax_boltzmann, (bool, np.bool_)) or not np.isfinite(kmax_boltzmann)
+            or kmax_boltzmann <= 0.0):
+        raise ValueError("kmax_boltzmann must be positive finite in 1/Mpc.")
+    required = float(k[-1] * h)
+    if extrap_kmax is None:
+        extrap_kmax = max(250.0, 1.01 * required)
+    if (isinstance(extrap_kmax, (bool, np.bool_)) or not np.isfinite(extrap_kmax)
+            or extrap_kmax < required):
+        raise ValueError(
+            f"extrap_kmax must cover the table's {required} 1/Mpc endpoint; "
+            "increase this interpolation limit, not the Boltzmann cutoff."
+        )
+    return float(kmax_boltzmann), float(extrap_kmax)
+
+
+def camb_tables(
+    parameters, k, z, sources, los_z, halofit_version="takahashi",
+    kmax_boltzmann=5.0, extrap_kmax=None,
+):
     """Calculate the physical tables with the installed CAMB library.
 
     The requested amplitude is sigma8. An initial linear calculation fixes
-    As, followed by a calculation at that As so nonlinear power also has
-    the correct normalization. D(z)=sigma8_linear(z)/sigma8_linear(0)
+    As. The matter transfer functions are then reused to calculate power
+    at that As, including its nonlinear correction; a second Boltzmann
+    evolution is unnecessary because the background and spectral shape
+    did not change. D(z)=sigma8_linear(z)/sigma8_linear(0)
     supplies the scale-independent growth used by the port. With massive
     neutrinos this is a chosen effective growth, not a replacement for
     scale-dependent transfer functions. The full supplied nonlinear power
@@ -227,11 +255,14 @@ def camb_tables(parameters, k, z, sources, los_z, halofit_version="takahashi"):
     Arguments:
       parameters = omega_m, omega_b, h, ns, sigma8, w0, wa; optional mnu=0
           in eV, num_massive_neutrinos=1 and nnu=3.046.
-      k = positive increasing h/Mpc nodes within the requested CAMB range.
+      k = positive increasing output nodes in h/Mpc, including extrapolated tails.
       z = increasing nodes beginning at zero, at most 150 transfer redshifts.
       sources = [nbin,nz] densities per unit redshift on z.
       los_z = positive integration nodes within the z range.
       halofit_version = an installed CAMB nonlinear model name.
+      kmax_boltzmann = largest solved transfer wavenumber in 1/Mpc; default 5.
+      extrap_kmax = interpolation tail endpoint in 1/Mpc. None covers at least
+          250/Mpc and 1.01 times the output table's physical endpoint.
     Returns:
       validated physical tables and metadata recording CAMB and model choices.
     Raises:
@@ -267,6 +298,10 @@ def camb_tables(parameters, k, z, sources, los_z, halofit_version="takahashi"):
         raise ValueError(
             "Require increasing positive k and 2..150 z nodes beginning at 0."
         )
+    requested_extrapolation = extrap_kmax
+    kmax_boltzmann, extrap_kmax = _camb_power_limits(
+        k=k, h=h, kmax_boltzmann=kmax_boltzmann, extrap_kmax=extrap_kmax,
+    )
     settings = camb.CAMBparams()
     settings.set_cosmology(
         H0=100.0 * h, ombh2=omega_b * h**2,
@@ -287,7 +322,10 @@ def camb_tables(parameters, k, z, sources, los_z, halofit_version="takahashi"):
     amplitude_seed = 2.1e-9
     settings.InitPower.set_params(As=amplitude_seed, ns=parameters["ns"])
     settings.WantCls = False
-    settings.set_matter_power(redshifts=z[::-1], kmax=float(k[-1] * h), silent=True)
+    # Like the LSST likelihood, solve a bounded transfer range and let the
+    # power interpolator extend its high-k tail. Output table resolution and
+    # extent must not silently enlarge the Boltzmann differential equations.
+    settings.set_matter_power(redshifts=z[::-1], kmax=kmax_boltzmann, silent=True)
     # Keep the same transfer sampling in both calls. Switching the nonlinear
     # mode only after the amplitude calibration changes CAMB's k sampling
     # and shifts its numerical sigma8 even though the linear scaling is exact.
@@ -297,25 +335,33 @@ def camb_tables(parameters, k, z, sources, los_z, halofit_version="takahashi"):
     initial_sigma8 = float(first.get_sigma8()[-1])
     amplitude = amplitude_seed * (parameters["sigma8"] / initial_sigma8)**2
     settings.InitPower.set_params(As=amplitude, ns=parameters["ns"])
-    results = camb.get_results(params=settings)
+    # This matter-only calculation has WantCls=False. CAMB can recalculate
+    # primordial powers, sigma8 and nonlinear corrections from the retained
+    # transfers; multiplying nonlinear P by an amplitude ratio would be wrong.
+    first.power_spectra_from_transfer(initial_power_params=settings.InitPower)
+    results = first
+    # Keep both CAMB interpolation limits in physical 1/Mpc. Convert queries
+    # and returned powers explicitly at the boundary, as in the LSST helper.
+    physical_k = k * h
+    power_conversion = h**3
     linear = results.get_matter_power_interpolator(
-        nonlinear=False, hubble_units=True, k_hunit=True,
+        nonlinear=False, hubble_units=False, k_hunit=False, extrap_kmax=extrap_kmax,
     )
     nonlinear = results.get_matter_power_interpolator(
-        nonlinear=True, hubble_units=True, k_hunit=True,
+        nonlinear=True, hubble_units=False, k_hunit=False, extrap_kmax=extrap_kmax,
     )
     cold_linear = results.get_matter_power_interpolator(
         nonlinear=False, var1="delta_nonu", var2="delta_nonu",
-        hubble_units=True, k_hunit=True,
+        hubble_units=False, k_hunit=False, extrap_kmax=extrap_kmax,
     )
     sigma_z = np.asarray(results.get_sigma8(), dtype=np.float64)[::-1]
     tables = {
         "k": k,
-        "p_linear0": linear.P(z=0.0, kh=k),
+        "p_linear0": linear.P(z=0.0, kh=physical_k) * power_conversion,
         "z": z,
-        "p_nonlinear": nonlinear.P(z=z, kh=k),
-        "p_linear": linear.P(z=z, kh=k),
-        "p_linear_cb": cold_linear.P(z=z, kh=k),
+        "p_nonlinear": nonlinear.P(z=z, kh=physical_k) * power_conversion,
+        "p_linear": linear.P(z=z, kh=physical_k) * power_conversion,
+        "p_linear_cb": cold_linear.P(z=z, kh=physical_k) * power_conversion,
         "chi": results.comoving_radial_distance(z=z) * h,
         "dz_dchi": results.hubble_parameter(z=z) / (299792.458 * h),
         "growth": sigma_z / sigma_z[0],
@@ -333,6 +379,12 @@ def camb_tables(parameters, k, z, sources, los_z, halofit_version="takahashi"):
         "producer": "CAMB",
         "camb_version": camb.__version__,
         "halofit_version": halofit_version,
+        "kmax_boltzmann": kmax_boltzmann,
+        "extrap_kmax": extrap_kmax,
+        "extrap_kmax_requested": requested_extrapolation,
+        "camb_wavenumber_limit_units": "1/Mpc",
+        "power_extrapolation": "CAMB log-power tail",
+        "amplitude_method": "reuse_matter_transfers",
         "parameters": dict(parameters),
         "As": float(amplitude),
         "omega_nu_h2": float(settings.omnuh2),

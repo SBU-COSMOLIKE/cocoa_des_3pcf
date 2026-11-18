@@ -15,7 +15,7 @@ identified merely because their rows have the same aperture-radius labels.
 import numpy as np
 from copy import deepcopy
 
-from .inputs import validate_tables, shifted_sources, camb_tables
+from .inputs import validate_tables, shifted_sources, camb_tables, _camb_power_limits
 from .mean import physics_model, Map3Engine, XiEngine
 from .covariance import quadrature
 from .accuracy import accuracy_settings
@@ -64,6 +64,9 @@ class PhysicalProvider:
       cosmology_mode = 'fixed_tables' or 'camb'.
       kernel_nz = baseline source-kernel interpolation node count.
       halofit_version = explicit nonlinear-power prescription for CAMB calls.
+      kmax_boltzmann = upper CAMB evolution wavenumber in 1/Mpc, default 5.
+      extrap_kmax = power-interpolator extension in 1/Mpc; None selects
+          max(250, 1.01*h*k[-1]) for each requested cosmology.
       source_readers = use upstream spline readers only for reference comparisons.
       table_boost = uniform read-table refinement; cubic preparation occurs once.
       fit_nz = coarse uniform redshift anchors for the matter-fit coefficients.
@@ -78,7 +81,7 @@ class PhysicalProvider:
         self, compiled, reference_tables, reference_metadata, reference_parameters,
         cosmology_mode="fixed_tables", kernel_nz=101, halofit_version="takahashi",
         source_readers=False, table_boost=8, fit_nz=33,
-        accuracy=None,
+        accuracy=None, kmax_boltzmann=5.0, extrap_kmax=None,
     ):
         """Store the physical baseline and validate the requested producer mode.
 
@@ -100,6 +103,8 @@ class PhysicalProvider:
             raise ValueError("kernel_nz must be an integer of at least four.")
         self.kernel_nz = int(kernel_nz)
         self.halofit_version = halofit_version
+        self.kmax_boltzmann = kmax_boltzmann
+        self.extrap_kmax = extrap_kmax
         if not isinstance(source_readers, (bool, np.bool_)):
             raise ValueError("source_readers must be an explicit Boolean choice.")
         if int(table_boost) != table_boost or table_boost < 1:
@@ -117,6 +122,9 @@ class PhysicalProvider:
             self.reference, names=COSMOLOGY_NAMES,
         )
         self.reference = immutable_copy(value=self.reference)
+        self.reference_producer_settings = self._producer_settings(
+            parameters=self.reference,
+        )
         for name in ("omega_m", "ns", "sigma8", "w0", "wa"):
             expected = self.base[name]
             if not np.isclose(self.reference[name], expected, rtol=1.0e-8, atol=1.0e-12):
@@ -144,9 +152,34 @@ class PhysicalProvider:
             raise ValueError(
                 "CAMB nonlinear prescription differs from the baseline table."
             )
+        # Older tables may lack the distinction between the CAMB evolution
+        # range and the extrapolated read range. They remain usable as fixed
+        # numerical arrays, but cannot silently seed a changed-CAMB calculation.
+        limits_recorded = all(
+            name in self.base_metadata for name in ("kmax_boltzmann", "extrap_kmax")
+        )
+        self.reference_producer_verified = (
+            limits_recorded and recorded_halofit is not None
+        )
+        if limits_recorded:
+            expected = self.reference_producer_settings[1:]
+            recorded_limits = (
+                self.base_metadata["kmax_boltzmann"],
+                self.base_metadata["extrap_kmax"],
+            )
+            if recorded_limits != expected:
+                raise ValueError(
+                    "CAMB wavenumber limits differ from table provenance; "
+                    "regenerate tables with the declared limits."
+                )
+        if self.mode == "camb" and not self.reference_producer_verified:
+            raise ValueError(
+                "CAMB reference tables lack kmax_boltzmann/extrap_kmax provenance; "
+                "regenerate the reference tables before varying cosmology."
+            )
         self.nbin = self.base["sources"].shape[0]
         self.cosmology_key = self.reference_cosmology_key
-        self.producer_key = (self.mode, self.halofit_version)
+        self.producer_key = (self.mode,) + self.reference_producer_settings
         self.reference_halofit = self.halofit_version
         self.cosmology_tables = self.base
         self.cosmology_metadata = self.base_metadata
@@ -164,6 +197,7 @@ class PhysicalProvider:
         reference_names = (
             "base", "base_metadata", "reference", "reference_cosmology_key",
             "reference_halofit", "nbin", "compiled",
+            "reference_producer_settings", "reference_producer_verified",
         )
         if getattr(self, "_reference_locked", False) and name in reference_names:
             raise AttributeError(
@@ -173,6 +207,29 @@ class PhysicalProvider:
         if name == "accuracy":
             value = accuracy_settings(value=value)
         object.__setattr__(self, name, value)
+
+    def _producer_settings(self, parameters):
+        """Resolve and validate both physical wavenumber limits for one cosmology.
+
+        CAMB's two limits are in 1/Mpc; the saved k axis is in h/Mpc. Multiplying
+        its last value by h compares physical wavenumbers without conflating
+        the output sampling range with the range evolved by the Boltzmann code.
+
+        Arguments:
+          parameters = cosmology containing h.
+        Returns:
+          Tuple of halofit name, evolution limit and resolved extrapolation limit.
+        Raises:
+          ValueError for nonpositive/nonfinite limits or insufficient read support.
+        """
+        for name in ("kmax_boltzmann", "extrap_kmax"):
+            if isinstance(getattr(self, name), np.bool_):
+                raise ValueError(f"{name} must be a physical wavenumber, not Boolean.")
+        limit, extrapolation = _camb_power_limits(
+            k=self.base["k"], h=float(parameters["h"]),
+            kmax_boltzmann=self.kmax_boltzmann, extrap_kmax=self.extrap_kmax,
+        )
+        return self.halofit_version, limit, extrapolation
 
     def numerical_key(self):
         """Validate mutable controls before comparing any retained prediction.
@@ -191,9 +248,11 @@ class PhysicalProvider:
                 raise ValueError(f"{name}={value!r} must be an integer >= {minimum}.")
         if not isinstance(self.source_readers, (bool, np.bool_)):
             raise ValueError("source_readers must be an explicit Boolean choice.")
+        self._producer_settings(parameters=self.reference)
         return (
             self.kernel_nz, self.source_readers, self.table_boost, self.fit_nz,
             accuracy_settings(value=self.accuracy),
+            self.kmax_boltzmann, self.extrap_kmax,
         )
 
     def get(self, parameters):
@@ -216,17 +275,20 @@ class PhysicalProvider:
         key = parameter_key(cosmology, names=COSMOLOGY_NAMES)
         if self.mode not in ("fixed_tables", "camb"):
             raise ValueError("Cosmology mode must be fixed_tables or camb.")
-        producer_key = (self.mode, self.halofit_version)
+        producer_settings = self._producer_settings(parameters=cosmology)
+        producer_key = (self.mode,) + producer_settings
         if key != self.cosmology_key or producer_key != self.producer_key:
             if self.mode == "fixed_tables" and (
                 key != self.reference_cosmology_key
-                or self.halofit_version != self.reference_halofit
+                or producer_settings != self.reference_producer_settings
             ):
                 raise ValueError(
                     "A cosmological parameter changed; select camb or supply new tables."
                 )
             if (key == self.reference_cosmology_key
-                    and self.halofit_version == self.reference_halofit):
+                    and producer_settings == self.reference_producer_settings
+                    and (self.mode == "fixed_tables"
+                         or self.reference_producer_verified)):
                 tables = self.base
                 metadata = self.base_metadata
             else:
@@ -234,6 +296,8 @@ class PhysicalProvider:
                     parameters=cosmology, k=self.base["k"], z=self.base["z"],
                     sources=self.base["sources"], los_z=self.base["los_z"],
                     halofit_version=self.halofit_version,
+                    kmax_boltzmann=self.kmax_boltzmann,
+                    extrap_kmax=self.extrap_kmax,
                 )
             self.cosmology_tables = immutable_copy(value=tables)
             self.cosmology_metadata = immutable_copy(value=metadata)

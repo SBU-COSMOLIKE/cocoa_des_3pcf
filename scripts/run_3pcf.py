@@ -198,7 +198,8 @@ def load_configuration(path, command):
         mapping=physics,
         allowed={"tables", "cosmology_mode", "kernel_nz", "k", "z",
                  "los_z", "halofit_version", "source_interpolation",
-                 "source_readers", "table_boost", "fit_nz"},
+                 "source_readers", "table_boost", "fit_nz",
+                 "kmax_boltzmann", "extrap_kmax"},
         required={"tables", "cosmology_mode", "kernel_nz"}, name="physics",
     )
     if physics["cosmology_mode"] not in ("fixed_tables", "camb"):
@@ -214,6 +215,16 @@ def load_configuration(path, command):
         raise ValueError("physics.kernel_nz must be at least four.")
     if not isinstance(physics.get("source_readers", False), bool):
         raise ValueError("physics.source_readers must be a boolean.")
+    # These are physical wavenumbers in 1/Mpc, not the saved k grid's h/Mpc.
+    # Separating them bounds CAMB work while retaining the requested read grid.
+    physics.setdefault("kmax_boltzmann", 5.0)
+    physics.setdefault("extrap_kmax", None)
+    for name in ("kmax_boltzmann", "extrap_kmax"):
+        value = physics[name]
+        if value is None and name == "extrap_kmax":
+            continue
+        if isinstance(value, bool) or not np.isfinite(value) or value <= 0.0:
+            raise ValueError(f"physics.{name} must be positive and finite in 1/Mpc.")
     if command == "prepare":
         for name in ("k", "z", "los_z", "halofit_version"):
             if name not in physics:
@@ -236,6 +247,12 @@ def load_configuration(path, command):
     for name, value in config["parameters"].items():
         if isinstance(value, bool) or not np.isfinite(value):
             raise ValueError(f"Parameter {name} must be a finite number.")
+    if "k" in physics and physics["extrap_kmax"] is not None:
+        maximum = grid_values(settings=physics["k"])[-1] * config["parameters"]["h"]
+        if physics["extrap_kmax"] < maximum:
+            raise ValueError(
+                "physics.extrap_kmax must cover h*physics.k.upper in 1/Mpc."
+            )
     checked_fields(mapping=config["ia"], allowed=set(IA_NAMES),
                    required=set(), name="ia")
     for name, value in config["ia"].items():
@@ -546,6 +563,8 @@ def prepare(config, path, metadata, overwrite):
         z=redshift, sources=sources,
         los_z=grid_values(settings=settings["los_z"]),
         halofit_version=settings["halofit_version"],
+        kmax_boltzmann=settings["kmax_boltzmann"],
+        extrap_kmax=settings["extrap_kmax"],
     )
     preparation.update(metadata)
     preparation["source_fits"] = str(source_path)
@@ -585,6 +604,8 @@ def provider_for_run(compiled, config, path):
         cosmology_mode=config["physics"]["cosmology_mode"],
         kernel_nz=config["physics"]["kernel_nz"],
         halofit_version=config["physics"].get("halofit_version", "takahashi"),
+        kmax_boltzmann=config["physics"].get("kmax_boltzmann", 5.0),
+        extrap_kmax=config["physics"].get("extrap_kmax"),
         source_readers=config["physics"].get("source_readers", False),
         table_boost=config["physics"].get("table_boost", 8),
         fit_nz=config["physics"].get("fit_nz", 33),

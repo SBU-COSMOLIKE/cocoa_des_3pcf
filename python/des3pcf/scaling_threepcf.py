@@ -30,6 +30,7 @@ import numpy as np
 
 from .accuracy import accuracy_settings
 from .inputs import camb_tables, load_tables, save_tables, shifted_sources
+from .inputs import _camb_power_limits
 from .mean import aligned_fft_grid, physics_model
 from .ownership import immutable_copy
 from .pipeline import COSMOLOGY_NAMES, IA_NAMES
@@ -400,6 +401,23 @@ def preflight_threepcf(config_path):
     driver, config, path, digest = _configuration(path=config_path)
     blockers = []
     bounds = _draw_bounds(config=config)
+    # Every random point must fit the interpolation tail, including the
+    # largest allowed h. Checking only the YAML's central h would miss this.
+    camb_limits = {}
+    try:
+        solved, extended = _camb_power_limits(
+            k=driver.grid_values(settings=config["physics"]["k"]),
+            h=bounds["h"][1],
+            kmax_boltzmann=config["physics"].get("kmax_boltzmann", 5.0),
+            extrap_kmax=config["physics"].get("extrap_kmax"),
+        )
+        camb_limits = {
+            "kmax_boltzmann_1_per_Mpc": solved,
+            "extrap_kmax_at_largest_h_1_per_Mpc": extended,
+            "largest_h_checked": bounds["h"][1],
+        }
+    except ValueError as error:
+        blockers.append(f"CAMB interpolation range: {error}")
     maximum_shifts = np.array([bounds[f"dz{i}"][1] for i in range(1, 5)])
     source_record = {}
     try:
@@ -454,6 +472,7 @@ def preflight_threepcf(config_path):
         "configuration": str(path),
         "configuration_sha256": digest,
         "ia_model": _ia_model(config=config),
+        "camb_limits": camb_limits,
         "native_ia_work": {
             "residual_physics_skipped": _ia_model(config=config) == "NLA",
             "prepared_mode_required_for_skip": True,
@@ -477,7 +496,10 @@ def preflight_threepcf(config_path):
     }
 
 
-def _table_request(cosmology, halofit_version, axes, processing):
+def _table_request(
+    cosmology, halofit_version, axes, processing,
+    kmax_boltzmann=5.0, extrap_kmax=None,
+):
     """Identify every input to the physical table producer before running CAMB.
 
     The producer file hash records its implicit CAMB settings, including flat
@@ -490,10 +512,19 @@ def _table_request(cosmology, halofit_version, axes, processing):
       halofit_version = explicitly selected nonlinear-power prescription.
       axes = k, z, los_z and already shifted source arrays in physical h units.
       processing = source-file hash and declared source-treatment record.
+      kmax_boltzmann = upper evolved CAMB wavenumber in 1/Mpc.
+      extrap_kmax = interpolator read limit in 1/Mpc; None derives the declared
+          default from this point's h and largest output k in h/Mpc.
     Returns:
       JSON-compatible physical-request dictionary for exact equality checks.
     """
     producer = importlib.import_module(name=camb_tables.__module__)
+    if isinstance(kmax_boltzmann, np.bool_) or isinstance(extrap_kmax, np.bool_):
+        raise ValueError("CAMB limits must be physical wavenumbers, not Boolean.")
+    kmax_boltzmann, resolved_extrapolation = _camb_power_limits(
+        k=axes["k"], h=cosmology["h"],
+        kmax_boltzmann=kmax_boltzmann, extrap_kmax=extrap_kmax,
+    )
     arrays = {}
     for name, values in axes.items():
         array = np.ascontiguousarray(values, dtype=np.float64)
@@ -508,6 +539,9 @@ def _table_request(cosmology, halofit_version, axes, processing):
         ).hexdigest(),
         "parameters": dict(cosmology),
         "halofit_version": halofit_version,
+        "kmax_boltzmann": float(kmax_boltzmann),
+        "extrap_kmax": float(resolved_extrapolation),
+        "extrap_kmax_requested": extrap_kmax,
         "source_fits_sha256": processing["raw_input_sha256"],
         "source_policy": processing["policy"],
         "arrays": arrays,
@@ -546,6 +580,8 @@ def _reuse_tables(path, request, axes):
         "producer": "CAMB",
         "parameters": request["parameters"],
         "halofit_version": request["halofit_version"],
+        "kmax_boltzmann": request["kmax_boltzmann"],
+        "extrap_kmax": request["extrap_kmax"],
         "flat_background": True,
         "growth_definition": "linear sigma8(z)/sigma8(0)",
         "massive_neutrino_effective_growth": request["parameters"]["mnu"] > 0.0,
@@ -614,12 +650,16 @@ def prepare_threepcf_tables(config_path, point, output_path, reuse_path=None):
     request = _table_request(
         cosmology=cosmology, halofit_version=settings["halofit_version"],
         axes=axes, processing=processing,
+        kmax_boltzmann=settings.get("kmax_boltzmann", 5.0),
+        extrap_kmax=settings.get("extrap_kmax"),
     )
     reused = None
     if reuse_path is None:
         tables, metadata = camb_tables(
             parameters=cosmology, k=axes["k"], z=axes["z"], sources=axes["sources"],
             los_z=axes["los_z"], halofit_version=settings["halofit_version"],
+            kmax_boltzmann=settings.get("kmax_boltzmann", 5.0),
+            extrap_kmax=settings.get("extrap_kmax"),
         )
     else:
         tables, metadata, reused = _reuse_tables(
@@ -656,6 +696,9 @@ class ThreePointWorkload:
     def __init__(self, driver, config, path, digest, compiled, threads):
         from threadpoolctl import threadpool_limits
 
+        # Resolve the flat control dictionary before freezing nested config
+        # mappings. Accuracy itself is immutable and accepted by both engines.
+        self._accuracy = accuracy_settings(value=config["accuracy"])
         self._config = immutable_copy(value=config)
         self._digest = digest
         self._compiled = compiled
@@ -700,7 +743,7 @@ class ThreePointWorkload:
             kernel_nz=settings["kernel_nz"],
             source_readers=settings.get("source_readers", False),
             table_boost=settings.get("table_boost", 8), fit_nz=settings.get("fit_nz", 33),
-            accuracy=self._config["accuracy"],
+            accuracy=self._accuracy,
         )
         ia = {}
         for name in IA_NAMES:

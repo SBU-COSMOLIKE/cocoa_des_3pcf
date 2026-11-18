@@ -63,6 +63,9 @@ physics:
     upper: 3.1
     count: 65
   halofit_version: takahashi
+  # Both limits are in 1/Mpc; the output k grid above remains in h/Mpc.
+  kmax_boltzmann: 5.0
+  extrap_kmax: 1000.0
   source_interpolation: linear_midpoint
   source_readers: false
   table_boost: 8

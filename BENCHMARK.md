@@ -39,6 +39,14 @@ extends to 3.1 to retain the declared positive source shifts. This input policy
 does not change the original FITS file or the forecast configurations and is
 not an accepted source-calibration prescription for a scientific result.
 
+The three-point inputs use a CAMB solve cutoff of 5 and interpolation support
+through 1000, both in $`\mathrm{Mpc}^{-1}`$. The saved table still spans
+$`10^{-5}`$ to $`1000\,h\,\mathrm{Mpc}^{-1}`$. These are separate controls:
+the high-wavenumber table reads use CAMB's extrapolating power interpolator.
+Amplitude normalization reuses the computed matter transfers. The
+[accuracy guide](ACCURACY.md#camb-limits) explains the units and convergence
+question attached to the extrapolated tail.
+
 ## Run on a quiet machine <a name="run"></a>
 
 We assume Cocoa is activated with `source start_cocoa.sh`, the current

@@ -12,6 +12,7 @@ amplitude, rather than dividing by each nearly zero entry.
 
 - [Two global controls](#global)
 - [Individual stages](#stages)
+- [CAMB solve and extrapolation limits](#camb-limits)
 - [Changing settings in a notebook](#notebook)
 - [What remains fixed](#fixed)
 
@@ -77,6 +78,37 @@ Projection settings still expose the individual axis counts (`nr`, `nu`,
 These allow an even narrower test than a whole triangle-grid boost. The
 direct reference route and the prepared production route remain explicit
 choices; a boost does not switch between them.
+
+## CAMB solve and extrapolation limits <a name="camb-limits"></a>
+
+The physical input producer separates two wavenumber limits, following the
+LSST Y1 likelihood. `physics.kmax_boltzmann` controls the transfer functions
+CAMB actually evolves; its default is 5 in $`\mathrm{Mpc}^{-1}`$.
+`physics.extrap_kmax` controls how far its power interpolator extends the
+high-wavenumber tail, also in $`\mathrm{Mpc}^{-1}`$. If omitted, this second
+limit covers at least 250 and 1.01 times the physical endpoint of the saved
+table. CAMB supplies its log-power extrapolation; no additional transfer
+evolution is requested merely to sample the tail.
+
+The saved `physics.k` axis instead uses $`h\,\mathrm{Mpc}^{-1}`$. At $`h=0.7`$,
+a saved node at 1000 therefore queries the interpolator at
+$`700\,\mathrm{Mpc}^{-1}`$, while the Boltzmann solve can still end at
+$`5\,\mathrm{Mpc}^{-1}`$. Increasing the saved table's upper endpoint must
+not silently increase the transfer calculation. An explicit extrapolation
+limit that does not cover the requested nodes is refused.
+
+The producer fixes the requested $`\sigma_8`$ by adjusting $`A_s`$ and
+recalculating matter powers from retained transfer functions. CAMB recomputes
+the nonlinear correction at that amplitude; nonlinear power is not rescaled
+by a constant. Metadata records both wavenumber limits, their units and this
+amplitude procedure. Changing either limit invalidates the provider and
+outer mean cache. Reference tables without this limit provenance must be
+regenerated before varying cosmology in CAMB mode.
+
+Vary the solved cutoff separately when testing sensitivity to the extrapolated
+tail. A denser output grid only samples that same tail more closely; it does
+not establish its physical accuracy. Neither limit is changed by the C
+sampling and quadrature boosts above.
 
 ## Changing settings in a notebook <a name="notebook"></a>
 

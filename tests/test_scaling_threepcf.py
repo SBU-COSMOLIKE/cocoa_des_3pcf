@@ -243,6 +243,8 @@ def _write_reuse_fixture(tmp_path):
         "producer": "CAMB",
         "parameters": cosmology,
         "halofit_version": "takahashi",
+        "kmax_boltzmann": request["kmax_boltzmann"],
+        "extrap_kmax": request["extrap_kmax"],
         "flat_background": True,
         "growth_definition": "linear sigma8(z)/sigma8(0)",
         "massive_neutrino_effective_growth": True,
@@ -274,6 +276,11 @@ def test_reuse_requires_the_same_physical_request_and_records_origin(tmp_path):
     changed["parameters"]["sigma8"] += 0.01
     with pytest.raises(ValueError, match="physical preparation inputs"):
         _reuse_tables(path=path, request=changed, axes=axes)
+    for name in ("kmax_boltzmann", "extrap_kmax"):
+        changed = deepcopy(request)
+        changed[name] *= 2.0
+        with pytest.raises(ValueError, match="physical preparation inputs"):
+            _reuse_tables(path=path, request=changed, axes=axes)
 
 
 @pytest.mark.parametrize("name", ["k", "z", "los_z", "sources"])
