@@ -51,13 +51,20 @@ has been downloaded or that the dependency version has been pinned.
 ## The Y3 methods-paper target
 
 The NLA reference uses 796 mock patches from 199 parent skies, an 8 arcmin
-triangle cut, and equal aperture radii 7, 14, 25 and 40 arcmin. Vector
+low cut on both SAS triangle side parameters, and equal aperture radii
+7, 14, 25 and 40 arcmin. Vector
 dimensions before cuts, after cuts, and after partial compression are
 480, 307 and 96; the last combines 16 compressed xi values with 80 Map3
 values. Figures 2–6 address mean, covariance and compression; Figures 7
 and 10 address baryons; Figures 8–9 and Table 4 give the
 $`(\Omega_m,S_8)`$ FoM change, 930.8 to 1700.8, or 83%.
 [Methods paper, Sections III–V](https://arxiv.org/html/2503.03964v2#S3)
+
+Figure 12 reports only about 3% tightening of the NLA alignment-amplitude
+posterior. A new TATT Fisher improvement must therefore be measured under
+its own declared nuisance model; it is not an already established result
+of that NLA analysis.
+[Methods paper, Section V](https://arxiv.org/html/2503.03964v2#S5)
 
 Table 3 supplies these Gaussian calibration priors; each ordered tuple
 refers to source bins 1–4. $`\sigma`$ is the standard deviation.
@@ -121,6 +128,13 @@ approximations, but it should not use the 83% posterior gain as an exact
 pass/fail number.
 
 ## The TATT-paper target
+
+The selected numerical target retains the all-E projected bispectrum.
+Its low-level IA engine also exposes other components, but inserting them
+into a scalar E-mode transform would not produce their correct spin phases.
+The present joint forecast therefore combines two-point TATT E/B spectra
+with this stated three-point E-mode model. A finite-triangle estimator
+also needs an explicit E/B leakage check after its cuts and bin averages.
 
 Table 1 sets
 $`(\Omega_m,S_8,h,n_s,\Omega_b)=(0.289,0.772,0.722,0.959,0.0463)`$

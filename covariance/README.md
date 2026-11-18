@@ -40,7 +40,7 @@ the [project instructions](../README.md#evaluate). This build already
 includes the new covariance files under `cosmolike/3pcf/`; it neither
 builds nor changes the existing `cosmolike/covariances/` module.
 
-The JSON file must supply catalogue area, noise and the intended numerical
+The YAML or JSON file must supply catalogue area, noise and the intended numerical
 grids. Those catalogue values are deliberately unset in the examples.
 The CLI and notebook adapters call the same physical C functions. The
 CLI additionally records row identity and the complete configuration;
@@ -61,8 +61,10 @@ python projects/des_3pcf/scripts/run_3pcf.py covariance \
 ```
 
 The output path is `covariance.path` in the configuration. Existing output
-is refused unless `--overwrite` is explicit. The calculation writes every
-term and their sum, along with its smallest eigenvalue. It does not clip
+is refused unless `--overwrite` is explicit. By default the calculation writes
+the summed covariance, its model mean and row metadata, along with its smallest
+eigenvalue. Set `covariance.save_components: true` to save the six terms too.
+It does not clip
 eigenvalues or add a diagonal term to make an unresolved matrix invertible.
 
 ## Inputs and saved terms <a name="inputs"></a>
@@ -102,13 +104,20 @@ the Fourier quadrature. The mode requires `large_area=1` and
 mode 0 retains the stated band limit; it is not an exact unbandlimited
 catalogue pair-count calculation.
 
-The saved `terms` array has shape `[6,nrow,nrow]`. Named copies are also
-written as `gaussian`, `bispectrum_squared`, `power_trispectrum_one_halo`,
+With `save_components: true`, the saved `terms` array has shape
+`[6,nrow,nrow]`. Named copies are also written as `gaussian`,
+`bispectrum_squared`, `power_trispectrum_one_halo`,
 `power_bispectrum`, `connected_one_halo` and `halo_abundance_response`.
 `covariance` is their unmodified sum. `covariance_model_mean` is the
 noise-subtracted gravitational mean of this covariance model, which can
 differ from an IA mean saved by `evaluate`. The file carries row labels,
 source indices, angles and all physical/numerical choices.
+
+The saving option controls the output file. The C calculation still forms
+all six matrices before summing them; omitting their saved copies does not
+reduce that calculation's peak memory or integral count. The production
+adapter borrows validated input arrays, whereas the notebook adapter owns
+converted arrays for interactive use. Both evaluate the same equations.
 
 ## Numerical refinement <a name="refinement"></a>
 

@@ -4,7 +4,7 @@ Example, from this project directory:
   python scripts/run_3pcf.py evaluate configs/y3_full_filter_example.json
 
 Absolute paths also work from another directory. Every path in the
-JSON file is relative to that file. ``--validate-config`` reads the
+JSON or YAML file is relative to that file. ``--validate-config`` reads the
 configuration and reports missing inputs without importing an extension,
 running CAMB, or evaluating a physical integral.
 
@@ -20,8 +20,17 @@ import argparse
 import hashlib
 import importlib
 import json
+import os
 from pathlib import Path
 import sys
+
+# Each scientific process owns at most four C workers. Matrix operations
+# must not create another worker team inside those workers or subprocesses.
+for variable in ("OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
+                 "VECLIB_MAXIMUM_THREADS", "BLIS_NUM_THREADS",
+                 "NUMEXPR_NUM_THREADS"):
+    os.environ[variable] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
 
 import numpy as np
 
@@ -41,6 +50,7 @@ from des3pcf.accuracy import accuracy_settings
 from des3pcf.forecast import ExactMeanCache, differentiate, fisher_matrix
 from des3pcf.forecast import parameter_covariance, figure_of_merit
 from des3pcf.forecast import symmetric_matrix
+from des3pcf.fisher_comparison import compare_information, marginalized_errors
 from des3pcf.precision import precision_expansion
 
 
@@ -59,14 +69,14 @@ def checked_fields(mapping, allowed, required, name):
     """Reject misspelled or absent fields before physical preparation.
 
     Arguments:
-      mapping = the JSON object to check.
+      mapping = the configuration mapping to check.
       allowed, required = sets of recognized and mandatory names.
       name = location named in a diagnostic.
     Returns:
       nothing when the object follows its schema.
     """
     if not isinstance(mapping, dict):
-        raise ValueError(f"{name} must be a JSON object.")
+        raise ValueError(f"{name} must be a configuration mapping.")
     unknown = set(mapping) - set(allowed)
     absent = set(required) - set(mapping)
     if unknown or absent:
@@ -136,7 +146,15 @@ def load_configuration(path, command):
     """Read the v1 schema and check choices before any extension import."""
     configuration_path = Path(path).resolve()
     content = configuration_path.read_text(encoding="utf-8")
-    config = json.loads(content)
+    if configuration_path.suffix.lower() in (".yaml", ".yml"):
+        import yaml
+
+        try:
+            config = yaml.safe_load(content)
+        except yaml.YAMLError as error:
+            raise ValueError(f"Invalid YAML configuration: {error}") from error
+    else:
+        config = json.loads(content)
     top_fields = {
         "format",
         "description",
@@ -165,8 +183,8 @@ def load_configuration(path, command):
     if config["format"] != FORMAT:
         raise ValueError(f"Configuration format must be {FORMAT}.")
     threads = config["threads"]
-    if isinstance(threads, bool) or int(threads) != threads or threads < 1:
-        raise ValueError("threads must be a positive integer.")
+    if isinstance(threads, bool) or int(threads) != threads or not 1 <= threads <= 4:
+        raise ValueError("threads must be an integer from one through four.")
     source = config["source"]
     checked_fields(
         mapping=source, allowed={"path", "extension", "nbin"},
@@ -265,7 +283,9 @@ def load_configuration(path, command):
     two_point = mean["two_point"]
     checked_fields(
         mapping=two_point,
-        allowed={"mode", "directory", "module", "interpolation_type"},
+        allowed={"mode", "directory", "module", "interpolation_type",
+                 "accuracy_boost", "integration_accuracy", "fpt_internal_boost",
+                 "ell_internal"},
         required={"mode"}, name="mean.two_point",
     )
     if two_point["mode"] not in ("isolated_nla", "core_tatt"):
@@ -274,6 +294,16 @@ def load_configuration(path, command):
         for name in ("directory", "module"):
             if name not in two_point:
                 raise ValueError(f"core_tatt requires two_point.{name}.")
+        # Construction checks every numerical control without touching the
+        # ordinary core. The actual module is installed only for evaluation.
+        CoreTwoPoint(
+            core=None, nbin=nbin, threads=config["threads"],
+            interpolation_type=two_point.get("interpolation_type", 0),
+            accuracy_boost=two_point.get("accuracy_boost", 1.0),
+            integration_accuracy=two_point.get("integration_accuracy", 0),
+            fpt_internal_boost=two_point.get("fpt_internal_boost", 0.5),
+            ell_internal=two_point.get("ell_internal", 192),
+        )
     has_xi = rows.get("xi_edges_arcmin") is not None
     if rows["mode"] == "measurement":
         has_xi = rows.get("two_point") is not None
@@ -293,6 +323,8 @@ def load_configuration(path, command):
         if "covariance" not in config:
             raise ValueError(f"{command} requires covariance settings.")
         covariance = config["covariance"]
+        if not isinstance(covariance.get("save_components", False), bool):
+            raise ValueError("covariance.save_components must be boolean.")
         if covariance.get("mode") not in ("analytic", "file"):
             raise ValueError("covariance.mode must be analytic or file.")
         if covariance["mode"] == "analytic":
@@ -597,6 +629,10 @@ def prediction_for_run(compiled, config, path, rows, provider):
             core=imported, nbin=config["source"]["nbin"],
             threads=config["threads"],
             interpolation_type=core.get("interpolation_type", 0),
+            accuracy_boost=core.get("accuracy_boost", 1.0),
+            integration_accuracy=core.get("integration_accuracy", 0),
+            fpt_internal_boost=core.get("fpt_internal_boost", 0.5),
+            ell_internal=core.get("ell_internal", 192),
         )
     return JointPrediction(
         compiled=compiled, rows=rows, provider=provider,
@@ -648,7 +684,7 @@ def evaluate(compiled, config, path, metadata, rows, provider, overwrite):
 
 
 def covariance(compiled, config, path, metadata, rows, provider, overwrite):
-    """Save all six physical terms and their unchanged fiducial sum.
+    """Save the fiducial sum and optionally its six physical components.
 
     Configuration grids become fixed nodes and weights in covariance_inputs;
     that helper also connects measured xi-bin edges to the selected noise
@@ -686,14 +722,20 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
     metadata["covariance_minimum_eigenvalue"] = float(
         np.linalg.eigvalsh(total)[0]
     )
+    keep_components = settings.get("save_components", False)
     metadata["covariance_term_names"] = list(TERM_NAMES)
+    metadata["covariance_components_saved"] = keep_components
     arrays = {
         "covariance": total,
-        "terms": terms,
         "covariance_model_mean": model_mean,
     }
-    for index, name in enumerate(TERM_NAMES):
-        arrays[name] = terms[index]
+    # The present C entry computes/returns all six matrices either way.
+    # This choice removes duplicate saved diagnostics, not C integration
+    # work or the temporary matrix storage required by that entry.
+    if keep_components:
+        arrays["terms"] = terms
+        for index, name in enumerate(TERM_NAMES):
+            arrays[name] = terms[index]
     save_result(path=destination, arrays=arrays, metadata=metadata,
                 rows=rows, overwrite=overwrite)
     return destination
@@ -767,6 +809,19 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
     if precision is not None:
         arrays["precision_pme"] = precision
         arrays["joint_sample_covariance"] = sample
+    if np.any(rows.kind == "map3") and np.any(rows.kind != "map3"):
+        comparison = compare_information(
+            derivatives=refined, names=names, kind=rows.kind,
+            covariance=covariance_argument, precision=precision,
+            priors=settings["priors"],
+        )
+        arrays.update(comparison)
+        errors, statuses = marginalized_errors(comparison=comparison, names=names)
+        arrays.update(errors)
+        metadata["comparison_rank_status"] = statuses
+        metadata["comparison_covariance"] = "supplied_fiducial_covariance"
+        if precision is not None:
+            metadata["comparison_covariance"] = "inverse_of_pme_precision"
     # Unresolved parameter combinations must not erase the derivatives
     # that diagnose them. Save the information and report the failed rank
     # check, without a pseudoinverse or a fabricated marginalized FoM.

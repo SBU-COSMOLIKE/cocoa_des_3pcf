@@ -49,7 +49,7 @@ class PreparedGeometry:
     """Keep a completed geometry consistent while allowing internal result caches.
 
     Public attributes hold the prepared definition. Names beginning with
-    an underscore hold internal bookkeeping, such as a retained mean.
+    ``_`` hold internal bookkeeping, such as a retained mean.
     The constructor calls _seal_geometry after all validation/preparation;
     later assignment to a public attribute stops with a named instruction.
     """

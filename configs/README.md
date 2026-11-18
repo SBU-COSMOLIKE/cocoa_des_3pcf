@@ -1,7 +1,9 @@
 # Running the three-point pipeline
 
-The JSON files describe examples, not validated DES forecasts. Paths are
-relative to the JSON file. Run the driver with Cocoa's existing Python:
+The JSON and YAML files describe examples, not validated DES forecasts.
+They use the same schema; YAML is loaded with its safe data-only reader.
+Paths are relative to the configuration file. Run the driver with Cocoa's
+existing Python:
 
 ```bash
 python scripts/run_3pcf.py prepare configs/y3_full_filter_example.json \
@@ -69,6 +71,17 @@ matter calculations, is consumed, and is released before the next batch.
 | `y3_full_filter_example.json` | A joint forecast definition with 400 xi± entries and 80 full-filter aperture moments. The pinned public Y3 midpoint curves are used for preparation. Area and per-bin shape-noise properties are unset. |
 | `y3_finite_sas_example.json` | All 400 xi± and 80 aperture rows in the pinned public simulated Y3 FITS files, with their supplied 480-by-480 covariance. Apertures integrate a finite side-angle-side shear grid. |
 | `y6_full_filter_example.json` | A forecast design with 100 aperture moments at 3, 5, 10, 20 and 40 arcmin, plus 400 illustrative xi± entries. Source curves, survey area and noise properties must be supplied. |
+| `des_y3_tatt_fisher.yaml` | A full 480-row IA Fisher design using CFASTPT two-point TATT and the three-point TATT model, with explicitly recorded covariance/estimator limitations. |
+| `des_y3_nla_fisher.yaml` | The same design with quadratic IA fixed and its derivative columns removed; a comparison conditional on the simpler model. |
+
+[EXAMPLE_FISHER_IA.ipynb](../EXAMPLE_FISHER_IA.ipynb) explains the YAML
+designs and has disabled production switches. Its saved execution inspects
+the public covariance and runs a small controlled IA demonstration only.
+The new designs use an approximate 8–80 arcmin range for both SAS side
+parameters, whereas the older finite-SAS JSON example starts at 0.1 arcmin.
+Exact agreement with the public covariance's retained bins, averaging and
+simulation pixel treatment remains unvalidated. Neither configuration
+silently adopts the missing published xi scale mask.
 
 The Y6 xi bins and inherited reference cosmology are design choices, not
 claims about a released Y6 likelihood. No source curve, measured data vector,
@@ -172,3 +185,15 @@ Output NPZ files contain numerical/string arrays and a JSON metadata string;
 they never require loading a Python pickle. Lossless ZIP storage does not
 reduce the statistical vector. Every xi± row, aperture row and cross block
 remains present.
+
+For an analytic covariance command, `covariance.save_components` defaults
+to `false`. The file then contains the final covariance, row definitions,
+the covariance model's mean and metadata. Setting it to `true` also saves
+the six-term cube and each named family. Both choices call the same C entry
+and compute the same six contributions; this option reduces saved
+diagnostics and file size, not integral count or C peak memory.
+
+The driver restricts OpenMP to one through four workers and sets BLAS
+environment variables to one before importing numerical libraries. The
+notebook also uses `threadpoolctl` to limit pools already loaded in its
+kernel. Changing an environment variable alone cannot resize such a pool.

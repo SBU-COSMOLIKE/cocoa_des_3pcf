@@ -3,8 +3,9 @@
 1. [Purpose and current scope](#scope)
 2. [Build the compiled library](#build)
 3. [Prepare and evaluate a declared data vector](#evaluate)
-4. [Covariances, Fisher calculations and tests](#tests)
-5. [Survey inputs and credits](#targets)
+4. [Notebook examples](#notebooks)
+5. [Covariances, Fisher calculations and tests](#tests)
+6. [Survey inputs and credits](#targets)
 
 ## Purpose and current scope <a name="scope"></a>
 
@@ -28,7 +29,7 @@ shared work. The existing two-point source files are unchanged.
 
 ```mermaid
 flowchart TB
-  A["JSON configuration and source distributions"] --> B["prepare: CAMB physical tables"]
+  A["YAML or JSON configuration and source distributions"] --> B["prepare: CAMB physical tables"]
   B --> C["evaluate: xi± and aperture mean"]
   B --> D["covariance: separate analytic terms"]
   C --> E["fisher: parameter derivatives and covariance weighting"]
@@ -94,22 +95,28 @@ Linux:
 
 ```bash
 export OMP_NUM_THREADS=1
+export OMP_THREAD_LIMIT=4
 export OMP_PROC_BIND=close
 export OMP_PLACES=cores
 export OMP_DYNAMIC=FALSE
 export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1
+export BLIS_NUM_THREADS=1
 ```
 
 macOS:
 
 ```bash
 export OMP_NUM_THREADS=1
+export OMP_THREAD_LIMIT=4
 export OMP_PROC_BIND=disabled
 export OMP_PLACES=cores
 export OMP_DYNAMIC=FALSE
 export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1
+export BLIS_NUM_THREADS=1
 ```
 
 Set the JSON `threads` field to the intended worker count as well. The
@@ -144,6 +151,34 @@ output files are refused unless `--overwrite` is supplied explicitly.
 > For configuration choices and derivative checks, see the
 > [Fisher guide](FISHER.md). For analytic covariance inputs, see the
 > [covariance guide](covariance/README.md).
+
+## Notebook examples <a name="notebooks"></a>
+
+The notebooks explain the quantities before calling project wrappers and
+the shared plotting functions. Their bounded examples use one OpenMP worker
+and serial BLAS. Full survey calculations are explicit opt-in cells and
+require the numerical and estimator checks described beside them.
+
+| Notebook | What its executed examples establish |
+|---|---|
+| [EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb) | Comparisons with pinned original transforms and aperture kernels, with source discretization differences and stored physical references labeled separately |
+| [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Public Y3 input/row inspection and a controlled IA response; the full survey Fisher calculation is configured separately |
+
+We assume the compiled project and the thread environment above. Start in
+`Cocoa/` and use the selected Cocoa Python kernel.
+
+**Step :one:**: open the project notebooks.
+
+```bash
+jupyter lab projects/des_3pcf --no-browser
+```
+
+The [comparison guide](COMPARISON.md) explains original-source identities
+and what agreement means. [PAPER_TARGETS.md](PAPER_TARGETS.md) distinguishes
+the published claims from the proposed Fisher experiments. The
+[shared plotting guide](../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/3pcf/README.md)
+teaches the triangle maps, aperture panels, signed components and covariance
+figures. Its functions take arrays and do not choose a physical model.
 
 ## Covariances, Fisher calculations and tests <a name="tests"></a>
 

@@ -13,7 +13,7 @@ The existing DES Y3 extension is used to check the Python two-point bridge.
 
 ## Executed checks <a name="executed"></a>
 
-The core checkpoint is `d832c5f`, following `8c58ace`. Checks ran on
+The core checkpoint is `98824eb`, following `d832c5f` and `8c58ace`. Checks ran on
 2026-11-17 using Darwin arm64, Clang 19.1.7, Python 3.11.12 and NumPy 1.26.3.
 Compilation used one worker. BLAS used one thread. OpenMP comparisons used
 at most four workers, with one worker for ordinary calculations. No timing
@@ -27,6 +27,14 @@ experiment or survey-scale integration was run.
 | All data-vector checks and covariance component checks after the correction, strict | 100 passed, exit 0 |
 | Physical-model, multipole output-extension and physical-state checks after the correction, debug | 38 passed, exit 0; no sanitizer diagnostic |
 | Restore strict extension after debug | Exit 0 |
+| Physical projection output-extension checks before the second rounding correction | Eight failed and fourteen passed, reproducing the physical batch discrepancy |
+| Full strict checks with both rounding corrections and the covariance work reduction | 281 passed, exit 0 |
+| Saved covariance comparison before and after omitting unused large-area transforms | All 16 arrays match bitwise; both adapters, joint/xi-only and large-area/finite-window |
+| Large-area profile and halo-offset independence checks | Six passed; included in the 281 checks |
+| Shared plotting array checks | 13 passed; separate from the project checks |
+| Shared plotting render review | 30 modes inspected; four teaching figures retained in the core README |
+| Original-code notebook executed with the strict checkpoint | Nine code cells completed, five figures, no cell errors |
+| IA/Fisher notebook executed with the strict checkpoint | Eleven code cells completed, three figures, no cell errors; survey calculations disabled |
 
 The strict build uses `-O3` with native instruction selection and the core's
 strict floating-point flags. Debug uses `-O0`, undefined-behavior and
@@ -59,9 +67,12 @@ were:
   tests/data_vector/test_physics_setting_sequences.py
 ```
 
-Notebook, plotting and expanded YAML/Fisher checks are being recorded
-separately as their executed outputs become available. They are not counted
-as completed by the C checks above.
+The 281 project checks include the YAML/CLI path, conditional Fisher
+decomposition, configuration-identity refusals and both sets of SIMD lane
+checks. Notebook execution used Jupyter kernels, with every loaded BLAS pool
+limited to one thread. Plotting checks are a separate array-only collection.
+The debug results above precede the final physical-tail and covariance changes;
+they do not yet establish debug validation of checkpoint `98824eb`.
 
 ## What the references measure <a name="references"></a>
 

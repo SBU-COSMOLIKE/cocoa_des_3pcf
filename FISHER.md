@@ -9,6 +9,24 @@
 
 ## Run a declared forecast <a name="run"></a>
 
+The worked entry point is [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb),
+with [the TATT YAML](configs/des_y3_tatt_fisher.yaml) and
+[the NLA comparison YAML](configs/des_y3_nla_fisher.yaml). Its saved outputs
+cover input verification, the public joint covariance and a small controlled
+IA response. Survey CAMB preparation, the full mean and the production
+Fisher stencil remain explicitly disabled. The notebook calls
+[the project wrappers](interface/cosmolike_des_3pcf_fisher_wrappers.py),
+which run the same CLI; neither path has a different physical kernel.
+
+Both YAML designs retain all 400 public xi rows and 80 aperture rows. This
+is an executable forecast design whose smallest xi scales and exact
+finite-triangle estimator agreement remain unvalidated. It is not the
+published 307-row scale selection or its compressed posterior analysis.
+The configuration notes and [paper targets](PAPER_TARGETS.md) state these
+limits before any result is interpreted. Velocity shear and bispectrum-only
+baryon feedback are fixed to zero because the chosen two-point model does
+not supply the corresponding complete joint response.
+
 We assume Cocoa is active, the current directory is `Cocoa/`, and the
 compiled library, thread environment and physical tables have been prepared
 using the [project instructions](README.md#evaluate). The configuration
@@ -77,6 +95,20 @@ pivot. It changes no ordinary-core source file. Full linear power at
 every redshift and cold-plus-baryon power for massive neutrinos are
 required inputs to that bridge.
 
+The selected three-point projection retains the all-E terms used in the
+paper comparison. The low-level IA engine's nineteen components do not
+make this a full E/B natural-component prediction. Two-point TATT includes
+its E/B spectra through CFASTPT. For a finite-triangle aperture estimator,
+test leakage between E and B with the actual support and weights before
+assuming the ideal continuous-filter separation still holds.
+
+The YAML exposes `accuracy_boost`, `integration_accuracy`,
+`fpt_internal_boost`, `ell_internal` and `interpolation_type` under
+`mean.two_point`. These are the existing ordinary-core controls, checked
+before module import. They must be refined independently of the three-point
+transform and projection grids; increasing the latter cannot improve an
+unresolved two-point CFASTPT calculation.
+
 The ordinary core has one mutable model per process. The bridge owns its
 use during a prediction; another project must not alter that model
 concurrently. Independent worker calculations belong inside C. Running
@@ -128,8 +160,10 @@ F_{\alpha\beta}=J_{i\alpha}(C^{-1})_{ij}J_{j\beta}
 The implementation solves with a Cholesky factor of $`C`$ rather than
 forming its inverse. Every retained xi and aperture row participates,
 including their cross-covariance. A Gaussian prior with width
-$`\sigma_p`$ adds $`1/\sigma_p^2`$ to its parameter diagonal. The example
-files contain no unverified survey nuisance priors.
+$`\sigma_p`$ adds $`1/\sigma_p^2`$ to its parameter diagonal. The new Y3
+YAML files explicitly use the calibration/photo-z widths in the methods
+paper's Table 3. Their zero calibration fiducial and TATT cosmology define a
+new forecast; those widths do not turn it into the original posterior run.
 
 The covariance is held fixed during differentiation. No parameter-dependent
 covariance information term is included. Inverting the full parameter
@@ -137,6 +171,35 @@ matrix marginalizes over the other varied parameters. For a selected
 pair, the reported figure of merit is
 $`1/\sqrt{\det C_{\rm parameter,pair}}`$. This convention omits any
 additional confidence-contour area constant.
+
+For a joint vector, the saved comparison also removes the fluctuations
+predictable from xi before assigning additional information to Map3:
+
+```math
+C_{3|2}=C_{33}-C_{32}C_{22}^{-1}C_{23},\qquad
+D_{3|2}=D_3-C_{32}C_{22}^{-1}D_2,
+```
+
+```math
+F_{\rm joint,like}=F_{2,\rm like}
++D_{3|2}^{\mathsf T}C_{3|2}^{-1}D_{3|2}.
+```
+
+Here $`D`$ is the same mean-derivative matrix as $`J`$ above, split into
+observable groups. `fisher_two_point_likelihood` selects the covariance
+before inversion; the corresponding block of the full precision would
+condition on discarded data. `fisher_conditional_three_point` contains no
+prior. `fisher_prior` is added once to `fisher_two_point` and once to
+`fisher_joint`. When both parameter matrices are resolved, the file saves
+their marginalized errors and `sigma_ratio_two_point_over_joint`.
+A large ratio is a local information result under the declared model,
+not evidence that its smallest scales or IA approximation are valid.
+
+For a PME run the comparison uses the inverse of its positive precision
+as an effective Gaussian covariance. This preserves the same statistical
+model for all blocks. It does not claim that this inverse is an unbiased
+covariance estimator, or replace the PME precision by the original analytic
+covariance for only the two-point comparison.
 
 ## Correcting an analytic precision with simulations <a name="precision"></a>
 

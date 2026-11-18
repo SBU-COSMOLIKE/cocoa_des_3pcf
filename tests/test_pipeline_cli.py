@@ -14,6 +14,7 @@ import sys
 
 import numpy as np
 import pytest
+import yaml
 
 from des3pcf.inputs import save_tables
 from des3pcf.survey import forecast_rows, ARCMIN_TO_RADIAN
@@ -116,7 +117,8 @@ def toy_configuration(tmp_path):
 def test_public_examples_dry_check_without_physics():
     """Y6 missing source input is reported without generating a substitute."""
     for name in ("y3_full_filter_example.json", "y3_finite_sas_example.json",
-                 "y6_full_filter_example.json"):
+                 "y6_full_filter_example.json", "des_y3_tatt_fisher.yaml",
+                 "des_y3_nla_fisher.yaml"):
         config_path = PROJECT / "configs" / name
         result = run_driver(command="prepare", config=config_path,
                             validate=True)
@@ -247,11 +249,13 @@ def test_analytic_covariance_requires_declared_physical_limits(
     assert "single_fluid_effective_growth" in result.stderr
 
 
-def test_covariance_command_preserves_each_term(toy_configuration):
-    """Exercise C covariance assembly and its named output without DES grids."""
+@pytest.mark.parametrize("save_components", [False, True])
+def test_covariance_command_preserves_each_term(toy_configuration, save_components):
+    """The saved diagnostic choice leaves the same final physical covariance."""
     path, config, rows = toy_configuration
     config["covariance"] = {
         "mode": "analytic",
+        "save_components": save_components,
         "path": "analytic_covariance.npz",
         "ia_covariance": "gravitational_only",
         "noise": {"number_density": [1.5, 1.4],
@@ -292,16 +296,106 @@ def test_covariance_command_preserves_each_term(toy_configuration):
         "theta_count": 2,
         "pair_weight": "uniform_area",
     }
+    if not save_components:
+        del config["covariance"]["save_components"]
     path.write_text(json.dumps(config), encoding="utf-8")
     result = run_driver(command="covariance", config=path)
     assert result.returncode == 0, result.stderr
     output = path.parent / "analytic_covariance.npz"
     with np.load(output, allow_pickle=False) as archive:
         np.testing.assert_array_equal(archive["row_labels"], rows.labels)
-        assert archive["terms"].shape == (6, 8, 8)
-        np.testing.assert_array_equal(archive["covariance"],
-                                      np.sum(archive["terms"], axis=0))
         metadata = json.loads(str(archive["metadata_json"].item()))
-        for index, name in enumerate(metadata["covariance_term_names"]):
-            expected = archive["terms"][index]
-            np.testing.assert_array_equal(archive[name], expected)
+        assert metadata["covariance_components_saved"] is save_components
+        assert archive["covariance"].shape == (8, 8)
+        assert archive["covariance_model_mean"].shape == (8,)
+        if save_components:
+            assert archive["terms"].shape == (6, 8, 8)
+            np.testing.assert_array_equal(archive["covariance"],
+                                          np.sum(archive["terms"], axis=0))
+            for index, name in enumerate(metadata["covariance_term_names"]):
+                expected = archive["terms"][index]
+                np.testing.assert_array_equal(archive[name], expected)
+        else:
+            assert "terms" not in archive.files
+            for name in metadata["covariance_term_names"]:
+                assert name not in archive.files
+
+
+def test_yaml_and_json_resolve_the_same_scientific_configuration(toy_configuration):
+    """YAML changes input readability without changing parsed physical choices."""
+    path, config, _ = toy_configuration
+    yaml_path = path.with_suffix(".yaml")
+    yaml_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+    load = runpy.run_path(str(DRIVER))["load_configuration"]
+    from_json, _, json_digest = load(path=path, command="fisher")
+    from_yaml, _, yaml_digest = load(path=yaml_path, command="fisher")
+    assert from_json == from_yaml
+    assert json_digest != yaml_digest
+    result = run_driver(command="evaluate", config=yaml_path)
+    assert result.returncode == 0, result.stderr
+
+
+def test_core_controls_are_checked_without_importing_a_compiled_module(
+    toy_configuration,
+):
+    """A mistyped CFASTPT control fails before physical preparation or C state."""
+    path, config, _ = toy_configuration
+    config["mean"]["two_point"] = {
+        "mode": "core_tatt",
+        "directory": "missing/interface",
+        "module": "missing_core",
+        "accuracy_boost": 1.0,
+        "integration_accuracy": 8,
+        "fpt_internal_boost": 0.5,
+        "ell_internal": 192,
+    }
+    path.write_text(json.dumps(config), encoding="utf-8")
+    result = run_driver(command="evaluate", config=path, validate=True)
+    assert result.returncode == 2
+    assert "integration_accuracy" in result.stderr
+
+
+def test_joint_cli_saves_conditional_information_and_checks_result_identity(
+    toy_configuration,
+):
+    """Exercise the actual small joint path, retaining a nonzero cross block."""
+    import cosmolike_des_3pcf_fisher_wrappers as notebook
+
+    path, config, _ = toy_configuration
+    config["rows"]["xi_edges_arcmin"] = [10.0, 20.0, 40.0]
+    config["mean"]["xi_settings"] = {
+        "ell": {"lower": 20.0, "upper": 3000.0,
+                "count": 16, "logarithmic": True},
+        "theta_count": 4,
+        "pair_weight": "uniform_area",
+    }
+    config["fisher"]["priors"] = {"m1": 0.04}
+    rows = forecast_rows(
+        nbin=2, aperture_radii=np.array([7, 14]) * ARCMIN_TO_RADIAN,
+        xi_edges=np.array([10, 20, 40]) * ARCMIN_TO_RADIAN,
+    )
+    scales = np.where(rows.kind == "map3", 1.0e-7, 1.0e-4)
+    matrix = np.eye(rows.values.size) + 0.05
+    matrix *= scales[:, None] * scales[None, :]
+    np.savez(file=path.parent / "covariance.npz",
+             covariance=matrix, row_labels=rows.labels)
+    path.write_text(json.dumps(config), encoding="utf-8")
+    execution = run_driver(command="fisher", config=path)
+    assert execution.returncode == 0, execution.stderr
+    workflow = notebook.FisherWorkflow(configuration=path)
+    result, metadata = workflow.load_result()
+    assert result["mean"].shape == (20,)
+    assert metadata["comparison_rank_status"] == {
+        "two_point": "resolved", "joint": "resolved",
+    }
+    np.testing.assert_allclose(result["fisher_h2"], result["fisher_joint"])
+    np.testing.assert_allclose(
+        result["fisher_two_point_likelihood"]
+        + result["fisher_conditional_three_point"],
+        result["fisher_joint_likelihood"],
+    )
+    np.testing.assert_allclose(result["fisher_prior"], [[625.0, 0.0], [0.0, 0.0]])
+    config["description"] = "A changed experiment must not relabel the old file."
+    path.write_text(json.dumps(config), encoding="utf-8")
+    with pytest.raises(ValueError, match="different configuration"):
+        workflow.load_result()

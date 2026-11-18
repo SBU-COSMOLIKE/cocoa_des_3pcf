@@ -1,0 +1,15 @@
+# Paths are relative to this file. Replace the three local snapshot paths
+# with your own checkouts at the commits in data/code_comparison_manifest.json.
+# A null path reports that source as unavailable; nothing is downloaded.
+format: des3pcf-code-comparison-v1
+sources:
+  tatt: ../lssty1xdesi/notes/review_redeye_team/fastnc_feasibility_study/source_readings/fastnc-7b2336ce37a909bed51f07f32a2a4f096e71b6ce
+  main: ../lssty1xdesi/notes/review_redeye_team/fastnc_feasibility_study/source_readings/fastnc-e59eab5a07401d2f484bfe00dd48827f2d2162c7
+  integrator: ../lssty1xdesi/notes/review_redeye_team/fastnc_feasibility_study/source_readings/integrator
+output: outputs/code_comparison
+threads: 1
+nfft: 32
+lmax: 3
+mmax: 5
+phi_count: 7
+frozen_physics: true
