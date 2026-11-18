@@ -1,0 +1,144 @@
+{
+  "purpose": "Execution of recovered theory conventions; no claim of catalogue agreement or numerical convergence",
+  "result": "runs/y3_archived_geometry_mean.npz",
+  "result_sha256": "20edfc6fd0f2e34ca61ea3b2e7ce85612856edb4a8a05fb9c3e99234874a38a3",
+  "row_count": 480,
+  "all_finite": true,
+  "configuration": "configs/des_y3_archived_geometry.yaml",
+  "configuration_sha256": "94ebe862a0ab09a2bf7743f975330d4432908020b8c13eb2b5d1405f4956d993",
+  "core_commit": "5a5b733",
+  "project_commit": "07e20ad",
+  "openmp_threads": 4,
+  "blas_threads": 1,
+  "radial_lower_edge_indices": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "pixel_window": {
+    "source": "Official HEALPix pixel-window tables distributed by healpy",
+    "repository": "https://github.com/healpy/healpy-data",
+    "commit": "9ae7af095679c424dc0b085ccd0620c53f0f2928",
+    "url": "https://raw.githubusercontent.com/healpy/healpy-data/9ae7af095679c424dc0b085ccd0620c53f0f2928/pixel_window_functions/pixel_window_n1024.fits",
+    "path": "upstream_healpix/pixel_window_n1024.fits",
+    "bytes": 72000,
+    "sha256": "d1d2afc8b0cf662f46664ee680065d703c1082257586c20ace49f8fc672ae8f7",
+    "nside": 1024,
+    "column": "TEMPERATURE",
+    "ell_max": 3071,
+    "upper_extension": "zero"
+  },
+  "prediction_identity": {
+    "format": "des3pcf-prediction-identity-v1",
+    "implementation": {
+      "camb_implementation": {
+        "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+        "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+        "python_sha256": {
+          "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+          "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+          "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+          "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+          "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+          "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+          "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+          "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+          "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+          "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+          "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+          "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+          "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+          "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+          "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+          "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+          "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+          "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+          "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+          "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+          "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+          "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+          "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+          "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+          "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+          "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+        },
+        "version": "1.6.7"
+      },
+      "python_implementation_sha256": {
+        "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+        "python/des3pcf/accuracy.py": "1e454a3965935532d6fef944d2895a3c6aab165473a6cf8fb456f9df29d0e4b1",
+        "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+        "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+        "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+        "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+        "python/des3pcf/feedback.py": "f7960ff7cac4dd95ebc3a171fc2ba80435cfe84655df3dbd6519ce6e5e53444c",
+        "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+        "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+        "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+        "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+        "python/des3pcf/inference.py": "8e9c4ce8ac4a206c3f12a1368db0257e899f0f1cc807d51413986391172cfc44",
+        "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+        "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+        "python/des3pcf/mean.py": "1d902219599af26a2574fd9dc8b41773bd3ad536ed9135c8db669a1893264cfb",
+        "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+        "python/des3pcf/pipeline.py": "4bc94658426214a23f4b86515e38f23695c51676954ce3ad52c31dbac8698577",
+        "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+        "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+        "python/des3pcf/provenance.py": "c687e8005b0ce04cbd54cc97ca5b21b056ab80afef1e48fabe5305cd33bb6e05",
+        "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+        "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+        "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+        "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+        "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+        "scripts/run_3pcf.py": "668991bb02c078ad1f7d950ecb7cdd6cb3c2a859e4c1f1dff1646666857865e2"
+      },
+      "three_point_extension": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+        "sha256": "36a8f3c9b03194fe7fed4ac29eb4cfb9d50d44adcae537eecbc78f160ab6fde8"
+      },
+      "two_point_extension": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+        "sha256": "71ceee65638f41769fd10361af48f93eb7f6e4d4b5b8bb13422af19fbf45bb8a"
+      }
+    },
+    "input_files": {
+      "aperture_rows": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+        "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+      },
+      "joint_covariance": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+        "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+      },
+      "physical_tables": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+        "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+      },
+      "pixel_window": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_healpix/pixel_window_n1024.fits",
+        "sha256": "d1d2afc8b0cf662f46664ee680065d703c1082257586c20ace49f8fc672ae8f7"
+      },
+      "source_curves": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+        "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+      },
+      "two_point_rows": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+      }
+    }
+  },
+  "limitations": [
+    "Within-bin triangle weights unavailable in packed FITS.",
+    "Lower-edge cut rule is explicit, not proven identical to measurement.",
+    "Angular convergence at third-leg window cutoff is unestablished.",
+    "Source reconstruction, priors and covariance remain declared demonstration choices."
+  ]
+}

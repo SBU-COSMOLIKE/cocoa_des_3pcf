@@ -36,6 +36,11 @@ and didactic review checked the likelihood formula, response conditioning,
 unit-stable rank, complex contraction sign, window placement and retained
 query lifetime. Shared two-point/team files were not edited.
 
+The archived-geometry CLI evaluated all 480 rows with finite values using
+four OpenMP workers and one BLAS worker. Its configuration, window and
+result hashes are in tests/studies/estimator_execution.json. This is an
+execution record, not an angular-convergence claim.
+
 Catalogue triangle weighting, the exact published cut/compression/prior
 choices, angular convergence at the sharp W3 cutoff, shared-sky mock
 correlations, and physical simulation calibration remain open. These checks
