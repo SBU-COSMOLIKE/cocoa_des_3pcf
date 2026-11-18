@@ -219,6 +219,7 @@ physical comparison.
 | [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Declared Y3 NLA/TATT means, parameter responses, saved joint Fisher comparisons and the checks needed before interpreting gains |
 | [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Completed default h/h2 Fisher bases, selected-column screening, and full refined-grid checks where available; remaining cases are listed as pending |
 | [EXAMPLE_JOINT_FEEDBACK.ipynb](EXAMPLE_JOINT_FEEDBACK.ipynb) | Shared amplitude for separately supplied power and bispectrum responses |
+| [EXAMPLE_FEEDBACK_SCENARIOS.ipynb](EXAMPLE_FEEDBACK_SCENARIOS.ipynb) | Seven physical Cocoa feedback scenarios in power and shear, plus paired BACCO cold-matter responses |
 | [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | Covariance correction using independent controlled Gaussian simulations, finite-sample product corrections and held-out validation |
 
 We assume the compiled project and the thread environment above. Start in

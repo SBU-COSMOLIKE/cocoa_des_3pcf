@@ -1,0 +1,40 @@
+# The parameter points follow LSST Y1 EXAMPLE_EVALUATE3 and Roman's examples.
+# They illustrate different models; they are not fitted DES feedback parameters.
+format: des3pcf-bfmt-scenarios-v1
+theory_options:
+  nz: 20
+  nk: 100
+  above_zmax: unity
+scenarios:
+  - name: SP(k) power law
+    options: {baryon_model: 1, spk_fb_model: 1}
+    parameters: {fb_a_spk: 0.4, fb_pow_spk: 0.3}
+    paper: https://arxiv.org/abs/2305.09710
+  - name: SP(k) Akino
+    options: {baryon_model: 1, spk_fb_model: 2}
+    parameters: {alpha_spk: 4.189, beta_spk: 1.273, gamma_spk: 0.298}
+    paper: https://arxiv.org/abs/2305.09710
+  - name: SP(k) double power law
+    options: {baryon_model: 1, spk_fb_model: 3}
+    parameters: {epsilon_spk: 0.66, alpha_spk: 0.35, beta_spk: 0.2, gamma_spk: 0.3}
+    paper: https://arxiv.org/abs/2305.09710
+  - name: BCEmu
+    options: {baryon_model: 2}
+    parameters: {log10Mc_bcemu: 13.32, mu_bcemu: 0.93, thej_bcemu: 4.235,
+      gamma_bcemu: 2.25, delta_bcemu: 6.40, eta_bcemu: 0.15, deta_bcemu: 0.14}
+    paper: https://arxiv.org/abs/2108.08863
+  - name: FLAMINGO
+    options: {baryon_model: 3}
+    parameters: {fgas_sigma_flamingo: 0.0, mstar_sigma_flamingo: 0.0,
+      jet_frac_flamingo: 0.0}
+    paper: https://arxiv.org/abs/2410.17109
+  - name: BACCO
+    options: {baryon_model: 4}
+    parameters: {M_c_baccoemu: 14.0, eta_baccoemu: -0.3, beta_baccoemu: -0.22,
+      M1_z0_cen_baccoemu: 10.5, theta_inn_baccoemu: -0.86}
+    paper: https://arxiv.org/abs/2506.18974
+  - name: BCemu2025
+    options: {baryon_model: 5, q2_bcemu25: 0.70}
+    parameters: {Theta_co_bcemu25: 0.3, log10Mc_bcemu25: 13.1, mu_bcemu25: 1.0,
+      delta_bcemu25: 6.0, eta_bcemu25: 0.10, deta_bcemu25: 0.22, Nstar_bcemu25: 0.028}
+    paper: https://github.com/sambit-giri/BCemu

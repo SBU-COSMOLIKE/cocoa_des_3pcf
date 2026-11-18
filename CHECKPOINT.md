@@ -56,6 +56,22 @@ DMO exactly and retains the same physical model. Its three figures were
 inspected, with export margins corrected for the two-point axis labels.
 FEEDBACK.md defines the arrays, domain extension and calibration limits.
 
+EXAMPLE_FEEDBACK_SCENARIOS uses the installed Cocoa bfmt models instead of
+artificial response functions: three SP(k) relations, BCEmu, FLAMINGO,
+BACCO and BCemu2025. It compares all 400 two-point rows and separately
+evaluates the installed Burger2025 cold-matter P/B pair at two redshifts
+and two triangle shapes. Paired physical inputs therefore exist locally.
+They are not yet a calibrated total-matter joint forecast: the current
+massive-neutrino field conversion, full triangle-domain extension and
+response regeneration across cosmology remain to be implemented/tested.
+The notebook also checks FLAMINGO's high-k continuation against a constant
+extension above 10 h/Mpc. FEEDBACK.md explains these assumptions.
+All seven notebook code cells executed, six exported figures were inspected,
+and 30 focused checks passed with one OpenMP/BLAS worker. The independent
+review led to exception-safe DMO restoration, explicit shear calibration,
+actual-component warning capture and checked figure labels. Input hashes
+and scope are recorded in tests/studies/feedback_scenarios_validation.json.
+
 The affected 48 checks pass in strict and undefined-behavior debug builds;
 strict is restored. The separate didactic review traced ratio definitions,
 ordered versus sorted triangle sides, owned arrays, serial spline

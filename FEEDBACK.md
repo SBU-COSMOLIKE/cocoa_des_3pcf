@@ -5,6 +5,7 @@
 3. [Demonstration notebook](#demonstration)
 4. [Accuracy and state changes](#accuracy)
 5. [Physical calibration](#calibration)
+6. [Existing Cocoa feedback scenarios](#scenarios)
 
 ## What changes in the joint mean <a name="model"></a>
 
@@ -109,6 +110,13 @@ CFASTPT bridge and amplitude restoration within one process.
 
 ## Physical calibration <a name="calibration"></a>
 
+Physical power-response inputs already exist in Cocoa's `bfmt` theory
+block. Its BACCO dependency also includes the paired Burger2025
+power/bispectrum emulator and both weight files. The artificial notebook
+above tests the native interface; it is not evidence that physical
+feedback models are unavailable. The next section uses those installed
+models directly.
+
 Suitable inputs need a common matter definition, hydro/DMO normalization,
 redshifts and supported triangle domain. The
 [public hydro power/bispectrum measurements](https://github.com/sjforeman/hydro_bispectrum)
@@ -121,3 +129,56 @@ A cold-matter emulator cannot be labeled total matter without an explicit
 conversion and validation. Likewise, supplying a ratio at one cosmology
 does not establish its accuracy elsewhere. These calibration questions
 remain separate from the tested numerical response reader.
+
+## Existing Cocoa feedback scenarios <a name="scenarios"></a>
+
+[EXAMPLE_FEEDBACK_SCENARIOS.ipynb](EXAMPLE_FEEDBACK_SCENARIOS.ipynb)
+follows the [LSST Y1 feedback notebook](../lsst_y1/EXAMPLE_EVALUATE3.ipynb)
+and [Roman example](../roman_real/EXAMPLE_EVALUATE3.ipynb). The
+[scenario YAML](configs/feedback_scenarios.yaml) selects three SP(k)
+relations, BCEmu, FLAMINGO, BACCO and BCemu2025. Each is evaluated at the
+DES demonstration cosmology through the existing `bfmt` Cobaya theory
+block. Its power response changes all 400 two-point rows; the notebook
+plots source-bin pair (1,1) and checks exact restoration to DMO. The
+quadratic IA loops retain their linear DMO input. These are fixed-point
+model comparisons, not fitted feedback parameters or joint constraints.
+
+The adapter converts wavenumbers from h/Mpc to bfmt's 1/Mpc request,
+retains the saved CAMB amplitude and neutrino density, and refuses a changed
+cosmology with stale preparation metadata. It catches warnings from the
+actual theory logger, including error paths that otherwise return a
+plausible unity response. Installed weights are checked before the pinned
+dependencies can trigger their downloads. BLAS and OpenMP each use one
+worker in this example; no covariance simulations are required.
+
+The separate BACCO figure evaluates both installed Burger2025 models at
+identical cosmology and feedback parameters. The bispectrum curves use
+equilateral and scalene triangles within the installed side bounds. The
+five feedback coordinates are logarithmic: gas-retention mass, its mass
+dependence, gas-ejection scale, central stellar-mass relation and inner
+gas-profile scale. Both responses describe CDM plus baryons. With massive
+neutrinos, total matter also contains neutrino correlations, including
+mixed three-field correlations that these ratios do not specify.
+[BACCO documentation](https://baccoemu.readthedocs.io/en/latest/),
+[Burger et al.](https://arxiv.org/abs/2506.18974)
+
+The ordinary Cocoa power prescription applies the BACCO cold response
+to total nonlinear power. The notebook follows that prescription for
+the two-point comparison and labels the approximation. It does not pass
+the cold bispectrum response into a total-matter `FeedbackPair` or invent
+a bispectrum for the other six scenarios. A massless-neutrino example
+would remove this field distinction but would still need validated
+triangle-domain extensions. A cosmology-dependent forecast must also
+regenerate both responses when its physical parameters change.
+
+The supplied Fourier tables extend much farther than emulator training
+ranges. The notebook therefore compares FLAMINGO's existing continuation
+with a separate choice that holds its response constant above
+10 h/Mpc. Both are modeling choices outside calibration. Sensitivity
+to them belongs in the eventual scale-cut and accuracy study; the
+availability of physical response models does not settle those tests.
+
+The saved `runs/feedback_scenarios.npz` contains every plotted array,
+model point, theory/weight hash and restoration result. It can be read
+with `allow_pickle=False`. The artificial-pair notebook and this physical
+scenario notebook serve different checks and are linked from the README.

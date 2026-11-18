@@ -1,0 +1,442 @@
+{
+  "archive_sha256": "a177c0155c266bd38d6f11ecccb21a9f51cd28cdb9b03198a1c11713ac375d8d",
+  "core_source_commit": "fb969a9a8b6012acc3b2231e05d43ec73e27badf",
+  "date": "2026-11-18",
+  "dmo_restoration_exact": true,
+  "executed_code_cells": 7,
+  "input_record": {
+    "catalog_sha256": "d638054db8aaffa0559c5475a9f7959a4653e7b9ab86bbedb493a53948def767",
+    "configuration_sha256": "580387f1fdf1bea4b35398700ad97da549262b43873b4514503bfbb9f7eb7f98",
+    "effective_overrides": {
+      "feedback": "removed for power-only comparison",
+      "ia.feedback_amplitude": 0.0,
+      "threads": 1
+    },
+    "flamingo_tail_test": "hold R_P constant above 10 h/Mpc",
+    "paired": {
+      "coordinates": {
+        "M1_z0_cen": 10.5,
+        "M_c": 14.0,
+        "beta": -0.22,
+        "eta": -0.3,
+        "omega_baryon": 0.0463,
+        "omega_cold": 0.28777721867714046,
+        "sigma8_cold": 0.7898226976394653,
+        "theta_inn": -0.86
+      },
+      "matter_field": "CDM+baryons",
+      "redshifts": [
+        0.0,
+        1.0
+      ],
+      "shapes": [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.6,
+          1.0,
+          1.2
+        ]
+      ],
+      "sigma8_source": "bfmt Burger2025 sigma8_cold emulator",
+      "weights": {
+        "B": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/baccoemu/bispectrum_baryonic_boost/bispectra_ratio_bcm_emu_folded.pkl",
+          "sha256": "4c33ea38950751d3ce68ccad315b83f51dfd2c4d7ef9e44aff9bae636037462b"
+        },
+        "P": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/baccoemu/bispectrum_baryonic_boost/powerspectra_ratio_bcm_emu_folded.pkl",
+          "sha256": "07c378ba38140fb1dee9eb7580f850e0e8328312993f7214cf8e622931c34e1b"
+        }
+      }
+    },
+    "physical_tables_sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083",
+    "restoration_exact": true,
+    "scenarios": [
+      {
+        "As": 1.8520304404307723e-09,
+        "bfmt_request_k_units": "1/Mpc",
+        "cosmology": {
+          "dz1": 0,
+          "dz2": 0,
+          "dz3": 0,
+          "dz4": 0,
+          "h": 0.722,
+          "m1": 0,
+          "m2": 0,
+          "m3": 0,
+          "m4": 0,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.959,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.0463,
+          "omega_m": 0.289,
+          "sigma8": 0.7865548373195137,
+          "w0": -1,
+          "wa": 0
+        },
+        "feedback_parameters": {
+          "fb_a_spk": 0.4,
+          "fb_pow_spk": 0.3
+        },
+        "input_k_units": "h/Mpc",
+        "k_conversion": "k_bfmt=h*k_input",
+        "name": "SP(k) power law",
+        "omega_nu_h2": 0.000644866570625114,
+        "options": {
+          "above_zmax": "unity",
+          "baryon_model": 1,
+          "nk": 100,
+          "nz": 20,
+          "spk_fb_model": 1
+        },
+        "paper": "https://arxiv.org/abs/2305.09710",
+        "producer": "Cocoa bfmt baryon_suppression",
+        "source_sha256": "791968c24fbfd6831fbad91a8e621912bdc7ca29ef96b5186aa836da617a0c3b",
+        "supplied_spectra": [
+          "P"
+        ]
+      },
+      {
+        "As": 1.8520304404307723e-09,
+        "bfmt_request_k_units": "1/Mpc",
+        "cosmology": {
+          "dz1": 0,
+          "dz2": 0,
+          "dz3": 0,
+          "dz4": 0,
+          "h": 0.722,
+          "m1": 0,
+          "m2": 0,
+          "m3": 0,
+          "m4": 0,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.959,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.0463,
+          "omega_m": 0.289,
+          "sigma8": 0.7865548373195137,
+          "w0": -1,
+          "wa": 0
+        },
+        "feedback_parameters": {
+          "alpha_spk": 4.189,
+          "beta_spk": 1.273,
+          "gamma_spk": 0.298
+        },
+        "input_k_units": "h/Mpc",
+        "k_conversion": "k_bfmt=h*k_input",
+        "name": "SP(k) Akino",
+        "omega_nu_h2": 0.000644866570625114,
+        "options": {
+          "above_zmax": "unity",
+          "baryon_model": 1,
+          "nk": 100,
+          "nz": 20,
+          "spk_fb_model": 2
+        },
+        "paper": "https://arxiv.org/abs/2305.09710",
+        "producer": "Cocoa bfmt baryon_suppression",
+        "source_sha256": "791968c24fbfd6831fbad91a8e621912bdc7ca29ef96b5186aa836da617a0c3b",
+        "supplied_spectra": [
+          "P"
+        ]
+      },
+      {
+        "As": 1.8520304404307723e-09,
+        "bfmt_request_k_units": "1/Mpc",
+        "cosmology": {
+          "dz1": 0,
+          "dz2": 0,
+          "dz3": 0,
+          "dz4": 0,
+          "h": 0.722,
+          "m1": 0,
+          "m2": 0,
+          "m3": 0,
+          "m4": 0,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.959,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.0463,
+          "omega_m": 0.289,
+          "sigma8": 0.7865548373195137,
+          "w0": -1,
+          "wa": 0
+        },
+        "feedback_parameters": {
+          "alpha_spk": 0.35,
+          "beta_spk": 0.2,
+          "epsilon_spk": 0.66,
+          "gamma_spk": 0.3
+        },
+        "input_k_units": "h/Mpc",
+        "k_conversion": "k_bfmt=h*k_input",
+        "name": "SP(k) double power law",
+        "omega_nu_h2": 0.000644866570625114,
+        "options": {
+          "above_zmax": "unity",
+          "baryon_model": 1,
+          "nk": 100,
+          "nz": 20,
+          "spk_fb_model": 3
+        },
+        "paper": "https://arxiv.org/abs/2305.09710",
+        "producer": "Cocoa bfmt baryon_suppression",
+        "source_sha256": "791968c24fbfd6831fbad91a8e621912bdc7ca29ef96b5186aa836da617a0c3b",
+        "supplied_spectra": [
+          "P"
+        ]
+      },
+      {
+        "As": 1.8520304404307723e-09,
+        "bfmt_request_k_units": "1/Mpc",
+        "cosmology": {
+          "dz1": 0,
+          "dz2": 0,
+          "dz3": 0,
+          "dz4": 0,
+          "h": 0.722,
+          "m1": 0,
+          "m2": 0,
+          "m3": 0,
+          "m4": 0,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.959,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.0463,
+          "omega_m": 0.289,
+          "sigma8": 0.7865548373195137,
+          "w0": -1,
+          "wa": 0
+        },
+        "feedback_parameters": {
+          "delta_bcemu": 6.4,
+          "deta_bcemu": 0.14,
+          "eta_bcemu": 0.15,
+          "gamma_bcemu": 2.25,
+          "log10Mc_bcemu": 13.32,
+          "mu_bcemu": 0.93,
+          "thej_bcemu": 4.235
+        },
+        "input_k_units": "h/Mpc",
+        "k_conversion": "k_bfmt=h*k_input",
+        "name": "BCEmu",
+        "omega_nu_h2": 0.000644866570625114,
+        "options": {
+          "above_zmax": "unity",
+          "baryon_model": 2,
+          "nk": 100,
+          "nz": 20
+        },
+        "paper": "https://arxiv.org/abs/2108.08863",
+        "producer": "Cocoa bfmt baryon_suppression",
+        "source_sha256": "791968c24fbfd6831fbad91a8e621912bdc7ca29ef96b5186aa836da617a0c3b",
+        "supplied_spectra": [
+          "P"
+        ]
+      },
+      {
+        "As": 1.8520304404307723e-09,
+        "bfmt_request_k_units": "1/Mpc",
+        "cosmology": {
+          "dz1": 0,
+          "dz2": 0,
+          "dz3": 0,
+          "dz4": 0,
+          "h": 0.722,
+          "m1": 0,
+          "m2": 0,
+          "m3": 0,
+          "m4": 0,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.959,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.0463,
+          "omega_m": 0.289,
+          "sigma8": 0.7865548373195137,
+          "w0": -1,
+          "wa": 0
+        },
+        "feedback_parameters": {
+          "fgas_sigma_flamingo": 0.0,
+          "jet_frac_flamingo": 0.0,
+          "mstar_sigma_flamingo": 0.0
+        },
+        "input_k_units": "h/Mpc",
+        "k_conversion": "k_bfmt=h*k_input",
+        "name": "FLAMINGO",
+        "omega_nu_h2": 0.000644866570625114,
+        "options": {
+          "above_zmax": "unity",
+          "baryon_model": 3,
+          "nk": 100,
+          "nz": 20
+        },
+        "paper": "https://arxiv.org/abs/2410.17109",
+        "producer": "Cocoa bfmt baryon_suppression",
+        "source_sha256": "791968c24fbfd6831fbad91a8e621912bdc7ca29ef96b5186aa836da617a0c3b",
+        "supplied_spectra": [
+          "P"
+        ]
+      },
+      {
+        "As": 1.8520304404307723e-09,
+        "bacco_coordinates": {
+          "M1_z0_cen": 10.5,
+          "M_c": 14.0,
+          "beta": -0.22,
+          "eta": -0.3,
+          "omega_baryon": 0.0463,
+          "omega_cold": 0.28777721867714046,
+          "sigma8_cold": 0.7898226976394653,
+          "theta_inn": -0.86
+        },
+        "bacco_sigma8_source": "bfmt Burger2025 sigma8_cold emulator",
+        "bfmt_request_k_units": "1/Mpc",
+        "cosmology": {
+          "dz1": 0,
+          "dz2": 0,
+          "dz3": 0,
+          "dz4": 0,
+          "h": 0.722,
+          "m1": 0,
+          "m2": 0,
+          "m3": 0,
+          "m4": 0,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.959,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.0463,
+          "omega_m": 0.289,
+          "sigma8": 0.7865548373195137,
+          "w0": -1,
+          "wa": 0
+        },
+        "feedback_parameters": {
+          "M1_z0_cen_baccoemu": 10.5,
+          "M_c_baccoemu": 14.0,
+          "beta_baccoemu": -0.22,
+          "eta_baccoemu": -0.3,
+          "theta_inn_baccoemu": -0.86
+        },
+        "input_k_units": "h/Mpc",
+        "k_conversion": "k_bfmt=h*k_input",
+        "matter_field": "cold; applying to total P is an approximation",
+        "name": "BACCO",
+        "omega_nu_h2": 0.000644866570625114,
+        "options": {
+          "above_zmax": "unity",
+          "baryon_model": 4,
+          "nk": 100,
+          "nz": 20
+        },
+        "paper": "https://arxiv.org/abs/2506.18974",
+        "producer": "Cocoa bfmt baryon_suppression",
+        "source_sha256": "791968c24fbfd6831fbad91a8e621912bdc7ca29ef96b5186aa836da617a0c3b",
+        "supplied_spectra": [
+          "P"
+        ]
+      },
+      {
+        "As": 1.8520304404307723e-09,
+        "bfmt_request_k_units": "1/Mpc",
+        "cosmology": {
+          "dz1": 0,
+          "dz2": 0,
+          "dz3": 0,
+          "dz4": 0,
+          "h": 0.722,
+          "m1": 0,
+          "m2": 0,
+          "m3": 0,
+          "m4": 0,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.959,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.0463,
+          "omega_m": 0.289,
+          "sigma8": 0.7865548373195137,
+          "w0": -1,
+          "wa": 0
+        },
+        "feedback_parameters": {
+          "Nstar_bcemu25": 0.028,
+          "Theta_co_bcemu25": 0.3,
+          "delta_bcemu25": 6.0,
+          "deta_bcemu25": 0.22,
+          "eta_bcemu25": 0.1,
+          "log10Mc_bcemu25": 13.1,
+          "mu_bcemu25": 1.0
+        },
+        "input_k_units": "h/Mpc",
+        "k_conversion": "k_bfmt=h*k_input",
+        "name": "BCemu2025",
+        "omega_nu_h2": 0.000644866570625114,
+        "options": {
+          "above_zmax": "unity",
+          "baryon_model": 5,
+          "nk": 100,
+          "nz": 20,
+          "q2_bcemu25": 0.7
+        },
+        "paper": "https://github.com/sambit-giri/BCemu",
+        "producer": "Cocoa bfmt baryon_suppression",
+        "source_sha256": "791968c24fbfd6831fbad91a8e621912bdc7ca29ef96b5186aa836da617a0c3b",
+        "supplied_spectra": [
+          "P"
+        ]
+      }
+    ],
+    "scope": "power-only scenario; no inferred bispectrum or feedback constraint",
+    "threads": 1
+  },
+  "limitations": [
+    "Two-point scenario comparisons, not feedback constraints.",
+    "BACCO P/B diagnostic is cold matter, not calibrated total-matter lensing at nonzero neutrino mass.",
+    "No bispectrum inferred for the other six bfmt scenarios.",
+    "Input Fourier tails and fixed quadratic IA require modeling tests."
+  ],
+  "paired_bispectrum_shape": [
+    2,
+    2,
+    80
+  ],
+  "paired_power_shape": [
+    2,
+    80
+  ],
+  "producer": "EXAMPLE_FEEDBACK_SCENARIOS.ipynb",
+  "scenario_names": [
+    "SP(k) power law",
+    "SP(k) Akino",
+    "SP(k) double power law",
+    "BCEmu",
+    "FLAMINGO",
+    "BACCO",
+    "BCemu2025"
+  ],
+  "two_point_means_shape": [
+    7,
+    400
+  ],
+  "validation": {
+    "didactic_review": "Independent read-only review; identified issues corrected before completion.",
+    "figures_inspected": 6,
+    "focused_checks_passed": 30
+  },
+  "workers": {
+    "blas": 1,
+    "openmp": 1
+  }
+}
