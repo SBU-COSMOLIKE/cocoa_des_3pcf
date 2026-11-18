@@ -45,11 +45,16 @@ a separate plotting convention. The
 [estimator record](tests/studies/estimator_conventions.md) identifies further
 bin, weighting and covariance-sign provenance needed for a matched result.
 
-The existing low-level IA component API is useful for checking signs and
-normalizations. It does not make the total-only aperture API a projected
-GGI/GII/III decomposition. Such curves must be constructed with the intended
-field placements and checked against their sum. Likewise, the three-point
-velocity-shear route does not supply a velocity-shear two-point model.
+The projected operator/placement API is demonstrated in
+[EXAMPLE_IA_COMPONENTS.ipynb](EXAMPLE_IA_COMPONENTS.ipynb). It carries the
+physical density-weighting, torque and VS vertices, and all ordered
+GGI/GII/III placements, through the same finite aperture calculation.
+Their sum is checked against the ordinary total. The torque split retains
+the -2 C2/3 part of the tensor density coefficient. Matching the paper's
+Figures 5–6 still requires matching its estimator and numerical inputs.
+The active VS vertex differs from the literal printed Eqs.62/67; the
+notebook records that unresolved issue. A three-point VS diagnostic also
+does not supply a joint velocity-shear two-point model.
 
 ## What the public observed files establish
 

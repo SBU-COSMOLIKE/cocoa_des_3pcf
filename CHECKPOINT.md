@@ -1,5 +1,30 @@
 # Work in progress: three-point implementation
 
+The projected IA decomposition is implemented in the native projector,
+prepared grids and both array adapters. The new EXAMPLE_IA_COMPONENTS
+notebook evaluates Y3 triples 111 and 134 and compares all signed pieces
+with the ordinary total: maximum closure error divided by the maximum
+absolute total is 3.44e-15. Both plots were inspected. The unchanged
+ordinary direct projection matches a saved pre-change result bit for bit.
+The five new physical checks include the independent equilateral TATT
+identity, zero-amplitude limits, leg permutations, both residual scalings,
+transform/aperture closure and restoration at four OpenMP workers.
+
+The affected 25 checks pass in both strict and undefined-behavior debug
+builds; strict mode is restored. The README render check reports 77 tables,
+386 local links and no errors.
+
+The didactic review traced the operator-to-tensor mapping, the field-bit
+convention, the distinct baseline/residual source grids and the shared
+signed interpolation denominator. The notebook defines each grouping
+before plotting it. The active upstream VS vertex and literal manuscript
+Eqs.62/67 disagree; the diagnostic retains the implemented vertex and
+does not claim that this VS comparison resolves the discrepancy.
+
+The older full-suite and Fisher records below retain their original
+implementation identities; they have not been relabeled after this change.
+
+
 The complete strict collection passes **581 tests** (90.90 seconds).
 All three physical Nautilus checks pass with 480 rows and exact restoration
 after an IA displacement. The IA/Fisher notebook executed 12 code cells and

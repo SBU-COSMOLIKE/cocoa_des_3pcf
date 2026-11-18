@@ -194,6 +194,13 @@ output files are refused unless `--overwrite` is supplied explicitly.
 
 ## Notebook examples <a name="notebooks"></a>
 
+[EXAMPLE_IA_COMPONENTS.ipynb](EXAMPLE_IA_COMPONENTS.ipynb) separates the
+projected IA operators and ordered GGI/GII/III placements through the finite
+aperture estimator. It checks their sum against the ordinary total and explains
+the physical grouping used in the paper's Figures 5–6. Its signed VS curves
+retain an explicitly documented manuscript/code discrepancy.
+
+
 The notebooks explain the quantities before calling project wrappers and
 the shared plotting functions. Model calculations use at most four OpenMP
 workers and serial BLAS. Loading saved results never silently starts a new
