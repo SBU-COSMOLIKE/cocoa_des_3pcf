@@ -8,6 +8,7 @@ The examples' --check commands separately exercise the physical mean.
 
 from pathlib import Path
 import json
+import operator
 import sys
 
 import numpy as np
@@ -50,6 +51,50 @@ def covariance():
         [0.3, 1.5, -0.2],
         [0.7, -0.2, 1.0],
     ])
+
+
+def discrete_model_mean(parameters):
+    """Select one of two physical responses using an actual integer selector.
+
+    operator.index accepts integer scalars, including NumPy integers, but
+    refuses floats. This has the same type requirement as the native IA
+    selector. The amplitude remains a continuous sampled parameter.
+    """
+    mode = operator.index(parameters["power_mode"])
+    patterns = {
+        1: np.array(object=[1.0, 2.0, -1.0]),
+        2: np.array(object=[1.0, -2.0, 3.0]),
+    }
+    return parameters["amplitude"] * patterns[mode]
+
+
+@pytest.mark.parametrize("selector", [1, np.int64(1)])
+def test_full_parameter_points_preserve_discrete_model_types(selector):
+    """A continuous displacement must preserve fixed integer model choices."""
+    initial = {"amplitude": 1, "power_mode": selector}
+    likelihood = FixedGaussianLikelihood(
+        predict=discrete_model_mean,
+        rows=rows(),
+        covariance=covariance(),
+        parameters=initial,
+    )
+    # The YAML may spell a continuous reference amplitude as an integer.
+    # Its displaced value must still accept a fractional change, while
+    # the separate model selector retains the integer type it was given.
+    displaced = {"amplitude": 1.25, "power_mode": selector}
+    np.testing.assert_array_equal(
+        x=likelihood.mean(parameters=displaced),
+        y=discrete_model_mean(parameters=displaced),
+    )
+    changed_mode = {"amplitude": 1.25, "power_mode": 2}
+    assert not np.array_equal(
+        a1=likelihood.mean(parameters=displaced),
+        a2=likelihood.mean(parameters=changed_mode),
+    )
+    np.testing.assert_array_equal(
+        x=likelihood.mean(parameters=initial),
+        y=likelihood.data,
+    )
 
 
 def test_selection_before_inverse_and_gaussian_normalization():

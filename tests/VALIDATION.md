@@ -13,6 +13,34 @@ The existing DES Y3 extension is used to check the Python two-point bridge.
 
 ## Executed checks <a name="executed"></a>
 
+The current complete strict collection passes **549 tests** (91.09 seconds,
+exit 0). This includes finite sign-pair, full-check provenance, saved-node
+step-study, historical step-plot and integer-selector regression tests.
+Four additional analytic tests of fixed dark energy pass separately
+(0.23 seconds); they check retained nuisance marginalization, the prior
+counted once, unresolved directions and input immutability. The step study also passed preflight against
+both actual Fisher archives and then evaluated eight new means per model.
+The rows, covariance and input/code identities stayed fixed during those
+calculations. The build and earlier check history below identify which
+native implementation these Python checks exercise.
+
+The three real Nautilus `--check` examples also pass with the corrected
+likelihood scalar handling and 480 rows. Their A1 displacement is 0.01;
+all three restore the exact fiducial prediction. Synthetic NLA and TATT
+start at zero chi-squared and change it by 0.00940607 and 0.02446217.
+The observed NLA example changes chi-squared from 1450.71721 to 1450.09425.
+This observed-data execution test does not reproduce the published fit:
+the example retains all 400 xi rows and uses the declared approximate
+aperture estimator and source reconstruction. These checks exercise real
+native predictions; a separate two-dimensional Gaussian test exercises
+Nautilus sampling and resume. No DES posterior chain is claimed.
+
+A cached first mean originally hid a scalar-type error: fixed integer
+selectors were converted to floats before an IA displacement called the
+native projection. The likelihood now retains integer types, and independent
+regressions require actual integer-index semantics for both Python and
+NumPy integer selectors. The physical mean equations did not change.
+
 The native interpolation/source-grid checkpoint is `6a7eae7` on
 `lowrank_fftlog`. Its full project collection passed **502 tests in strict
 and debug builds**, with no sanitizer diagnostics. The subsequent
@@ -24,7 +52,7 @@ The strict extension is restored. Compilation uses one worker; numerical
 tests use at most four OpenMP workers and serial BLAS.
 
 With the demonstrated source defaults and saved-result checks, the full
-strict collection passes **524 tests** (89.14 seconds, exit 0). This includes
+strict collection previously passed **524 tests** (89.14 seconds, exit 0). This includes
 11 file-replacement/reuse checks and the unit-invariance check for
 covariance-weighted derivative differences. No C implementation changed
 after the strict/debug native checks above. The first run found five

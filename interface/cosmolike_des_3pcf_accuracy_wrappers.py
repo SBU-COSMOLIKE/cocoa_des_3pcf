@@ -340,6 +340,158 @@ class AccuracyStudy:
                 print(f"{case['name']}: {case['selected_derivative_replacement_status']}")
         return _plotters().plot_accuracy_screen(ratios=ratios, labels=labels, show=show)
 
+
+    def load_step_study(self, directory):
+        """Read a historical step study associated with this exact baseline.
+
+        Arguments:
+          directory = study folder containing summary.json and stencils.npz.
+        Returns:
+          Labels, two plot-ratio rows and the complete recorded step summary.
+          The noise row is normalized to this same subset's h2 noise estimate;
+          the derivative row already uses the fixed full h2 Fisher denominator.
+        Raises:
+          ValueError for inconsistent summaries, identities, rows or step values.
+          FileNotFoundError for incomplete saved work. No model is evaluated.
+        """
+        baseline_report, baseline, baseline_metadata = self.load()
+        directory = Path(directory).resolve()
+        summary = json.loads((directory/"summary.json").read_text(encoding="utf-8"))
+        if (summary.get("format") != "des3pcf-cosmology-step-study-v1"
+                or summary.get("executed") is not True):
+            raise ValueError("Step study is not a completed supported calculation.")
+        with np.load(file=directory/"stencils.npz", allow_pickle=False) as archive:
+            recorded = json.loads(str(archive["metadata_json"].item()))
+            if recorded != summary:
+                raise ValueError("Step summary differs from its stencil metadata.")
+            if not np.array_equal(
+                a1=archive["parameter_names"], a2=baseline["parameter_names"],
+            ):
+                raise ValueError("Step study changes the full parameter order.")
+            if not np.array_equal(archive["row_labels"], baseline["row_labels"]):
+                raise ValueError("Step study changes the data-row labels.")
+            columns = archive["selected_columns"]
+            if (columns.ndim != 1 or columns.size != 2
+                    or not np.issubdtype(columns.dtype, np.integer)
+                    or np.any(columns < 0)
+                    or np.any(columns >= len(baseline["parameter_names"]))
+                    or len(np.unique(columns)) != len(columns)):
+                raise ValueError("Step study has invalid selected-column indices.")
+            selected = baseline["parameter_names"][columns].tolist()
+            if selected != summary["selected_parameters"]:
+                raise ValueError("Step summary changes its selected parameters.")
+            base_steps = archive["absolute_base_steps"].copy()
+        expected_steps = []
+        configuration = baseline_metadata["configuration"]
+        for parameter in selected:
+            expected_steps.append(configuration["fisher"]["steps"][parameter])
+        if not np.array_equal(base_steps, np.asarray(expected_steps)):
+            raise ValueError("Step study changes the original absolute steps.")
+        identity = summary["identity"]
+        if (identity["baseline_sha256"] != baseline_report["baseline_result_sha256"]
+                or Path(summary["baseline"]).resolve()
+                != Path(baseline_report["baseline_result"]).resolve()
+                or identity["configuration_sha256"]
+                != baseline_report["configuration_sha256"]
+                or Path(summary["configuration"]).resolve() != self.configuration):
+            raise ValueError(
+                "Step study belongs to a different baseline or configuration."
+            )
+        verify_prediction_identity(
+            recorded=identity.get("prediction_identity"),
+            current=baseline_report.get("prediction_identity"),
+            description="Archived step study versus baseline",
+        )
+        by_label = {}
+        for case in summary["cases"]:
+            label = case["step_label"]
+            if label in by_label:
+                raise ValueError("Step study repeats a stencil label.")
+            by_label[label] = case
+        order = ["h4", "h2", "h"]
+        if "two_h" in by_label:
+            order.append("two_h")
+        if set(by_label) != set(order):
+            raise ValueError("Step study needs h4, h2, h and optional two_h.")
+        expected_count = len(selected)*(4 if "two_h" in by_label else 2)
+        if (summary["new_mean_count"] != expected_count
+                or len(summary["new_point_plan"]) != expected_count):
+            raise ValueError("Step-study new-mean count disagrees with its stencil plan.")
+        factors = {
+            "h4": 0.25,
+            "h2": 0.5,
+            "h": 1.0,
+            "two_h": 2.0,
+        }
+        names = {
+            "h4": r"$\Delta/4$",
+            "h2": r"$\Delta/2$",
+            "h": r"$\Delta$",
+            "two_h": r"$2\Delta$",
+        }
+        denominator = float(by_label["h2"]["diagonal_noise_inflation_ratio"])
+        if not np.isfinite(denominator) or denominator <= 0:
+            raise ValueError("The same-column h2 noise denominator must be positive.")
+        ratios = np.full(shape=(2, len(order)), fill_value=np.nan)
+        labels = []
+        ordered_cases = []
+        for index, label in enumerate(order):
+            case = by_label[label]
+            if not np.array_equal(case["absolute_steps"], base_steps*factors[label]):
+                raise ValueError(
+                    f"Step study has inconsistent absolute steps for {label}."
+                )
+            noise = float(case["diagonal_noise_inflation_ratio"])
+            if not np.isfinite(noise) or noise <= 0:
+                raise ValueError("Step noise ratios must be finite and positive.")
+            ratios[0, index] = noise/denominator
+            partial = case["selected_derivative_replacement_fom_ratio"]
+            if partial is not None:
+                if not np.isfinite(partial) or partial <= 0:
+                    raise ValueError("Step replacement FoM ratios must be positive.")
+                ratios[1, index] = partial
+            labels.append(names[label])
+            ordered_cases.append(case)
+        return {
+            "summary": summary,
+            "labels": labels,
+            "ratios": ratios,
+            "ordered_cases": ordered_cases,
+        }
+
+    def plot_step_study(self, directory, show=1):
+        """Plot saved step diagnostics with the existing shared array-only plotter.
+
+        Arguments:
+          directory = completed step-study folder; show = shared display control.
+        Returns:
+          Shared plot result, or None with a pending message if files are absent.
+        Side effects:
+          Prints selected columns, actual steps and the number of new means.
+          Historical identities are checked; no physical calculation is launched.
+        """
+        directory = Path(directory).resolve()
+        files = (directory/"summary.json", directory/"stencils.npz")
+        if not all(path.is_file() for path in files):
+            print(f"Step study pending: {directory}")
+            return None
+        loaded = self.load_step_study(directory=directory)
+        summary = loaded["summary"]
+        selected = summary["selected_parameters"]
+        print("Selected parameter columns: " + ", ".join(selected))
+        print(f"New mean evaluations: {summary['new_mean_count']}")
+        print("Both curves concern this selected subset; neither is a full new Fisher.")
+        for case in loaded["ordered_cases"]:
+            entries = []
+            for name, step in zip(selected, case["absolute_steps"]):
+                entries.append(f"{name}={step:.8g}")
+            print(case["step_label"] + " absolute steps: " + ", ".join(entries))
+            if case["selected_derivative_replacement_fom_ratio"] is None:
+                print(case["selected_derivative_replacement_status"])
+        return _plotters().plot_accuracy_screen(
+            ratios=loaded["ratios"], labels=loaded["labels"], show=show,
+        )
+
     def plot_full_checks(self, show=1):
         """Draw only completed full checks and print which scans lack them."""
         if self._available() is None:
@@ -376,6 +528,15 @@ class AccuracyStudy:
         executable method additionally checks current input and code bytes
         before launching work. The child Fisher calculation repeats its own
         beginning/end check; a later historical read must still match the base.
+
+        Arguments:
+          case = exact name of one completed selected-column scan.
+        Returns:
+          path to the new full Fisher archive after the child exits successfully.
+        Raises:
+          ValueError for missing cases or different input/implementation records.
+        Side effects:
+          Runs the declared physical means and writes that candidate's full archive.
         """
         report, baseline, _ = self.load()
         for record in report["cases"]:

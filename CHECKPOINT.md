@@ -1,5 +1,23 @@
 # Work in progress: three-point implementation
 
+The physical Nautilus check exposed a scalar-type bug: passing a full
+parameter dictionary converted fixed integer model selectors to floats.
+A cached first mean hid the issue until an IA displacement requested a
+new native projection. `FixedGaussianLikelihood.mean` now preserves the
+integer selector types while normalizing continuous inputs to floats. Both
+integer-selector regression cases failed before the fix and pass afterward.
+The complete strict collection passes 549 tests; four subsequent analytic
+tests verify fixing dark energy while retaining the other nuisance parameters.
+
+Completed Fisher bases, four-candidate scans and targeted step studies
+were preserved under `runs/pre_likelihood_scalar_fix/`, with exact hashes
+and original configurations. The implementation fingerprint covers the
+whole project Python package, so current-code reuse correctly refuses
+those older records. Fresh calculations will be saved under the usual
+paths; the old metadata has not been relabeled. The figures and numbers
+below describe the completed archived calculations until those repetitions
+finish. The physical mean implementation and numerical settings are unchanged.
+
 **The first TATT demonstration Fisher result is not accepted.** Its
 prepared projection undersampled squeezed shapes and large Fourier
 angles, and cubic interpolation of the unscaled residual produced artificial
@@ -23,6 +41,8 @@ The current Python saved-result checks and example settings pass the
 full 524-test strict collection. Shared plotting changes are committed
 in core `9e48fed`; 13 array checks pass, with 30 existing plot modes and
 four Fisher display examples rendered and inspected.
+The later full collection passes 543 strict tests, including the finite
+model-distance, full-check provenance and saved-node step-study additions.
 The [interpolation study](tests/studies/interpolation_validation.md) reports
 the separate table checks and full 80-row mean refinement. Corrected
 starting means differ from the finite finer-grid reference by joint
@@ -71,9 +91,12 @@ The executed precision-expansion notebook teaches separate full-Wishart
 and known-component covariance corrections with controlled simulated
 vectors. It does not substitute those synthetic vectors for DES mocks.
 The installed Nautilus sampling/resume API also passed a separate
-normalized two-dimensional Gaussian test. Physical joint example
-preflight checks remain to be rerun after the source choice is settled;
-no full DES posterior has been sampled.
+normalized two-dimensional Gaussian test. All three physical joint examples pass `--check`: synthetic NLA, synthetic
+TATT and observed NLA. Each has 480 rows, responds to an A1 displacement,
+and restores the fiducial prediction bit for bit. The observed example has
+fiducial chi-squared 1450.7172; it is an execution check with declared analysis
+differences, not a reproduced published fit. No full DES posterior has been
+sampled.
 
 Observed Y3 aperture data and their matched joint covariance are public
 in the pinned upstream repository. The measured-data manifest separates
@@ -85,8 +108,9 @@ retains all 400 xi and 80 aperture rows; this is not the published cut or
 compressed likelihood. The baryon bispectrum response alone is not a
 complete joint power/bispectrum feedback model.
 
-The expanded IA and Fisher-accuracy notebooks are source drafts awaiting
-new accepted numerical inputs and execution. The accuracy workflow uses
+The expanded IA notebook is being executed with fresh full Fisher bases,
+followed by the original-code comparison notebook. The Fisher-accuracy
+notebook awaits fresh scans and full derivative confirmation. The accuracy workflow uses
 the shared core estimator and a single full default Fisher base per
 declared physical model. Candidate settings evaluate selected derivative
 columns; final checks still require full derivatives and both step sizes.

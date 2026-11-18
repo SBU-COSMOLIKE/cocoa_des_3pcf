@@ -16,6 +16,9 @@ declared physical predictions and saved Fisher derivatives. Preparation
 and new model evaluations require explicit calls. The notebook calls
 [the project wrappers](interface/cosmolike_des_3pcf_fisher_wrappers.py),
 which run the same CLI; neither path has a different physical kernel.
+The [current numerical record](tests/studies/fisher_accuracy_validation.md)
+distinguishes complete default bases from selected-column tests and
+remaining full refinement checks.
 
 Both YAML designs retain all 400 public xi rows and 80 aperture rows. This
 is an executable forecast design whose smallest xi scales and exact

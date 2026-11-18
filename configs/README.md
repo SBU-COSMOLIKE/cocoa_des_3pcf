@@ -6,36 +6,46 @@ Paths are relative to the configuration file. We assume Cocoa is activated
 with `source start_cocoa.sh`, the current directory is
 `Cocoa/projects/des_3pcf/`, and the [project thread settings](../README.md#evaluate)
 are applied before starting Python.
+For the worked Y3 demonstration, first create the processed source FITS
+using [the project instructions](../README.md#evaluate). Its explicit
+clipping assumption is recorded separately from the original measurement.
+The commands below use that demonstration and its supplied joint covariance.
 
 **Step :one:**: inspect the preparation inputs.
 
 ```bash
-python scripts/run_3pcf.py prepare configs/y3_full_filter_example.json \
+python scripts/run_3pcf.py prepare configs/des_y3_nla_demo_fisher.yaml \
   --validate-config
 ```
 
 **Step :two:**: prepare the physical tables.
 
 ```bash
-python scripts/run_3pcf.py prepare configs/y3_full_filter_example.json
+python scripts/run_3pcf.py prepare configs/des_y3_nla_demo_fisher.yaml
 ```
 
 **Step :three:**: evaluate the declared mean vector.
 
 ```bash
-python scripts/run_3pcf.py evaluate configs/y3_full_filter_example.json
+python scripts/run_3pcf.py evaluate configs/des_y3_nla_demo_fisher.yaml
 ```
 
-**Step :four:**: calculate the covariance after supplying its survey inputs.
+**Step :four:**: calculate the requested Fisher derivatives.
+
+```bash
+python scripts/run_3pcf.py fisher configs/des_y3_nla_demo_fisher.yaml
+```
+
+The separate full-filter templates also support an analytic covariance.
+Before using them, supply a nonnegative source model and their missing
+area/noise inputs, then prepare their own physical tables. The original
+Y3 file named in those templates contains negative samples and is refused
+by the physical reader. The demonstration's processed source is one
+explicitly labeled alternative; it is not inserted silently. The covariance
+command for a fully specified full-filter example is:
 
 ```bash
 python scripts/run_3pcf.py covariance configs/y3_full_filter_example.json
-```
-
-**Step :five:**: calculate the requested Fisher derivatives.
-
-```bash
-python scripts/run_3pcf.py fisher configs/y3_full_filter_example.json
 ```
 
 `--validate-config` checks the versioned configuration and reports missing
@@ -45,9 +55,11 @@ chosen command. An existing output is preserved unless `--overwrite` is
 supplied. The driver creates only the requested output directories/files;
 it installs no software and downloads no data.
 
-`prepare` reads source-redshift midpoint curves from a FITS table, linearly
-interpolates them onto the declared redshift nodes and normalizes each
-curve. It records the integrals before normalization and refuses to discard
+`prepare` reads source-redshift midpoint curves from a FITS table and uses
+the declared reconstruction. The worked demonstrations use measured-edge
+PCHIP with an independent source grid; the older design templates select
+linear midpoint interpolation. Both normalize the sampled curve and record
+the original integrals. The reader refuses to discard
 nonzero source support beyond the configured grid. CAMB then supplies power,
 distance and growth tables. Wavenumbers use h/Mpc, distances use Mpc/h and
 power uses (Mpc/h)^3. The saved growth is D(z), with D(0)=1. In a massive
@@ -82,7 +94,7 @@ matter-fit coefficients. The prepared projection route under
 `projection_mode: "direct"` selects the explicit reference calculation.
 Full-filter predictions do not need prepared Legendre multipoles, whereas
 the finite-SAS transform does. The example settings record that difference.
-Their `nshape: 80` selects the production bounded shape-coordinate grid;
+Their `nshape: 160` selects the production bounded shape-coordinate grid;
 the named logarithmic/linear reference-grid counts apply when
 `reference_mode` is true. `projection_batch_size: 4` limits how many source
 triplets retain prepared projection tables together. Each batch shares
@@ -92,15 +104,20 @@ matter calculations, is consumed, and is released before the next batch.
 
 | File | Observable definition and available inputs |
 |---|---|
+| `des_y3_nla_demo_fisher.yaml` | Worked 480-row NLA demonstration with recorded source processing, measured-edge PCHIP and the current numerical studies. |
+| `des_y3_tatt_demo_fisher.yaml` | The corresponding TATT demonstration, retaining its larger IA parameter space and separate Fisher base. |
 | `y3_full_filter_example.json` | A joint forecast definition with 400 xi± entries and 80 full-filter aperture moments. The pinned public Y3 midpoint curves are used for preparation. Area and per-bin shape-noise properties are unset. |
 | `y3_finite_sas_example.json` | All 400 xi± and 80 aperture rows in the pinned public simulated Y3 FITS files, with their supplied 480-by-480 covariance. Apertures integrate a finite side-angle-side shear grid. |
 | `y6_full_filter_example.json` | A forecast design with 100 aperture moments at 3, 5, 10, 20 and 40 arcmin, plus 400 illustrative xi± entries. Source curves, survey area and noise properties must be supplied. |
 | `des_y3_tatt_fisher.yaml` | A full 480-row IA Fisher design using CFASTPT two-point TATT and the three-point TATT model, with explicitly recorded covariance/estimator limitations. |
 | `des_y3_nla_fisher.yaml` | The same design with quadratic IA fixed and its derivative columns removed; a comparison conditional on the simpler model. |
 
-[EXAMPLE_FISHER_IA.ipynb](../EXAMPLE_FISHER_IA.ipynb) explains the YAML
-designs and has disabled production switches. Its saved execution inspects
-the public covariance and runs a small controlled IA demonstration only.
+[EXAMPLE_FISHER_IA.ipynb](../EXAMPLE_FISHER_IA.ipynb) reads matching saved
+demonstration means and full Fisher results, or runs them if absent. Its
+expensive cells therefore execute real calculations; there is no disabled
+production switch. Reuse verifies input and implementation identities.
+The [accuracy notebook](../EXAMPLE_FISHER_ACCURACY.ipynb) reads completed
+refinement checks and lists missing ones explicitly.
 The new designs use an approximate 8–80 arcmin range for both SAS side
 parameters, whereas the older finite-SAS JSON example starts at 0.1 arcmin.
 Exact agreement with the public covariance's retained bins, averaging and

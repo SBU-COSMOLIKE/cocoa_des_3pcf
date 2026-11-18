@@ -127,7 +127,14 @@ class FixedGaussianLikelihood(PreparedGeometry):
                 raise ValueError(f"Unknown sampled parameter {name}; check the YAML.")
             if isinstance(value, bool) or not np.isfinite(value):
                 raise ValueError(f"Sampled {name}={value} must be a finite scalar.")
-            point[name] = float(value)
+            # A full point can include fixed integer model selectors as
+            # well as continuous parameters. Preserve their supplied types:
+            # converting every value to float makes native selector reads
+            # fail when a changed amplitude forces a real recomputation.
+            if isinstance(value, (int, np.integer)):
+                point[name] = value
+            else:
+                point[name] = float(value)
         prediction = self.predict(point)
         full = self._full_vector(values=prediction, name="Mean prediction")
         return full[self.indices]

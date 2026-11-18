@@ -31,6 +31,7 @@ sys.path.insert(0, str(PROJECT / "scripts"))
 import run_3pcf as driver
 from des3pcf.mean import physics_model
 from des3pcf.fisher_comparison import compare_information
+from des3pcf.forecast import parameter_covariance, symmetric_matrix
 from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 from des3pcf.survey import ARCMIN_TO_RADIAN, read_source_distributions
@@ -772,6 +773,160 @@ def derived_amplitude_summary(result, metadata):
     return summary
 
 
+def fixed_dark_energy_summary(result, metadata):
+    """Fix w0=-1 and wa=0 while marginalizing every other varied parameter.
+
+    Partition a posterior Fisher matrix into retained parameters r and
+    dark-energy parameters d. Fixing d gives covariance (F_rr)^-1.
+    This differs from the rr block of F^-1, which marginalizes over d.
+    Select the Fisher submatrix first, then invert its entire retained
+    parameter space before selecting Omega_m and sigma8 for S8.
+
+    Arguments:
+      result = saved Fisher arrays with parameter_names, fisher_prior,
+          fisher_two_point, fisher_joint and their _likelihood matrices.
+          Posterior matrices must equal likelihood plus the saved prior.
+      metadata = the same archive's metadata, including its configuration
+          and fiducial cosmology. Its w0 and wa must be -1 and 0: fixing
+          them at a different point would require new physical derivatives.
+    Returns:
+      A summary only: fixed and marginalized parameter names, sigma(S8),
+      the Omega_m/S8 FoM for each probe, the joint/two-point FoM ratio,
+      and marginalized IA errors for parameters present in the archive.
+      No replacement Fisher archive or parameter covariance is returned.
+    Raises:
+      ValueError for incompatible fiducials, absent parameters, inconsistent
+      saved matrix pieces or an unresolved retained parameter direction.
+    Assumptions:
+      The saved likelihood Fisher matrices use the same fixed covariance
+      and physical derivatives as their original demonstration. All other
+      varied parameters remain marginalized and the saved prior is counted
+      once. This local Gaussian calculation does not change scale cuts,
+      source reconstruction, estimator weights or likelihood assumptions.
+      It does not reproduce the published posterior improvements.
+    """
+    names_array = np.asarray(a=result["parameter_names"])
+    if names_array.ndim != 1 or names_array.dtype.kind not in "US":
+        raise ValueError("Saved parameter_names must be a string vector.")
+    names = names_array.tolist()
+    if len(set(names)) != len(names):
+        raise ValueError("Saved parameter_names must be unique.")
+    for name in (
+        "omega_m",
+        "sigma8",
+        "w0",
+        "wa",
+    ):
+        if name not in names:
+            raise ValueError(f"Fixed-dark-energy comparison needs {name}.")
+    point = metadata["configuration"]["parameters"]
+    fixed = {
+        "w0": -1.0,
+        "wa": 0.0,
+    }
+    for name, expected in fixed.items():
+        value = point.get(name)
+        if (not np.isscalar(value) or not np.isfinite(value)
+                or value != expected):
+            raise ValueError(
+                f"The saved fiducial must have {name}={expected}; "
+                "changing the fixed point requires new derivatives."
+            )
+    for name in ("omega_m", "sigma8"):
+        value = point.get(name)
+        if (not np.isscalar(value) or not np.isfinite(value)
+                or value <= 0.0):
+            raise ValueError(f"The saved fiducial requires finite {name}>0.")
+
+    retained = []
+    retained_names = []
+    for index, name in enumerate(names):
+        if name not in fixed:
+            retained.append(index)
+            retained_names.append(name)
+    prior = symmetric_matrix(
+        values=result["fisher_prior"],
+        name="Saved Fisher prior",
+    )
+    expected_shape = (len(names), len(names))
+    if prior.shape != expected_shape:
+        raise ValueError("Saved prior dimensions do not match parameter names.")
+
+    # This temporary dictionary only adapts the existing S8 helper's
+    # arguments. It is neither written nor returned as a new run result.
+    # Keeping every retained covariance entry here lets the helper select
+    # Omega_m/sigma8 only after all remaining nuisance marginalization.
+    amplitude_input = {
+        "parameter_names": np.asarray(a=retained_names),
+    }
+    ia_names = (
+        "a1",
+        "eta1",
+        "a2",
+        "eta2",
+        "bta",
+    )
+    ia_errors = {}
+    for probe in ("two_point", "joint"):
+        likelihood = symmetric_matrix(
+            values=result[f"fisher_{probe}_likelihood"],
+            name=f"Saved {probe} likelihood Fisher matrix",
+        )
+        posterior = symmetric_matrix(
+            values=result[f"fisher_{probe}"],
+            name=f"Saved {probe} posterior Fisher matrix",
+        )
+        if (likelihood.shape != expected_shape
+                or posterior.shape != expected_shape):
+            raise ValueError(
+                f"Saved {probe} matrix dimensions are inconsistent."
+            )
+        if not np.array_equal(posterior, likelihood + prior):
+            raise ValueError(
+                f"Saved {probe} posterior does not equal likelihood plus "
+                "the saved prior; use an internally consistent archive."
+            )
+        conditional_fisher = posterior[np.ix_(retained, retained)]
+        # The shared helper checks rank in dimensionless parameter units
+        # and refuses unresolved directions rather than using a pseudoinverse.
+        covariance = parameter_covariance(
+            fisher=conditional_fisher,
+            names=retained_names,
+        )
+        amplitude_input[f"parameter_covariance_{probe}"] = covariance
+        errors = {}
+        for index, name in enumerate(retained_names):
+            if name in ia_names:
+                errors[name] = float(np.sqrt(covariance[index, index]))
+        ia_errors[probe] = errors
+
+    amplitude = derived_amplitude_summary(
+        result=amplitude_input,
+        metadata=metadata,
+    )
+    summary = {
+        "fixed_parameters": dict(fixed),
+        "marginalized_parameters": list(retained_names),
+        "fiducial_s8": amplitude["fiducial_s8"],
+        "joint_over_two_point_fom": amplitude["joint_over_two_point_fom"],
+        "interpretation": (
+            "Dark energy fixed at the saved fiducial; every other varied "
+            "parameter marginalized; saved Gaussian prior counted once."
+        ),
+        "scope": (
+            "Local demonstration with unchanged inputs and estimator; "
+            "not a published posterior reproduction."
+        ),
+    }
+    for probe in ("two_point", "joint"):
+        summary[probe] = {
+            "sigma_s8": amplitude[probe]["sigma_s8"],
+            "omega_m_s8_fom": amplitude[probe]["omega_m_s8_fom"],
+            "sigma_ia": ia_errors[probe],
+        }
+    return summary
+
+
 def finite_sign_pair_separation(first, second, covariance):
     """Measure the fixed-covariance distance between two saved predictions.
 
@@ -909,7 +1064,8 @@ def ia_figure9_workflows(workflow):
 
     This comparison holds the source curves, cosmology, estimator, grids,
     redshift exponents and power prescription of the supplied TATT run
-    fixed. It tests the amplitude choices from the paper's Figure 9, but
+    fixed. It tests the amplitude choices from Figure 9 of Gomes et al.,
+    arXiv:2601.09133, but
     does not claim its exact source reconstruction or measured estimator.
 
     Arguments:

@@ -33,10 +33,20 @@ def saved_accuracy_study(tmp_path):
     )
     rows = driver.rows_for_run(config=config, path=path)
     arrays, metadata = workflow.load_result(command="fisher")
+    # This fixed-table toy can vary its two IA parameters. Its parameter
+    # labels, configured spacings and archived arrays must describe the
+    # same experiment even though no physical mean is evaluated here.
+    config["fisher"]["steps"] = {"a1": 0.02, "eta1": 0.04}
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    _, _, baseline_configuration_digest = driver.load_configuration(
+        path=path, command="fisher",
+    )
+    metadata["configuration"] = config
+    metadata["configuration_sha256"] = baseline_configuration_digest
     arrays.pop("observed_values")
     for key in ("row_labels", "row_kind", "row_bins", "row_angles_radians"):
         arrays.pop(key)
-    arrays["parameter_names"] = np.asarray(["w0", "wa"])
+    arrays["parameter_names"] = np.asarray(["a1", "eta1"])
     arrays["fisher_h"] = np.eye(2)
     arrays["fisher_h2"] = np.eye(2)
     baseline = Path(config["outputs"]["fisher"])
@@ -88,10 +98,10 @@ def saved_accuracy_study(tmp_path):
         "baseline_result_sha256": file_digest(path=baseline),
         "prediction_identity": metadata["prediction_identity"],
         "dependency_sha256": {},
-        "parameter_names": ["w0", "wa"],
+        "parameter_names": ["a1", "eta1"],
         "selected_columns": [0, 1],
         "absolute_steps": [0.01, 0.02],
-        "pair": ["w0", "wa"],
+        "pair": ["a1", "eta1"],
         "baseline_fom": 1.0,
         "cases": [
             {

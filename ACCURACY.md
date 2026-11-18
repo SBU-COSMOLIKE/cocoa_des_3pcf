@@ -13,6 +13,9 @@ records why the first TATT demonstration Fisher result was rejected and
 which corrections have been checked on the full aperture vector.
 The [source and photo-z study](tests/studies/source_policy_validation.md)
 separates source-model choices from source, kernel and radial resolution.
+The [Fisher accuracy record](tests/studies/fisher_accuracy_validation.md)
+reports the corrected full bases and selected derivative checks, including
+coherent changes that the fourth-difference noise estimate misses.
 
 ## Contents <a name="contents"></a>
 
