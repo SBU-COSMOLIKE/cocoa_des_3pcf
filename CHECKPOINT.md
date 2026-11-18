@@ -157,3 +157,23 @@ docstring: the ordinary IA loops use Plinear(k,0) with D^4, although the
 bridge accepts a full redshift-dependent table. The executable calculation
 already has that behavior. The wording correction is recorded while physical
 Python files remain frozen for the active Fisher runs.
+
+The IA notebook includes four derivative-shape figures following the
+LSST Y1 x DESI FoG note: NLA A1 versus sigma8 and TATT A1 versus A2, for
+source auto-bins 1 and 4. Derivatives are multiplied by stated parameter
+intervals and divided by diagonal data errors. The response fits retain
+all rows and the full covariance; xi-fit coefficients are carried to the
+Map3 rows without refitting. The two-parameter overlaps and absolute
+residual norms are distinguished from marginalized parameter errors.
+The notebook records that a Y6 fiducial requires a separately selected
+joint point; its current derivatives remain the declared Y3 calculation.
+
+Validation: the headless IA notebook run completed 13 code cells with
+17 figures and no cell errors. All four derivative figures were inspected
+after correcting the aperture tick labels. Saved predictions passed their
+existing identities; no new physical means or CAMB evaluations were needed.
+The subsequent Y6 explanation changed Markdown only and retained every
+executed code cell and output unchanged. The command
+`python -B -m pytest -q tests/test_derivative_templates.py tests/test_fisher_demo_wrappers.py tests/test_fisher_comparison.py`
+passed 13 tests. BLAS and OpenMP each used one thread. The Markdown check
+rendered 36 files and verified 384 local links without an error.

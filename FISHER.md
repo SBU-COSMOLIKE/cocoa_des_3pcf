@@ -1,11 +1,12 @@
 # Joint forecasts without compressing the two-point vector
 
 1. [Run a declared forecast](#run)
-2. [Which physical calculation changes?](#parameters)
-3. [What the saved derivatives mean](#derivatives)
-4. [How the covariance weights information](#information)
-5. [Correcting an analytic precision with simulations](#precision)
-6. [Y3 and Y6 reproduction requirements](#reproduction)
+2. [Reading parameter-response shapes](#templates)
+3. [Which physical calculation changes?](#parameters)
+4. [What the saved derivatives mean](#derivatives)
+5. [How the covariance weights information](#information)
+6. [Correcting an analytic precision with simulations](#precision)
+7. [Y3 and Y6 reproduction requirements](#reproduction)
 
 ## Run a declared forecast <a name="run"></a>
 
@@ -63,6 +64,38 @@ two derivative estimates, two Fisher matrices and the fiducial covariance.
 It also records a rank failure when parameters remain unconstrained. It
 does not silently use a pseudoinverse to manufacture marginalized errors.
 `--overwrite` explicitly permits replacing the configured output file.
+
+## Reading parameter-response shapes <a name="templates"></a>
+
+The IA notebook draws each saved derivative as
+$`\Delta_p(\partial\mu_i/\partial p)/\sqrt{C_{ii}}`$. This is the local
+change in the measurement, in units of its individual error, for a stated
+parameter interval. The illustrated intervals are one for the IA amplitudes
+and 0.1 for $`\sigma_8`$. They set the display scale and impose no prior.
+No curve is divided by its own maximum, so the relative response sizes
+remain visible. The
+[template wrappers](interface/cosmolike_des_3pcf_template_wrappers.py) select
+the saved h/2 derivative columns without evaluating another mean.
+
+The construction follows the
+[FoG and counterterm note](../lssty1xdesi/notes/fog_parameter_degeneracy_study/fog_parameter_degeneracy_study.tex).
+For responses $`a`$ and $`b`$, it fits $`a\simeq cb`$ with the full
+covariance. One coefficient uses every xi row; another uses every joint
+row, including the cross-covariance. Lower panels show what remains after
+subtracting the fitted response. Applying the xi coefficient to Map3
+tests whether the same parameter exchange imitates both observables.
+The figures select source auto-bins for legibility; the fits include all
+auto- and cross-bin rows. Other parameters are fixed in this comparison.
+
+The signed derivative overlap has magnitude one for proportional shapes.
+At the saved TATT fiducial its value for $`A_1,A_2`$ changes from about
+0.745 with xi to 0.807 jointly. The shapes become more parallel in this
+metric, even though adding measurements can increase absolute information
+and reduce parameter errors. This pairwise statement differs from the
+forecast that marginalizes all nuisance parameters. The notebook displays
+both the reproduced fraction and absolute residual norms to distinguish
+these effects. It retains the forecast's stated numerical and physical
+limitations.
 
 ## Which physical calculation changes? <a name="parameters"></a>
 
