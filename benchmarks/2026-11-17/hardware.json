@@ -1,0 +1,7 @@
+{
+  "cpu_model": "Apple M2 Pro",
+  "physical_cores": 12,
+  "logical_cores": 12,
+  "source": "sysctl machdep.cpu.brand_string hw.physicalcpu hw.logicalcpu",
+  "thread_affinity": "OMP_PROC_BIND=disabled on macOS"
+}

@@ -1,0 +1,5 @@
+{
+  "random_points_per_workload": 10,
+  "thread_results_bitwise_equal": true,
+  "timed_vectors": 120
+}

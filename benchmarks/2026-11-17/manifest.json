@@ -1,0 +1,4975 @@
+{
+  "cases": {
+    "lsst_nla": {
+      "bank": {
+        "IA_model": 0,
+        "draw_settings": {
+          "amplitude_cut": 8.0,
+          "box_overrides": {
+            "omegam": [
+              0.2,
+              0.5
+            ],
+            "w0pwa": [
+              -3.0,
+              -0.01
+            ]
+          },
+          "count": 10,
+          "gaussian_priors": "held at the frozen fiducial",
+          "odd_index_holds": [
+            "omegam",
+            "As_1e9",
+            "LSST_B1_"
+          ],
+          "seed": 137
+        },
+        "example": "example2",
+        "format": "des3pcf-lsst-scaling-point-bank-v1",
+        "held": [
+          false,
+          true,
+          false,
+          true,
+          false,
+          true,
+          false,
+          true,
+          false,
+          true
+        ],
+        "interpretation": "Designed stress bank, not a joint-prior draw.",
+        "points": [
+          {
+            "As_1e9": 4.361819232048028,
+            "H0": 64.90164679951422,
+            "LSST_A1_1": -0.7304993392077206,
+            "LSST_A1_2": 1.2532196501033326,
+            "LSST_A2_1": -0.3260362390671947,
+            "LSST_A2_2": -0.24450525560024605,
+            "LSST_B1_1": 2.0509240751398075,
+            "LSST_B1_2": 1.559923708466611,
+            "LSST_B1_3": 0.9486960984351782,
+            "LSST_B1_4": 1.8810642232382242,
+            "LSST_B1_5": 2.6285943904890186,
+            "LSST_BTA_1": 1.6018821177683753,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.4854672357775185,
+            "ns": 0.9720112002366222,
+            "omegab": 0.0372007876256286,
+            "omegam": 0.34074585261515666,
+            "w": -0.9823316153133432,
+            "w0pwa": -2.1723098750603054
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 83.27514197814214,
+            "LSST_A1_1": 0.6047724033969049,
+            "LSST_A1_2": 4.384174550977544,
+            "LSST_A2_1": 3.635950530661612,
+            "LSST_A2_2": 0.9229866815678465,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 0.527918797636654,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.1673545264872422,
+            "ns": 0.9381660887386556,
+            "omegab": 0.052342078222620436,
+            "omegam": 0.3,
+            "w": -2.1055066122719968,
+            "w0pwa": -0.5573440511512406
+          },
+          {
+            "As_1e9": 2.375431259161383,
+            "H0": 75.81056734909275,
+            "LSST_A1_1": -3.5815664878400435,
+            "LSST_A1_2": -4.259018510581276,
+            "LSST_A2_1": 4.497813966275064,
+            "LSST_A2_2": -4.127610412490698,
+            "LSST_B1_1": 2.494552763621654,
+            "LSST_B1_2": 1.306108720456528,
+            "LSST_B1_3": 2.7141270588479958,
+            "LSST_B1_4": 2.4694987815988605,
+            "LSST_B1_5": 0.9758315276883568,
+            "LSST_BTA_1": 0.2507545085096121,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.13229336466282243,
+            "ns": 1.067898169674259,
+            "omegab": 0.036855596078460805,
+            "omegam": 0.2833326260217262,
+            "w": -1.0436004648514206,
+            "w0pwa": -0.06598067378574735
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 77.36866499607106,
+            "LSST_A1_1": 2.0708358147662196,
+            "LSST_A1_2": -2.7681386511978143,
+            "LSST_A2_1": 1.053546858867728,
+            "LSST_A2_2": 0.5872611617632941,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 1.4188373645179821,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.07701615079461184,
+            "ns": 0.9522502078349957,
+            "omegab": 0.05238596535922647,
+            "omegam": 0.3,
+            "w": -2.7239388716529915,
+            "w0pwa": -2.563577363759282
+          },
+          {
+            "As_1e9": 3.8133342832463977,
+            "H0": 90.90507714060865,
+            "LSST_A1_1": -4.981530523304226,
+            "LSST_A1_2": -3.1884268238441593,
+            "LSST_A2_1": 0.3965462284696386,
+            "LSST_A2_2": 1.0036190968479408,
+            "LSST_B1_1": 1.6451968796628678,
+            "LSST_B1_2": 1.4473668165531648,
+            "LSST_B1_3": 1.9757664983204164,
+            "LSST_B1_4": 2.509668761990816,
+            "LSST_B1_5": 2.4182475217502644,
+            "LSST_BTA_1": 0.8070317947798047,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.10413100037646511,
+            "ns": 1.0330225530835566,
+            "omegab": 0.0545138259411674,
+            "omegam": 0.2637441635489477,
+            "w": -2.2442528662815358,
+            "w0pwa": -2.5485205113801888
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 58.8696811290025,
+            "LSST_A1_1": 1.478310675476914,
+            "LSST_A1_2": 4.606981507161672,
+            "LSST_A2_1": 2.702992193310102,
+            "LSST_A2_2": 4.082526095311895,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 1.6152075888024509,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.1805803778666901,
+            "ns": 0.9949936760083959,
+            "omegab": 0.0596650354229632,
+            "omegam": 0.3,
+            "w": -0.4994823617968125,
+            "w0pwa": -2.7820861467160727
+          },
+          {
+            "As_1e9": 2.359940718896228,
+            "H0": 90.16451561830071,
+            "LSST_A1_1": 0.0565383376206956,
+            "LSST_A1_2": 1.5429725770648552,
+            "LSST_A2_1": 2.0777848242512276,
+            "LSST_A2_2": 3.820314326067539,
+            "LSST_B1_1": 1.6510857353969939,
+            "LSST_B1_2": 1.0560142142186162,
+            "LSST_B1_3": 1.7898041282698507,
+            "LSST_B1_4": 1.075973639748946,
+            "LSST_B1_5": 1.5695598587778552,
+            "LSST_BTA_1": 1.5719345616607048,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.2299959644095365,
+            "ns": 1.0191976220286152,
+            "omegab": 0.059266495898187596,
+            "omegam": 0.4871823000758608,
+            "w": -1.0635482845067554,
+            "w0pwa": -1.5990401124852458
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 57.148745195781565,
+            "LSST_A1_1": -2.0032489114436514,
+            "LSST_A1_2": -4.078785874210917,
+            "LSST_A2_1": -2.0430899726420138,
+            "LSST_A2_2": -4.276919774646483,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 1.0299486855084663,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.14931966114167475,
+            "ns": 0.8831025392506711,
+            "omegab": 0.0622082460468851,
+            "omegam": 0.3,
+            "w": -0.48720534658176806,
+            "w0pwa": -2.6589749412625787
+          },
+          {
+            "As_1e9": 3.2028375046465745,
+            "H0": 64.66963336294559,
+            "LSST_A1_1": 3.7036799458265346,
+            "LSST_A1_2": -2.9060987179079936,
+            "LSST_A2_1": 3.8068631332695837,
+            "LSST_A2_2": 1.813701167640616,
+            "LSST_B1_1": 1.3973968735980253,
+            "LSST_B1_2": 2.495354788807721,
+            "LSST_B1_3": 1.3802108598700493,
+            "LSST_B1_4": 2.8032335229271172,
+            "LSST_B1_5": 1.4194846452769125,
+            "LSST_BTA_1": 0.8508470449876986,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.213120851532405,
+            "ns": 0.9979148615276731,
+            "omegab": 0.03001317376473539,
+            "omegam": 0.35377765483959833,
+            "w": -1.1033193550358837,
+            "w0pwa": -2.41985116213284
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 68.64564272972856,
+            "LSST_A1_1": -0.7506052638052738,
+            "LSST_A1_2": -1.605967638363699,
+            "LSST_A2_1": 4.044394749872502,
+            "LSST_A2_2": -3.411813745490088,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 0.6669657997505081,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.11619318502687931,
+            "ns": 0.9619005391143642,
+            "omegab": 0.06306215851344171,
+            "omegam": 0.3,
+            "w": -1.1273240588860414,
+            "w0pwa": -1.173393594673189
+          }
+        ],
+        "source_hashes": {
+          "frozen_config": {
+            "bytes": 14725,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/tests/frozen/frozen_config_example2.py",
+            "sha256": "5c27e9c4e02e3a5b4876ed54aa515075932635287efdd5e1e07d40fac9183459"
+          },
+          "frozen_manifest": {
+            "bytes": 6498,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/tests/manifest_sha256.json",
+            "sha256": "43650ff1011e9d1adc200798564a03717ab32218f0f623eca0c4bccb75d73103"
+          },
+          "project_test_inputs": {
+            "bytes": 19000,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/tests/cocoa_test_utils.py",
+            "sha256": "e43920bd07be0f55ea0317c40a8db6e174b0f94a4392d10d9e6cb8534b2c52d2"
+          },
+          "sampler": {
+            "bytes": 211224,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cocoa_testing.py",
+            "sha256": "6f4d3d38b05c56b9b4f87422f239e8a56c285cc47e84f6f7455f2e22c0d2ada7"
+          }
+        },
+        "warmup_adjustments": {},
+        "warmup_point": {
+          "As_1e9": 2.1,
+          "H0": 67.32,
+          "LSST_A1_1": 0.606102,
+          "LSST_A1_2": -1.51541,
+          "LSST_A2_1": 0.0,
+          "LSST_A2_2": -1.51541,
+          "LSST_B1_1": 1.72716,
+          "LSST_B1_2": 1.65168,
+          "LSST_B1_3": 1.61423,
+          "LSST_B1_4": 1.92886,
+          "LSST_B1_5": 2.11633,
+          "LSST_BTA_1": 0.0,
+          "LSST_DZ_L1": 0.00457604,
+          "LSST_DZ_L2": 0.000309875,
+          "LSST_DZ_L3": 0.00855907,
+          "LSST_DZ_L4": -0.00316269,
+          "LSST_DZ_L5": -0.0146753,
+          "LSST_DZ_S1": 0.0414632,
+          "LSST_DZ_S2": 0.00147332,
+          "LSST_DZ_S3": 0.0237035,
+          "LSST_DZ_S4": -0.0773436,
+          "LSST_DZ_S5": -8.67127e-05,
+          "LSST_M1": 0.0191832,
+          "LSST_M2": -0.0431752,
+          "LSST_M3": -0.034961,
+          "LSST_M4": -0.0158096,
+          "LSST_M5": -0.0158096,
+          "mnu": 0.06,
+          "ns": 0.96605,
+          "omegab": 0.04,
+          "omegam": 0.3,
+          "w": -0.9,
+          "w0pwa": -0.9
+        }
+      },
+      "ia_model": "nla",
+      "inputs": {
+        "excluded": [
+          "CAMB preparation and file I/O",
+          "extension import and global initialization",
+          "covariance loading and inversion",
+          "first-call geometry and FFT plans",
+          "thread selection and result checks"
+        ],
+        "expected_block_sizes": [
+          780,
+          650,
+          130
+        ],
+        "expected_vector_size": 1560,
+        "files": {
+          "covariance_file": {
+            "bytes": 85236279,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_cov",
+            "sha256": "49469cec16a97b8860b59d95e2736207ad659d27c79c2a755d53276936fb0e2e"
+          },
+          "data_file": {
+            "bytes": 30157,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_theory.modelvector",
+            "sha256": "30325683f40b027a5fe9c17d11a4919d3eaf3901291160344251fd12c7a43cb1"
+          },
+          "extension_path": {
+            "bytes": 2540944,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/interface/cosmolike_lsst_y1_interface.so",
+            "sha256": "075337105a3bfc7967278eb00ae151036d812ff98b792ecc24187844fdb9d528"
+          },
+          "lens_file": {
+            "bytes": 45000,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_lens.nz",
+            "sha256": "dcdd1b15476287ffdd7091d605a684ac2c7807728ad2147155b2632f1280b256"
+          },
+          "mask_file": {
+            "bytes": 78000,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/ones.mask",
+            "sha256": "929a72103ca195fe60e42ddaafe2557b56ad614a15781c1277b3e9cfdf9f86fd"
+          },
+          "source_file": {
+            "bytes": 45000,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_source.nz",
+            "sha256": "de0bd0ee395ade11ca08af7fbee3b414528ff4c628fda8c56a1da76befe995f8"
+          }
+        },
+        "settings": {
+          "IA_code": 0,
+          "IA_model": 0,
+          "IA_redshift_evolution": 3,
+          "accuracy_boost": 1.0,
+          "adopt_limber_gg": 0,
+          "adopt_limber_gs": 0,
+          "bias_model": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "camb": {
+            "AccuracyBoost": 1.0,
+            "CAMBAccuracyBoost": 1.0,
+            "CLAccuracyBoost": 1.0,
+            "halofit_version": "takahashi",
+            "k_per_logint": 10,
+            "kmax": 5.0,
+            "lens_potential_accuracy": 1.0,
+            "non_linear_emul": 2
+          },
+          "cocoa_root": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa",
+          "cosmology": {
+            "As_1e9": 2.1,
+            "H0": 67.32,
+            "mnu": 0.06,
+            "ns": 0.96605,
+            "omegab": 0.04,
+            "omegam": 0.3,
+            "w": -0.9,
+            "w0pwa": -0.9
+          },
+          "covariance_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_cov",
+          "data_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_theory.modelvector",
+          "extension_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/interface/cosmolike_lsst_y1_interface.so",
+          "include_HOD_GX": 0,
+          "include_halo_IA": 0,
+          "integration_accuracy": 0,
+          "internal_accuracy_boost": 1.0,
+          "lens_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_lens.nz",
+          "lmax": 65000,
+          "mask_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/ones.mask",
+          "nlens": 5,
+          "nonlimber_accuracy_boost": 1.0,
+          "nonlimber_lowrank_gg": 0,
+          "nonlimber_lowrank_lmax": 150,
+          "nonlimber_lowrank_rank": 5,
+          "nsource": 5,
+          "ntheta": 26,
+          "nuisance": {
+            "A1": [
+              0.606102,
+              -1.51541,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "A2": [
+              0.0,
+              -1.51541,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B1": [
+              1.72716,
+              1.65168,
+              1.61423,
+              1.92886,
+              2.11633
+            ],
+            "B2": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B3nl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "BK": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B_MAG": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B_TA": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "M": [
+              0.0191832,
+              -0.0431752,
+              -0.034961,
+              -0.0158096,
+              -0.0158096
+            ],
+            "PMV": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lens_photoz": [
+              0.00457604,
+              0.000309875,
+              0.00855907,
+              -0.00316269,
+              -0.0146753
+            ],
+            "source_photoz": [
+              0.0414632,
+              0.00147332,
+              0.0237035,
+              -0.0773436,
+              -8.67127e-05
+            ]
+          },
+          "photoz_histogram_akima": 0,
+          "photoz_interpolation_type": 0,
+          "photoz_preparation_factor": 3,
+          "photoz_zmid_convention": 0,
+          "probes": "3x2pt",
+          "source_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_source.nz",
+          "theta_max_arcmin": 900.0,
+          "theta_min_arcmin": 2.5
+        },
+        "timed_call": "set_cosmology; set_nuisance_*; compute_data_vector_masked"
+      },
+      "specification": {
+        "lsst_settings": {
+          "IA_code": 0,
+          "IA_model": 0,
+          "IA_redshift_evolution": 3,
+          "accuracy_boost": 1.0,
+          "adopt_limber_gg": 0,
+          "adopt_limber_gs": 0,
+          "bias_model": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "camb": {
+            "AccuracyBoost": 1.0,
+            "CAMBAccuracyBoost": 1.0,
+            "CLAccuracyBoost": 1.0,
+            "halofit_version": "takahashi",
+            "k_per_logint": 10,
+            "kmax": 5.0,
+            "lens_potential_accuracy": 1.0,
+            "non_linear_emul": 2
+          },
+          "cocoa_root": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa",
+          "cosmology": {
+            "As_1e9": 2.1,
+            "H0": 67.32,
+            "mnu": 0.06,
+            "ns": 0.96605,
+            "omegab": 0.04,
+            "omegam": 0.3,
+            "w": -0.9,
+            "w0pwa": -0.9
+          },
+          "covariance_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_cov",
+          "data_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_theory.modelvector",
+          "extension_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/interface/cosmolike_lsst_y1_interface.so",
+          "include_HOD_GX": 0,
+          "include_halo_IA": 0,
+          "integration_accuracy": 0,
+          "internal_accuracy_boost": 1.0,
+          "lens_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_lens.nz",
+          "lmax": 65000,
+          "mask_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/ones.mask",
+          "nlens": 5,
+          "nonlimber_accuracy_boost": 1.0,
+          "nonlimber_lowrank_gg": 0,
+          "nonlimber_lowrank_lmax": 150,
+          "nonlimber_lowrank_rank": 5,
+          "nsource": 5,
+          "ntheta": 26,
+          "nuisance": {
+            "A1": [
+              0.606102,
+              -1.51541,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "A2": [
+              0.0,
+              -1.51541,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B1": [
+              1.72716,
+              1.65168,
+              1.61423,
+              1.92886,
+              2.11633
+            ],
+            "B2": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B3nl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "BK": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B_MAG": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B_TA": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "M": [
+              0.0191832,
+              -0.0431752,
+              -0.034961,
+              -0.0158096,
+              -0.0158096
+            ],
+            "PMV": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lens_photoz": [
+              0.00457604,
+              0.000309875,
+              0.00855907,
+              -0.00316269,
+              -0.0146753
+            ],
+            "source_photoz": [
+              0.0414632,
+              0.00147332,
+              0.0237035,
+              -0.0773436,
+              -8.67127e-05
+            ]
+          },
+          "photoz_histogram_akima": 0,
+          "photoz_interpolation_type": 0,
+          "photoz_preparation_factor": 3,
+          "photoz_zmid_convention": 0,
+          "probes": "3x2pt",
+          "source_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_source.nz",
+          "theta_max_arcmin": 900.0,
+          "theta_min_arcmin": 2.5
+        }
+      },
+      "workload": "lsst"
+    },
+    "lsst_tatt": {
+      "bank": {
+        "IA_model": 1,
+        "draw_settings": {
+          "amplitude_cut": 8.0,
+          "box_overrides": {
+            "omegam": [
+              0.2,
+              0.5
+            ],
+            "w0pwa": [
+              -3.0,
+              -0.01
+            ]
+          },
+          "count": 10,
+          "gaussian_priors": "held at the frozen fiducial",
+          "odd_index_holds": [
+            "omegam",
+            "As_1e9",
+            "LSST_B1_"
+          ],
+          "seed": 137
+        },
+        "example": "example2",
+        "format": "des3pcf-lsst-scaling-point-bank-v1",
+        "held": [
+          false,
+          true,
+          false,
+          true,
+          false,
+          true,
+          false,
+          true,
+          false,
+          true
+        ],
+        "interpretation": "Designed stress bank, not a joint-prior draw.",
+        "points": [
+          {
+            "As_1e9": 4.361819232048028,
+            "H0": 64.90164679951422,
+            "LSST_A1_1": -0.7304993392077206,
+            "LSST_A1_2": 1.2532196501033326,
+            "LSST_A2_1": -0.3260362390671947,
+            "LSST_A2_2": -0.24450525560024605,
+            "LSST_B1_1": 2.0509240751398075,
+            "LSST_B1_2": 1.559923708466611,
+            "LSST_B1_3": 0.9486960984351782,
+            "LSST_B1_4": 1.8810642232382242,
+            "LSST_B1_5": 2.6285943904890186,
+            "LSST_BTA_1": 1.6018821177683753,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.4854672357775185,
+            "ns": 0.9720112002366222,
+            "omegab": 0.0372007876256286,
+            "omegam": 0.34074585261515666,
+            "w": -0.9823316153133432,
+            "w0pwa": -2.1723098750603054
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 83.27514197814214,
+            "LSST_A1_1": 0.6047724033969049,
+            "LSST_A1_2": 4.384174550977544,
+            "LSST_A2_1": 3.635950530661612,
+            "LSST_A2_2": 0.9229866815678465,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 0.527918797636654,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.1673545264872422,
+            "ns": 0.9381660887386556,
+            "omegab": 0.052342078222620436,
+            "omegam": 0.3,
+            "w": -2.1055066122719968,
+            "w0pwa": -0.5573440511512406
+          },
+          {
+            "As_1e9": 2.375431259161383,
+            "H0": 75.81056734909275,
+            "LSST_A1_1": -3.5815664878400435,
+            "LSST_A1_2": -4.259018510581276,
+            "LSST_A2_1": 4.497813966275064,
+            "LSST_A2_2": -4.127610412490698,
+            "LSST_B1_1": 2.494552763621654,
+            "LSST_B1_2": 1.306108720456528,
+            "LSST_B1_3": 2.7141270588479958,
+            "LSST_B1_4": 2.4694987815988605,
+            "LSST_B1_5": 0.9758315276883568,
+            "LSST_BTA_1": 0.2507545085096121,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.13229336466282243,
+            "ns": 1.067898169674259,
+            "omegab": 0.036855596078460805,
+            "omegam": 0.2833326260217262,
+            "w": -1.0436004648514206,
+            "w0pwa": -0.06598067378574735
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 77.36866499607106,
+            "LSST_A1_1": 2.0708358147662196,
+            "LSST_A1_2": -2.7681386511978143,
+            "LSST_A2_1": 1.053546858867728,
+            "LSST_A2_2": 0.5872611617632941,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 1.4188373645179821,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.07701615079461184,
+            "ns": 0.9522502078349957,
+            "omegab": 0.05238596535922647,
+            "omegam": 0.3,
+            "w": -2.7239388716529915,
+            "w0pwa": -2.563577363759282
+          },
+          {
+            "As_1e9": 3.8133342832463977,
+            "H0": 90.90507714060865,
+            "LSST_A1_1": -4.981530523304226,
+            "LSST_A1_2": -3.1884268238441593,
+            "LSST_A2_1": 0.3965462284696386,
+            "LSST_A2_2": 1.0036190968479408,
+            "LSST_B1_1": 1.6451968796628678,
+            "LSST_B1_2": 1.4473668165531648,
+            "LSST_B1_3": 1.9757664983204164,
+            "LSST_B1_4": 2.509668761990816,
+            "LSST_B1_5": 2.4182475217502644,
+            "LSST_BTA_1": 0.8070317947798047,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.10413100037646511,
+            "ns": 1.0330225530835566,
+            "omegab": 0.0545138259411674,
+            "omegam": 0.2637441635489477,
+            "w": -2.2442528662815358,
+            "w0pwa": -2.5485205113801888
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 58.8696811290025,
+            "LSST_A1_1": 1.478310675476914,
+            "LSST_A1_2": 4.606981507161672,
+            "LSST_A2_1": 2.702992193310102,
+            "LSST_A2_2": 4.082526095311895,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 1.6152075888024509,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.1805803778666901,
+            "ns": 0.9949936760083959,
+            "omegab": 0.0596650354229632,
+            "omegam": 0.3,
+            "w": -0.4994823617968125,
+            "w0pwa": -2.7820861467160727
+          },
+          {
+            "As_1e9": 2.359940718896228,
+            "H0": 90.16451561830071,
+            "LSST_A1_1": 0.0565383376206956,
+            "LSST_A1_2": 1.5429725770648552,
+            "LSST_A2_1": 2.0777848242512276,
+            "LSST_A2_2": 3.820314326067539,
+            "LSST_B1_1": 1.6510857353969939,
+            "LSST_B1_2": 1.0560142142186162,
+            "LSST_B1_3": 1.7898041282698507,
+            "LSST_B1_4": 1.075973639748946,
+            "LSST_B1_5": 1.5695598587778552,
+            "LSST_BTA_1": 1.5719345616607048,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.2299959644095365,
+            "ns": 1.0191976220286152,
+            "omegab": 0.059266495898187596,
+            "omegam": 0.4871823000758608,
+            "w": -1.0635482845067554,
+            "w0pwa": -1.5990401124852458
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 57.148745195781565,
+            "LSST_A1_1": -2.0032489114436514,
+            "LSST_A1_2": -4.078785874210917,
+            "LSST_A2_1": -2.0430899726420138,
+            "LSST_A2_2": -4.276919774646483,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 1.0299486855084663,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.14931966114167475,
+            "ns": 0.8831025392506711,
+            "omegab": 0.0622082460468851,
+            "omegam": 0.3,
+            "w": -0.48720534658176806,
+            "w0pwa": -2.6589749412625787
+          },
+          {
+            "As_1e9": 3.2028375046465745,
+            "H0": 64.66963336294559,
+            "LSST_A1_1": 3.7036799458265346,
+            "LSST_A1_2": -2.9060987179079936,
+            "LSST_A2_1": 3.8068631332695837,
+            "LSST_A2_2": 1.813701167640616,
+            "LSST_B1_1": 1.3973968735980253,
+            "LSST_B1_2": 2.495354788807721,
+            "LSST_B1_3": 1.3802108598700493,
+            "LSST_B1_4": 2.8032335229271172,
+            "LSST_B1_5": 1.4194846452769125,
+            "LSST_BTA_1": 0.8508470449876986,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.213120851532405,
+            "ns": 0.9979148615276731,
+            "omegab": 0.03001317376473539,
+            "omegam": 0.35377765483959833,
+            "w": -1.1033193550358837,
+            "w0pwa": -2.41985116213284
+          },
+          {
+            "As_1e9": 2.1,
+            "H0": 68.64564272972856,
+            "LSST_A1_1": -0.7506052638052738,
+            "LSST_A1_2": -1.605967638363699,
+            "LSST_A2_1": 4.044394749872502,
+            "LSST_A2_2": -3.411813745490088,
+            "LSST_B1_1": 1.72716,
+            "LSST_B1_2": 1.65168,
+            "LSST_B1_3": 1.61423,
+            "LSST_B1_4": 1.92886,
+            "LSST_B1_5": 2.11633,
+            "LSST_BTA_1": 0.6669657997505081,
+            "LSST_DZ_L1": 0.00457604,
+            "LSST_DZ_L2": 0.000309875,
+            "LSST_DZ_L3": 0.00855907,
+            "LSST_DZ_L4": -0.00316269,
+            "LSST_DZ_L5": -0.0146753,
+            "LSST_DZ_S1": 0.0414632,
+            "LSST_DZ_S2": 0.00147332,
+            "LSST_DZ_S3": 0.0237035,
+            "LSST_DZ_S4": -0.0773436,
+            "LSST_DZ_S5": -8.67127e-05,
+            "LSST_M1": 0.0191832,
+            "LSST_M2": -0.0431752,
+            "LSST_M3": -0.034961,
+            "LSST_M4": -0.0158096,
+            "LSST_M5": -0.0158096,
+            "mnu": 0.11619318502687931,
+            "ns": 0.9619005391143642,
+            "omegab": 0.06306215851344171,
+            "omegam": 0.3,
+            "w": -1.1273240588860414,
+            "w0pwa": -1.173393594673189
+          }
+        ],
+        "source_hashes": {
+          "frozen_config": {
+            "bytes": 14725,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/tests/frozen/frozen_config_example2.py",
+            "sha256": "5c27e9c4e02e3a5b4876ed54aa515075932635287efdd5e1e07d40fac9183459"
+          },
+          "frozen_manifest": {
+            "bytes": 6498,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/tests/manifest_sha256.json",
+            "sha256": "43650ff1011e9d1adc200798564a03717ab32218f0f623eca0c4bccb75d73103"
+          },
+          "project_test_inputs": {
+            "bytes": 19000,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/tests/cocoa_test_utils.py",
+            "sha256": "e43920bd07be0f55ea0317c40a8db6e174b0f94a4392d10d9e6cb8534b2c52d2"
+          },
+          "sampler": {
+            "bytes": 211224,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cocoa_testing.py",
+            "sha256": "6f4d3d38b05c56b9b4f87422f239e8a56c285cc47e84f6f7455f2e22c0d2ada7"
+          }
+        },
+        "warmup_adjustments": {
+          "LSST_A2_1": 0.05,
+          "LSST_A2_2": -1.51541,
+          "LSST_BTA_1": 0.05
+        },
+        "warmup_point": {
+          "As_1e9": 2.1,
+          "H0": 67.32,
+          "LSST_A1_1": 0.606102,
+          "LSST_A1_2": -1.51541,
+          "LSST_A2_1": 0.05,
+          "LSST_A2_2": -1.51541,
+          "LSST_B1_1": 1.72716,
+          "LSST_B1_2": 1.65168,
+          "LSST_B1_3": 1.61423,
+          "LSST_B1_4": 1.92886,
+          "LSST_B1_5": 2.11633,
+          "LSST_BTA_1": 0.05,
+          "LSST_DZ_L1": 0.00457604,
+          "LSST_DZ_L2": 0.000309875,
+          "LSST_DZ_L3": 0.00855907,
+          "LSST_DZ_L4": -0.00316269,
+          "LSST_DZ_L5": -0.0146753,
+          "LSST_DZ_S1": 0.0414632,
+          "LSST_DZ_S2": 0.00147332,
+          "LSST_DZ_S3": 0.0237035,
+          "LSST_DZ_S4": -0.0773436,
+          "LSST_DZ_S5": -8.67127e-05,
+          "LSST_M1": 0.0191832,
+          "LSST_M2": -0.0431752,
+          "LSST_M3": -0.034961,
+          "LSST_M4": -0.0158096,
+          "LSST_M5": -0.0158096,
+          "mnu": 0.06,
+          "ns": 0.96605,
+          "omegab": 0.04,
+          "omegam": 0.3,
+          "w": -0.9,
+          "w0pwa": -0.9
+        }
+      },
+      "ia_model": "tatt",
+      "inputs": {
+        "excluded": [
+          "CAMB preparation and file I/O",
+          "extension import and global initialization",
+          "covariance loading and inversion",
+          "first-call geometry and FFT plans",
+          "thread selection and result checks"
+        ],
+        "expected_block_sizes": [
+          780,
+          650,
+          130
+        ],
+        "expected_vector_size": 1560,
+        "files": {
+          "covariance_file": {
+            "bytes": 85236279,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_cov",
+            "sha256": "49469cec16a97b8860b59d95e2736207ad659d27c79c2a755d53276936fb0e2e"
+          },
+          "data_file": {
+            "bytes": 30157,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_theory.modelvector",
+            "sha256": "30325683f40b027a5fe9c17d11a4919d3eaf3901291160344251fd12c7a43cb1"
+          },
+          "extension_path": {
+            "bytes": 2540944,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/interface/cosmolike_lsst_y1_interface.so",
+            "sha256": "075337105a3bfc7967278eb00ae151036d812ff98b792ecc24187844fdb9d528"
+          },
+          "lens_file": {
+            "bytes": 45000,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_lens.nz",
+            "sha256": "dcdd1b15476287ffdd7091d605a684ac2c7807728ad2147155b2632f1280b256"
+          },
+          "mask_file": {
+            "bytes": 78000,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/ones.mask",
+            "sha256": "929a72103ca195fe60e42ddaafe2557b56ad614a15781c1277b3e9cfdf9f86fd"
+          },
+          "source_file": {
+            "bytes": 45000,
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_source.nz",
+            "sha256": "de0bd0ee395ade11ca08af7fbee3b414528ff4c628fda8c56a1da76befe995f8"
+          }
+        },
+        "settings": {
+          "IA_code": 0,
+          "IA_model": 1,
+          "IA_redshift_evolution": 3,
+          "accuracy_boost": 1.0,
+          "adopt_limber_gg": 0,
+          "adopt_limber_gs": 0,
+          "bias_model": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "camb": {
+            "AccuracyBoost": 1.0,
+            "CAMBAccuracyBoost": 1.0,
+            "CLAccuracyBoost": 1.0,
+            "halofit_version": "takahashi",
+            "k_per_logint": 10,
+            "kmax": 5.0,
+            "lens_potential_accuracy": 1.0,
+            "non_linear_emul": 2
+          },
+          "cocoa_root": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa",
+          "cosmology": {
+            "As_1e9": 2.1,
+            "H0": 67.32,
+            "mnu": 0.06,
+            "ns": 0.96605,
+            "omegab": 0.04,
+            "omegam": 0.3,
+            "w": -0.9,
+            "w0pwa": -0.9
+          },
+          "covariance_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_cov",
+          "data_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_theory.modelvector",
+          "extension_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/interface/cosmolike_lsst_y1_interface.so",
+          "include_HOD_GX": 0,
+          "include_halo_IA": 0,
+          "integration_accuracy": 0,
+          "internal_accuracy_boost": 1.0,
+          "lens_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_lens.nz",
+          "lmax": 65000,
+          "mask_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/ones.mask",
+          "nlens": 5,
+          "nonlimber_accuracy_boost": 1.0,
+          "nonlimber_lowrank_gg": 0,
+          "nonlimber_lowrank_lmax": 150,
+          "nonlimber_lowrank_rank": 5,
+          "nsource": 5,
+          "ntheta": 26,
+          "nuisance": {
+            "A1": [
+              0.606102,
+              -1.51541,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "A2": [
+              0.05,
+              -1.51541,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B1": [
+              1.72716,
+              1.65168,
+              1.61423,
+              1.92886,
+              2.11633
+            ],
+            "B2": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B3nl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "BK": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B_MAG": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B_TA": [
+              0.05,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "M": [
+              0.0191832,
+              -0.0431752,
+              -0.034961,
+              -0.0158096,
+              -0.0158096
+            ],
+            "PMV": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lens_photoz": [
+              0.00457604,
+              0.000309875,
+              0.00855907,
+              -0.00316269,
+              -0.0146753
+            ],
+            "source_photoz": [
+              0.0414632,
+              0.00147332,
+              0.0237035,
+              -0.0773436,
+              -8.67127e-05
+            ]
+          },
+          "photoz_histogram_akima": 0,
+          "photoz_interpolation_type": 0,
+          "photoz_preparation_factor": 3,
+          "photoz_zmid_convention": 0,
+          "probes": "3x2pt",
+          "source_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_source.nz",
+          "theta_max_arcmin": 900.0,
+          "theta_min_arcmin": 2.5
+        },
+        "timed_call": "set_cosmology; set_nuisance_*; compute_data_vector_masked"
+      },
+      "specification": {
+        "lsst_settings": {
+          "IA_code": 0,
+          "IA_model": 1,
+          "IA_redshift_evolution": 3,
+          "accuracy_boost": 1.0,
+          "adopt_limber_gg": 0,
+          "adopt_limber_gs": 0,
+          "bias_model": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "camb": {
+            "AccuracyBoost": 1.0,
+            "CAMBAccuracyBoost": 1.0,
+            "CLAccuracyBoost": 1.0,
+            "halofit_version": "takahashi",
+            "k_per_logint": 10,
+            "kmax": 5.0,
+            "lens_potential_accuracy": 1.0,
+            "non_linear_emul": 2
+          },
+          "cocoa_root": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa",
+          "cosmology": {
+            "As_1e9": 2.1,
+            "H0": 67.32,
+            "mnu": 0.06,
+            "ns": 0.96605,
+            "omegab": 0.04,
+            "omegam": 0.3,
+            "w": -0.9,
+            "w0pwa": -0.9
+          },
+          "covariance_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_cov",
+          "data_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_theory.modelvector",
+          "extension_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/interface/cosmolike_lsst_y1_interface.so",
+          "include_HOD_GX": 0,
+          "include_halo_IA": 0,
+          "integration_accuracy": 0,
+          "internal_accuracy_boost": 1.0,
+          "lens_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_lens.nz",
+          "lmax": 65000,
+          "mask_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/ones.mask",
+          "nlens": 5,
+          "nonlimber_accuracy_boost": 1.0,
+          "nonlimber_lowrank_gg": 0,
+          "nonlimber_lowrank_lmax": 150,
+          "nonlimber_lowrank_rank": 5,
+          "nsource": 5,
+          "ntheta": 26,
+          "nuisance": {
+            "A1": [
+              0.606102,
+              -1.51541,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "A2": [
+              0.05,
+              -1.51541,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B1": [
+              1.72716,
+              1.65168,
+              1.61423,
+              1.92886,
+              2.11633
+            ],
+            "B2": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B3nl": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "BK": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B_MAG": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "B_TA": [
+              0.05,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "M": [
+              0.0191832,
+              -0.0431752,
+              -0.034961,
+              -0.0158096,
+              -0.0158096
+            ],
+            "PMV": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "lens_photoz": [
+              0.00457604,
+              0.000309875,
+              0.00855907,
+              -0.00316269,
+              -0.0146753
+            ],
+            "source_photoz": [
+              0.0414632,
+              0.00147332,
+              0.0237035,
+              -0.0773436,
+              -8.67127e-05
+            ]
+          },
+          "photoz_histogram_akima": 0,
+          "photoz_interpolation_type": 0,
+          "photoz_preparation_factor": 3,
+          "photoz_zmid_convention": 0,
+          "probes": "3x2pt",
+          "source_file": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/lsst_y1/data/lsst_y1_source.nz",
+          "theta_max_arcmin": 900.0,
+          "theta_min_arcmin": 2.5
+        }
+      },
+      "workload": "lsst"
+    },
+    "threepcf_nla": {
+      "bank": {
+        "configuration": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_nla_scaling.yaml",
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "draw_settings": {
+          "blas_threads": 1,
+          "bounds": {
+            "a1": [
+              -1.0,
+              0.8
+            ],
+            "dz1": [
+              -0.036,
+              0.036
+            ],
+            "dz2": [
+              -0.03,
+              0.03
+            ],
+            "dz3": [
+              -0.022,
+              0.022
+            ],
+            "dz4": [
+              -0.034,
+              0.034
+            ],
+            "eta1": [
+              -2.0,
+              3.0
+            ],
+            "h": [
+              0.64,
+              0.8
+            ],
+            "m1": [
+              -0.0182,
+              0.0182
+            ],
+            "m2": [
+              -0.0156,
+              0.0156
+            ],
+            "m3": [
+              -0.0152,
+              0.0152
+            ],
+            "m4": [
+              -0.0152,
+              0.0152
+            ],
+            "ns": [
+              0.92,
+              1.0
+            ],
+            "omega_b": [
+              0.043,
+              0.053
+            ],
+            "omega_m": [
+              0.24,
+              0.34
+            ],
+            "sigma8": [
+              0.72,
+              0.86
+            ],
+            "w0": [
+              -1.2,
+              -0.8
+            ],
+            "wa": [
+              -0.3,
+              0.3
+            ]
+          },
+          "distribution": "independent_uniform_within_recorded_bounds",
+          "fixed_parameters": {
+            "a2": 0.0,
+            "bta": 0.0,
+            "c1rho": 0.0134,
+            "ct": 0,
+            "ct_mode": 0,
+            "eta2": 0.0,
+            "fb": 0,
+            "mnu": 0.06,
+            "nnu": 3.046,
+            "num_massive_neutrinos": 3,
+            "power_mode": 2,
+            "suppress_only": 1,
+            "zpivot": 0.62
+          },
+          "generator": "NumPy PCG64",
+          "inactive_after_draw": [
+            "a2",
+            "eta2",
+            "bta",
+            "ct"
+          ],
+          "interpretation": "Computational test points, not a posterior or prior.",
+          "parameter_order": [
+            "omega_m",
+            "omega_b",
+            "h",
+            "ns",
+            "sigma8",
+            "w0",
+            "wa",
+            "a1",
+            "eta1",
+            "m1",
+            "dz1",
+            "m2",
+            "dz2",
+            "m3",
+            "dz3",
+            "m4",
+            "dz4"
+          ],
+          "point_seed_rule": "seed+index; warmup uses seed+npoints",
+          "random_draw_bounds": {
+            "a1": [
+              -1.0,
+              0.8
+            ],
+            "a2": [
+              -0.8,
+              1.2
+            ],
+            "bta": [
+              0.2,
+              1.2
+            ],
+            "dz1": [
+              -0.036,
+              0.036
+            ],
+            "dz2": [
+              -0.03,
+              0.03
+            ],
+            "dz3": [
+              -0.022,
+              0.022
+            ],
+            "dz4": [
+              -0.034,
+              0.034
+            ],
+            "eta1": [
+              -2.0,
+              3.0
+            ],
+            "eta2": [
+              -2.0,
+              3.0
+            ],
+            "h": [
+              0.64,
+              0.8
+            ],
+            "m1": [
+              -0.0182,
+              0.0182
+            ],
+            "m2": [
+              -0.0156,
+              0.0156
+            ],
+            "m3": [
+              -0.0152,
+              0.0152
+            ],
+            "m4": [
+              -0.0152,
+              0.0152
+            ],
+            "ns": [
+              0.92,
+              1.0
+            ],
+            "omega_b": [
+              0.043,
+              0.053
+            ],
+            "omega_m": [
+              0.24,
+              0.34
+            ],
+            "sigma8": [
+              0.72,
+              0.86
+            ],
+            "w0": [
+              -1.2,
+              -0.8
+            ],
+            "wa": [
+              -0.3,
+              0.3
+            ]
+          },
+          "random_draw_order": [
+            "omega_m",
+            "omega_b",
+            "h",
+            "ns",
+            "sigma8",
+            "w0",
+            "wa",
+            "a1",
+            "eta1",
+            "a2",
+            "eta2",
+            "bta",
+            "m1",
+            "dz1",
+            "m2",
+            "dz2",
+            "m3",
+            "dz3",
+            "m4",
+            "dz4"
+          ],
+          "seed": 137,
+          "thread_counts": [
+            1,
+            4,
+            8
+          ]
+        },
+        "format": "cosmolike-threepcf-scaling-v1",
+        "ia_model": "NLA",
+        "points": [
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 0,
+            "parameters": {
+              "a1": -0.37824423852731814,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": 0.0007240320851839843,
+              "dz2": -0.0018508294769686677,
+              "dz3": -0.009819944649716871,
+              "dz4": 0.004964306589892081,
+              "eta1": -1.6620543217382315,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.7083120105726765,
+              "m1": 0.010479643300558651,
+              "m2": -0.009983385652009695,
+              "m3": 0.0053140865867807256,
+              "m4": 0.015168970498433012,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9700257572008266,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04575045744430951,
+              "omega_m": 0.32581820515662285,
+              "power_mode": 2,
+              "sigma8": 0.7854354926530592,
+              "suppress_only": 1,
+              "w0": -1.0097802102240099,
+              "wa": 0.041161111401765704,
+              "zpivot": 0.62
+            },
+            "seed": 137
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 1,
+            "parameters": {
+              "a1": -0.6959638256700975,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": -0.011460208054083983,
+              "dz2": -0.017709296243592212,
+              "dz3": 0.013945438712155651,
+              "dz4": 0.02114869147154754,
+              "eta1": -1.5956827116017474,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.7296763584543505,
+              "m1": -0.010963509696045157,
+              "m2": 0.0018268210136439395,
+              "m3": -0.006105485288651742,
+              "m4": 0.007711177289679854,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9950733964078203,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.05085420610503948,
+              "omega_m": 0.2973120184392721,
+              "power_mode": 2,
+              "sigma8": 0.8409033074292626,
+              "suppress_only": 1,
+              "w0": -0.9630805327372861,
+              "wa": 0.08980459434780841,
+              "zpivot": 0.62
+            },
+            "seed": 138
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 2,
+            "parameters": {
+              "a1": -0.5859110468992044,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": 0.03524334108273327,
+              "dz2": -0.013333474795654755,
+              "dz3": 0.021176204131580972,
+              "dz4": -0.0016622892615348397,
+              "eta1": 2.3502887701090813,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.6626949361945593,
+              "m1": -0.013326891715320859,
+              "m2": -0.010252635058800575,
+              "m3": 0.004691152464386892,
+              "m4": -0.012320887343307213,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9259278519153499,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04878071315252576,
+              "omega_m": 0.2816762502035863,
+              "power_mode": 2,
+              "sigma8": 0.8529693955278509,
+              "suppress_only": 1,
+              "w0": -1.1651044164996278,
+              "wa": 0.1621507537149965,
+              "zpivot": 0.62
+            },
+            "seed": 139
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 3,
+            "parameters": {
+              "a1": -0.6055899646196656,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": -0.006389925179401554,
+              "dz2": -0.022663916576822294,
+              "dz3": -0.015577727092109835,
+              "dz4": -0.03364209450279347,
+              "eta1": -1.159149790215157,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.7531333730362595,
+              "m1": -0.017052985390881722,
+              "m2": 0.001861052980196641,
+              "m3": -0.012393224648244461,
+              "m4": -0.010164652127813176,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9378548907904175,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04921351805446418,
+              "omega_m": 0.3067620049935573,
+              "power_mode": 2,
+              "sigma8": 0.8047496560241482,
+              "suppress_only": 1,
+              "w0": -0.9765095535294682,
+              "wa": -0.018779567482174853,
+              "zpivot": 0.62
+            },
+            "seed": 140
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 4,
+            "parameters": {
+              "a1": -0.47033624100195603,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": 0.02268811911008034,
+              "dz2": -0.017251167290210458,
+              "dz3": -0.01535615468251783,
+              "dz4": -0.014242728800588352,
+              "eta1": 0.6721965870918551,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.6402955116271324,
+              "m1": -0.015225243678327168,
+              "m2": 0.0035207842341105702,
+              "m3": -0.007516149543464442,
+              "m4": 0.01473915341811448,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9344925854092467,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.05297363253905796,
+              "omega_m": 0.3136296507388089,
+              "power_mode": 2,
+              "sigma8": 0.795551647198575,
+              "suppress_only": 1,
+              "w0": -0.9598552361260824,
+              "wa": -0.06949176009194519,
+              "zpivot": 0.62
+            },
+            "seed": 141
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 5,
+            "parameters": {
+              "a1": -0.5431553315754274,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": 0.008997723363022542,
+              "dz2": -0.013574259512645976,
+              "dz3": -0.018793240955019132,
+              "dz4": 0.007274231989419323,
+              "eta1": -0.25269870203095435,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.7436529708076307,
+              "m1": -0.01007198934380089,
+              "m2": 0.007538727629911288,
+              "m3": 0.01022332314427321,
+              "m4": -0.009351383029250097,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9968558520572934,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04407491142472291,
+              "omega_m": 0.24222900656554236,
+              "power_mode": 2,
+              "sigma8": 0.8278418907063414,
+              "suppress_only": 1,
+              "w0": -0.8366989561875242,
+              "wa": -0.16323494029833377,
+              "zpivot": 0.62
+            },
+            "seed": 142
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 6,
+            "parameters": {
+              "a1": -0.7905338247302232,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": 0.01771114393030144,
+              "dz2": 0.02743646001517215,
+              "dz3": -0.0013838678760370628,
+              "dz4": -0.01515609276000391,
+              "eta1": 0.24955483697693293,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.7209046134019311,
+              "m1": -0.006741012769431242,
+              "m2": 0.007227866800586319,
+              "m3": 0.0044883385120383385,
+              "m4": -0.0026727216884871487,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9723437806165188,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.052767921005083526,
+              "omega_m": 0.28133201597547175,
+              "power_mode": 2,
+              "sigma8": 0.8190889875395172,
+              "suppress_only": 1,
+              "w0": -0.8471874269572985,
+              "wa": -0.06788570852809261,
+              "zpivot": 0.62
+            },
+            "seed": 143
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 7,
+            "parameters": {
+              "a1": 0.4838141374483911,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": -0.03128308586975841,
+              "dz2": -0.01920217745834496,
+              "dz3": -0.016981571041991127,
+              "dz4": 0.02618290211966033,
+              "eta1": 0.48246275987184406,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.6879480174169016,
+              "m1": -0.012179193211931555,
+              "m2": 0.009522431916570376,
+              "m3": 0.010348146309001419,
+              "m4": 0.004794331333346136,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9273697130063127,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.043596873665494876,
+              "omega_m": 0.3192761839999238,
+              "power_mode": 2,
+              "sigma8": 0.7613967403830117,
+              "suppress_only": 1,
+              "w0": -1.1710767909858593,
+              "wa": 0.26488755521066626,
+              "zpivot": 0.62
+            },
+            "seed": 144
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 8,
+            "parameters": {
+              "a1": 0.38710846356995376,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": 0.010049350149962291,
+              "dz2": 0.0007555309679196688,
+              "dz3": -0.013462692686904665,
+              "dz4": -0.023984695286173655,
+              "eta1": -0.6813389548407971,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.7792588791332246,
+              "m1": -0.007878520378186035,
+              "m2": -0.015589724463506394,
+              "m3": 0.004083977126056565,
+              "m4": 0.005253798862320679,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9367512102567361,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04568600926748488,
+              "omega_m": 0.30006305565881275,
+              "power_mode": 2,
+              "sigma8": 0.8432960838657741,
+              "suppress_only": 1,
+              "w0": -0.9274519532943755,
+              "wa": -0.13707357992781127,
+              "zpivot": 0.62
+            },
+            "seed": 145
+          },
+          {
+            "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+            "ia_model": "NLA",
+            "index": 9,
+            "parameters": {
+              "a1": 0.30263447478702066,
+              "a2": 0.0,
+              "bta": 0.0,
+              "c1rho": 0.0134,
+              "ct": 0.0,
+              "ct_mode": 0,
+              "dz1": -0.0029158059188288746,
+              "dz2": -0.00880041299308374,
+              "dz3": 0.004879826700461429,
+              "dz4": 0.01991560687144945,
+              "eta1": -1.57957053818696,
+              "eta2": 0.0,
+              "fb": 0,
+              "h": 0.7079903157791156,
+              "m1": -0.01441216308337332,
+              "m2": 0.010188483640484525,
+              "m3": 0.0038399159230315515,
+              "m4": -0.005035843040033202,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9471522588930904,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04679045631381349,
+              "omega_m": 0.32005040427378884,
+              "power_mode": 2,
+              "sigma8": 0.8466215264982151,
+              "suppress_only": 1,
+              "w0": -1.1364725498196036,
+              "wa": -0.23261004851993777,
+              "zpivot": 0.62
+            },
+            "seed": 146
+          }
+        ],
+        "warmup_point": {
+          "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+          "ia_model": "NLA",
+          "index": -1,
+          "parameters": {
+            "a1": 0.2512131131810105,
+            "a2": 0.0,
+            "bta": 0.0,
+            "c1rho": 0.0134,
+            "ct": 0.0,
+            "ct_mode": 0,
+            "dz1": -0.03591398125407507,
+            "dz2": 0.02732423948557721,
+            "dz3": 0.01789412529858496,
+            "dz4": 0.02846292532120976,
+            "eta1": 0.0026633302061149777,
+            "eta2": 0.0,
+            "fb": 0,
+            "h": 0.741284341759337,
+            "m1": -0.018032583575756028,
+            "m2": -0.01360859843229655,
+            "m3": -0.013552536677218662,
+            "m4": -0.01372331239298045,
+            "mnu": 0.06,
+            "nnu": 3.046,
+            "ns": 0.9640088684836458,
+            "num_massive_neutrinos": 3,
+            "omega_b": 0.050821190730782256,
+            "omega_m": 0.3389486681310728,
+            "power_mode": 2,
+            "sigma8": 0.8285530566875251,
+            "suppress_only": 1,
+            "w0": -1.0868977219829483,
+            "wa": -0.23997443410341457,
+            "zpivot": 0.62
+          },
+          "seed": 147
+        }
+      },
+      "ia_model": "nla",
+      "inputs": {
+        "aligned_ell_bounds": [
+          0.006617346802758739,
+          101902.2787370343
+        ],
+        "aligned_fft_size": 576,
+        "aperture": {
+          "bins": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              3,
+              3
+            ],
+            [
+              0,
+              3,
+              3
+            ],
+            [
+              0,
+              3,
+              3
+            ],
+            [
+              0,
+              3,
+              3
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              1,
+              2,
+              2
+            ],
+            [
+              1,
+              2,
+              2
+            ],
+            [
+              1,
+              2,
+              2
+            ],
+            [
+              1,
+              2,
+              2
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              3,
+              3
+            ],
+            [
+              1,
+              3,
+              3
+            ],
+            [
+              1,
+              3,
+              3
+            ],
+            [
+              1,
+              3,
+              3
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              3
+            ],
+            [
+              2,
+              2,
+              3
+            ],
+            [
+              2,
+              2,
+              3
+            ],
+            [
+              2,
+              2,
+              3
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              3,
+              3,
+              3
+            ],
+            [
+              3,
+              3,
+              3
+            ],
+            [
+              3,
+              3,
+              3
+            ],
+            [
+              3,
+              3,
+              3
+            ]
+          ],
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+          "radii_radians": [
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ]
+          ],
+          "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+        },
+        "blas_threads": 1,
+        "blockers": [],
+        "camb_limits": {
+          "extrap_kmax_at_largest_h_1_per_Mpc": 1000.0,
+          "kmax_boltzmann_1_per_Mpc": 5.0,
+          "largest_h_checked": 0.8
+        },
+        "configuration": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_nla_scaling.yaml",
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "extension": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+        "format": "cosmolike-threepcf-scaling-v1",
+        "ia_model": "NLA",
+        "native_ia_work": {
+          "prepared_mode_required_for_skip": true,
+          "residual_physics_skipped": true,
+          "shared_work": "BiHalofit/NLA baseline, multipole preparation and all finite-SAS transforms remain. Zero residual multipole loops also remain."
+        },
+        "numerical_work_executed": false,
+        "ready": true,
+        "row_count": 80,
+        "row_labels": [
+          "map3:0:0:0:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:0:0:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:0:0:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:0:0:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:0:1:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:0:1:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:0:1:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:0:1:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:0:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:0:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:0:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:0:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:0:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:0:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:0:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:0:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:1:1:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:1:1:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:1:1:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:1:1:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:1:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:1:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:1:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:1:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:1:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:1:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:1:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:1:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:2:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:2:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:2:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:2:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:2:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:2:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:2:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:2:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:3:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:3:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:3:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:3:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:1:1:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:1:1:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:1:1:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:1:1:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:1:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:1:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:1:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:1:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:1:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:1:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:1:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:1:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:2:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:2:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:2:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:2:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:2:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:2:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:2:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:2:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:3:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:3:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:3:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:3:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:2:2:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:2:2:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:2:2:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:2:2:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:2:2:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:2:2:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:2:2:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:2:2:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:2:3:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:2:3:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:2:3:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:2:3:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:3:3:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:3:3:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:3:3:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:3:3:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7"
+        ],
+        "source": {
+          "integrals_before_normalization": [
+            1.0003326001095314,
+            0.9985068451853037,
+            0.9972271017860488,
+            0.9970853826954599
+          ],
+          "maximum_positive_shifts_checked": [
+            0.036,
+            0.03,
+            0.022,
+            0.034
+          ],
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+          "processing": {
+            "applied_shifts": [
+              0.036,
+              0.03,
+              0.022,
+              0.034
+            ],
+            "clipped_integrals_before_normalization": [
+              1.0004103606231647,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "final_shifted_integrals": [
+              1.0,
+              0.9999999999999998,
+              1.0000000000000002,
+              1.0
+            ],
+            "negative_area_fraction_of_positive": [
+              0.0004101922963981577,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "negative_area_magnitude": [
+              0.000410360623164525,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "negative_sample_count": [
+              12,
+              0,
+              0,
+              0
+            ],
+            "normalization_factors": [
+              0.9995898077036017,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+            "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+            "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+            "raw_integrals": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "sampled_integrals_before_grid_normalization": [
+              1.0003326001095314,
+              0.9985068451853037,
+              0.9972271017860488,
+              0.9970853826954599
+            ],
+            "timing_only": true
+          },
+          "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+          "table_zmax": 3.1
+        },
+        "thread_counts": [
+          1,
+          4,
+          8
+        ]
+      },
+      "specification": {
+        "threepcf_configuration": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_nla_scaling.yaml"
+      },
+      "workload": "threepcf"
+    },
+    "threepcf_tatt": {
+      "bank": {
+        "configuration": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_tatt_scaling.yaml",
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "draw_settings": {
+          "blas_threads": 1,
+          "bounds": {
+            "a1": [
+              -1.0,
+              0.8
+            ],
+            "a2": [
+              -0.8,
+              1.2
+            ],
+            "bta": [
+              0.2,
+              1.2
+            ],
+            "dz1": [
+              -0.036,
+              0.036
+            ],
+            "dz2": [
+              -0.03,
+              0.03
+            ],
+            "dz3": [
+              -0.022,
+              0.022
+            ],
+            "dz4": [
+              -0.034,
+              0.034
+            ],
+            "eta1": [
+              -2.0,
+              3.0
+            ],
+            "eta2": [
+              -2.0,
+              3.0
+            ],
+            "h": [
+              0.64,
+              0.8
+            ],
+            "m1": [
+              -0.0182,
+              0.0182
+            ],
+            "m2": [
+              -0.0156,
+              0.0156
+            ],
+            "m3": [
+              -0.0152,
+              0.0152
+            ],
+            "m4": [
+              -0.0152,
+              0.0152
+            ],
+            "ns": [
+              0.92,
+              1.0
+            ],
+            "omega_b": [
+              0.043,
+              0.053
+            ],
+            "omega_m": [
+              0.24,
+              0.34
+            ],
+            "sigma8": [
+              0.72,
+              0.86
+            ],
+            "w0": [
+              -1.2,
+              -0.8
+            ],
+            "wa": [
+              -0.3,
+              0.3
+            ]
+          },
+          "distribution": "independent_uniform_within_recorded_bounds",
+          "fixed_parameters": {
+            "c1rho": 0.0134,
+            "ct": 0,
+            "ct_mode": 0,
+            "fb": 0,
+            "mnu": 0.06,
+            "nnu": 3.046,
+            "num_massive_neutrinos": 3,
+            "power_mode": 2,
+            "suppress_only": 1,
+            "zpivot": 0.62
+          },
+          "generator": "NumPy PCG64",
+          "inactive_after_draw": [],
+          "interpretation": "Computational test points, not a posterior or prior.",
+          "parameter_order": [
+            "omega_m",
+            "omega_b",
+            "h",
+            "ns",
+            "sigma8",
+            "w0",
+            "wa",
+            "a1",
+            "eta1",
+            "a2",
+            "eta2",
+            "bta",
+            "m1",
+            "dz1",
+            "m2",
+            "dz2",
+            "m3",
+            "dz3",
+            "m4",
+            "dz4"
+          ],
+          "point_seed_rule": "seed+index; warmup uses seed+npoints",
+          "random_draw_bounds": {
+            "a1": [
+              -1.0,
+              0.8
+            ],
+            "a2": [
+              -0.8,
+              1.2
+            ],
+            "bta": [
+              0.2,
+              1.2
+            ],
+            "dz1": [
+              -0.036,
+              0.036
+            ],
+            "dz2": [
+              -0.03,
+              0.03
+            ],
+            "dz3": [
+              -0.022,
+              0.022
+            ],
+            "dz4": [
+              -0.034,
+              0.034
+            ],
+            "eta1": [
+              -2.0,
+              3.0
+            ],
+            "eta2": [
+              -2.0,
+              3.0
+            ],
+            "h": [
+              0.64,
+              0.8
+            ],
+            "m1": [
+              -0.0182,
+              0.0182
+            ],
+            "m2": [
+              -0.0156,
+              0.0156
+            ],
+            "m3": [
+              -0.0152,
+              0.0152
+            ],
+            "m4": [
+              -0.0152,
+              0.0152
+            ],
+            "ns": [
+              0.92,
+              1.0
+            ],
+            "omega_b": [
+              0.043,
+              0.053
+            ],
+            "omega_m": [
+              0.24,
+              0.34
+            ],
+            "sigma8": [
+              0.72,
+              0.86
+            ],
+            "w0": [
+              -1.2,
+              -0.8
+            ],
+            "wa": [
+              -0.3,
+              0.3
+            ]
+          },
+          "random_draw_order": [
+            "omega_m",
+            "omega_b",
+            "h",
+            "ns",
+            "sigma8",
+            "w0",
+            "wa",
+            "a1",
+            "eta1",
+            "a2",
+            "eta2",
+            "bta",
+            "m1",
+            "dz1",
+            "m2",
+            "dz2",
+            "m3",
+            "dz3",
+            "m4",
+            "dz4"
+          ],
+          "seed": 137,
+          "thread_counts": [
+            1,
+            4,
+            8
+          ]
+        },
+        "format": "cosmolike-threepcf-scaling-v1",
+        "ia_model": "TATT",
+        "points": [
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 0,
+            "parameters": {
+              "a1": -0.37824423852731814,
+              "a2": 0.18278565748929454,
+              "bta": 1.0009410588841876,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": 0.0007240320851839843,
+              "dz2": -0.0018508294769686677,
+              "dz3": -0.009819944649716871,
+              "dz4": 0.004964306589892081,
+              "eta1": -1.6620543217382315,
+              "eta2": 2.1558963420204966,
+              "fb": 0,
+              "h": 0.7083120105726765,
+              "m1": 0.010479643300558651,
+              "m2": -0.009983385652009695,
+              "m3": 0.0053140865867807256,
+              "m4": 0.015168970498433012,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9700257572008266,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04575045744430951,
+              "omega_m": 0.32581820515662285,
+              "power_mode": 2,
+              "sigma8": 0.7854354926530592,
+              "suppress_only": 1,
+              "w0": -1.0097802102240099,
+              "wa": 0.041161111401765704,
+              "zpivot": 0.62
+            },
+            "seed": 137
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 1,
+            "parameters": {
+              "a1": -0.6959638256700975,
+              "a2": 0.5113625739611785,
+              "bta": 0.463959398818327,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": -0.011460208054083983,
+              "dz2": -0.017709296243592212,
+              "dz3": 0.013945438712155651,
+              "dz4": 0.02114869147154754,
+              "eta1": -1.5956827116017474,
+              "eta2": -0.20672219360779942,
+              "fb": 0,
+              "h": 0.7296763584543505,
+              "m1": -0.010963509696045157,
+              "m2": 0.0018268210136439395,
+              "m3": -0.006105485288651742,
+              "m4": 0.007711177289679854,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9950733964078203,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.05085420610503948,
+              "omega_m": 0.2973120184392721,
+              "power_mode": 2,
+              "sigma8": 0.8409033074292626,
+              "suppress_only": 1,
+              "w0": -0.9630805327372861,
+              "wa": 0.08980459434780841,
+              "zpivot": 0.62
+            },
+            "seed": 138
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 2,
+            "parameters": {
+              "a1": -0.5859110468992044,
+              "a2": 0.717726165089873,
+              "bta": 0.32537725425480607,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": 0.03524334108273327,
+              "dz2": -0.013333474795654755,
+              "dz3": 0.021176204131580972,
+              "dz4": -0.0016622892615348397,
+              "eta1": 2.3502887701090813,
+              "eta2": -1.6003828916173712,
+              "fb": 0,
+              "h": 0.6626949361945593,
+              "m1": -0.013326891715320859,
+              "m2": -0.010252635058800575,
+              "m3": 0.004691152464386892,
+              "m4": -0.012320887343307213,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9259278519153499,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04878071315252576,
+              "omega_m": 0.2816762502035863,
+              "power_mode": 2,
+              "sigma8": 0.8529693955278509,
+              "suppress_only": 1,
+              "w0": -1.1651044164996278,
+              "wa": 0.1621507537149965,
+              "zpivot": 0.62
+            },
+            "seed": 139
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 3,
+            "parameters": {
+              "a1": -0.6055899646196656,
+              "a2": 1.1597714811984972,
+              "bta": 0.9094186822589911,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": -0.006389925179401554,
+              "dz2": -0.022663916576822294,
+              "dz3": -0.015577727092109835,
+              "dz4": -0.03364209450279347,
+              "eta1": -1.159149790215157,
+              "eta2": -1.4965256979718897,
+              "fb": 0,
+              "h": 0.7531333730362595,
+              "m1": -0.017052985390881722,
+              "m2": 0.001861052980196641,
+              "m3": -0.012393224648244461,
+              "m4": -0.010164652127813176,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9378548907904175,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04921351805446418,
+              "omega_m": 0.3067620049935573,
+              "power_mode": 2,
+              "sigma8": 0.8047496560241482,
+              "suppress_only": 1,
+              "w0": -0.9765095535294682,
+              "wa": -0.018779567482174853,
+              "zpivot": 0.62
+            },
+            "seed": 140
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 4,
+            "parameters": {
+              "a1": -0.47033624100195603,
+              "a2": 0.7542443290825596,
+              "bta": 0.6035158973899024,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": 0.02268811911008034,
+              "dz2": -0.017251167290210458,
+              "dz3": -0.01535615468251783,
+              "dz4": -0.014242728800588352,
+              "eta1": 0.6721965870918551,
+              "eta2": 1.6778352767051454,
+              "fb": 0,
+              "h": 0.6402955116271324,
+              "m1": -0.015225243678327168,
+              "m2": 0.0035207842341105702,
+              "m3": -0.007516149543464442,
+              "m4": 0.01473915341811448,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9344925854092467,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.05297363253905796,
+              "omega_m": 0.3136296507388089,
+              "power_mode": 2,
+              "sigma8": 0.795551647198575,
+              "suppress_only": 1,
+              "w0": -0.9598552361260824,
+              "wa": -0.06949176009194519,
+              "zpivot": 0.62
+            },
+            "seed": 141
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 5,
+            "parameters": {
+              "a1": -0.5431553315754274,
+              "a2": 0.11374121994232955,
+              "bta": 1.0076037944012255,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": 0.008997723363022542,
+              "dz2": -0.013574259512645976,
+              "dz3": -0.018793240955019132,
+              "dz4": 0.007274231989419323,
+              "eta1": -0.25269870203095435,
+              "eta2": 0.7677850571978819,
+              "fb": 0,
+              "h": 0.7436529708076307,
+              "m1": -0.01007198934380089,
+              "m2": 0.007538727629911288,
+              "m3": 0.01022332314427321,
+              "m4": -0.009351383029250097,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9968558520572934,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04407491142472291,
+              "omega_m": 0.24222900656554236,
+              "power_mode": 2,
+              "sigma8": 0.8278418907063414,
+              "suppress_only": 1,
+              "w0": -0.8366989561875242,
+              "wa": -0.16323494029833377,
+              "zpivot": 0.62
+            },
+            "seed": 142
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 6,
+            "parameters": {
+              "a1": -0.7905338247302232,
+              "a2": -0.5491148729555038,
+              "bta": 0.9859672808303523,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": 0.01771114393030144,
+              "dz2": 0.02743646001517215,
+              "dz3": -0.0013838678760370628,
+              "dz4": -0.01515609276000391,
+              "eta1": 0.24955483697693293,
+              "eta2": -0.25100032095942026,
+              "fb": 0,
+              "h": 0.7209046134019311,
+              "m1": -0.006741012769431242,
+              "m2": 0.007227866800586319,
+              "m3": 0.0044883385120383385,
+              "m4": -0.0026727216884871487,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9723437806165188,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.052767921005083526,
+              "omega_m": 0.28133201597547175,
+              "power_mode": 2,
+              "sigma8": 0.8190889875395172,
+              "suppress_only": 1,
+              "w0": -0.8471874269572985,
+              "wa": -0.06788570852809261,
+              "zpivot": 0.62
+            },
+            "seed": 143
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 7,
+            "parameters": {
+              "a1": 0.4838141374483911,
+              "a2": -0.49129282539842256,
+              "bta": 0.7149743427542332,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": -0.03128308586975841,
+              "dz2": -0.01920217745834496,
+              "dz3": -0.016981571041991127,
+              "dz4": 0.02618290211966033,
+              "eta1": 0.48246275987184406,
+              "eta2": -1.0785051153941017,
+              "fb": 0,
+              "h": 0.6879480174169016,
+              "m1": -0.012179193211931555,
+              "m2": 0.009522431916570376,
+              "m3": 0.010348146309001419,
+              "m4": 0.004794331333346136,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9273697130063127,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.043596873665494876,
+              "omega_m": 0.3192761839999238,
+              "power_mode": 2,
+              "sigma8": 0.7613967403830117,
+              "suppress_only": 1,
+              "w0": -1.1710767909858593,
+              "wa": 0.26488755521066626,
+              "zpivot": 0.62
+            },
+            "seed": 144
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 8,
+            "parameters": {
+              "a1": 0.38710846356995376,
+              "a2": 1.0211213844791975,
+              "bta": 0.6254235224938494,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": 0.010049350149962291,
+              "dz2": 0.0007555309679196688,
+              "dz3": -0.013462692686904665,
+              "dz4": -0.023984695286173655,
+              "eta1": -0.6813389548407971,
+              "eta2": -0.5920803516433808,
+              "fb": 0,
+              "h": 0.7792588791332246,
+              "m1": -0.007878520378186035,
+              "m2": -0.015589724463506394,
+              "m3": 0.004083977126056565,
+              "m4": 0.005253798862320679,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9367512102567361,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04568600926748488,
+              "omega_m": 0.30006305565881275,
+              "power_mode": 2,
+              "sigma8": 0.8432960838657741,
+              "suppress_only": 1,
+              "w0": -0.9274519532943755,
+              "wa": -0.13707357992781127,
+              "zpivot": 0.62
+            },
+            "seed": 145
+          },
+          {
+            "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+            "ia_model": "TATT",
+            "index": 9,
+            "parameters": {
+              "a1": 0.30263447478702066,
+              "a2": -0.6532954710939305,
+              "bta": 0.5334828998752541,
+              "c1rho": 0.0134,
+              "ct": 0,
+              "ct_mode": 0,
+              "dz1": -0.0029158059188288746,
+              "dz2": -0.00880041299308374,
+              "dz3": 0.004879826700461429,
+              "dz4": 0.01991560687144945,
+              "eta1": -1.57957053818696,
+              "eta2": 2.691163647700173,
+              "fb": 0,
+              "h": 0.7079903157791156,
+              "m1": -0.01441216308337332,
+              "m2": 0.010188483640484525,
+              "m3": 0.0038399159230315515,
+              "m4": -0.005035843040033202,
+              "mnu": 0.06,
+              "nnu": 3.046,
+              "ns": 0.9471522588930904,
+              "num_massive_neutrinos": 3,
+              "omega_b": 0.04679045631381349,
+              "omega_m": 0.32005040427378884,
+              "power_mode": 2,
+              "sigma8": 0.8466215264982151,
+              "suppress_only": 1,
+              "w0": -1.1364725498196036,
+              "wa": -0.23261004851993777,
+              "zpivot": 0.62
+            },
+            "seed": 146
+          }
+        ],
+        "warmup_point": {
+          "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+          "ia_model": "TATT",
+          "index": -1,
+          "parameters": {
+            "a1": 0.2512131131810105,
+            "a2": -0.6337989588385784,
+            "bta": 0.32497810029730206,
+            "c1rho": 0.0134,
+            "ct": 0,
+            "ct_mode": 0,
+            "dz1": -0.03591398125407507,
+            "dz2": 0.02732423948557721,
+            "dz3": 0.01789412529858496,
+            "dz4": 0.02846292532120976,
+            "eta1": 0.0026633302061149777,
+            "eta2": 0.9018742392316166,
+            "fb": 0,
+            "h": 0.741284341759337,
+            "m1": -0.018032583575756028,
+            "m2": -0.01360859843229655,
+            "m3": -0.013552536677218662,
+            "m4": -0.01372331239298045,
+            "mnu": 0.06,
+            "nnu": 3.046,
+            "ns": 0.9640088684836458,
+            "num_massive_neutrinos": 3,
+            "omega_b": 0.050821190730782256,
+            "omega_m": 0.3389486681310728,
+            "power_mode": 2,
+            "sigma8": 0.8285530566875251,
+            "suppress_only": 1,
+            "w0": -1.0868977219829483,
+            "wa": -0.23997443410341457,
+            "zpivot": 0.62
+          },
+          "seed": 147
+        }
+      },
+      "ia_model": "tatt",
+      "inputs": {
+        "aligned_ell_bounds": [
+          0.006617346802758739,
+          101902.2787370343
+        ],
+        "aligned_fft_size": 576,
+        "aperture": {
+          "bins": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              2,
+              3
+            ],
+            [
+              0,
+              3,
+              3
+            ],
+            [
+              0,
+              3,
+              3
+            ],
+            [
+              0,
+              3,
+              3
+            ],
+            [
+              0,
+              3,
+              3
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              1,
+              1,
+              3
+            ],
+            [
+              1,
+              2,
+              2
+            ],
+            [
+              1,
+              2,
+              2
+            ],
+            [
+              1,
+              2,
+              2
+            ],
+            [
+              1,
+              2,
+              2
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              3,
+              3
+            ],
+            [
+              1,
+              3,
+              3
+            ],
+            [
+              1,
+              3,
+              3
+            ],
+            [
+              1,
+              3,
+              3
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              3
+            ],
+            [
+              2,
+              2,
+              3
+            ],
+            [
+              2,
+              2,
+              3
+            ],
+            [
+              2,
+              2,
+              3
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              3,
+              3,
+              3
+            ],
+            [
+              3,
+              3,
+              3
+            ],
+            [
+              3,
+              3,
+              3
+            ],
+            [
+              3,
+              3,
+              3
+            ]
+          ],
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+          "radii_radians": [
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ],
+            [
+              0.0020362174606600512,
+              0.0020362174606600512,
+              0.0020362174606600512
+            ],
+            [
+              0.0040724349213201025,
+              0.0040724349213201025,
+              0.0040724349213201025
+            ],
+            [
+              0.00727220521664304,
+              0.00727220521664304,
+              0.00727220521664304
+            ],
+            [
+              0.011635528346628864,
+              0.011635528346628864,
+              0.011635528346628864
+            ]
+          ],
+          "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+        },
+        "blas_threads": 1,
+        "blockers": [],
+        "camb_limits": {
+          "extrap_kmax_at_largest_h_1_per_Mpc": 1000.0,
+          "kmax_boltzmann_1_per_Mpc": 5.0,
+          "largest_h_checked": 0.8
+        },
+        "configuration": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_tatt_scaling.yaml",
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "extension": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+        "format": "cosmolike-threepcf-scaling-v1",
+        "ia_model": "TATT",
+        "native_ia_work": {
+          "prepared_mode_required_for_skip": true,
+          "residual_physics_skipped": false,
+          "shared_work": "BiHalofit/NLA baseline, multipole preparation and all finite-SAS transforms remain. Zero residual multipole loops also remain."
+        },
+        "numerical_work_executed": false,
+        "ready": true,
+        "row_count": 80,
+        "row_labels": [
+          "map3:0:0:0:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:0:0:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:0:0:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:0:0:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:0:1:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:0:1:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:0:1:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:0:1:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:0:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:0:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:0:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:0:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:0:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:0:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:0:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:0:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:1:1:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:1:1:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:1:1:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:1:1:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:1:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:1:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:1:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:1:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:1:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:1:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:1:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:1:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:2:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:2:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:2:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:2:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:2:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:2:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:2:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:2:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:0:3:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:0:3:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:0:3:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:0:3:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:1:1:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:1:1:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:1:1:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:1:1:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:1:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:1:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:1:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:1:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:1:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:1:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:1:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:1:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:2:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:2:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:2:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:2:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:2:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:2:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:2:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:2:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:1:3:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:1:3:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:1:3:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:1:3:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:2:2:2:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:2:2:2:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:2:2:2:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:2:2:2:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:2:2:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:2:2:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:2:2:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:2:2:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:2:3:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:2:3:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:2:3:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:2:3:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7",
+          "map3:3:3:3:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9:0x1.0ae41ecd5a3cfp-9",
+          "map3:3:3:3:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8:0x1.0ae41ecd5a3cfp-8",
+          "map3:3:3:3:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8:0x1.dc975b9345b5fp-8",
+          "map3:3:3:3:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7:0x1.7d45e2dc37c4cp-7"
+        ],
+        "source": {
+          "integrals_before_normalization": [
+            1.0003326001095314,
+            0.9985068451853037,
+            0.9972271017860488,
+            0.9970853826954599
+          ],
+          "maximum_positive_shifts_checked": [
+            0.036,
+            0.03,
+            0.022,
+            0.034
+          ],
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+          "processing": {
+            "applied_shifts": [
+              0.036,
+              0.03,
+              0.022,
+              0.034
+            ],
+            "clipped_integrals_before_normalization": [
+              1.0004103606231647,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "final_shifted_integrals": [
+              1.0,
+              0.9999999999999998,
+              1.0000000000000002,
+              1.0
+            ],
+            "negative_area_fraction_of_positive": [
+              0.0004101922963981577,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "negative_area_magnitude": [
+              0.000410360623164525,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "negative_sample_count": [
+              12,
+              0,
+              0,
+              0
+            ],
+            "normalization_factors": [
+              0.9995898077036017,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+            "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+            "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+            "raw_integrals": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "sampled_integrals_before_grid_normalization": [
+              1.0003326001095314,
+              0.9985068451853037,
+              0.9972271017860488,
+              0.9970853826954599
+            ],
+            "timing_only": true
+          },
+          "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+          "table_zmax": 3.1
+        },
+        "thread_counts": [
+          1,
+          4,
+          8
+        ]
+      },
+      "specification": {
+        "threepcf_configuration": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_tatt_scaling.yaml"
+      },
+      "workload": "threepcf"
+    }
+  },
+  "configuration": {
+    "child_timeout_seconds": 21600,
+    "configuration_file": {
+      "bytes": 433,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/openmp_scaling.yaml",
+      "sha256": "064980aad9c5aa570cbd8bdb92939689515fc134557d789d6ff854c342b39bd3"
+    },
+    "format": "des3pcf-openmp-scaling-v2",
+    "output": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated",
+    "points": 10,
+    "seed": 137,
+    "thread_order": [
+      4,
+      1,
+      8
+    ],
+    "threads": [
+      1,
+      4,
+      8
+    ],
+    "threepcf_nla_configuration": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_nla_scaling.yaml",
+    "threepcf_tatt_configuration": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_tatt_scaling.yaml"
+  },
+  "continuation_script": {
+    "bytes": 4968,
+    "path": "/private/tmp/continue_des3pcf_scaling.py",
+    "sha256": "4430f80785bcaecf358695e74589165bdbf1badc80b1bc64732f2d46e17d42fc"
+  },
+  "continued_from": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia",
+  "copied_control_cases": [
+    "lsst_nla",
+    "lsst_tatt"
+  ],
+  "machine": {
+    "logical_cpus": 12,
+    "machine": "arm64",
+    "release": "22.6.0",
+    "system": "Darwin"
+  },
+  "numerical_work_executed": true,
+  "ready": true,
+  "scope": "120 timed vectors; twelve separate untimed warmup vectors; CAMB excluded from data-vector intervals. Identical physical tables may be reused between IA models after exact input checks.",
+  "started_utc": "2026-11-18T03:46:11.532399+00:00"
+}

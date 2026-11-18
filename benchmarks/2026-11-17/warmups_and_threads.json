@@ -1,0 +1,896 @@
+{
+  "lsst_nla_1": {
+    "point": {
+      "As_1e9": 2.1,
+      "H0": 67.32,
+      "LSST_A1_1": 0.606102,
+      "LSST_A1_2": -1.51541,
+      "LSST_A2_1": 0.0,
+      "LSST_A2_2": -1.51541,
+      "LSST_B1_1": 1.72716,
+      "LSST_B1_2": 1.65168,
+      "LSST_B1_3": 1.61423,
+      "LSST_B1_4": 1.92886,
+      "LSST_B1_5": 2.11633,
+      "LSST_BTA_1": 0.0,
+      "LSST_DZ_L1": 0.00457604,
+      "LSST_DZ_L2": 0.000309875,
+      "LSST_DZ_L3": 0.00855907,
+      "LSST_DZ_L4": -0.00316269,
+      "LSST_DZ_L5": -0.0146753,
+      "LSST_DZ_S1": 0.0414632,
+      "LSST_DZ_S2": 0.00147332,
+      "LSST_DZ_S3": 0.0237035,
+      "LSST_DZ_S4": -0.0773436,
+      "LSST_DZ_S5": -8.67127e-05,
+      "LSST_M1": 0.0191832,
+      "LSST_M2": -0.0431752,
+      "LSST_M3": -0.034961,
+      "LSST_M4": -0.0158096,
+      "LSST_M5": -0.0158096,
+      "mnu": 0.06,
+      "ns": 0.96605,
+      "omegab": 0.04,
+      "omegam": 0.3,
+      "w": -0.9,
+      "w0pwa": -0.9
+    },
+    "rows": 1560,
+    "runtime": {
+      "omp_max_threads": 1,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 1,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 0.19982350000000001
+  },
+  "lsst_nla_4": {
+    "point": {
+      "As_1e9": 2.1,
+      "H0": 67.32,
+      "LSST_A1_1": 0.606102,
+      "LSST_A1_2": -1.51541,
+      "LSST_A2_1": 0.0,
+      "LSST_A2_2": -1.51541,
+      "LSST_B1_1": 1.72716,
+      "LSST_B1_2": 1.65168,
+      "LSST_B1_3": 1.61423,
+      "LSST_B1_4": 1.92886,
+      "LSST_B1_5": 2.11633,
+      "LSST_BTA_1": 0.0,
+      "LSST_DZ_L1": 0.00457604,
+      "LSST_DZ_L2": 0.000309875,
+      "LSST_DZ_L3": 0.00855907,
+      "LSST_DZ_L4": -0.00316269,
+      "LSST_DZ_L5": -0.0146753,
+      "LSST_DZ_S1": 0.0414632,
+      "LSST_DZ_S2": 0.00147332,
+      "LSST_DZ_S3": 0.0237035,
+      "LSST_DZ_S4": -0.0773436,
+      "LSST_DZ_S5": -8.67127e-05,
+      "LSST_M1": 0.0191832,
+      "LSST_M2": -0.0431752,
+      "LSST_M3": -0.034961,
+      "LSST_M4": -0.0158096,
+      "LSST_M5": -0.0158096,
+      "mnu": 0.06,
+      "ns": 0.96605,
+      "omegab": 0.04,
+      "omegam": 0.3,
+      "w": -0.9,
+      "w0pwa": -0.9
+    },
+    "rows": 1560,
+    "runtime": {
+      "omp_max_threads": 4,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 4,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 0.148461
+  },
+  "lsst_nla_8": {
+    "point": {
+      "As_1e9": 2.1,
+      "H0": 67.32,
+      "LSST_A1_1": 0.606102,
+      "LSST_A1_2": -1.51541,
+      "LSST_A2_1": 0.0,
+      "LSST_A2_2": -1.51541,
+      "LSST_B1_1": 1.72716,
+      "LSST_B1_2": 1.65168,
+      "LSST_B1_3": 1.61423,
+      "LSST_B1_4": 1.92886,
+      "LSST_B1_5": 2.11633,
+      "LSST_BTA_1": 0.0,
+      "LSST_DZ_L1": 0.00457604,
+      "LSST_DZ_L2": 0.000309875,
+      "LSST_DZ_L3": 0.00855907,
+      "LSST_DZ_L4": -0.00316269,
+      "LSST_DZ_L5": -0.0146753,
+      "LSST_DZ_S1": 0.0414632,
+      "LSST_DZ_S2": 0.00147332,
+      "LSST_DZ_S3": 0.0237035,
+      "LSST_DZ_S4": -0.0773436,
+      "LSST_DZ_S5": -8.67127e-05,
+      "LSST_M1": 0.0191832,
+      "LSST_M2": -0.0431752,
+      "LSST_M3": -0.034961,
+      "LSST_M4": -0.0158096,
+      "LSST_M5": -0.0158096,
+      "mnu": 0.06,
+      "ns": 0.96605,
+      "omegab": 0.04,
+      "omegam": 0.3,
+      "w": -0.9,
+      "w0pwa": -0.9
+    },
+    "rows": 1560,
+    "runtime": {
+      "omp_max_threads": 8,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 8,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 0.067105792
+  },
+  "lsst_tatt_1": {
+    "point": {
+      "As_1e9": 2.1,
+      "H0": 67.32,
+      "LSST_A1_1": 0.606102,
+      "LSST_A1_2": -1.51541,
+      "LSST_A2_1": 0.05,
+      "LSST_A2_2": -1.51541,
+      "LSST_B1_1": 1.72716,
+      "LSST_B1_2": 1.65168,
+      "LSST_B1_3": 1.61423,
+      "LSST_B1_4": 1.92886,
+      "LSST_B1_5": 2.11633,
+      "LSST_BTA_1": 0.05,
+      "LSST_DZ_L1": 0.00457604,
+      "LSST_DZ_L2": 0.000309875,
+      "LSST_DZ_L3": 0.00855907,
+      "LSST_DZ_L4": -0.00316269,
+      "LSST_DZ_L5": -0.0146753,
+      "LSST_DZ_S1": 0.0414632,
+      "LSST_DZ_S2": 0.00147332,
+      "LSST_DZ_S3": 0.0237035,
+      "LSST_DZ_S4": -0.0773436,
+      "LSST_DZ_S5": -8.67127e-05,
+      "LSST_M1": 0.0191832,
+      "LSST_M2": -0.0431752,
+      "LSST_M3": -0.034961,
+      "LSST_M4": -0.0158096,
+      "LSST_M5": -0.0158096,
+      "mnu": 0.06,
+      "ns": 0.96605,
+      "omegab": 0.04,
+      "omegam": 0.3,
+      "w": -0.9,
+      "w0pwa": -0.9
+    },
+    "rows": 1560,
+    "runtime": {
+      "omp_max_threads": 1,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 1,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 0.2764185
+  },
+  "lsst_tatt_4": {
+    "point": {
+      "As_1e9": 2.1,
+      "H0": 67.32,
+      "LSST_A1_1": 0.606102,
+      "LSST_A1_2": -1.51541,
+      "LSST_A2_1": 0.05,
+      "LSST_A2_2": -1.51541,
+      "LSST_B1_1": 1.72716,
+      "LSST_B1_2": 1.65168,
+      "LSST_B1_3": 1.61423,
+      "LSST_B1_4": 1.92886,
+      "LSST_B1_5": 2.11633,
+      "LSST_BTA_1": 0.05,
+      "LSST_DZ_L1": 0.00457604,
+      "LSST_DZ_L2": 0.000309875,
+      "LSST_DZ_L3": 0.00855907,
+      "LSST_DZ_L4": -0.00316269,
+      "LSST_DZ_L5": -0.0146753,
+      "LSST_DZ_S1": 0.0414632,
+      "LSST_DZ_S2": 0.00147332,
+      "LSST_DZ_S3": 0.0237035,
+      "LSST_DZ_S4": -0.0773436,
+      "LSST_DZ_S5": -8.67127e-05,
+      "LSST_M1": 0.0191832,
+      "LSST_M2": -0.0431752,
+      "LSST_M3": -0.034961,
+      "LSST_M4": -0.0158096,
+      "LSST_M5": -0.0158096,
+      "mnu": 0.06,
+      "ns": 0.96605,
+      "omegab": 0.04,
+      "omegam": 0.3,
+      "w": -0.9,
+      "w0pwa": -0.9
+    },
+    "rows": 1560,
+    "runtime": {
+      "omp_max_threads": 4,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 4,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 0.107068041
+  },
+  "lsst_tatt_8": {
+    "point": {
+      "As_1e9": 2.1,
+      "H0": 67.32,
+      "LSST_A1_1": 0.606102,
+      "LSST_A1_2": -1.51541,
+      "LSST_A2_1": 0.05,
+      "LSST_A2_2": -1.51541,
+      "LSST_B1_1": 1.72716,
+      "LSST_B1_2": 1.65168,
+      "LSST_B1_3": 1.61423,
+      "LSST_B1_4": 1.92886,
+      "LSST_B1_5": 2.11633,
+      "LSST_BTA_1": 0.05,
+      "LSST_DZ_L1": 0.00457604,
+      "LSST_DZ_L2": 0.000309875,
+      "LSST_DZ_L3": 0.00855907,
+      "LSST_DZ_L4": -0.00316269,
+      "LSST_DZ_L5": -0.0146753,
+      "LSST_DZ_S1": 0.0414632,
+      "LSST_DZ_S2": 0.00147332,
+      "LSST_DZ_S3": 0.0237035,
+      "LSST_DZ_S4": -0.0773436,
+      "LSST_DZ_S5": -8.67127e-05,
+      "LSST_M1": 0.0191832,
+      "LSST_M2": -0.0431752,
+      "LSST_M3": -0.034961,
+      "LSST_M4": -0.0158096,
+      "LSST_M5": -0.0158096,
+      "mnu": 0.06,
+      "ns": 0.96605,
+      "omegab": 0.04,
+      "omegam": 0.3,
+      "w": -0.9,
+      "w0pwa": -0.9
+    },
+    "rows": 1560,
+    "runtime": {
+      "omp_max_threads": 8,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 8,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 0.09229229200000001
+  },
+  "threepcf_nla_1": {
+    "point": {
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "ia_model": "NLA",
+      "index": -1,
+      "parameters": {
+        "a1": 0.2512131131810105,
+        "a2": 0.0,
+        "bta": 0.0,
+        "c1rho": 0.0134,
+        "ct": 0.0,
+        "ct_mode": 0,
+        "dz1": -0.03591398125407507,
+        "dz2": 0.02732423948557721,
+        "dz3": 0.01789412529858496,
+        "dz4": 0.02846292532120976,
+        "eta1": 0.0026633302061149777,
+        "eta2": 0.0,
+        "fb": 0,
+        "h": 0.741284341759337,
+        "m1": -0.018032583575756028,
+        "m2": -0.01360859843229655,
+        "m3": -0.013552536677218662,
+        "m4": -0.01372331239298045,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9640088684836458,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.050821190730782256,
+        "omega_m": 0.3389486681310728,
+        "power_mode": 2,
+        "sigma8": 0.8285530566875251,
+        "suppress_only": 1,
+        "w0": -1.0868977219829483,
+        "wa": -0.23997443410341457,
+        "zpivot": 0.62
+      },
+      "seed": 147
+    },
+    "rows": 80,
+    "runtime": {
+      "omp_max_threads": 1,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 1,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 11.681915042
+  },
+  "threepcf_nla_4": {
+    "point": {
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "ia_model": "NLA",
+      "index": -1,
+      "parameters": {
+        "a1": 0.2512131131810105,
+        "a2": 0.0,
+        "bta": 0.0,
+        "c1rho": 0.0134,
+        "ct": 0.0,
+        "ct_mode": 0,
+        "dz1": -0.03591398125407507,
+        "dz2": 0.02732423948557721,
+        "dz3": 0.01789412529858496,
+        "dz4": 0.02846292532120976,
+        "eta1": 0.0026633302061149777,
+        "eta2": 0.0,
+        "fb": 0,
+        "h": 0.741284341759337,
+        "m1": -0.018032583575756028,
+        "m2": -0.01360859843229655,
+        "m3": -0.013552536677218662,
+        "m4": -0.01372331239298045,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9640088684836458,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.050821190730782256,
+        "omega_m": 0.3389486681310728,
+        "power_mode": 2,
+        "sigma8": 0.8285530566875251,
+        "suppress_only": 1,
+        "w0": -1.0868977219829483,
+        "wa": -0.23997443410341457,
+        "zpivot": 0.62
+      },
+      "seed": 147
+    },
+    "rows": 80,
+    "runtime": {
+      "omp_max_threads": 4,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 4,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 3.543227084
+  },
+  "threepcf_nla_8": {
+    "point": {
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "ia_model": "NLA",
+      "index": -1,
+      "parameters": {
+        "a1": 0.2512131131810105,
+        "a2": 0.0,
+        "bta": 0.0,
+        "c1rho": 0.0134,
+        "ct": 0.0,
+        "ct_mode": 0,
+        "dz1": -0.03591398125407507,
+        "dz2": 0.02732423948557721,
+        "dz3": 0.01789412529858496,
+        "dz4": 0.02846292532120976,
+        "eta1": 0.0026633302061149777,
+        "eta2": 0.0,
+        "fb": 0,
+        "h": 0.741284341759337,
+        "m1": -0.018032583575756028,
+        "m2": -0.01360859843229655,
+        "m3": -0.013552536677218662,
+        "m4": -0.01372331239298045,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9640088684836458,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.050821190730782256,
+        "omega_m": 0.3389486681310728,
+        "power_mode": 2,
+        "sigma8": 0.8285530566875251,
+        "suppress_only": 1,
+        "w0": -1.0868977219829483,
+        "wa": -0.23997443410341457,
+        "zpivot": 0.62
+      },
+      "seed": 147
+    },
+    "rows": 80,
+    "runtime": {
+      "omp_max_threads": 8,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 8,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 2.321367166
+  },
+  "threepcf_tatt_1": {
+    "point": {
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "ia_model": "TATT",
+      "index": -1,
+      "parameters": {
+        "a1": 0.2512131131810105,
+        "a2": -0.6337989588385784,
+        "bta": 0.32497810029730206,
+        "c1rho": 0.0134,
+        "ct": 0,
+        "ct_mode": 0,
+        "dz1": -0.03591398125407507,
+        "dz2": 0.02732423948557721,
+        "dz3": 0.01789412529858496,
+        "dz4": 0.02846292532120976,
+        "eta1": 0.0026633302061149777,
+        "eta2": 0.9018742392316166,
+        "fb": 0,
+        "h": 0.741284341759337,
+        "m1": -0.018032583575756028,
+        "m2": -0.01360859843229655,
+        "m3": -0.013552536677218662,
+        "m4": -0.01372331239298045,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9640088684836458,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.050821190730782256,
+        "omega_m": 0.3389486681310728,
+        "power_mode": 2,
+        "sigma8": 0.8285530566875251,
+        "suppress_only": 1,
+        "w0": -1.0868977219829483,
+        "wa": -0.23997443410341457,
+        "zpivot": 0.62
+      },
+      "seed": 147
+    },
+    "rows": 80,
+    "runtime": {
+      "omp_max_threads": 1,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 1,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 19.782505458000003
+  },
+  "threepcf_tatt_4": {
+    "point": {
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "ia_model": "TATT",
+      "index": -1,
+      "parameters": {
+        "a1": 0.2512131131810105,
+        "a2": -0.6337989588385784,
+        "bta": 0.32497810029730206,
+        "c1rho": 0.0134,
+        "ct": 0,
+        "ct_mode": 0,
+        "dz1": -0.03591398125407507,
+        "dz2": 0.02732423948557721,
+        "dz3": 0.01789412529858496,
+        "dz4": 0.02846292532120976,
+        "eta1": 0.0026633302061149777,
+        "eta2": 0.9018742392316166,
+        "fb": 0,
+        "h": 0.741284341759337,
+        "m1": -0.018032583575756028,
+        "m2": -0.01360859843229655,
+        "m3": -0.013552536677218662,
+        "m4": -0.01372331239298045,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9640088684836458,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.050821190730782256,
+        "omega_m": 0.3389486681310728,
+        "power_mode": 2,
+        "sigma8": 0.8285530566875251,
+        "suppress_only": 1,
+        "w0": -1.0868977219829483,
+        "wa": -0.23997443410341457,
+        "zpivot": 0.62
+      },
+      "seed": 147
+    },
+    "rows": 80,
+    "runtime": {
+      "omp_max_threads": 4,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 4,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 6.349617167000001
+  },
+  "threepcf_tatt_8": {
+    "point": {
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "ia_model": "TATT",
+      "index": -1,
+      "parameters": {
+        "a1": 0.2512131131810105,
+        "a2": -0.6337989588385784,
+        "bta": 0.32497810029730206,
+        "c1rho": 0.0134,
+        "ct": 0,
+        "ct_mode": 0,
+        "dz1": -0.03591398125407507,
+        "dz2": 0.02732423948557721,
+        "dz3": 0.01789412529858496,
+        "dz4": 0.02846292532120976,
+        "eta1": 0.0026633302061149777,
+        "eta2": 0.9018742392316166,
+        "fb": 0,
+        "h": 0.741284341759337,
+        "m1": -0.018032583575756028,
+        "m2": -0.01360859843229655,
+        "m3": -0.013552536677218662,
+        "m4": -0.01372331239298045,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9640088684836458,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.050821190730782256,
+        "omega_m": 0.3389486681310728,
+        "power_mode": 2,
+        "sigma8": 0.8285530566875251,
+        "suppress_only": 1,
+        "w0": -1.0868977219829483,
+        "wa": -0.23997443410341457,
+        "zpivot": 0.62
+      },
+      "seed": 147
+    },
+    "rows": 80,
+    "runtime": {
+      "omp_max_threads": 8,
+      "omp_thread_limit": 8,
+      "pools": [
+        {
+          "architecture": "armv8",
+          "filepath": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "pthreads",
+          "user_api": "blas",
+          "version": "0.3.23.dev"
+        },
+        {
+          "architecture": "VORTEX",
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libopenblas.0.dylib",
+          "internal_api": "openblas",
+          "num_threads": 1,
+          "prefix": "libopenblas",
+          "threading_layer": "openmp",
+          "user_api": "blas",
+          "version": "0.3.29"
+        },
+        {
+          "filepath": "/Users/vivianmiranda/miniforge/envs/cocoapy311/lib/libomp.dylib",
+          "internal_api": "openmp",
+          "num_threads": 8,
+          "prefix": "libomp",
+          "user_api": "openmp",
+          "version": null
+        }
+      ]
+    },
+    "seconds": 4.0045687910000005
+  }
+}

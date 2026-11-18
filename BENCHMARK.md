@@ -4,6 +4,7 @@
 2. [Run on a quiet machine](#run)
 3. [What enters the measured interval](#interval)
 4. [Read the figures and records](#results)
+5. [Saved measurements](#measurements)
 
 ## The two workloads <a name="workloads"></a>
 
@@ -129,7 +130,8 @@ logs for inspection. A timing is not accepted merely because it completed.
 ## Read the figures and records <a name="results"></a>
 
 The final directory contains 120 measured predictions and twelve separate
-warmups, with `openmp_scaling.pdf`, `openmp_scaling.png`,
+warmups, with `threepcf_scaling.pdf`, `threepcf_scaling.png`,
+`openmp_scaling.pdf`, `openmp_scaling.png`,
 `timings.csv`, full JSON records, physical tables, output vectors and child
 logs. The left panel shows every elapsed time, its median and the observed
 minimum-to-maximum range. The right panel shows speedup relative to each
@@ -141,3 +143,13 @@ or ten repeated measurements at one cosmology. Point-by-point times remain
 available in the CSV and JSON files. Accuracy settings, observable rows and
 thread count must accompany any performance claim. These timings do not
 establish survey-level convergence of the chosen grids or a published forecast.
+
+## Saved measurements <a name="measurements"></a>
+
+The [Apple M2 Pro record](benchmarks/2026-11-17/README.md) contains the completed
+NLA and TATT comparison, individual measurements, binary identities and saved
+vectors. Eight-thread median times are 2.285 seconds for the 80-entry NLA
+vector and 3.966 seconds for TATT, each about five times faster than its
+one-thread result. All thread-count comparisons preserve float64 bits.
+LSST Y1 is retained as the control calculation. CAMB is excluded from these
+durations; the linked record defines the other included and excluded work.

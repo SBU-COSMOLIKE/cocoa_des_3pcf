@@ -39,6 +39,9 @@ experiment or survey-scale integration was run.
 | CLI timing control, source policy and plot checks | 26 passed; one OpenMP worker and serial BLAS; no physical predictions |
 | LSST timing binding inspection | All 30 methods and used keywords match the installed extension; import only |
 | CLI timing input preflight | Ready; ten random points per workload; no CAMB or measured evaluations |
+| Four-case timing, CAMB control and cache checks | 46 passed with at most four OpenMP workers and serial BLAS |
+| Bounded CAMB solve, extrapolation and transfer reuse | 13 passed; independent final-As solve and opposite unit API |
+| CLI NLA/TATT timing study | 120 measured predictions plus twelve warmups; every thread-count comparison bitwise equal |
 
 The strict build uses `-O3` with native instruction selection and the core's
 strict floating-point flags. Debug uses `-O0`, undefined-behavior and

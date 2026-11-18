@@ -1,0 +1,110 @@
+[
+  {
+    "workload": "LSST Y1 3x2pt NLA",
+    "threads": 1,
+    "median_seconds": 0.1196719165,
+    "minimum_seconds": 0.116312459,
+    "maximum_seconds": 0.124806125,
+    "speedup": 1.0,
+    "points": 10
+  },
+  {
+    "workload": "LSST Y1 3x2pt NLA",
+    "threads": 4,
+    "median_seconds": 0.052358021000000005,
+    "minimum_seconds": 0.049718750000000006,
+    "maximum_seconds": 0.054449208000000006,
+    "speedup": 2.285646290947475,
+    "points": 10
+  },
+  {
+    "workload": "LSST Y1 3x2pt NLA",
+    "threads": 8,
+    "median_seconds": 0.044802146,
+    "minimum_seconds": 0.042333167000000005,
+    "maximum_seconds": 0.046834083000000006,
+    "speedup": 2.6711201847340083,
+    "points": 10
+  },
+  {
+    "workload": "LSST Y1 3x2pt TATT",
+    "threads": 1,
+    "median_seconds": 0.16275097900000002,
+    "minimum_seconds": 0.156615208,
+    "maximum_seconds": 0.16522641700000001,
+    "speedup": 1.0,
+    "points": 10
+  },
+  {
+    "workload": "LSST Y1 3x2pt TATT",
+    "threads": 4,
+    "median_seconds": 0.0636218335,
+    "minimum_seconds": 0.061300083000000005,
+    "maximum_seconds": 0.06634237500000001,
+    "speedup": 2.558099476966504,
+    "points": 10
+  },
+  {
+    "workload": "LSST Y1 3x2pt TATT",
+    "threads": 8,
+    "median_seconds": 0.05177852100000001,
+    "minimum_seconds": 0.050144792,
+    "maximum_seconds": 0.053547834,
+    "speedup": 3.143214133134471,
+    "points": 10
+  },
+  {
+    "workload": "DES Y3 three-point NLA",
+    "threads": 1,
+    "median_seconds": 11.453189396,
+    "minimum_seconds": 11.421890083000001,
+    "maximum_seconds": 11.573701833000001,
+    "speedup": 1.0,
+    "points": 10
+  },
+  {
+    "workload": "DES Y3 three-point NLA",
+    "threads": 4,
+    "median_seconds": 3.5017852295000003,
+    "minimum_seconds": 3.4756611250000002,
+    "maximum_seconds": 3.581936917,
+    "speedup": 3.270671570465027,
+    "points": 10
+  },
+  {
+    "workload": "DES Y3 three-point NLA",
+    "threads": 8,
+    "median_seconds": 2.28481625,
+    "minimum_seconds": 2.267916375,
+    "maximum_seconds": 2.30166825,
+    "speedup": 5.01273981923054,
+    "points": 10
+  },
+  {
+    "workload": "DES Y3 three-point TATT",
+    "threads": 1,
+    "median_seconds": 19.740683,
+    "minimum_seconds": 19.535658834,
+    "maximum_seconds": 19.871392416000003,
+    "speedup": 1.0,
+    "points": 10
+  },
+  {
+    "workload": "DES Y3 three-point TATT",
+    "threads": 4,
+    "median_seconds": 6.414595937500001,
+    "minimum_seconds": 6.351504667,
+    "maximum_seconds": 6.500730000000001,
+    "speedup": 3.077463209271706,
+    "points": 10
+  },
+  {
+    "workload": "DES Y3 three-point TATT",
+    "threads": 8,
+    "median_seconds": 3.966195583,
+    "minimum_seconds": 3.9349273750000004,
+    "maximum_seconds": 4.07374975,
+    "speedup": 4.977233872331706,
+    "points": 10
+  }
+]

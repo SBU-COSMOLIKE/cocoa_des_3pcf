@@ -9,12 +9,20 @@ checkpoint at `68e2baa`, following `0e7d9af` and `e2fc60a`. Core commit
 `34c62d1` adds the plotting README's environment instructions without changing
 the numerical implementation.
 
-The CLI scaling study is prepared in [BENCHMARK.md](BENCHMARK.md). It starts
-with LSST Y1 and excludes CAMB from the measured intervals. Input preflight,
-26 control/source/plot checks and inspection of all 30 LSST native binding
-signatures pass. No scientific timing run has started. The dedicated Y3
-timing configuration records the authorized clipping of negative source
+The completed CLI study is recorded in [BENCHMARK.md](BENCHMARK.md). It uses
+LSST Y1 as a control and times NLA and TATT separately, excluding CAMB.
+All 120 measured predictions and twelve warmups preserve float64 bits across
+thread counts. Eight-thread three-point medians are 2.285 seconds for NLA and
+3.966 seconds for TATT, each about fivefold faster than one thread. The
+declared grid and input policy remain part of those results. The dedicated
+Y3 timing configuration records the authorized clipping of negative source
 samples; scientific forecast inputs retain their separate source policy.
+
+The physical producer follows LSST's bounded CAMB solve and separate
+extrapolating power interpolation. It reuses matter transfers for sigma8
+normalization. Both wavenumber limits enter the provider and outer mean cache
+keys. Forty-six control/state/configuration checks and thirteen CAMB checks
+pass, including an independent final-amplitude solve and opposite unit API.
 
 The [validation record](tests/VALIDATION.md) gives the executed checks and
 limits. All 281 project checks pass in strict and debug builds, including physical

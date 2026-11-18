@@ -557,7 +557,9 @@ def run_study(path, reuse_from=None):
     _write_json(output / "records.json", records)
     with (output / "timings.csv").open("w", newline="") as stream:
         fields = ("workload", "threads", "repetition", "seconds", "rows")
-        writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
+        writer = csv.DictWriter(
+            stream, fieldnames=fields, extrasaction="ignore", lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(records)
     _write_json(output / "validation.json", {
@@ -612,10 +614,25 @@ def plot_study(path):
         "savefig.bbox": "tight",
         "savefig.format": "pdf",
     })
-    figure, _ = plot_thread_scaling(
-        records, title="Ten random parameter points; BLAS = 1",
+    figure, axes = plot_thread_scaling(
+        records, title="Ten random parameter points; CAMB excluded; BLAS = 1",
     )
+    # LSST is a control calculation with much shorter elapsed times. A log
+    # axis keeps those measured values visible alongside the three-point ones.
+    elapsed = [record["seconds"] for record in records]
+    axes[0].set_yscale("log")
+    axes[0].set_ylim(0.8 * min(elapsed), 1.2 * max(elapsed))
     figure.savefig(output / "openmp_scaling.pdf")
     figure.savefig(output / "openmp_scaling.png", dpi=180)
+    plt.close(figure)
+    threepoint = []
+    for record in records:
+        if record["workload"].startswith("DES Y3 three-point"):
+            threepoint.append(record)
+    figure, _ = plot_thread_scaling(
+        threepoint, title="3pcf NLA and TATT; CAMB excluded; BLAS = 1",
+    )
+    figure.savefig(output / "threepcf_scaling.pdf")
+    figure.savefig(output / "threepcf_scaling.png", dpi=180)
     plt.close(figure)
     return output / "openmp_scaling.pdf"

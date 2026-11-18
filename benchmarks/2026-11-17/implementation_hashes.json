@@ -1,0 +1,34 @@
+{
+  "python/des3pcf/inputs.py": {
+    "sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+    "bytes": 18783
+  },
+  "python/des3pcf/pipeline.py": {
+    "sha256": "18a75ab835e7119702b4edae60553ddb78f6d60378170950f578788a8a094044",
+    "bytes": 29285
+  },
+  "python/des3pcf/scaling.py": {
+    "sha256": "d8373b4acd5f6f610df751ba69e85a8a2fee9936842465987663bd2cfa5d8d36",
+    "bytes": 25833
+  },
+  "python/des3pcf/scaling_lsst.py": {
+    "sha256": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+    "bytes": 29259
+  },
+  "python/des3pcf/scaling_threepcf.py": {
+    "sha256": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+    "bytes": 35042
+  },
+  "python/des3pcf/mean.py": {
+    "sha256": "a06876a1bd49497f5afd91a492a3159bde3da75c4acb0e423efc7ca34b590c6e",
+    "bytes": 24106
+  },
+  "extensions/lsst/cosmolike_lsst_y1_interface.so": {
+    "sha256": "075337105a3bfc7967278eb00ae151036d812ff98b792ecc24187844fdb9d528",
+    "bytes": 2540944
+  },
+  "extensions/threepcf/cosmolike_des_3pcf_interface.so": {
+    "sha256": "c38e720636abc0e5b9635839481af0f50baabc829553b593a39dfb3812643ce9",
+    "bytes": 1221024
+  }
+}

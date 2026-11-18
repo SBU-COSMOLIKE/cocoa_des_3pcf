@@ -1,0 +1,12 @@
+{
+  "python_version": "3.11.12",
+  "python_executable": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/../../.local/bin/python",
+  "packages": {
+    "numpy": "1.26.3",
+    "scipy": "1.12.0",
+    "camb": "1.6.7",
+    "threadpoolctl": "3.6.0",
+    "matplotlib": "3.10.1",
+    "PyYAML": "6.0.2"
+  }
+}

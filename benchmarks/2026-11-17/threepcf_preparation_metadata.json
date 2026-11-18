@@ -1,0 +1,4494 @@
+{
+  "threepcf_nla": [
+    {
+      "As": 1.5157163275336326e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9640088684836458,
+      "omega_de": 0.6610513318689273,
+      "omega_m": 0.3389486681310728,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.741284341759337,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9640088684836458,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.050821190730782256,
+        "omega_m": 0.3389486681310728,
+        "sigma8": 0.8285530566875251,
+        "w0": -1.0868977219829483,
+        "wa": -0.23997443410341457
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": -1,
+        "parameters": {
+          "a1": 0.2512131131810105,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": -0.03591398125407507,
+          "dz2": 0.02732423948557721,
+          "dz3": 0.01789412529858496,
+          "dz4": 0.02846292532120976,
+          "eta1": 0.0026633302061149777,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.741284341759337,
+          "m1": -0.018032583575756028,
+          "m2": -0.01360859843229655,
+          "m3": -0.013552536677218662,
+          "m4": -0.01372331239298045,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9640088684836458,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.050821190730782256,
+          "omega_m": 0.3389486681310728,
+          "power_mode": 2,
+          "sigma8": 0.8285530566875251,
+          "suppress_only": 1,
+          "w0": -1.0868977219829483,
+          "wa": -0.23997443410341457,
+          "zpivot": 0.62
+        },
+        "seed": 147
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "856e7b37e72363f97b86a45d5d77162462d944153df2d7f0f73411a617b980ac",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.741284341759337,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9640088684836458,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.050821190730782256,
+          "omega_m": 0.3389486681310728,
+          "sigma8": 0.8285530566875251,
+          "w0": -1.0868977219829483,
+          "wa": -0.23997443410341457
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.828553056687525,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.03591398125407507,
+          0.02732423948557721,
+          0.01789412529858496,
+          0.02846292532120976
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          0.9999999999999999
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.03591398125407507,
+        0.02732423948557721,
+        0.01789412529858496,
+        0.02846292532120976
+      ],
+      "w0": -1.0868977219829483,
+      "wa": -0.23997443410341457
+    },
+    {
+      "As": 1.5916814947453526e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9700257572008266,
+      "omega_de": 0.6741817948433771,
+      "omega_m": 0.32581820515662285,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7083120105726765,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9700257572008266,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04575045744430951,
+        "omega_m": 0.32581820515662285,
+        "sigma8": 0.7854354926530592,
+        "w0": -1.0097802102240099,
+        "wa": 0.041161111401765704
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 0,
+        "parameters": {
+          "a1": -0.37824423852731814,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": 0.0007240320851839843,
+          "dz2": -0.0018508294769686677,
+          "dz3": -0.009819944649716871,
+          "dz4": 0.004964306589892081,
+          "eta1": -1.6620543217382315,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.7083120105726765,
+          "m1": 0.010479643300558651,
+          "m2": -0.009983385652009695,
+          "m3": 0.0053140865867807256,
+          "m4": 0.015168970498433012,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9700257572008266,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04575045744430951,
+          "omega_m": 0.32581820515662285,
+          "power_mode": 2,
+          "sigma8": 0.7854354926530592,
+          "suppress_only": 1,
+          "w0": -1.0097802102240099,
+          "wa": 0.041161111401765704,
+          "zpivot": 0.62
+        },
+        "seed": 137
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "d1edc3ded43239a126474612519c2bac9fdefb19e991d9d4466c5d037f8722a7",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7083120105726765,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9700257572008266,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04575045744430951,
+          "omega_m": 0.32581820515662285,
+          "sigma8": 0.7854354926530592,
+          "w0": -1.0097802102240099,
+          "wa": 0.041161111401765704
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.7854354926530591,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.0007240320851839843,
+          -0.0018508294769686677,
+          -0.009819944649716871,
+          0.004964306589892081
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          0.9999999999999999,
+          0.9999999999999998,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.0007240320851839843,
+        -0.0018508294769686677,
+        -0.009819944649716871,
+        0.004964306589892081
+      ],
+      "w0": -1.0097802102240099,
+      "wa": 0.041161111401765704
+    },
+    {
+      "As": 2.11582938157109e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9950733964078203,
+      "omega_de": 0.7026879815607279,
+      "omega_m": 0.2973120184392721,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7296763584543505,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9950733964078203,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.05085420610503948,
+        "omega_m": 0.2973120184392721,
+        "sigma8": 0.8409033074292626,
+        "w0": -0.9630805327372861,
+        "wa": 0.08980459434780841
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 1,
+        "parameters": {
+          "a1": -0.6959638256700975,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": -0.011460208054083983,
+          "dz2": -0.017709296243592212,
+          "dz3": 0.013945438712155651,
+          "dz4": 0.02114869147154754,
+          "eta1": -1.5956827116017474,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.7296763584543505,
+          "m1": -0.010963509696045157,
+          "m2": 0.0018268210136439395,
+          "m3": -0.006105485288651742,
+          "m4": 0.007711177289679854,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9950733964078203,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.05085420610503948,
+          "omega_m": 0.2973120184392721,
+          "power_mode": 2,
+          "sigma8": 0.8409033074292626,
+          "suppress_only": 1,
+          "w0": -0.9630805327372861,
+          "wa": 0.08980459434780841,
+          "zpivot": 0.62
+        },
+        "seed": 138
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "53a3b92dfa21f93bb0bf7be2c2ad961d67968982c59762a1a643b46c11f8112b",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7296763584543505,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9950733964078203,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.05085420610503948,
+          "omega_m": 0.2973120184392721,
+          "sigma8": 0.8409033074292626,
+          "w0": -0.9630805327372861,
+          "wa": 0.08980459434780841
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8409033074292628,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.011460208054083983,
+          -0.017709296243592212,
+          0.013945438712155651,
+          0.02114869147154754
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          0.9999999999999998,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.011460208054083983,
+        -0.017709296243592212,
+        0.013945438712155651,
+        0.02114869147154754
+      ],
+      "w0": -0.9630805327372861,
+      "wa": 0.08980459434780841
+    },
+    {
+      "As": 2.760151875164786e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9259278519153499,
+      "omega_de": 0.7183237497964137,
+      "omega_m": 0.2816762502035863,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.6626949361945593,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9259278519153499,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04878071315252576,
+        "omega_m": 0.2816762502035863,
+        "sigma8": 0.8529693955278509,
+        "w0": -1.1651044164996278,
+        "wa": 0.1621507537149965
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 2,
+        "parameters": {
+          "a1": -0.5859110468992044,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": 0.03524334108273327,
+          "dz2": -0.013333474795654755,
+          "dz3": 0.021176204131580972,
+          "dz4": -0.0016622892615348397,
+          "eta1": 2.3502887701090813,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.6626949361945593,
+          "m1": -0.013326891715320859,
+          "m2": -0.010252635058800575,
+          "m3": 0.004691152464386892,
+          "m4": -0.012320887343307213,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9259278519153499,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04878071315252576,
+          "omega_m": 0.2816762502035863,
+          "power_mode": 2,
+          "sigma8": 0.8529693955278509,
+          "suppress_only": 1,
+          "w0": -1.1651044164996278,
+          "wa": 0.1621507537149965,
+          "zpivot": 0.62
+        },
+        "seed": 139
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "6be8ea2a72ffc85cf0205b04b46b9ce1880b065535e1a12278b387b1dff15e61",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.6626949361945593,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9259278519153499,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04878071315252576,
+          "omega_m": 0.2816762502035863,
+          "sigma8": 0.8529693955278509,
+          "w0": -1.1651044164996278,
+          "wa": 0.1621507537149965
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8529693955278509,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.03524334108273327,
+          -0.013333474795654755,
+          0.021176204131580972,
+          -0.0016622892615348397
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.03524334108273327,
+        -0.013333474795654755,
+        0.021176204131580972,
+        -0.0016622892615348397
+      ],
+      "w0": -1.1651044164996278,
+      "wa": 0.1621507537149965
+    },
+    {
+      "As": 1.7188610618574055e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9378548907904175,
+      "omega_de": 0.6932379950064427,
+      "omega_m": 0.3067620049935573,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7531333730362595,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9378548907904175,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04921351805446418,
+        "omega_m": 0.3067620049935573,
+        "sigma8": 0.8047496560241482,
+        "w0": -0.9765095535294682,
+        "wa": -0.018779567482174853
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 3,
+        "parameters": {
+          "a1": -0.6055899646196656,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": -0.006389925179401554,
+          "dz2": -0.022663916576822294,
+          "dz3": -0.015577727092109835,
+          "dz4": -0.03364209450279347,
+          "eta1": -1.159149790215157,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.7531333730362595,
+          "m1": -0.017052985390881722,
+          "m2": 0.001861052980196641,
+          "m3": -0.012393224648244461,
+          "m4": -0.010164652127813176,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9378548907904175,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04921351805446418,
+          "omega_m": 0.3067620049935573,
+          "power_mode": 2,
+          "sigma8": 0.8047496560241482,
+          "suppress_only": 1,
+          "w0": -0.9765095535294682,
+          "wa": -0.018779567482174853,
+          "zpivot": 0.62
+        },
+        "seed": 140
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "6558925f4820889ccf7f110387e10c1f4bfb23f9924336d3a389c1e4d75141de",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7531333730362595,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9378548907904175,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04921351805446418,
+          "omega_m": 0.3067620049935573,
+          "sigma8": 0.8047496560241482,
+          "w0": -0.9765095535294682,
+          "wa": -0.018779567482174853
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8047496560241482,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.006389925179401554,
+          -0.022663916576822294,
+          -0.015577727092109835,
+          -0.03364209450279347
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0000000000000002,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.006389925179401554,
+        -0.022663916576822294,
+        -0.015577727092109835,
+        -0.03364209450279347
+      ],
+      "w0": -0.9765095535294682,
+      "wa": -0.018779567482174853
+    },
+    {
+      "As": 2.4532440313893397e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9344925854092467,
+      "omega_de": 0.6863703492611911,
+      "omega_m": 0.3136296507388089,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.6402955116271324,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9344925854092467,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.05297363253905796,
+        "omega_m": 0.3136296507388089,
+        "sigma8": 0.795551647198575,
+        "w0": -0.9598552361260824,
+        "wa": -0.06949176009194519
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 4,
+        "parameters": {
+          "a1": -0.47033624100195603,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": 0.02268811911008034,
+          "dz2": -0.017251167290210458,
+          "dz3": -0.01535615468251783,
+          "dz4": -0.014242728800588352,
+          "eta1": 0.6721965870918551,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.6402955116271324,
+          "m1": -0.015225243678327168,
+          "m2": 0.0035207842341105702,
+          "m3": -0.007516149543464442,
+          "m4": 0.01473915341811448,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9344925854092467,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.05297363253905796,
+          "omega_m": 0.3136296507388089,
+          "power_mode": 2,
+          "sigma8": 0.795551647198575,
+          "suppress_only": 1,
+          "w0": -0.9598552361260824,
+          "wa": -0.06949176009194519,
+          "zpivot": 0.62
+        },
+        "seed": 141
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "51c5a2fb43fa6a5a24865b9d3854850ce612d74102f407b0eb9cf31fb85580a1",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.6402955116271324,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9344925854092467,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.05297363253905796,
+          "omega_m": 0.3136296507388089,
+          "sigma8": 0.795551647198575,
+          "w0": -0.9598552361260824,
+          "wa": -0.06949176009194519
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.7955516471985747,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.02268811911008034,
+          -0.017251167290210458,
+          -0.01535615468251783,
+          -0.014242728800588352
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0000000000000002,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.02268811911008034,
+        -0.017251167290210458,
+        -0.01535615468251783,
+        -0.014242728800588352
+      ],
+      "w0": -0.9598552361260824,
+      "wa": -0.06949176009194519
+    },
+    {
+      "As": 2.58280479233422e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9968558520572934,
+      "omega_de": 0.7577709934344576,
+      "omega_m": 0.24222900656554236,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7436529708076307,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9968558520572934,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04407491142472291,
+        "omega_m": 0.24222900656554236,
+        "sigma8": 0.8278418907063414,
+        "w0": -0.8366989561875242,
+        "wa": -0.16323494029833377
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 5,
+        "parameters": {
+          "a1": -0.5431553315754274,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": 0.008997723363022542,
+          "dz2": -0.013574259512645976,
+          "dz3": -0.018793240955019132,
+          "dz4": 0.007274231989419323,
+          "eta1": -0.25269870203095435,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.7436529708076307,
+          "m1": -0.01007198934380089,
+          "m2": 0.007538727629911288,
+          "m3": 0.01022332314427321,
+          "m4": -0.009351383029250097,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9968558520572934,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04407491142472291,
+          "omega_m": 0.24222900656554236,
+          "power_mode": 2,
+          "sigma8": 0.8278418907063414,
+          "suppress_only": 1,
+          "w0": -0.8366989561875242,
+          "wa": -0.16323494029833377,
+          "zpivot": 0.62
+        },
+        "seed": 142
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "d1da070e31b4dc55128df1685726cde6ee1a11cf480bc7771b9180974ba0df01",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7436529708076307,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9968558520572934,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04407491142472291,
+          "omega_m": 0.24222900656554236,
+          "sigma8": 0.8278418907063414,
+          "w0": -0.8366989561875242,
+          "wa": -0.16323494029833377
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8278418907063417,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.008997723363022542,
+          -0.013574259512645976,
+          -0.018793240955019132,
+          0.007274231989419323
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0000000000000002,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.008997723363022542,
+        -0.013574259512645976,
+        -0.018793240955019132,
+        0.007274231989419323
+      ],
+      "w0": -0.8366989561875242,
+      "wa": -0.16323494029833377
+    },
+    {
+      "As": 2.4696388601146936e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9723437806165188,
+      "omega_de": 0.7186679840245283,
+      "omega_m": 0.28133201597547175,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7209046134019311,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9723437806165188,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.052767921005083526,
+        "omega_m": 0.28133201597547175,
+        "sigma8": 0.8190889875395172,
+        "w0": -0.8471874269572985,
+        "wa": -0.06788570852809261
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 6,
+        "parameters": {
+          "a1": -0.7905338247302232,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": 0.01771114393030144,
+          "dz2": 0.02743646001517215,
+          "dz3": -0.0013838678760370628,
+          "dz4": -0.01515609276000391,
+          "eta1": 0.24955483697693293,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.7209046134019311,
+          "m1": -0.006741012769431242,
+          "m2": 0.007227866800586319,
+          "m3": 0.0044883385120383385,
+          "m4": -0.0026727216884871487,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9723437806165188,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.052767921005083526,
+          "omega_m": 0.28133201597547175,
+          "power_mode": 2,
+          "sigma8": 0.8190889875395172,
+          "suppress_only": 1,
+          "w0": -0.8471874269572985,
+          "wa": -0.06788570852809261,
+          "zpivot": 0.62
+        },
+        "seed": 143
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "dff2cadd69124f2ea4551c0508564174e2a5edd13f32a8eb106816b8c35a1e68",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7209046134019311,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9723437806165188,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.052767921005083526,
+          "omega_m": 0.28133201597547175,
+          "sigma8": 0.8190889875395172,
+          "w0": -0.8471874269572985,
+          "wa": -0.06788570852809261
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8190889875395168,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.01771114393030144,
+          0.02743646001517215,
+          -0.0013838678760370628,
+          -0.01515609276000391
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0000000000000002,
+          0.9999999999999999,
+          1.0,
+          1.0000000000000002
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.01771114393030144,
+        0.02743646001517215,
+        -0.0013838678760370628,
+        -0.01515609276000391
+      ],
+      "w0": -0.8471874269572985,
+      "wa": -0.06788570852809261
+    },
+    {
+      "As": 1.5895224597943004e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9273697130063127,
+      "omega_de": 0.6807238160000761,
+      "omega_m": 0.3192761839999238,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.6879480174169016,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9273697130063127,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.043596873665494876,
+        "omega_m": 0.3192761839999238,
+        "sigma8": 0.7613967403830117,
+        "w0": -1.1710767909858593,
+        "wa": 0.26488755521066626
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 7,
+        "parameters": {
+          "a1": 0.4838141374483911,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": -0.03128308586975841,
+          "dz2": -0.01920217745834496,
+          "dz3": -0.016981571041991127,
+          "dz4": 0.02618290211966033,
+          "eta1": 0.48246275987184406,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.6879480174169016,
+          "m1": -0.012179193211931555,
+          "m2": 0.009522431916570376,
+          "m3": 0.010348146309001419,
+          "m4": 0.004794331333346136,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9273697130063127,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.043596873665494876,
+          "omega_m": 0.3192761839999238,
+          "power_mode": 2,
+          "sigma8": 0.7613967403830117,
+          "suppress_only": 1,
+          "w0": -1.1710767909858593,
+          "wa": 0.26488755521066626,
+          "zpivot": 0.62
+        },
+        "seed": 144
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "4422516d6f81df5a53702f79c0da7bf5224e3699a9380716fd949098eecc1f57",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.6879480174169016,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9273697130063127,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.043596873665494876,
+          "omega_m": 0.3192761839999238,
+          "sigma8": 0.7613967403830117,
+          "w0": -1.1710767909858593,
+          "wa": 0.26488755521066626
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.7613967403830119,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.03128308586975841,
+          -0.01920217745834496,
+          -0.016981571041991127,
+          0.02618290211966033
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.03128308586975841,
+        -0.01920217745834496,
+        -0.016981571041991127,
+        0.02618290211966033
+      ],
+      "w0": -1.1710767909858593,
+      "wa": 0.26488755521066626
+    },
+    {
+      "As": 1.7413992210044215e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9367512102567361,
+      "omega_de": 0.6999369443411873,
+      "omega_m": 0.30006305565881275,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7792588791332246,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9367512102567361,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04568600926748488,
+        "omega_m": 0.30006305565881275,
+        "sigma8": 0.8432960838657741,
+        "w0": -0.9274519532943755,
+        "wa": -0.13707357992781127
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 8,
+        "parameters": {
+          "a1": 0.38710846356995376,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": 0.010049350149962291,
+          "dz2": 0.0007555309679196688,
+          "dz3": -0.013462692686904665,
+          "dz4": -0.023984695286173655,
+          "eta1": -0.6813389548407971,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.7792588791332246,
+          "m1": -0.007878520378186035,
+          "m2": -0.015589724463506394,
+          "m3": 0.004083977126056565,
+          "m4": 0.005253798862320679,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9367512102567361,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04568600926748488,
+          "omega_m": 0.30006305565881275,
+          "power_mode": 2,
+          "sigma8": 0.8432960838657741,
+          "suppress_only": 1,
+          "w0": -0.9274519532943755,
+          "wa": -0.13707357992781127,
+          "zpivot": 0.62
+        },
+        "seed": 145
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "d9bd5a026cae642255abd0fb1bdde9e009727461d5483d945e6eec2a84a8e302",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7792588791332246,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9367512102567361,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04568600926748488,
+          "omega_m": 0.30006305565881275,
+          "sigma8": 0.8432960838657741,
+          "w0": -0.9274519532943755,
+          "wa": -0.13707357992781127
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8432960838657741,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.010049350149962291,
+          0.0007555309679196688,
+          -0.013462692686904665,
+          -0.023984695286173655
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0000000000000002,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.010049350149962291,
+        0.0007555309679196688,
+        -0.013462692686904665,
+        -0.023984695286173655
+      ],
+      "w0": -0.9274519532943755,
+      "wa": -0.13707357992781127
+    },
+    {
+      "As": 1.805785509544687e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9471522588930904,
+      "omega_de": 0.6799495957262112,
+      "omega_m": 0.32005040427378884,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7079903157791156,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9471522588930904,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04679045631381349,
+        "omega_m": 0.32005040427378884,
+        "sigma8": 0.8466215264982151,
+        "w0": -1.1364725498196036,
+        "wa": -0.23261004851993777
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "NLA",
+      "scaling_point": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "index": 9,
+        "parameters": {
+          "a1": 0.30263447478702066,
+          "a2": 0.0,
+          "bta": 0.0,
+          "c1rho": 0.0134,
+          "ct": 0.0,
+          "ct_mode": 0,
+          "dz1": -0.0029158059188288746,
+          "dz2": -0.00880041299308374,
+          "dz3": 0.004879826700461429,
+          "dz4": 0.01991560687144945,
+          "eta1": -1.57957053818696,
+          "eta2": 0.0,
+          "fb": 0,
+          "h": 0.7079903157791156,
+          "m1": -0.01441216308337332,
+          "m2": 0.010188483640484525,
+          "m3": 0.0038399159230315515,
+          "m4": -0.005035843040033202,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9471522588930904,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04679045631381349,
+          "omega_m": 0.32005040427378884,
+          "power_mode": 2,
+          "sigma8": 0.8466215264982151,
+          "suppress_only": 1,
+          "w0": -1.1364725498196036,
+          "wa": -0.23261004851993777,
+          "zpivot": 0.62
+        },
+        "seed": 146
+      },
+      "scaling_reused_from": null,
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "63480135e0f2167528bda000b580fbabcd1c4d4bd82510d16e1bef73eb236434",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7079903157791156,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9471522588930904,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04679045631381349,
+          "omega_m": 0.32005040427378884,
+          "sigma8": 0.8466215264982151,
+          "w0": -1.1364725498196036,
+          "wa": -0.23261004851993777
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8466215264982153,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.0029158059188288746,
+          -0.00880041299308374,
+          0.004879826700461429,
+          0.01991560687144945
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0000000000000002,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.0029158059188288746,
+        -0.00880041299308374,
+        0.004879826700461429,
+        0.01991560687144945
+      ],
+      "w0": -1.1364725498196036,
+      "wa": -0.23261004851993777
+    }
+  ],
+  "threepcf_tatt": [
+    {
+      "As": 1.5157163275336326e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9640088684836458,
+      "omega_de": 0.6610513318689273,
+      "omega_m": 0.3389486681310728,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.741284341759337,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9640088684836458,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.050821190730782256,
+        "omega_m": 0.3389486681310728,
+        "sigma8": 0.8285530566875251,
+        "w0": -1.0868977219829483,
+        "wa": -0.23997443410341457
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": -1,
+        "parameters": {
+          "a1": 0.2512131131810105,
+          "a2": -0.6337989588385784,
+          "bta": 0.32497810029730206,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": -0.03591398125407507,
+          "dz2": 0.02732423948557721,
+          "dz3": 0.01789412529858496,
+          "dz4": 0.02846292532120976,
+          "eta1": 0.0026633302061149777,
+          "eta2": 0.9018742392316166,
+          "fb": 0,
+          "h": 0.741284341759337,
+          "m1": -0.018032583575756028,
+          "m2": -0.01360859843229655,
+          "m3": -0.013552536677218662,
+          "m4": -0.01372331239298045,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9640088684836458,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.050821190730782256,
+          "omega_m": 0.3389486681310728,
+          "power_mode": 2,
+          "sigma8": 0.8285530566875251,
+          "suppress_only": 1,
+          "w0": -1.0868977219829483,
+          "wa": -0.23997443410341457,
+          "zpivot": 0.62
+        },
+        "seed": 147
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_00.npz",
+        "sha256": "18d42bf3f401d009d4a5a6f0424ad94328466172f8e911e661b30cc533a85286",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "856e7b37e72363f97b86a45d5d77162462d944153df2d7f0f73411a617b980ac",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.741284341759337,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9640088684836458,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.050821190730782256,
+          "omega_m": 0.3389486681310728,
+          "sigma8": 0.8285530566875251,
+          "w0": -1.0868977219829483,
+          "wa": -0.23997443410341457
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.828553056687525,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.03591398125407507,
+          0.02732423948557721,
+          0.01789412529858496,
+          0.02846292532120976
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          0.9999999999999999
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.03591398125407507,
+        0.02732423948557721,
+        0.01789412529858496,
+        0.02846292532120976
+      ],
+      "w0": -1.0868977219829483,
+      "wa": -0.23997443410341457
+    },
+    {
+      "As": 1.5916814947453526e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9700257572008266,
+      "omega_de": 0.6741817948433771,
+      "omega_m": 0.32581820515662285,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7083120105726765,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9700257572008266,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04575045744430951,
+        "omega_m": 0.32581820515662285,
+        "sigma8": 0.7854354926530592,
+        "w0": -1.0097802102240099,
+        "wa": 0.041161111401765704
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 0,
+        "parameters": {
+          "a1": -0.37824423852731814,
+          "a2": 0.18278565748929454,
+          "bta": 1.0009410588841876,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": 0.0007240320851839843,
+          "dz2": -0.0018508294769686677,
+          "dz3": -0.009819944649716871,
+          "dz4": 0.004964306589892081,
+          "eta1": -1.6620543217382315,
+          "eta2": 2.1558963420204966,
+          "fb": 0,
+          "h": 0.7083120105726765,
+          "m1": 0.010479643300558651,
+          "m2": -0.009983385652009695,
+          "m3": 0.0053140865867807256,
+          "m4": 0.015168970498433012,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9700257572008266,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04575045744430951,
+          "omega_m": 0.32581820515662285,
+          "power_mode": 2,
+          "sigma8": 0.7854354926530592,
+          "suppress_only": 1,
+          "w0": -1.0097802102240099,
+          "wa": 0.041161111401765704,
+          "zpivot": 0.62
+        },
+        "seed": 137
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_01.npz",
+        "sha256": "94d2057d86f5464c2c53635477456806b0b428737cbe794ffcb20ac140b0905c",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "d1edc3ded43239a126474612519c2bac9fdefb19e991d9d4466c5d037f8722a7",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7083120105726765,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9700257572008266,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04575045744430951,
+          "omega_m": 0.32581820515662285,
+          "sigma8": 0.7854354926530592,
+          "w0": -1.0097802102240099,
+          "wa": 0.041161111401765704
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.7854354926530591,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.0007240320851839843,
+          -0.0018508294769686677,
+          -0.009819944649716871,
+          0.004964306589892081
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          0.9999999999999999,
+          0.9999999999999998,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.0007240320851839843,
+        -0.0018508294769686677,
+        -0.009819944649716871,
+        0.004964306589892081
+      ],
+      "w0": -1.0097802102240099,
+      "wa": 0.041161111401765704
+    },
+    {
+      "As": 2.11582938157109e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9950733964078203,
+      "omega_de": 0.7026879815607279,
+      "omega_m": 0.2973120184392721,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7296763584543505,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9950733964078203,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.05085420610503948,
+        "omega_m": 0.2973120184392721,
+        "sigma8": 0.8409033074292626,
+        "w0": -0.9630805327372861,
+        "wa": 0.08980459434780841
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 1,
+        "parameters": {
+          "a1": -0.6959638256700975,
+          "a2": 0.5113625739611785,
+          "bta": 0.463959398818327,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": -0.011460208054083983,
+          "dz2": -0.017709296243592212,
+          "dz3": 0.013945438712155651,
+          "dz4": 0.02114869147154754,
+          "eta1": -1.5956827116017474,
+          "eta2": -0.20672219360779942,
+          "fb": 0,
+          "h": 0.7296763584543505,
+          "m1": -0.010963509696045157,
+          "m2": 0.0018268210136439395,
+          "m3": -0.006105485288651742,
+          "m4": 0.007711177289679854,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9950733964078203,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.05085420610503948,
+          "omega_m": 0.2973120184392721,
+          "power_mode": 2,
+          "sigma8": 0.8409033074292626,
+          "suppress_only": 1,
+          "w0": -0.9630805327372861,
+          "wa": 0.08980459434780841,
+          "zpivot": 0.62
+        },
+        "seed": 138
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_02.npz",
+        "sha256": "240b1bdc288c52496273212c6a05859462bceeee81600ae7466c30ba2828d783",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "53a3b92dfa21f93bb0bf7be2c2ad961d67968982c59762a1a643b46c11f8112b",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7296763584543505,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9950733964078203,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.05085420610503948,
+          "omega_m": 0.2973120184392721,
+          "sigma8": 0.8409033074292626,
+          "w0": -0.9630805327372861,
+          "wa": 0.08980459434780841
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8409033074292628,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.011460208054083983,
+          -0.017709296243592212,
+          0.013945438712155651,
+          0.02114869147154754
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          0.9999999999999998,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.011460208054083983,
+        -0.017709296243592212,
+        0.013945438712155651,
+        0.02114869147154754
+      ],
+      "w0": -0.9630805327372861,
+      "wa": 0.08980459434780841
+    },
+    {
+      "As": 2.760151875164786e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9259278519153499,
+      "omega_de": 0.7183237497964137,
+      "omega_m": 0.2816762502035863,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.6626949361945593,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9259278519153499,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04878071315252576,
+        "omega_m": 0.2816762502035863,
+        "sigma8": 0.8529693955278509,
+        "w0": -1.1651044164996278,
+        "wa": 0.1621507537149965
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 2,
+        "parameters": {
+          "a1": -0.5859110468992044,
+          "a2": 0.717726165089873,
+          "bta": 0.32537725425480607,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": 0.03524334108273327,
+          "dz2": -0.013333474795654755,
+          "dz3": 0.021176204131580972,
+          "dz4": -0.0016622892615348397,
+          "eta1": 2.3502887701090813,
+          "eta2": -1.6003828916173712,
+          "fb": 0,
+          "h": 0.6626949361945593,
+          "m1": -0.013326891715320859,
+          "m2": -0.010252635058800575,
+          "m3": 0.004691152464386892,
+          "m4": -0.012320887343307213,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9259278519153499,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04878071315252576,
+          "omega_m": 0.2816762502035863,
+          "power_mode": 2,
+          "sigma8": 0.8529693955278509,
+          "suppress_only": 1,
+          "w0": -1.1651044164996278,
+          "wa": 0.1621507537149965,
+          "zpivot": 0.62
+        },
+        "seed": 139
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_03.npz",
+        "sha256": "2b0ec28ba8b1b83c0f569093e1a277b2ac4cf6d96036afbfed5a5869a0caf9c3",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "6be8ea2a72ffc85cf0205b04b46b9ce1880b065535e1a12278b387b1dff15e61",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.6626949361945593,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9259278519153499,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04878071315252576,
+          "omega_m": 0.2816762502035863,
+          "sigma8": 0.8529693955278509,
+          "w0": -1.1651044164996278,
+          "wa": 0.1621507537149965
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8529693955278509,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.03524334108273327,
+          -0.013333474795654755,
+          0.021176204131580972,
+          -0.0016622892615348397
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.03524334108273327,
+        -0.013333474795654755,
+        0.021176204131580972,
+        -0.0016622892615348397
+      ],
+      "w0": -1.1651044164996278,
+      "wa": 0.1621507537149965
+    },
+    {
+      "As": 1.7188610618574055e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9378548907904175,
+      "omega_de": 0.6932379950064427,
+      "omega_m": 0.3067620049935573,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7531333730362595,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9378548907904175,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04921351805446418,
+        "omega_m": 0.3067620049935573,
+        "sigma8": 0.8047496560241482,
+        "w0": -0.9765095535294682,
+        "wa": -0.018779567482174853
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 3,
+        "parameters": {
+          "a1": -0.6055899646196656,
+          "a2": 1.1597714811984972,
+          "bta": 0.9094186822589911,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": -0.006389925179401554,
+          "dz2": -0.022663916576822294,
+          "dz3": -0.015577727092109835,
+          "dz4": -0.03364209450279347,
+          "eta1": -1.159149790215157,
+          "eta2": -1.4965256979718897,
+          "fb": 0,
+          "h": 0.7531333730362595,
+          "m1": -0.017052985390881722,
+          "m2": 0.001861052980196641,
+          "m3": -0.012393224648244461,
+          "m4": -0.010164652127813176,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9378548907904175,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04921351805446418,
+          "omega_m": 0.3067620049935573,
+          "power_mode": 2,
+          "sigma8": 0.8047496560241482,
+          "suppress_only": 1,
+          "w0": -0.9765095535294682,
+          "wa": -0.018779567482174853,
+          "zpivot": 0.62
+        },
+        "seed": 140
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_04.npz",
+        "sha256": "aa72bda59f80a6e5ff6cc39542999afe20b249bcb46cd737c181ef4e343a37cb",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "6558925f4820889ccf7f110387e10c1f4bfb23f9924336d3a389c1e4d75141de",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7531333730362595,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9378548907904175,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04921351805446418,
+          "omega_m": 0.3067620049935573,
+          "sigma8": 0.8047496560241482,
+          "w0": -0.9765095535294682,
+          "wa": -0.018779567482174853
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8047496560241482,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.006389925179401554,
+          -0.022663916576822294,
+          -0.015577727092109835,
+          -0.03364209450279347
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0000000000000002,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.006389925179401554,
+        -0.022663916576822294,
+        -0.015577727092109835,
+        -0.03364209450279347
+      ],
+      "w0": -0.9765095535294682,
+      "wa": -0.018779567482174853
+    },
+    {
+      "As": 2.4532440313893397e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9344925854092467,
+      "omega_de": 0.6863703492611911,
+      "omega_m": 0.3136296507388089,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.6402955116271324,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9344925854092467,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.05297363253905796,
+        "omega_m": 0.3136296507388089,
+        "sigma8": 0.795551647198575,
+        "w0": -0.9598552361260824,
+        "wa": -0.06949176009194519
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 4,
+        "parameters": {
+          "a1": -0.47033624100195603,
+          "a2": 0.7542443290825596,
+          "bta": 0.6035158973899024,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": 0.02268811911008034,
+          "dz2": -0.017251167290210458,
+          "dz3": -0.01535615468251783,
+          "dz4": -0.014242728800588352,
+          "eta1": 0.6721965870918551,
+          "eta2": 1.6778352767051454,
+          "fb": 0,
+          "h": 0.6402955116271324,
+          "m1": -0.015225243678327168,
+          "m2": 0.0035207842341105702,
+          "m3": -0.007516149543464442,
+          "m4": 0.01473915341811448,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9344925854092467,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.05297363253905796,
+          "omega_m": 0.3136296507388089,
+          "power_mode": 2,
+          "sigma8": 0.795551647198575,
+          "suppress_only": 1,
+          "w0": -0.9598552361260824,
+          "wa": -0.06949176009194519,
+          "zpivot": 0.62
+        },
+        "seed": 141
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_05.npz",
+        "sha256": "93ef719c2ff6864f181ae0538ae4cb61bc74c3eb8d74889cbda66e7b2c8855fd",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "51c5a2fb43fa6a5a24865b9d3854850ce612d74102f407b0eb9cf31fb85580a1",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.6402955116271324,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9344925854092467,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.05297363253905796,
+          "omega_m": 0.3136296507388089,
+          "sigma8": 0.795551647198575,
+          "w0": -0.9598552361260824,
+          "wa": -0.06949176009194519
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.7955516471985747,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.02268811911008034,
+          -0.017251167290210458,
+          -0.01535615468251783,
+          -0.014242728800588352
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0000000000000002,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.02268811911008034,
+        -0.017251167290210458,
+        -0.01535615468251783,
+        -0.014242728800588352
+      ],
+      "w0": -0.9598552361260824,
+      "wa": -0.06949176009194519
+    },
+    {
+      "As": 2.58280479233422e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9968558520572934,
+      "omega_de": 0.7577709934344576,
+      "omega_m": 0.24222900656554236,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7436529708076307,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9968558520572934,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04407491142472291,
+        "omega_m": 0.24222900656554236,
+        "sigma8": 0.8278418907063414,
+        "w0": -0.8366989561875242,
+        "wa": -0.16323494029833377
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 5,
+        "parameters": {
+          "a1": -0.5431553315754274,
+          "a2": 0.11374121994232955,
+          "bta": 1.0076037944012255,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": 0.008997723363022542,
+          "dz2": -0.013574259512645976,
+          "dz3": -0.018793240955019132,
+          "dz4": 0.007274231989419323,
+          "eta1": -0.25269870203095435,
+          "eta2": 0.7677850571978819,
+          "fb": 0,
+          "h": 0.7436529708076307,
+          "m1": -0.01007198934380089,
+          "m2": 0.007538727629911288,
+          "m3": 0.01022332314427321,
+          "m4": -0.009351383029250097,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9968558520572934,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04407491142472291,
+          "omega_m": 0.24222900656554236,
+          "power_mode": 2,
+          "sigma8": 0.8278418907063414,
+          "suppress_only": 1,
+          "w0": -0.8366989561875242,
+          "wa": -0.16323494029833377,
+          "zpivot": 0.62
+        },
+        "seed": 142
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_06.npz",
+        "sha256": "6efa07e17c55073454989094355e66bc33f47908071ca68ea3c0a67809a0f92f",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "d1da070e31b4dc55128df1685726cde6ee1a11cf480bc7771b9180974ba0df01",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7436529708076307,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9968558520572934,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04407491142472291,
+          "omega_m": 0.24222900656554236,
+          "sigma8": 0.8278418907063414,
+          "w0": -0.8366989561875242,
+          "wa": -0.16323494029833377
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8278418907063417,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.008997723363022542,
+          -0.013574259512645976,
+          -0.018793240955019132,
+          0.007274231989419323
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0000000000000002,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.008997723363022542,
+        -0.013574259512645976,
+        -0.018793240955019132,
+        0.007274231989419323
+      ],
+      "w0": -0.8366989561875242,
+      "wa": -0.16323494029833377
+    },
+    {
+      "As": 2.4696388601146936e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9723437806165188,
+      "omega_de": 0.7186679840245283,
+      "omega_m": 0.28133201597547175,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7209046134019311,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9723437806165188,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.052767921005083526,
+        "omega_m": 0.28133201597547175,
+        "sigma8": 0.8190889875395172,
+        "w0": -0.8471874269572985,
+        "wa": -0.06788570852809261
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 6,
+        "parameters": {
+          "a1": -0.7905338247302232,
+          "a2": -0.5491148729555038,
+          "bta": 0.9859672808303523,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": 0.01771114393030144,
+          "dz2": 0.02743646001517215,
+          "dz3": -0.0013838678760370628,
+          "dz4": -0.01515609276000391,
+          "eta1": 0.24955483697693293,
+          "eta2": -0.25100032095942026,
+          "fb": 0,
+          "h": 0.7209046134019311,
+          "m1": -0.006741012769431242,
+          "m2": 0.007227866800586319,
+          "m3": 0.0044883385120383385,
+          "m4": -0.0026727216884871487,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9723437806165188,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.052767921005083526,
+          "omega_m": 0.28133201597547175,
+          "power_mode": 2,
+          "sigma8": 0.8190889875395172,
+          "suppress_only": 1,
+          "w0": -0.8471874269572985,
+          "wa": -0.06788570852809261,
+          "zpivot": 0.62
+        },
+        "seed": 143
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_07.npz",
+        "sha256": "b19992f9e3407b36b99d308b06131801250d276665b3d3c60c8e586cafae327b",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "dff2cadd69124f2ea4551c0508564174e2a5edd13f32a8eb106816b8c35a1e68",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7209046134019311,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9723437806165188,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.052767921005083526,
+          "omega_m": 0.28133201597547175,
+          "sigma8": 0.8190889875395172,
+          "w0": -0.8471874269572985,
+          "wa": -0.06788570852809261
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8190889875395168,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.01771114393030144,
+          0.02743646001517215,
+          -0.0013838678760370628,
+          -0.01515609276000391
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0000000000000002,
+          0.9999999999999999,
+          1.0,
+          1.0000000000000002
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.01771114393030144,
+        0.02743646001517215,
+        -0.0013838678760370628,
+        -0.01515609276000391
+      ],
+      "w0": -0.8471874269572985,
+      "wa": -0.06788570852809261
+    },
+    {
+      "As": 1.5895224597943004e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9273697130063127,
+      "omega_de": 0.6807238160000761,
+      "omega_m": 0.3192761839999238,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.6879480174169016,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9273697130063127,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.043596873665494876,
+        "omega_m": 0.3192761839999238,
+        "sigma8": 0.7613967403830117,
+        "w0": -1.1710767909858593,
+        "wa": 0.26488755521066626
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 7,
+        "parameters": {
+          "a1": 0.4838141374483911,
+          "a2": -0.49129282539842256,
+          "bta": 0.7149743427542332,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": -0.03128308586975841,
+          "dz2": -0.01920217745834496,
+          "dz3": -0.016981571041991127,
+          "dz4": 0.02618290211966033,
+          "eta1": 0.48246275987184406,
+          "eta2": -1.0785051153941017,
+          "fb": 0,
+          "h": 0.6879480174169016,
+          "m1": -0.012179193211931555,
+          "m2": 0.009522431916570376,
+          "m3": 0.010348146309001419,
+          "m4": 0.004794331333346136,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9273697130063127,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.043596873665494876,
+          "omega_m": 0.3192761839999238,
+          "power_mode": 2,
+          "sigma8": 0.7613967403830117,
+          "suppress_only": 1,
+          "w0": -1.1710767909858593,
+          "wa": 0.26488755521066626,
+          "zpivot": 0.62
+        },
+        "seed": 144
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_08.npz",
+        "sha256": "56e812bf58be79b2e24b35667a34e83f6c34571976b07030fc1b7d83442ffe7a",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "4422516d6f81df5a53702f79c0da7bf5224e3699a9380716fd949098eecc1f57",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.6879480174169016,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9273697130063127,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.043596873665494876,
+          "omega_m": 0.3192761839999238,
+          "sigma8": 0.7613967403830117,
+          "w0": -1.1710767909858593,
+          "wa": 0.26488755521066626
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.7613967403830119,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.03128308586975841,
+          -0.01920217745834496,
+          -0.016981571041991127,
+          0.02618290211966033
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.03128308586975841,
+        -0.01920217745834496,
+        -0.016981571041991127,
+        0.02618290211966033
+      ],
+      "w0": -1.1710767909858593,
+      "wa": 0.26488755521066626
+    },
+    {
+      "As": 1.7413992210044215e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9367512102567361,
+      "omega_de": 0.6999369443411873,
+      "omega_m": 0.30006305565881275,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7792588791332246,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9367512102567361,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04568600926748488,
+        "omega_m": 0.30006305565881275,
+        "sigma8": 0.8432960838657741,
+        "w0": -0.9274519532943755,
+        "wa": -0.13707357992781127
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 8,
+        "parameters": {
+          "a1": 0.38710846356995376,
+          "a2": 1.0211213844791975,
+          "bta": 0.6254235224938494,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": 0.010049350149962291,
+          "dz2": 0.0007555309679196688,
+          "dz3": -0.013462692686904665,
+          "dz4": -0.023984695286173655,
+          "eta1": -0.6813389548407971,
+          "eta2": -0.5920803516433808,
+          "fb": 0,
+          "h": 0.7792588791332246,
+          "m1": -0.007878520378186035,
+          "m2": -0.015589724463506394,
+          "m3": 0.004083977126056565,
+          "m4": 0.005253798862320679,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9367512102567361,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04568600926748488,
+          "omega_m": 0.30006305565881275,
+          "power_mode": 2,
+          "sigma8": 0.8432960838657741,
+          "suppress_only": 1,
+          "w0": -0.9274519532943755,
+          "wa": -0.13707357992781127,
+          "zpivot": 0.62
+        },
+        "seed": 145
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_09.npz",
+        "sha256": "29a7de303de3da61a07e6f7e4f408cf590decdc3c7afae5db212518dba663bf7",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "d9bd5a026cae642255abd0fb1bdde9e009727461d5483d945e6eec2a84a8e302",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7792588791332246,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9367512102567361,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04568600926748488,
+          "omega_m": 0.30006305565881275,
+          "sigma8": 0.8432960838657741,
+          "w0": -0.9274519532943755,
+          "wa": -0.13707357992781127
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8432960838657741,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          0.010049350149962291,
+          0.0007555309679196688,
+          -0.013462692686904665,
+          -0.023984695286173655
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0,
+          1.0,
+          1.0000000000000002,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        0.010049350149962291,
+        0.0007555309679196688,
+        -0.013462692686904665,
+        -0.023984695286173655
+      ],
+      "w0": -0.9274519532943755,
+      "wa": -0.13707357992781127
+    },
+    {
+      "As": 1.805785509544687e-09,
+      "amplitude_method": "reuse_matter_transfers",
+      "camb_version": "1.6.7",
+      "camb_wavenumber_limit_units": "1/Mpc",
+      "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+      "extrap_kmax": 1000.0,
+      "extrap_kmax_requested": 1000.0,
+      "flat_background": true,
+      "format": "cosmolike-3pcf-tables-v1",
+      "growth_definition": "linear sigma8(z)/sigma8(0)",
+      "halofit_version": "takahashi",
+      "kmax_boltzmann": 5.0,
+      "massive_neutrino_effective_growth": true,
+      "ns": 0.9471522588930904,
+      "omega_de": 0.6799495957262112,
+      "omega_m": 0.32005040427378884,
+      "omega_nu_h2": 0.000644866570625114,
+      "parameters": {
+        "h": 0.7079903157791156,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.9471522588930904,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.04679045631381349,
+        "omega_m": 0.32005040427378884,
+        "sigma8": 0.8466215264982151,
+        "w0": -1.1364725498196036,
+        "wa": -0.23261004851993777
+      },
+      "power_extrapolation": "CAMB log-power tail",
+      "producer": "CAMB",
+      "scaling_format": "cosmolike-threepcf-scaling-v1",
+      "scaling_ia_model": "TATT",
+      "scaling_point": {
+        "configuration_sha256": "65859d38d7ae468c5b3b542f3bf55806a16c6fc452af395975c00051ab8fe073",
+        "ia_model": "TATT",
+        "index": 9,
+        "parameters": {
+          "a1": 0.30263447478702066,
+          "a2": -0.6532954710939305,
+          "bta": 0.5334828998752541,
+          "c1rho": 0.0134,
+          "ct": 0,
+          "ct_mode": 0,
+          "dz1": -0.0029158059188288746,
+          "dz2": -0.00880041299308374,
+          "dz3": 0.004879826700461429,
+          "dz4": 0.01991560687144945,
+          "eta1": -1.57957053818696,
+          "eta2": 2.691163647700173,
+          "fb": 0,
+          "h": 0.7079903157791156,
+          "m1": -0.01441216308337332,
+          "m2": 0.010188483640484525,
+          "m3": 0.0038399159230315515,
+          "m4": -0.005035843040033202,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9471522588930904,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04679045631381349,
+          "omega_m": 0.32005040427378884,
+          "power_mode": 2,
+          "sigma8": 0.8466215264982151,
+          "suppress_only": 1,
+          "w0": -1.1364725498196036,
+          "wa": -0.23261004851993777,
+          "zpivot": 0.62
+        },
+        "seed": 146
+      },
+      "scaling_reused_from": {
+        "configuration_sha256": "60b3eff7605347934924210e4ff807850aab6aa4d26407b4e49ad4a8d3b6e0a8",
+        "ia_model": "NLA",
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_10.npz",
+        "sha256": "8dcf8508ec27709b93199209d27b2b35f7605cd6653f4aa2214201d62ead04d2",
+        "verification": "exact_physical_request_and_loaded_axes"
+      },
+      "scaling_table_request": {
+        "arrays": {
+          "k": {
+            "sha256": "1e808d97cc0a95927130663c9d7f5b623cd9da55fb97876c43743abaaf225d25",
+            "shape": [
+              256
+            ]
+          },
+          "los_z": {
+            "sha256": "21d1d73f7f23f863372843b94c94cee55e19d3fe496be237841d452fe32e9761",
+            "shape": [
+              65
+            ]
+          },
+          "sources": {
+            "sha256": "63480135e0f2167528bda000b580fbabcd1c4d4bd82510d16e1bef73eb236434",
+            "shape": [
+              4,
+              101
+            ]
+          },
+          "z": {
+            "sha256": "20bcb7a4914c3f7436208697f7df3b2a99e7c54ddf5ac6cec5095c30f327c235",
+            "shape": [
+              101
+            ]
+          }
+        },
+        "extrap_kmax": 1000.0,
+        "extrap_kmax_requested": 1000.0,
+        "halofit_version": "takahashi",
+        "kmax_boltzmann": 5.0,
+        "parameters": {
+          "h": 0.7079903157791156,
+          "mnu": 0.06,
+          "nnu": 3.046,
+          "ns": 0.9471522588930904,
+          "num_massive_neutrinos": 3,
+          "omega_b": 0.04679045631381349,
+          "omega_m": 0.32005040427378884,
+          "sigma8": 0.8466215264982151,
+          "w0": -1.1364725498196036,
+          "wa": -0.23261004851993777
+        },
+        "producer": "CAMB",
+        "producer_source_sha256": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+        "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "source_policy": "Timing only: set negative source-density samples to zero and renormalize each bin."
+      },
+      "sigma8": 0.8466215264982153,
+      "source_convention": "linear_midpoint; n(z-dz); normalized after shift",
+      "source_fits": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "source_fits_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+      "source_integrals_before_normalization": [
+        1.0003326001095314,
+        0.9985068451853037,
+        0.9972271017860488,
+        0.9970853826954599
+      ],
+      "source_processing": {
+        "applied_shifts": [
+          -0.0029158059188288746,
+          -0.00880041299308374,
+          0.004879826700461429,
+          0.01991560687144945
+        ],
+        "clipped_integrals_before_normalization": [
+          1.0004103606231647,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "final_shifted_integrals": [
+          1.0000000000000002,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "negative_area_fraction_of_positive": [
+          0.0004101922963981577,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_area_magnitude": [
+          0.000410360623164525,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "negative_sample_count": [
+          12,
+          0,
+          0,
+          0
+        ],
+        "normalization_factors": [
+          0.9995898077036017,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "policy": "Timing only: set negative source-density samples to zero and renormalize each bin.",
+        "raw_input_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "raw_input_sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2",
+        "raw_integrals": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sampled_integrals_before_grid_normalization": [
+          1.0003326001095314,
+          0.9985068451853037,
+          0.9972271017860488,
+          0.9970853826954599
+        ],
+        "timing_only": true
+      },
+      "source_shifts_applied": [
+        -0.0029158059188288746,
+        -0.00880041299308374,
+        0.004879826700461429,
+        0.01991560687144945
+      ],
+      "w0": -1.1364725498196036,
+      "wa": -0.23261004851993777
+    }
+  ]
+}
