@@ -22,6 +22,9 @@ measure leakage from omitted single-B bispectra after triangle cuts.
 The [angular-order protocol](tests/studies/angular_order_validation.md)
 separates retained Legendre and Fourier orders from angular sampling and
 coupling interpolation, with explicit memory estimates and a preflight command.
+Its [completed fiducial results](tests/studies/angular_order_results.md)
+report ten NLA/TATT mean comparisons and the distinction from derivative
+convergence.
 
 ## Contents <a name="contents"></a>
 

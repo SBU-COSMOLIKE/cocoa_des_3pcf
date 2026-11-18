@@ -4,8 +4,8 @@ The complete strict collection passes **561 tests** (91.42 seconds).
 All three physical Nautilus checks pass with 480 rows and exact restoration
 after an IA displacement. The IA/Fisher notebook executed 12 code cells and
 produced 13 figures; the original-code comparison executed nine cells and
-produced five figures. All eighteen figures were inspected. One covariance
-figure label is being clarified before the final notebook render.
+produced five figures. All eighteen figures were inspected. The covariance
+figure now identifies the supplied Y3 covariance explicitly.
 
 Fresh full NLA and TATT bases contain 103 and 121 distinct mean evaluations.
 All 31 saved numerical arrays in each match the previous archived bases
@@ -15,11 +15,24 @@ model-selector handling in the likelihood. Older records remain under
 identities; none were relabeled. The saved-array comparison is recorded in
 `runs/baseline_refresh_comparison.json`.
 
-Selected-column scans and eight-mean step checks are being refreshed,
-followed by full triangle-grid refinements for both models. Until those
-finish, the selected-scan and step numbers in the study record refer to
-the preserved earlier calculations. A small fourth-difference noise score
-alone does not establish convergence.
+The four selected-column scans and eight-mean step checks are refreshed
+for both models. Both full triangle-grid refinements are also complete.
+At h/2, refining all columns changes the w0–wa FoM by +0.170% for NLA
+and -0.055% for TATT. The corresponding four-column substitutions change
+it by -6.72% and -5.30%. All shared stencil predictions and reconstructed
+selected derivatives agree bit for bit: the other nuisance responses
+compensate when refined together. These full results still differ by
+6.08% and 5.64% between parameter steps. A small fourth-difference noise
+score alone does not establish convergence. The
+[Fisher accuracy record](tests/studies/fisher_accuracy_validation.md)
+contains the complete comparisons and the saved-array reporting command.
+
+The [ten angular checks](tests/studies/angular_order_results.md) are also
+complete. Raising M from 20 to 50 at fixed L=50 has negligible effect on
+the tested means. Changing L, angular sampling and coupling interpolation
+gives small but nonzero distances; their separate changes partly cancel.
+Every two-point row stays bitwise unchanged. These are fiducial checks,
+not angular convergence tests of Fisher derivatives.
 
 **The first TATT demonstration Fisher result is not accepted.** Its
 prepared projection undersampled squeezed shapes and large Fourier
@@ -111,9 +124,10 @@ retains all 400 xi and 80 aperture rows; this is not the published cut or
 compressed likelihood. The baryon bispectrum response alone is not a
 complete joint power/bispectrum feedback model.
 
-The expanded IA notebook and original-code comparison are executed.
-The Fisher-accuracy notebook awaits fresh scans and full derivative
-confirmation. Fixed-dark-energy summaries select the posterior Fisher
+The expanded IA notebook, original-code comparison and Fisher-accuracy
+notebook are executed. The accuracy notebook includes the cheap diagnostic,
+step comparisons and completed full triangle checks. Fixed-dark-energy
+summaries select the posterior Fisher
 submatrix before inversion while retaining all other nuisance parameters. The accuracy workflow uses
 the shared core estimator and a single full default Fisher base per
 declared physical model. Candidate settings evaluate selected derivative

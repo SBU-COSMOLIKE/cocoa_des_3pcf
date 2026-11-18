@@ -149,11 +149,12 @@ has located a useful full follow-up without replacing that follow-up.
 
 ## Full derivatives and compensating nuisance changes
 
-The completed NLA triangle refinement changes every derivative column.
-Its 4 x 5 x 480 selected stencil values agree bit for bit with the
-earlier four-column scan. Reconstructing those four derivatives in the
-same arithmetic also gives identical bits. The difference below therefore
-comes from updating the remaining columns, rather than from different
+The completed NLA and TATT triangle refinements change every derivative
+column. In each model, the 4 x 5 x 480 selected stencil values agree bit
+for bit with the earlier four-column scan. Reconstructing those four
+derivatives in the same arithmetic also gives identical bits. The
+differences below therefore
+come from updating the remaining columns, rather than from different
 predictions at the shared parameter points.
 
 | NLA derivative matrix at h/2 | w0–wa FoM | Ratio to the full default h/2 FoM |
@@ -162,6 +163,13 @@ predictions at the shared parameter points.
 | Only the four selected columns refined | 0.1783249932 | 0.932789 |
 | Only the other thirteen columns refined | 0.2049386912 | 1.072001 |
 | All seventeen columns refined | 0.1914995559 | 1.001703 |
+
+| TATT derivative matrix at h/2 | w0–wa FoM | Ratio to the full default h/2 FoM |
+|---|---:|---:|
+| All columns at default triangle resolution | 0.1440473499 | 1.000000 |
+| Only the four selected columns refined | 0.1364189361 | 0.947042 |
+| Only the other sixteen columns refined | 0.1523851638 | 1.057882 |
+| All twenty columns refined | 0.1439674353 | 0.999445 |
 
 Both partial substitutions mix two numerical grids. They change the
 relations between parameter responses, which determine what survives
@@ -176,12 +184,30 @@ smaller than the original h-versus-h/2 disagreement. This result does not
 settle the derivative-step choice, higher angular orders or other
 integration grids.
 
+The corresponding TATT change at the larger step is from 0.1363035239
+to 0.1362851406, or -0.0135%. At h/2 it is -0.0555%. Both models
+therefore have small full-Fisher changes for this particular triangle
+refinement, despite the large mixed-grid substitutions. Their refined
+h/2 values still differ from their refined h values by 6.083% for NLA
+and 5.637% for TATT. A stable triangle comparison has not removed the
+step sensitivity.
+
 The paper-related quantity also needs its own check. With dark energy
 fixed and all other parameters marginalized, the NLA joint/xi
 matter-density–S8 FoM ratio changes from 2.138926 to 2.156096 at h/2,
 an increase of 0.803%. The joint S8 error changes from 0.01546466 to
 0.01542283. These are local demonstration constraints under the stated
 uncut vector and priors; they are not the paper's posterior comparison.
+
+For TATT, the same fixed-dark-energy FoM ratio changes from 2.920618
+to 2.944914, an increase of 0.832%. Its joint S8 error changes from
+0.01550684 to 0.01548462. The two-point derivative rows remain bitwise
+unchanged for both models and both step lengths. Thus these comparisons
+isolate the stated three-point triangle refinement, while retaining
+all two-point information and the cross-covariance. The complete array
+record is `runs/fisher_array_diagnostics/full_triangle.json`; the
+reporting command below verifies the shared stencils, reconstructs the
+Fisher matrices and checks the configuration and physical identities.
 
 ## Step follow-up and remaining checks
 
@@ -218,8 +244,8 @@ The smaller steps give closer agreement for the quantity tested here:
 better. This is evidence about two columns at the default grid, rather
 than a complete finer-grid or all-column step-convergence result.
 
-Full triangle refinements must evaluate every derivative at both step
-lengths. Their xi rows contribute most of the baseline step discrepancy;
+The completed full triangle refinements evaluate every derivative at
+both step lengths. Their xi rows contribute most of the baseline step discrepancy;
 increasing only the three-point grids cannot settle it. The targeted
 step comparison must also be checked at the selected refined grid.
 

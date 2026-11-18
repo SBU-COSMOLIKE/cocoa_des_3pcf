@@ -57,7 +57,21 @@ figures were inspected. The new full NLA/TATT baseline runs reproduce all
 31 numerical arrays of their preserved prior calculations bit for bit.
 Their original metadata stays separate from the fresh implementation
 identities; the equality record is `runs/baseline_refresh_comparison.json`.
-The selected scans and full triangle checks are separate later calculations.
+Four selected-column scans and eight additional step-study means per
+model are refreshed. The full triangle checks then evaluate every
+derivative at both spacings: 103 means for NLA and 121 for TATT. Every
+shared selected stencil and reconstructed derivative agrees bit for bit
+with its scan. Updating all nuisance columns compensates the larger
+mixed-grid FoM shifts. At h/2 the full triangle/default FoM ratios are
+1.001703 for NLA and 0.999445 for TATT; their internal step sensitivity
+remains 6.08% and 5.64%. The
+[accuracy record](studies/fisher_accuracy_validation.md) separates these
+comparisons from a claim of complete convergence.
+
+The Fisher-accuracy notebook also executed twelve code cells and produced
+nine figures from completed saved arrays. Inspection identified a clipped
+axis label in the step panels. The shortened label was rerendered and
+all affected figures were inspected; all nine final figures are readable.
 
 The native interpolation/source-grid checkpoint is `6a7eae7` on
 `lowrank_fftlog`. Its full project collection passed **502 tests in strict
