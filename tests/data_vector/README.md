@@ -54,6 +54,10 @@ explains which controls must be refined independently.
 
 ## Running the checks <a name="running"></a>
 
+Use the [test environment](../README.md#running): BLAS has one thread,
+OpenMP has at most four, and only one test process runs at a time. Set the
+environment before Python starts; child processes inherit it.
+
 **Step :one:**: run from an activated `Cocoa/` directory.
 
 ```bash

@@ -27,6 +27,32 @@ CORE_DIRECTORY = PROJECT.parent / "des_y3" / "interface"
 CORE_MODULE = CORE_DIRECTORY / "cosmolike_des_y3_interface.so"
 
 
+@pytest.mark.parametrize("name", [
+    "core", "nbin", "threads", "interpolation_type", "accuracy_boost",
+    "integration_accuracy", "fpt_internal_boost", "ell_internal",
+])
+def test_declared_core_controls_are_immutable(name):
+    """Refuse a partial edit that an outer mean cache would otherwise miss.
+
+    Construction stores settings without calling the ordinary extension,
+    so this ownership check needs no imported core or numerical setup.
+    """
+    from des3pcf.core_two_point import CoreTwoPoint
+
+    adapter = CoreTwoPoint(core=None, nbin=2)
+    with pytest.raises(AttributeError, match="construct a new engine"):
+        setattr(adapter, name, getattr(adapter, name))
+
+
+@pytest.mark.parametrize("level", [-1, 8, 1.5, True])
+def test_unsupported_core_quadrature_level_stops_before_setup(level):
+    """Reject unsupported levels before any fatal ordinary-core call."""
+    from des3pcf.core_two_point import CoreTwoPoint
+
+    with pytest.raises(ValueError, match="integration_accuracy.*0..7"):
+        CoreTwoPoint(core=None, nbin=2, integration_accuracy=level)
+
+
 def physical_inputs(nbin):
     """Build matching h-unit tables without CAMB or a survey data file."""
     wave = np.geomspace(start=1.0e-5, stop=1.0e3, num=96)

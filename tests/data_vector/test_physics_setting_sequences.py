@@ -375,7 +375,9 @@ def worker(family, adapter, output, index):
                           else [0, last, 0], dtype=np.int32)
         parameters = copy.deepcopy(case["ia"])
         settings = copy.deepcopy(case["grid"])
-        method = "projection_grid_notebook" if adapter == "notebook" else "projection_grid"
+        method = "projection_grid"
+        if adapter == "notebook":
+            method = "projection_grid_notebook"
         grid = getattr(model, method)(bins=bins, parameters=parameters, settings=settings)
         result = evaluate(model=model, grid=grid, case=case, adapter=adapter)
         if case["mutate"]:

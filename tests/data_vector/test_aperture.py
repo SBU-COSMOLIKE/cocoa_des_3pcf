@@ -165,7 +165,7 @@ def test_thread_count_and_repeated_call(compiled):
     reference = compiled.production.aperture_apply(
         wr=baseline[0], wi=baseline[1], gr=gamma_real, gi=gamma_imag
     )
-    for nthreads in (2, 4, 8, 1):
+    for nthreads in (2, 3, 4, 1):
         compiled.set_omp_threads(nthreads=nthreads)
         for repeat in range(2):
             weights = compiled.production.aperture_weights(**arguments)

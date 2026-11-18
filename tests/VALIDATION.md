@@ -1,122 +1,140 @@
-# Initial component validation record
+# Validation record
 
-This is the historical foundation-only record. The current implementation
-also contains physical projection, transforms and joint covariance. Its
-executed interim checks and outstanding revisions are listed in
-[CHECKPOINT.md](../CHECKPOINT.md); the full strict/debug record is pending.
+This record distinguishes equation checks, state-change checks, numerical
+refinement and survey reproduction. Passing the first two does not establish
+the latter two. The C implementation is isolated in `cosmolike/3pcf/`; the
+ordinary two-point source files were not changed or rebuilt for these checks.
+The existing DES Y3 extension is used to check the Python two-point bridge.
 
-The initial component milestone was checked on 2026-11-17. This record
-concerns the C files in `cosmolike/3pcf/`, both C++ adapters and this
-project's isolated build. It does not certify a complete cosmological
-prediction or survey covariance.
+1. [Executed checks](#executed)
+2. [What the references measure](#references)
+3. [Notebook state and parallel arithmetic](#state)
+4. [Scientific limits](#limits)
 
-| Environment | Value |
+## Executed checks <a name="executed"></a>
+
+The core checkpoint is `d832c5f`, following `8c58ace`. Checks ran on
+2026-11-17 using Darwin arm64, Clang 19.1.7, Python 3.11.12 and NumPy 1.26.3.
+Compilation used one worker. BLAS used one thread. OpenMP comparisons used
+at most four workers, with one worker for ordinary calculations. No timing
+experiment or survey-scale integration was run.
+
+| Calculation | Result |
 |---|---|
-| Platform | Darwin, arm64 |
-| C/C++ compiler | Cocoa environment Clang 19.1.7 |
-| Python | 3.11.12 |
-| NumPy | 1.26.3 |
-| Parallel checks | 1, 2, 4 and 8 OpenMP workers; OpenBLAS fixed to one |
-| Strict build | `-O3`, native instruction selection, strict floating-point flags |
-| Debug build | `-O0`, undefined-behavior and floating-point-division sanitizers; strict arithmetic and OpenMP retained |
+| Full strict checks before the final multipole rounding correction | 232 passed, exit 0 |
+| Full debug checks before the final multipole rounding correction | 232 passed, exit 0; no sanitizer diagnostic |
+| Multipole output-extension checks against the preceding strict build | Eight failed, reproducing the scalar/vector rounding discrepancy |
+| All data-vector checks and covariance component checks after the correction, strict | 100 passed, exit 0 |
+| Physical-model, multipole output-extension and physical-state checks after the correction, debug | 38 passed, exit 0; no sanitizer diagnostic |
+| Restore strict extension after debug | Exit 0 |
 
-## Commands and outcomes
+The strict build uses `-O3` with native instruction selection and the core's
+strict floating-point flags. Debug uses `-O0`, undefined-behavior and
+floating-point-division sanitizers. There is no AddressSanitizer result in
+this record. Linux and other processor architectures remain untested.
 
-The selected Cocoa environment supplied `CONDA_PREFIX`, `C_COMPILER`,
-`CXX_COMPILER` and the Python executable. Each build used one compilation
-worker. From `projects/des_3pcf/interface/`, the build commands were:
+Build and environment commands are in the [test guide](README.md). From the
+project directory, after that environment setup, the exact test selections
+were:
+
+**Step :one:**: run all checks in the selected build mode.
 
 ```bash
-make -f MakefileCosmolike -j1
-COSMOLIKE_DEBUG_MODE=1 make -f MakefileCosmolike -j1
+../../.local/bin/python -B -m pytest -q -x tests
 ```
 
-The test command below was run from the directory containing `Cocoa/`,
-after each selected build. No survey calculation or benchmark was run.
+**Step :two:**: check the corrected multipole arithmetic and its callers.
 
 ```bash
-Cocoa/.local/bin/python -B -m pytest -q -p no:cacheprovider Cocoa/projects/des_3pcf/tests
+../../.local/bin/python -B -m pytest -q -x \
+  tests/data_vector tests/covariance/test_components.py
 ```
 
-| Check | Outcome |
+**Step :three:**: check that correction with the debug build.
+
+```bash
+../../.local/bin/python -B -m pytest -q -x \
+  tests/data_vector/test_multipole_lane_invariance.py \
+  tests/data_vector/test_physics_model.py \
+  tests/data_vector/test_physics_setting_sequences.py
+```
+
+Notebook, plotting and expanded YAML/Fisher checks are being recorded
+separately as their executed outputs become available. They are not counted
+as completed by the C checks above.
+
+## What the references measure <a name="references"></a>
+
+| Reference | Scientific question |
 |---|---|
-| Strict component build | Exit 0 |
-| Strict component and input-contract tests | 37 passed, exit 0 |
-| Debug component build | Exit 0 |
-| Debug component and input-contract tests | 37 passed, exit 0; no sanitizer diagnostic |
-| Default build restored | Strict extension retained in `interface/` |
+| Pinned fastnc matter and nineteen IA components | Does the port preserve the declared upstream formulas and conventions? |
+| Eighty-digit squeezed-triangle equations | Does stable double-precision geometry retain terms lost by squared-side cancellation? |
+| Cartesian Gaussian shear moments | Are the natural-component signs, phases and ordered Fourier legs correct independently of fastnc? |
+| Analytic and independently evaluated Mellin transforms | Are FFTLog normalization, Bessel order, taper and radial-bin averaging correct? |
+| Pinned aperture kernels and direct complex contractions | Are unequal radii, mirrored terms, bin measures and component order correct? |
+| White-noise filtered-pair integral and fifteen Gaussian pairings | Are Fourier measures and Gaussian contraction multiplicities correct? |
+| Direct NFW profiles, halo variance and abundance derivatives | Are mass definitions, halo normalization and the selected response correct? |
+| Separately assembled PB, BB, PT and connected terms | Do shared geometry and source factors preserve the declared covariance equations? |
+| Analytic annular noise overlap | Do xi spin factors, E/B noise and exact angular edges give the expected noise covariance? |
+| Full joint Schur decomposition and derivative examples | Does the forecast preserve cross covariance and parameter priors? |
 
-The first build exposed a missing NumPy header include for CARMA. The
-Makefile now obtains that include directory from the selected Python's
-installed NumPy. No dependency was installed or upgraded.
+Source agreement is not an independent proof of a source formula. The
+squeezed-triangle checks deliberately use unrearranged equations at eighty
+digits, with the exact binary inputs supplied to C. They cover side ratios
+through $`10^{-12}`$, several opening angles, cyclic relabelings and common
+power-of-two rescalings. The matter fit retains its separate source-root
+accuracy allowance; the geometry tests do not relax that comparison.
 
-## What the numerical comparisons cover
+One pinned IA entry describes an intended 3:4:5 triangle and vanishes
+analytically. The reference and port can give different signs to its tiny
+floating-point remainder. That entry is checked against its unsubtracted
+vertex amplitude times a roundoff bound. Every other pinned IA entry keeps
+its original tolerance. This is different from increasing a whole-array
+absolute tolerance until a discrepancy disappears.
 
-The saved aperture weights use a verified external fastnc source hash,
-with equal-radius and unequal-radius branches. The C code's cyclic
-kernel agrees within relative tolerance $`2\times10^{-12}`$ and absolute
-floor $`2\times10^{-15}`$ on the stored geometry. The contraction checks
-use one through four filter outputs, five independent input samples,
-real and imaginary components, and direct complex matrix multiplication.
+## Notebook state and parallel arithmetic <a name="state"></a>
 
-The filtered-pair comparison uses the analytic white-noise Gaussian-filter
-integral, including zero separation, unequal radii and signed large-radius
-correlations. Gaussian covariance is checked against independent
-enumeration of the fifteen pairings, plus the one-field expression.
-The response contraction agrees with direct matrix multiplication and
-retains an intentionally rank-deficient positive-semidefinite limit.
+A reused object is compared with a separate process configured directly at
+the requested state. The physical-model checks contain 150 such references,
+the transform/aperture checks 66, and the physical-covariance checks 82.
+They grow and shrink dimensions, change coordinates without changing sizes,
+interleave retained models, restore earlier settings and mutate caller or
+returned arrays. Identical operations require identical float64 bits.
 
-Both adapters return the documented axis order. Tests check that notebook
-copies accept strided, read-only and unaligned views without changing
-them, while production rejects incompatible dtype or alignment. Stored
-results survive subsequent calls. Repeated calculations of every C
-component agree bit for bit across the tested worker counts.
+The project checks also change IA parameters, source shifts, calibration,
+physical-table settings and global/stage accuracy controls behind the outer
+Fisher cache. Changing a count must affect the intended stage before its
+invalidation test can be considered informative. The ordinary two-point
+bridge restores its declared state after raw notebook calls and refuses
+partial edits to its prepared settings.
 
-Malformed-input checks run in child processes and require the intended
-diagnostic and exit status one. They cover degenerate and unrepresentable
-aperture geometry, invalid widths, nonfinite inputs and outputs, negative
-Gram weights, invalid field indices, mismatched triangle dimensions,
-asymmetric Gaussian pair functions and unaligned borrowed buffers. A
-loader failure or unrelated Python traceback cannot count as a successful
-rejection test.
+The review identified a compiler distinction that strict flags alone do not
+remove: a scalar multiply-add can round once while explicit SIMD products
+and sums round separately. Local rounding boundaries are used in the affected
+covariance and multipole tails. Covariance tests add zero-measure nodes;
+multipole tests append an unused query or an extra retained Legendre order.
+These operations move an existing output between scalar and vector paths
+without changing its equation. The corrected outputs retain identical bits.
 
-## Independent scientific and didactic review
+Workspace dimensions enter checked `size_t` multiplication before allocation.
+Notebook integer source labels are checked before conversion to int32, so
+fractional values cannot be truncated into apparently valid bin labels.
+Malformed-input tests require the intended diagnostic and exit status in a
+child process; a loader failure or unrelated traceback cannot pass them.
 
-Separate reviewers read the aperture algebra, the C++ ownership and
-layout conversions, and the covariance contractions. The review found
-and resolved three concrete boundary issues: centroid underflow before
-division, unaligned but contiguous NumPy buffers, and the symmetry
-assumption required before reflecting Gaussian covariance entries.
-The rejection tests exercise those conditions.
+## Scientific limits <a name="limits"></a>
 
-The didactic review checked the complete component for an advanced
-undergraduate reader. Function headers and loop comments define the
-physical quantity, measures, units, array axes and numerical steps.
-SIMD comments explain what each lane computes and why worker writes are
-independent. The README distinguishes E/B leakage, finite quadrature,
-raw-map Gaussian covariance and the still-missing catalogue estimator.
-Documentation rendering, local links, anchors and prohibited vocabulary
-are checked separately from the numerical results.
+The covariance describes the declared full-filter map estimator and selected
+one-halo/halo-abundance responses. It is gravitational, with Gaussian shape
+noise; it does not supply connected IA covariance, a galaxy catalogue mask,
+or every contribution to super-sample covariance. Finite side-angle-side
+means need a matching covariance or a demonstrated estimator approximation.
+The [paper-target guide](../PAPER_TARGETS.md) separates those questions from
+agreement between shared numerical kernels.
 
-The documentation pass rendered 60 Markdown files, including the original
-study, its portable core copy and the updated guides. It checked 568 local
-links and 28 anchors; the study and new guides rendered 80 tables. The
-prohibited-word and expression scan found no matches in the new prose,
-comments or docstrings. The final source-format check found no tabs,
-trailing whitespace or lines beyond the applicable C/Python limits.
-
-## Remaining limits
-
-The geometry reference covers moderate side and radius ratios. The
-guards reject examples outside double-precision representability; they
-do not establish near-collinear accuracy for every finite input.
-There is no AddressSanitizer run in this record; the debug build uses the
-sanitizers listed above. Linux compilation and processor comparisons
-remain untested.
-
-The existing two-point data-vector C files were not edited or rebuilt.
-Their large likelihood regressions were not run for this isolated
-component build. No source distribution, bispectrum provider, FFTLog
-natural-component transform, TATT projection, survey mask, mixed
-non-Gaussian covariance, full two-point cross-block or Fisher analysis
-is certified by these checks. There are no timing or scaling claims.
+Small controlled tests do not select DES integration bounds, triangle grids,
+scale cuts or nuisance priors. Survey refinement must compare the full mean
+and its derivatives, preferably using a matched covariance through
+$`\Delta m^T C^{-1}\Delta m`$. The current baryon bispectrum response alone
+does not define a joint power/bispectrum feedback family. No Y3/Y6 posterior
+reproduction or runtime speedup is claimed by this record.

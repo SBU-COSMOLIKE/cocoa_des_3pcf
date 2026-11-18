@@ -173,7 +173,7 @@ def test_covariance_threads_and_reuse(compiled):
     expected_gaussian = compiled.production.gaussian_aperture_covariance(
         **gaussian_inputs
     )
-    for nthreads in (2, 4, 8, 1):
+    for nthreads in (2, 3, 4, 1):
         compiled.set_omp_threads(nthreads=nthreads)
         actual = compiled.production.connected_gram(responses=responses, weights=weights)
         np.testing.assert_array_equal(actual, expected)

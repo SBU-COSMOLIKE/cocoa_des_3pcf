@@ -298,6 +298,96 @@ def test_joint_terms_noise_rules_and_area(compiled, covariance_model):
     np.testing.assert_allclose(larger_covariance[:5], covariance[:5] / 2.0, rtol=3.0e-14)
 
 
+@pytest.mark.parametrize("adapter_name", ["production", "notebook"])
+@pytest.mark.parametrize("large_area", [0, 1])
+def test_zero_measure_padding_preserves_bits(
+    compiled, covariance_model, adapter_name, large_area
+):
+    """Move the same radial nodes between SIMD lanes and the scalar tail.
+
+    A radial integral contains 2*pi*r*dr. Prepending r=0 with positive dr
+    therefore adds exactly zero measure while preserving every original
+    summand and its order. Seven nodes become eight, so the last physical
+    node moves from the scalar tail into a SIMD lane. Different grouping
+    of w*(a*b) and (w*a)*b can then change the halo covariance's last bits.
+    This test exercises the public calculation rather than a copied dot
+    product, including finite-window transforms of the halo response.
+    """
+    inputs = covariance_arguments()
+    inputs["large_area"] = large_area
+    inputs["radius"], inputs["dr"] = logarithmic_rule(
+        lower=1.0e-6, upper=0.03, count=7
+    )
+    padded = dict(inputs)
+    padded["radius"] = np.concatenate(([0.0], inputs["radius"]))
+    padded["dr"] = np.concatenate(([1.0], inputs["dr"]))
+    adapter = getattr(compiled, adapter_name)
+    original = adapter.physical_covariance(model=covariance_model, inputs=inputs)
+    actual = adapter.physical_covariance(model=covariance_model, inputs=padded)
+    assert np.any(original[1][4] != 0.0), "connected halo response must be reached"
+    for reference, result in zip(original, actual):
+        assert reference.shape == result.shape
+        assert reference.tobytes() == result.tobytes()
+
+
+@pytest.mark.parametrize("adapter_name", ["production", "notebook"])
+def test_zero_power_padding_preserves_xi_bits(compiled, adapter_name):
+    """An added zero-power node changes SIMD placement, not xi's value."""
+    ell, dell = logarithmic_rule(lower=0.7, upper=1200.0, count=7)
+    arguments = {
+        "ell": ell,
+        "dell": dell,
+        "theta": np.asarray([[0.001, 0.004], [0.003, 0.007]]),
+        "theta_weight": np.asarray([[0.3, 0.7], [0.4, 0.6]]),
+        "spectra_e": np.asarray([1.3, 0.7])[:, None] / (1.0 + ell / 170.0),
+        "spectra_b": np.asarray([0.2, 0.4])[:, None] / (1.0 + ell / 350.0),
+        "sign": np.asarray([1, -1], dtype=np.int32),
+    }
+    padded = dict(arguments)
+    padded["ell"] = np.concatenate((ell, [2.0 * ell[-1]]))
+    padded["dell"] = np.concatenate((dell, [1.0]))
+    for name in ("spectra_e", "spectra_b"):
+        padded[name] = np.column_stack((arguments[name], np.zeros(shape=2)))
+    adapter = getattr(compiled, adapter_name)
+    original = adapter.xi_from_power(**arguments)
+    actual = adapter.xi_from_power(**padded)
+    assert np.all(original != 0.0)
+    assert original.tobytes() == actual.tobytes()
+
+
+@pytest.mark.parametrize("adapter_name", ["production", "notebook"])
+def test_zero_bin_weight_preserves_endpoint_bits(
+    compiled, covariance_model, adapter_name
+):
+    """A zero-weight separation moves the old final endpoint into a lane.
+
+    Three separation nodes times three orientations give nine endpoints.
+    The fourth separation has exactly zero weight, giving twelve nodes
+    with unchanged earlier nodes and sums. The finite-window connected
+    term uses these xi endpoint profiles, including their interpolation.
+    """
+    inputs = covariance_arguments()
+    inputs["large_area"] = 0
+    inputs["phi"] = (np.arange(3) + 0.5) * (2.0 * np.pi / 3.0)
+    inputs["dphi"] = np.full(shape=3, fill_value=2.0 * np.pi / 3.0)
+    inputs["theta"] = np.zeros(shape=(4, 3), dtype=np.float64)
+    inputs["theta"][1:3] = [0.001, 0.002, 0.003]
+    inputs["theta_weight"] = np.zeros_like(inputs["theta"])
+    inputs["theta_weight"][1:3] = [0.1, 0.3, 0.6]
+    padded = dict(inputs)
+    padded["theta"] = np.column_stack((inputs["theta"], inputs["theta"][:, -1]))
+    padded["theta_weight"] = np.column_stack(
+        (inputs["theta_weight"], np.zeros(shape=4))
+    )
+    adapter = getattr(compiled, adapter_name)
+    original = adapter.physical_covariance(model=covariance_model, inputs=inputs)
+    actual = adapter.physical_covariance(model=covariance_model, inputs=padded)
+    assert np.all(np.diag(original[1][4])[1:3] != 0.0)
+    for reference, result in zip(original, actual):
+        assert reference.shape == result.shape
+        assert reference.tobytes() == result.tobytes()
+
+
 def test_joint_adapter_and_thread_ownership(compiled, covariance_model):
     """Both adapters call one physical implementation and own their outputs."""
     inputs = covariance_arguments()

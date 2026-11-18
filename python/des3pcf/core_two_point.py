@@ -19,6 +19,7 @@ import numpy as np
 
 from .inputs import validate_tables
 from .mean import core_power_rows
+from .ownership import PreparedGeometry
 
 
 def core_ia_parameters(ia, nbin):
@@ -71,7 +72,7 @@ def core_ia_parameters(ia, nbin):
     return first, second, density
 
 
-class CoreTwoPoint:
+class CoreTwoPoint(PreparedGeometry):
     """Prepare and query the existing compiled core for a joint TATT forecast.
 
     Arguments:
@@ -80,13 +81,14 @@ class CoreTwoPoint:
       threads = positive worker count for the existing core.
       interpolation_type = ordinary-core n(z) interpolation: 0 cubic, 1 linear.
       accuracy_boost = ordinary-core common numerical refinement, positive.
-      integration_accuracy = nonnegative integer fixed-quadrature setting.
+      integration_accuracy = fixed-quadrature setting, integer zero through seven.
       fpt_internal_boost = CFASTPT internal/output grid ratio, positive.
       ell_internal = coarse C_ell table count, or zero for exact table nodes.
     Side effects:
       Construction changes no core state. Each spectra call resets and
       installs the declared model, leaving it as that module's current state.
-      No files or C source are changed.
+      Settings are immutable: construct a new adapter to change them in the
+      same kernel. No files or C source are changed.
     """
 
     def __init__(
@@ -114,8 +116,12 @@ class CoreTwoPoint:
             raise ValueError("Core accuracy and CFASTPT grid ratios must be positive.")
         if (isinstance(integration_accuracy, bool)
                 or int(integration_accuracy) != integration_accuracy
-                or integration_accuracy < 0):
-            raise ValueError("Core integration_accuracy must be a nonnegative integer.")
+                or not 0 <= integration_accuracy <= 7):
+            # The shear quadrature has eight distinct rules, from 96 to
+            # 8192 nodes. Higher raw-core settings keep the final rule while
+            # still enlarging some redshift arrays. This adapter supports
+            # only the named 0..7 ladder, with no silently saturated setting.
+            raise ValueError("Core integration_accuracy must be an integer in 0..7.")
         # The existing core resets its dense ell table to 512 nodes before
         # applying the common boost. Check the coarse-table setter's range
         # here rather than allowing its fatal C diagnostic to stop Python.
@@ -131,6 +137,7 @@ class CoreTwoPoint:
         self.integration_accuracy = int(integration_accuracy)
         self.fpt_internal_boost = float(fpt_internal_boost)
         self.ell_internal = int(ell_internal)
+        self._seal_geometry()
 
     def restore_core(self):
         """Reset unknown notebook state and install the owned shear selectors.

@@ -21,14 +21,49 @@ We assume Cocoa is active, the component library has been built using the
 `Cocoa/`. The tests create small arrays and use no DES data products,
 Boltzmann solver or cosmological emulator.
 
-**Step :one:**: run the small physical, numerical and driver checks.
+**Step :one:**: reserve parallel work for OpenMP and keep BLAS serial.
+
+Linux:
+
+```bash
+export OMP_NUM_THREADS=4
+export OMP_THREAD_LIMIT=4
+export OMP_PROC_BIND=close
+export OMP_PLACES=cores
+export OMP_DYNAMIC=FALSE
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1
+export BLIS_NUM_THREADS=1
+```
+
+macOS:
+
+```bash
+export OMP_NUM_THREADS=4
+export OMP_THREAD_LIMIT=4
+export OMP_PROC_BIND=disabled
+export OMP_PLACES=cores
+export OMP_DYNAMIC=FALSE
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1
+export BLIS_NUM_THREADS=1
+```
+
+Set these variables before starting Python. The checks normally request
+one OpenMP worker and use at most four for comparisons. BLAS remains at
+one thread throughout, including in child processes. Run one test process
+at a time; additional test processes would each have their own thread team.
+
+**Step :two:**: run the small physical, numerical and driver checks.
 
 ```bash
 python -m pytest -q projects/des_3pcf/tests
 ```
 
 The tests use one worker for ordinary calculations and explicitly compare
-one, two, four and eight OpenMP workers for output ownership. They report test
+one, two, three and four OpenMP workers for output ownership. They report test
 results, not performance comparisons. The covariance references are
 analytic formulas or independently organized contractions; the aperture
 reference includes the hash of its pinned external source.

@@ -7,6 +7,7 @@ comes from the original Python files; it checks implementation agreement.
 Separate resolution studies are still required for survey predictions.
 """
 
+from decimal import Decimal, localcontext
 import json
 from pathlib import Path
 
@@ -91,7 +92,53 @@ def test_pinned_matter_and_all_alignment_components(physical_model):
             remove_alignment=False,
         )
         expected = np.asarray(record["alignment"][str(mode)])
-        np.testing.assert_allclose(actual, expected, rtol=5.0e-11, atol=1.0e-12)
+        # The first triangle has the intended side ratio 3:4:5. Its ddB
+        # shape factor is area*(b^2-a^2)*(c^2-a^2-b^2)/(a^2*b^2*c^2),
+        # which vanishes for a right triangle. Binary rounding of the
+        # input lengths gives a tiny residual, and either double-precision
+        # implementation can change that residual's sign. Check this one
+        # entry against its vertex's roundoff scale, not against a relative
+        # tolerance on a value whose physical limit is zero. Every other
+        # pinned entry retains the original comparison and tolerances.
+        np.testing.assert_array_equal(sides[0], [0.03, 0.04, 0.05])
+        selected = np.ones(shape=expected.shape, dtype=bool)
+        selected[0, 7] = False
+        np.testing.assert_allclose(
+            actual[selected], expected[selected], rtol=5.0e-11, atol=1.0e-12
+        )
+        power = physical_model.power(
+            k=sides[0].copy(), z=np.zeros(shape=3), mode=mode
+        )
+        ratio = 1.0 / (1.0 + parameters["zpivot"])
+        c1 = -parameters["a1"] * ratio ** parameters["eta1"] * 0.0134 * 0.3
+        c2 = parameters["a2"] * ratio ** parameters["eta2"] * 5 * 0.0134 * 0.3
+        vertex = power[0] * power[1] * (c2 / 3 + parameters["bta"] * c1)
+        vertex_scale = power[0] * power[1]
+        vertex_scale *= abs(c2) / 3 + abs(parameters["bta"] * c1)
+        # These sides have order-one ratios, so 64 machine epsilons of
+        # the unsubtracted vertex cover its short sequence of products,
+        # divisions and angular subtractions. This is an absolute bound
+        # for this known zero, not an accuracy allowance for other terms.
+        roundoff = 64 * np.finfo(np.float64).eps * vertex_scale
+        with localcontext() as context:
+            context.prec = 80
+            first = Decimal.from_float(float(sides[0, 0]))
+            second = Decimal.from_float(float(sides[0, 1]))
+            closing = Decimal.from_float(float(sides[0, 2]))
+            semiperimeter = (first + second + closing) / 2
+            area_squared = semiperimeter * (semiperimeter - first)
+            area_squared *= (semiperimeter - second) * (semiperimeter - closing)
+            angular = area_squared.sqrt() * (second**2 - first**2)
+            angular *= closing**2 - first**2 - second**2
+            angular /= first**2 * second**2 * closing**2
+            zero_reference = float(Decimal.from_float(float(vertex)) * angular)
+        assert abs(zero_reference) < roundoff
+        np.testing.assert_allclose(
+            [actual[0, 7], expected[0, 7]],
+            zero_reference,
+            rtol=0.0,
+            atol=roundoff,
+        )
 
 
 def test_tree_limit_and_sigma8_normalization(physical_model):
