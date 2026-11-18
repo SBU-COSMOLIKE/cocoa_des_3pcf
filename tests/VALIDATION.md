@@ -36,6 +36,9 @@ experiment or survey-scale integration was run.
 | Shared plotting render review | 30 modes inspected; four teaching figures retained in the core README |
 | Original-code notebook executed with the strict checkpoint | Nine code cells completed, five figures, no cell errors |
 | IA/Fisher notebook executed with the strict checkpoint | Eleven code cells completed, three figures, no cell errors; survey calculations disabled |
+| CLI timing control, source policy and plot checks | 26 passed; one OpenMP worker and serial BLAS; no physical predictions |
+| LSST timing binding inspection | All 30 methods and used keywords match the installed extension; import only |
+| CLI timing input preflight | Ready; ten random points per workload; no CAMB or measured evaluations |
 
 The strict build uses `-O3` with native instruction selection and the core's
 strict floating-point flags. Debug uses `-O0`, undefined-behavior and

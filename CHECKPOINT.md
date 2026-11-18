@@ -4,10 +4,17 @@ The reviewed core is checkpointed at `98824eb`, following `d832c5f` and
 `8c58ace`, on the existing core branch `lowrank_fftlog`. These commits contain
 only the isolated 3pcf implementation, shared plotting folder and associated
 documentation. Other teams' core changes remain outside them. The project
-has its own `codex/3pcf-port` branch, with the executed notebook and workflow
+uses `main`, with the executed notebook and workflow
 checkpoint at `68e2baa`, following `0e7d9af` and `e2fc60a`. Core commit
 `34c62d1` adds the plotting README's environment instructions without changing
 the numerical implementation.
+
+The CLI scaling study is prepared in [BENCHMARK.md](BENCHMARK.md). It starts
+with LSST Y1 and excludes CAMB from the measured intervals. Input preflight,
+26 control/source/plot checks and inspection of all 30 LSST native binding
+signatures pass. No scientific timing run has started. The dedicated Y3
+timing configuration records the authorized clipping of negative source
+samples; scientific forecast inputs retain their separate source policy.
 
 The [validation record](tests/VALIDATION.md) gives the executed checks and
 limits. All 281 project checks pass in strict and debug builds, including physical

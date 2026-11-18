@@ -6,7 +6,9 @@
 4. [Notebook examples](#notebooks)
 5. [Covariances, Fisher calculations and tests](#tests)
 6. [Survey inputs](#targets)
-7. [Acknowledgements](#acknowledgements)
+7. [Accuracy controls](ACCURACY.md)
+8. [OpenMP timing at random parameter points](BENCHMARK.md)
+9. [Acknowledgements](#acknowledgements)
 
 ## Purpose and current scope <a name="scope"></a>
 
