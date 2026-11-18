@@ -83,6 +83,9 @@ class PhysicalProvider:
           prepare a new resolution from the same baseline in this interpreter.
       feedback = optional immutable FeedbackPair. Its ratios are held fixed
           as cosmology changes; a different pair needs a new provider.
+      pixel_window = optional scalar W(ell), sampled at integers from zero.
+          Owned and fixed for this provider; changing it needs a new provider.
+          Only three-point angular observables are smoothed, not ordinary xi.
     Side effects:
       Retains the latest cosmology table and source-weighted C model.
       CAMB runs only after a physical parameter changes in camb mode.
@@ -94,7 +97,7 @@ class PhysicalProvider:
         source_readers=False, table_boost=8, fit_nz=33,
         accuracy=None, kmax_boltzmann=5.0, extrap_kmax=None,
         source_nz=None, source_interpolation=None, source_padding=None,
-        feedback=None,
+        feedback=None, pixel_window=None,
     ):
         """Store the physical baseline and validate the requested producer mode.
 
@@ -111,6 +114,11 @@ class PhysicalProvider:
         if feedback is not None and not isinstance(feedback, FeedbackPair):
             raise ValueError("feedback must be an immutable FeedbackPair or None.")
         self.feedback = feedback
+        self.pixel_window = None
+        if pixel_window is not None:
+            from .pixel_window import checked_window
+
+            self.pixel_window = immutable_copy(value=checked_window(values=pixel_window))
         self.base = immutable_copy(value=validate_tables(tables=reference_tables))
         self.base_metadata = immutable_copy(value=reference_metadata)
         recorded_source = reference_metadata.get(
@@ -259,7 +267,7 @@ class PhysicalProvider:
             "reference_halofit", "nbin", "compiled",
             "reference_producer_settings", "reference_producer_verified",
             "source_interpolation", "source_padding",
-            "feedback",
+            "feedback", "pixel_window",
         )
         if getattr(self, "_reference_locked", False) and name in reference_names:
             raise AttributeError(
@@ -421,6 +429,7 @@ class PhysicalProvider:
                 fit_nz=self.fit_nz,
                 accuracy=self.accuracy,
                 feedback=self.feedback,
+                pixel_window=self.pixel_window,
             )
             self.model_tables = immutable_copy(value=tables)
             self.model_metadata = immutable_copy(value=metadata)

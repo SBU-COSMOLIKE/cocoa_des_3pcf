@@ -67,8 +67,10 @@ logarithmic interval. The last term is neither that analytic result nor
 the geometric midpoint. It must remain an explicit archived convention.
 [Y3 interface, lines 265–276](https://github.com/rchgomes/3pcf_integrator/blob/d6098d326dcb03bc750adcc9627119f52d928944/python/fastnc_interface.py#L265)
 
-The current project uses the geometric midpoint exp(Delta/2) for both
-side arguments of its aperture weights. Its radial transform is separately
+The default uses the geometric midpoint exp(Delta/2) for both
+side arguments of its aperture weights. The explicit area-weighted and
+empirical-offset choices, original-bank selection and pinned scalar
+pixel window are described in [the estimator guide](../../ESTIMATOR.md). Its radial transform is separately
 given the bin width. Therefore replacing only the side-bin edges does not
 make the final aperture contraction identical to the archived Y3 route.
 [Map3Engine](../../python/des3pcf/mean.py)
@@ -206,10 +208,12 @@ or evidence that a baryonic feedback parameter can be measured. The later
 Fisher comparison can separately test local nuisance marginalization.
 
 The port can therefore examine the paper's IA-response mechanism and
-produce an additional local forecast with stated assumptions. The current
-fixed covariance and missing joint power/bispectrum feedback family do not
+produce an additional local forecast with stated assumptions. The fixed covariance and uncalibrated demonstration response do not
 support a claim of full TATT covariance accuracy, baryon robustness, a
 joint feedback constraint, or recovery of the published posterior gains.
+The [paired response API](../../FEEDBACK.md) accepts independent matter
+power and bispectrum tables; its synthetic example is not a calibrated
+hydrodynamic family.
 
 ## 6. The joint covariance's Map3 sign still needs its producer
 

@@ -19,7 +19,8 @@ import numpy as np
 from scipy import stats
 import yaml
 
-from .likelihood import FixedGaussianLikelihood
+from .compression import load_compression
+from .likelihood import FixedGaussianLikelihood, FiniteSimulationLikelihood
 from .pipeline import COSMOLOGY_NAMES
 from .provenance import file_digest, implementation_identity
 
@@ -146,6 +147,8 @@ def load_inference(path):
             "notes",
             "prediction",
             "projection_overrides",
+            "likelihood",
+            "compression",
             "threads",
             "data",
             "selection",
@@ -209,6 +212,7 @@ def load_inference(path):
         if isinstance(value, bool) or not np.isfinite(value):
             raise ValueError(f"Initial {name}={value} must be finite.")
     prior_distributions(priors=specification["priors"])
+    statistical_settings(specification=specification)
     check = specification["check"]
     fields(
         mapping=check, allowed={"parameter", "delta"},
@@ -232,6 +236,55 @@ def load_inference(path):
     if not 0.0 < sampler["f_live"] < 1.0:
         raise ValueError("sampler.f_live must lie strictly between zero and one.")
     return specification, location
+
+
+def statistical_settings(specification):
+    """Resolve explicit statistical choices before importing the physical model.
+
+    Omitted sections retain the full selected vector and its fixed Gaussian
+    likelihood. A compression must be supplied as a previously saved matrix;
+    fitting a basis inside a likelihood evaluation would redefine the datum.
+    Finite-simulation settings declare assumptions about the raw sample S.
+    """
+    compression = specification.get("compression", {"mode": "none"})
+    fields(mapping=compression, allowed={"mode", "path"}, required={"mode"},
+           name="compression")
+    if compression["mode"] == "none":
+        if "path" in compression:
+            raise ValueError("compression.mode=none must not name a path.")
+    elif compression["mode"] == "file":
+        if not isinstance(compression.get("path"), str) or not compression["path"]:
+            raise ValueError("compression.mode=file requires a saved matrix path.")
+    else:
+        raise ValueError("compression.mode must be none or file.")
+    likelihood = specification.get("likelihood", {"mode": "gaussian"})
+    fields(mapping=likelihood, allowed={"mode", "mock_count", "assumptions"},
+           required={"mode"}, name="likelihood")
+    if likelihood["mode"] == "gaussian":
+        if len(likelihood) != 1:
+            raise ValueError("Gaussian likelihood must not declare finite-mock fields.")
+    elif likelihood["mode"] == "percival":
+        count = likelihood.get("mock_count")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 6:
+            raise ValueError("Percival likelihood.mock_count must be an integer >=6.")
+        assumptions = likelihood.get("assumptions")
+        fields(mapping=assumptions,
+               allowed={"covariance_kind", "independent_mocks", "independent_data",
+                        "gaussian_mocks", "compression_independent"},
+               required={"covariance_kind", "independent_mocks", "independent_data",
+                         "gaussian_mocks"},
+               name="likelihood.assumptions")
+        if assumptions["covariance_kind"] != "sample":
+            raise ValueError("Percival requires covariance_kind=sample, without Hartlap.")
+        for name in ("independent_mocks", "independent_data", "gaussian_mocks"):
+            if assumptions[name] is not True:
+                raise ValueError(f"Percival requires {name}=true as an assumption.")
+        if compression["mode"] == "file":
+            if assumptions.get("compression_independent") is not True:
+                raise ValueError("Percival compression must be independent of sample S.")
+    else:
+        raise ValueError("likelihood.mode must be gaussian or percival.")
+    return deepcopy(likelihood), deepcopy(compression)
 
 
 def analysis_configuration(specification, location, driver):
@@ -306,6 +359,16 @@ def inspect_inference(path, driver):
     )
     if not covariance_path.is_file():
         missing.append({"input": "fixed joint covariance", "path": str(covariance_path)})
+    statistics, compression = statistical_settings(specification=specification)
+    if compression["mode"] == "file":
+        compression_path = (location.parent / compression["path"]).resolve()
+        if not compression_path.is_file():
+            missing.append({"input": "fixed compression", "path": str(compression_path)})
+    family = "normalized_fixed_gaussian"
+    uncertainty = "not marginalized"
+    if statistics["mode"] == "percival":
+        family = "normalized_percival"
+        uncertainty = "Percival finite-sample prescription under declared assumptions"
     return {
         "configuration": str(location),
         "configuration_sha256": file_digest(path=location),
@@ -317,8 +380,10 @@ def inspect_inference(path, driver):
         "sampled_parameters": list(specification["priors"]),
         "prior_specifications": specification["priors"],
         "fixed_and_initial_parameters": parameters,
-        "likelihood": "normalized_fixed_gaussian",
-        "covariance_uncertainty": "not marginalized",
+        "likelihood": family,
+        "likelihood_settings": statistics,
+        "compression": compression,
+        "covariance_uncertainty": uncertainty,
         "threads": specification["threads"],
         "missing_inputs": missing,
         "notes": specification.get("notes", []),
@@ -357,6 +422,15 @@ def prepare_likelihood(path, driver):
         # This validation precedes physical model construction and applies
         # to the full, labeled vector rather than to an unlabeled count.
         rows.select(indices=indices)
+    statistics, compression_settings = statistical_settings(specification=specification)
+    compression = None
+    if compression_settings["mode"] == "file":
+        compression_path = (location.parent / compression_settings["path"]).resolve()
+        compression = load_compression(path=compression_path)
+        selected_rows = rows
+        if indices is not None:
+            selected_rows = rows.select(indices=indices)
+        compression.check_labels(labels=selected_rows.labels)
     compiled = driver.compiled_extension(config=config)
     provider, table_metadata = driver.provider_for_run(
         compiled=compiled, config=config, path=prediction_path,
@@ -368,10 +442,28 @@ def prepare_likelihood(path, driver):
     data = None
     if specification["data"]["mode"] == "observed":
         data = rows.values
-    likelihood = FixedGaussianLikelihood(
-        predict=prediction, rows=rows, covariance=covariance,
-        parameters=parameters, data=data, indices=indices,
-    )
+    arguments = {
+        "predict": prediction,
+        "rows": rows,
+        "covariance": covariance,
+        "parameters": parameters,
+        "data": data,
+        "indices": indices,
+        "compression": compression,
+    }
+    if statistics["mode"] == "gaussian":
+        likelihood = FixedGaussianLikelihood(**arguments)
+    else:
+        likelihood = FiniteSimulationLikelihood(
+            **arguments, mock_count=statistics["mock_count"],
+            parameter_count=len(distributions), assumptions=statistics["assumptions"],
+        )
+        record["percival"] = {
+            "mock_count": likelihood.mock_count,
+            "parameter_count": likelihood.parameter_count,
+            "dimension": likelihood.dimension,
+            "exponent": likelihood.exponent,
+        }
     paths = {
         "physical_tables": config["physics"]["tables"],
         "source_curves": config["source"]["path"],
@@ -379,6 +471,19 @@ def prepare_likelihood(path, driver):
         "two_point_rows": config["rows"]["two_point"],
         "aperture_rows": config["rows"]["aperture"],
     }
+    if "feedback" in config:
+        paths["paired_feedback"] = config["feedback"]["path"]
+    if "pixel_window" in config:
+        paths["pixel_window"] = config["pixel_window"]["path"]
+    if compression is not None:
+        paths["compression"] = str(compression_path)
+        record["compression_metadata"] = json.loads(compression.metadata_json)
+        training_names = compression.metadata.get("parameter_names", ())
+        outside_training = []
+        for name in distributions:
+            if name not in training_names:
+                outside_training.append(name)
+        record["compression_parameters_outside_training"] = outside_training
     record["input_files"] = {}
     for name, value in paths.items():
         filename = driver.resolve_path(configuration_path=prediction_path, value=value)

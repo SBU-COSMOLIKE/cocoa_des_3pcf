@@ -45,6 +45,7 @@ from des3pcf.survey import read_joint_covariance, read_source_distributions
 from des3pcf.pipeline import PhysicalProvider, JointPrediction
 from des3pcf.pipeline import COSMOLOGY_NAMES, IA_NAMES
 from des3pcf.feedback import load_feedback
+from des3pcf.pixel_window import load_healpix_window
 from des3pcf.core_two_point import CoreTwoPoint
 from des3pcf.covariance import covariance_inputs, shape_noise
 from des3pcf.accuracy import accuracy_settings
@@ -174,16 +175,21 @@ def load_configuration(path, command):
         "outputs",
         "accuracy",
         "feedback",
+        "pixel_window",
     }
     checked_fields(
         mapping=config, allowed=top_fields,
         required=top_fields - {"description", "notes", "fisher", "covariance",
-                               "accuracy", "feedback"},
+                               "accuracy", "feedback", "pixel_window"},
         name="configuration",
     )
     # Save all factors, including defaults, so reopening a result cannot
     # substitute a newer code default for its numerical preparation.
     config["accuracy"] = accuracy_settings(value=config.get("accuracy")).record()
+    if "pixel_window" in config:
+        checked_fields(mapping=config["pixel_window"],
+                       allowed={"path", "nside", "sha256"},
+                       required={"path", "nside", "sha256"}, name="pixel_window")
     if "feedback" in config:
         checked_fields(mapping=config["feedback"], allowed={"path", "boost"},
                        required={"path", "boost"}, name="feedback")
@@ -325,6 +331,19 @@ def load_configuration(path, command):
     estimator = mean.get("aperture_estimator", "full_filter")
     if estimator not in ("full_filter", "finite_sas"):
         raise ValueError("Mean estimator must be full_filter or finite_sas.")
+    if estimator == "finite_sas":
+        settings = mean["aperture_settings"]
+        settings.setdefault("representative_rule", "geometric")
+        settings.setdefault("representative_offset", 0.0)
+        settings.setdefault("side_min_arcmin", None)
+        minimum = settings["side_min_arcmin"]
+        if minimum is not None:
+            if isinstance(minimum, bool) or not np.isfinite(minimum) or minimum < 0.0:
+                raise ValueError("side_min_arcmin must be finite and nonnegative.")
+        if settings["representative_rule"] not in ("geometric", "area_weighted"):
+            raise ValueError("representative_rule must be geometric or area_weighted.")
+        if not np.isfinite(settings["representative_offset"]):
+            raise ValueError("representative_offset must be finite.")
     if estimator == "full_filter":
         settings = mean["aperture_settings"]
         checked_fields(mapping=settings,
@@ -480,6 +499,8 @@ def required_files(config, path, command):
     requirements = []
     if "feedback" in config:
         requirements.append(("paired feedback responses", config["feedback"]["path"]))
+    if "pixel_window" in config:
+        requirements.append(("scalar pixel window", config["pixel_window"]["path"]))
     if command == "prepare":
         requirements.append(("source FITS", config["source"]["path"]))
     else:
@@ -684,6 +705,15 @@ def provider_for_run(compiled, config, path):
     """
     table_path = resolve_path(path, config["physics"]["tables"])
     tables, provenance = load_tables(path=table_path)
+    pixel_window = None
+    if "pixel_window" in config:
+        window_settings = config["pixel_window"]
+        pixel_window, window_record = load_healpix_window(
+            path=resolve_path(path, window_settings["path"]),
+            nside=window_settings["nside"], sha256=window_settings["sha256"],
+        )
+        provenance = dict(provenance)
+        provenance["pixel_window"] = window_record
     feedback = None
     if "feedback" in config:
         feedback = load_feedback(
@@ -709,6 +739,7 @@ def provider_for_run(compiled, config, path):
         source_padding=config["physics"].get("source_padding"),
         accuracy=config["accuracy"],
         feedback=feedback,
+        pixel_window=pixel_window,
     )
     return provider, provenance
 
@@ -729,6 +760,11 @@ def prediction_for_run(compiled, config, path, rows, provider):
             raise ValueError("phi_bins must be a positive integer.")
         width = np.pi / count
         settings["theta_lower"] = edges[:-1] * ARCMIN_TO_RADIAN
+        minimum = settings.pop("side_min_arcmin", None)
+        if minimum is not None:
+            if "side_keep" in settings:
+                raise ValueError("Choose side_min_arcmin or side_keep, not both.")
+            settings["side_keep"] = edges[:-1] >= minimum
         settings["dlnt"] = float(logarithmic_widths[0])
         settings["phi"] = (np.arange(count) + 0.5) * width
         settings["dphi"] = width

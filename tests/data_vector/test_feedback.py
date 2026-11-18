@@ -203,4 +203,3 @@ def test_feedback_two_point_tatt_keeps_loop_terms_fixed(compiled):
         np.testing.assert_allclose(baseline, references[0] * .8**amplitude, rtol=2.e-9)
         np.testing.assert_allclose(residual, references[1], rtol=2.e-9)
         np.testing.assert_array_equal(odd, references[2])
-

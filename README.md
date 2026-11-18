@@ -11,7 +11,9 @@
 9. [Joint Nautilus examples](INFERENCE.md)
 10. [Publication reproduction plan](PAPER_REPRODUCTION_PLAN.md)
 11. [Paired baryonic responses](FEEDBACK.md)
-12. [Acknowledgements](#acknowledgements)
+12. [Optional compression and finite-simulation likelihood](COMPRESSION.md)
+13. [Aperture estimator conventions](ESTIMATOR.md)
+14. [Acknowledgements](#acknowledgements)
 
 ## Purpose and current scope <a name="scope"></a>
 
@@ -25,7 +27,9 @@ The compiled calculation predicts BiHalofit matter bispectra, the selected
 TATT and velocity-shear intrinsic-shape terms, angular shear correlations,
 and third-order aperture moments. It also constructs the declared analytic
 joint covariance. Python prepares physical tables, reads survey files and
-forms Fisher derivatives. The full selected two-point vector is retained.
+forms Fisher derivatives. The default retains the full selected two-point vector.
+[Optional fixed compression](COMPRESSION.md) applies the same matrix to
+data, predictions and both covariance axes.
 The
 [core module guide](../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md)
 explains the equations and estimator limits; the
@@ -211,6 +215,7 @@ physical comparison.
 | Notebook | What the examples examine |
 |---|---|
 | [EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb) | Comparisons with pinned original transforms and aperture kernels, with source discretization differences and stored physical references labeled separately |
+| [EXAMPLE_COMPRESSION.ipynb](EXAMPLE_COMPRESSION.ipynb) | Optional xi-only, conditional and joint compression; local Fisher checks and finite-simulation assumptions |
 | [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Declared Y3 NLA/TATT means, parameter responses, saved joint Fisher comparisons and the checks needed before interpreting gains |
 | [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Completed default h/h2 Fisher bases, selected-column screening, and full refined-grid checks where available; remaining cases are listed as pending |
 | [EXAMPLE_JOINT_FEEDBACK.ipynb](EXAMPLE_JOINT_FEEDBACK.ipynb) | Shared amplitude for separately supplied power and bispectrum responses |

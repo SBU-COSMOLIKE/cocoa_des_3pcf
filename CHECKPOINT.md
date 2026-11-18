@@ -1,5 +1,47 @@
 # Work in progress: three-point implementation
 
+Optional fixed compression, normalized Percival inference and recovered
+aperture conventions are implemented. EXAMPLE_COMPRESSION executes the
+three-row noise-tracer example and the historical TATT derivative algebra.
+Conditional xi compression retains 100 of 480 rows with maximum normalized
+Fisher difference 1.54e-15; ordinary xi-only compression loses joint
+information. The notebook saves labeled matrices with fiducial and input
+identity, and supplies an independent diagonal teaching pilot for the
+finite-simulation example. Its figure was inspected. COMPRESSION.md and
+EXAMPLE_NAUTILUS4.yaml distinguish the statistical assumptions from a
+published posterior reproduction.
+
+The physical Percival check used the TATT mean, 100 retained rows, one
+OpenMP worker and one BLAS worker. The A1 displacement gave chi squared
+0.005483008289552343 and restoring the fiducial was bitwise exact. This
+checks the executable likelihood and state restoration, not coverage or
+posterior convergence.
+
+ESTIMATOR.md and des_y3_archived_geometry.yaml expose the original radial
+bank, a lower-edge cut retaining indices 11..19, area-weighted sides with
+the archived empirical offset, 100 angle centers and scalar HEALPix pixel
+smoothing. The pinned 72-kB input is verified by SHA256. Native multipole
+preparation includes W3 inside the angular integral; W1W2 multiply after
+interpolation. Both full-filter callbacks apply all three factors once.
+Raw B and xi remain unsmoothed, and the unmatched analytic covariance is
+refused. The notebook adapters and prepared grids own their arrays.
+
+The strict full collection passed 630 tests before the final window tests
+and refusal were added. The final affected collection passes 133 checks
+in strict mode. Debug passed 132 affected checks, then all 14 window checks
+including the additional independent prepared angular oracle. The strict
+build is restored. The documentation render check reports 39 Markdown
+files, 78 tables, 434 local links and no errors. Independent scientific
+and didactic review checked the likelihood formula, response conditioning,
+unit-stable rank, complex contraction sign, window placement and retained
+query lifetime. Shared two-point/team files were not edited.
+
+Catalogue triangle weighting, the exact published cut/compression/prior
+choices, angular convergence at the sharp W3 cutoff, shared-sky mock
+correlations, and physical simulation calibration remain open. These checks
+are not replaced by agreement of local Fisher matrices or by a positive
+sample covariance.
+
 The paired baryonic-response component is implemented and reviewed. Both
 matter ratios are independently supplied; their shared log-response amplitude
 changes only the nonlinear-alignment baseline. Quadratic IA stays DMO,

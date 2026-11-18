@@ -83,6 +83,14 @@ def run_case(case, adapter_name):
         weights = np.ndarray(shape=(3,), dtype=np.float64, buffer=storage, offset=1)
         weights[:] = 1.0
         adapter.connected_gram(responses=np.ones((2, 3)), weights=weights)
+    elif case == "pixel_covariance":
+        sys.path.insert(0, str(PROJECT / "tests" / "data_vector"))
+        sys.path.insert(0, str(PROJECT / "tests" / "covariance"))
+        from test_physics_model import physical_inputs
+        from test_physical_covariance import covariance_arguments
+
+        model = adapter.PhysicsModel(**physical_inputs(), pixel_window=np.ones(10))
+        adapter.physical_covariance(model=model, inputs=covariance_arguments())
     else:
         raise ValueError(f"Unknown refusal case: {case}")
     raise RuntimeError("Invalid input returned a numerical result.")

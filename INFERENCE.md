@@ -11,11 +11,13 @@ Contents:
 2. [Sample and inspect the output](#sample)
 3. [Why the likelihood uses the joint covariance](#likelihood)
 4. [Public observed measurements](#observed)
+5. [Optional compression and finite-simulation likelihood](COMPRESSION.md)
 
 | Example | IA model | Fitted data |
 |---|---|---|
 | [EXAMPLE_NAUTILUS1.yaml](EXAMPLE_NAUTILUS1.yaml) | NLA | Synthetic fiducial mean |
 | [EXAMPLE_NAUTILUS2.yaml](EXAMPLE_NAUTILUS2.yaml) | TATT | Synthetic fiducial mean |
+| [EXAMPLE_NAUTILUS4.yaml](EXAMPLE_NAUTILUS4.yaml) | TATT | Synthetic, independent-pilot compression and declared Percival assumptions |
 | [EXAMPLE_NAUTILUS3.yaml](EXAMPLE_NAUTILUS3.yaml) | NLA | Public observed unblinded Y3 vector, as a demonstration |
 
 The observed example does not reproduce an accepted DES likelihood. Its

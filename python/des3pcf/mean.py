@@ -89,7 +89,7 @@ def aligned_fft_grid(theta_lower, dlnt, ell_min, ell_max, minimum_size):
 
 def physics_model(
     compiled, tables, kernel_nz=101, source_readers=False, table_boost=8, fit_nz=33,
-    accuracy=None, adapter="production", feedback=None,
+    accuracy=None, adapter="production", feedback=None, pixel_window=None,
 ):
     """Construct the owned C model after validating its physical input arrays.
 
@@ -104,6 +104,9 @@ def physics_model(
       adapter = production or notebook; both own the resolved input copies.
       feedback = optional immutable FeedbackPair with paired total-matter
           responses; the IA dictionary selects its common amplitude.
+      pixel_window = optional W(ell) at consecutive integers starting at zero.
+          Three-point angular observables use one W per leg. Raw projected
+          bispectra and ordinary xi retain their declared unsmoothed convention.
     Returns:
       production.PhysicsModel, owning copies of its prepared physical state.
     Raises:
@@ -142,6 +145,10 @@ def physics_model(
             baseline=feedback.native["boost"], stage="feedback_table_boost",
         )
     binding = getattr(compiled, adapter)
+    if pixel_window is not None:
+        from .pixel_window import checked_window
+
+        arguments["pixel_window"] = checked_window(values=pixel_window)
     return binding.PhysicsModel(
         **arguments, **settings, source_readers=source_readers,
     )
@@ -170,6 +177,11 @@ class Map3Engine(PreparedGeometry):
       projection_settings = explicit coarse/dense triangle and multipole controls.
       projection_batch_size = source triplets prepared together, limiting memory.
       accuracy = global/stage refinement from the unchanged baseline counts.
+      side_keep = optional boolean mask on the original lower-edge bank.
+        The same selection applies to both side axes; FFT bins stay intact.
+      representative_rule = 'geometric' or 'area_weighted' side representative.
+      representative_offset = additive change to the dimensionless side
+        factor, e.g. -0.015226 for the archived Y3 empirical convention.
     Side effects:
       Creates serial FFT plans and stores geometry/weights until released.
     """
@@ -179,6 +191,7 @@ class Map3Engine(PreparedGeometry):
         ell_min, ell_max, minimum_size, lmax, mmax, nmu, transform_options=None,
         projection_mode="prepared", projection_settings=None, projection_batch_size=4,
         accuracy=None,
+        side_keep=None, representative_rule="geometric", representative_offset=0.0,
     ):
         """Prepare one transform and one aperture-weight table for these rows.
 
@@ -191,6 +204,33 @@ class Map3Engine(PreparedGeometry):
         """
         if rows.values.size == 0 or np.any(rows.kind != "map3"):
             raise ValueError("Map3Engine requires at least one row and only map3 rows.")
+        lower = np.asarray(theta_lower, dtype=np.float64)
+        if representative_rule not in ("geometric", "area_weighted"):
+            raise ValueError("Side representative must be geometric or area_weighted.")
+        if not np.isfinite(dlnt) or dlnt <= 0.0 or not np.isfinite(representative_offset):
+            raise ValueError("Require positive finite dlnt and finite side offset.")
+        factor = np.exp(0.5 * dlnt)
+        if representative_rule == "area_weighted":
+            # The ratio integrates t*(t dt) and divides by the bin area.
+            # expm1 avoids cancellation for narrow logarithmic intervals.
+            factor = (2.0 / 3.0) * np.expm1(3.0 * dlnt) / np.expm1(2.0 * dlnt)
+        factor += representative_offset
+        if not np.isfinite(factor) or factor <= 0.0:
+            raise ValueError("Representative side factor must be finite and positive.")
+        if factor < 1.0 - 1.e-14 or factor > np.exp(dlnt) * (1.0 + 1.e-14):
+            raise ValueError(
+                "Representative side lies outside its bin; use an offset "
+                "calibrated for this radial width."
+            )
+        self.representative_rule = representative_rule
+        self.representative_offset = float(representative_offset)
+        self.representative_sides = lower * factor
+        if side_keep is None:
+            side_keep = np.ones(lower.size, dtype=bool)
+        self.side_keep = np.array(side_keep, copy=True)
+        if (self.side_keep.dtype != np.dtype(bool)
+                or self.side_keep.shape != lower.shape or not np.any(self.side_keep)):
+            raise ValueError("side_keep must be a nonempty boolean lower-edge selection.")
         self.accuracy = accuracy_settings(value=accuracy)
         minimum_size = self.accuracy.count(minimum_size, stage="fft_boost")
         nmu = self.accuracy.count(nmu, stage="angular_boost", integration=True)
@@ -265,11 +305,18 @@ class Map3Engine(PreparedGeometry):
                 filter_rows.append(radii)
             self.filter_indices[index] = filter_lookup[radii]
         filters = np.ascontiguousarray(filter_rows, dtype=np.float64)
-        midpoint = np.asarray(theta_lower, dtype=np.float64) * np.exp(0.5 * dlnt)
         self.weights_real, self.weights_imag = compiled.production.aperture_weights(
-            d2=np.ascontiguousarray(midpoint), d3=np.ascontiguousarray(midpoint),
+            d2=np.ascontiguousarray(self.representative_sides),
+            d3=np.ascontiguousarray(self.representative_sides),
             phi=phi, dlnd=dlnt, dphi=dphi, filters=filters,
         )
+        # A cut removes quadrature contributions, not bins from the FFT
+        # transform. Keep its original spacing and phases. The product of
+        # identical side masks also respects the reflected triangle term.
+        keep_pairs = self.side_keep[:, None] & self.side_keep[None, :]
+        keep_triangles = np.repeat(keep_pairs.ravel(), phi.size)
+        self.weights_real[:, :, ~keep_triangles] = 0.0
+        self.weights_imag[:, :, ~keep_triangles] = 0.0
         self._seal_geometry()
 
     def evaluate(self, model, ia, calibration=None, component=0):

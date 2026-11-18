@@ -9,3 +9,4 @@ data/upstream_y3_observed/
 outputs/
 runs/
 *.pyc
+data/upstream_healpix/

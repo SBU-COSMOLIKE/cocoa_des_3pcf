@@ -56,6 +56,15 @@ The active VS vertex differs from the literal printed Eqs.62/67; the
 notebook records that unresolved issue. A three-point VS diagnostic also
 does not supply a joint velocity-shear two-point model.
 
+The [paired feedback example](FEEDBACK.md) provides independently supplied
+power and bispectrum responses with one amplitude, while keeping its fixed
+quadratic-IA and covariance assumptions explicit. The
+[estimator guide](ESTIMATOR.md) describes recovered side-bin and pixel
+conventions. [Optional compression and the finite-simulation prescription](COMPRESSION.md)
+are executable choices with a dedicated notebook. Exact published matrices,
+priors, catalogue weighting and simulation calibration remain separate
+reproduction requirements.
+
 ## What the public observed files establish
 
 The separate [observed manifest](data/y3_observed_manifest.json) records

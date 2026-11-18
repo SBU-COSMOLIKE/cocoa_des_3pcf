@@ -63,7 +63,7 @@ def nested_likelihood(values):
     Arguments:
       values = vector in the printed YAML prior order.
     Returns:
-      normalized Gaussian log likelihood. An out-of-domain cosmology returns
+      normalized declared log likelihood. An out-of-domain cosmology returns
       minus infinity before CAMB; unexpected numerical/model failures raise.
     """
     sampled = np.asarray(values, dtype=np.float64)
