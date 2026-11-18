@@ -1,0 +1,8 @@
+{
+  "all_vectors_bitwise_original": true,
+  "baseline": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated",
+  "extension_sha256": "f557ac8cfefe6de950e56197d17f0504614e465ee7672444061a0dd3e80a8ac2",
+  "label": "shared_coefficients",
+  "points": 10,
+  "profiled": false
+}

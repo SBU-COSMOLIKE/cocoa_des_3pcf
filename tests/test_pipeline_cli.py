@@ -147,12 +147,23 @@ def test_evaluate_and_fixed_covariance_fisher(toy_configuration):
         assert metadata["parameter_rank_status"] == "resolved"
         np.testing.assert_array_equal(result_file["mean"], mean)
         assert result_file["derivatives_h2"].shape == (8, 2)
+        assert metadata["stencil_offsets"] == [-2.0, -1.0, 0.0, 1.0, 2.0]
+        for label in ("h", "h2"):
+            samples = result_file[f"stencil_values_{label}"]
+            assert samples.shape == (2, 5, 8)
+            np.testing.assert_array_equal(samples[:, 2], np.tile(mean, (2, 1)))
         for source in range(2):
             # Each occurrence of source i contributes (1+m_i), hence
             # dMap3/dm_i at m=0 is occurrence_count * Map3.
             count = np.sum(rows.bins == source, axis=1)
             expected = mean * count
             step = 0.5 * config["fisher"]["steps"][f"m{source + 1}"]
+            for node, offset in enumerate((-2.0, -1.0, 0.0, 1.0, 2.0)):
+                calibrated = mean * (1.0 + offset * step)**count
+                np.testing.assert_allclose(
+                    actual=result_file["stencil_values_h2"][source, node],
+                    desired=calibrated, rtol=3.0e-15, atol=0.0,
+                )
             # A zero physical derivative still subtracts nearly equal
             # floating-point means. Its absolute error scales as eps/h.
             cancellation = 4 * np.finfo(float).eps * np.max(np.abs(mean))

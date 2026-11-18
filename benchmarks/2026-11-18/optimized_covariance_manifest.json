@@ -1,0 +1,201 @@
+{
+  "all_saved_bits_match_across_threads": true,
+  "baseline": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/tuning_20261117/covariance_baseline_ten",
+  "child_timeout_seconds": 900,
+  "completed": true,
+  "cross_thread_comparison_performed": true,
+  "definition": {
+    "case": "physical",
+    "format": "des3pcf-covariance-scaling-v1",
+    "python_source_sha256": {
+      "accuracy": "179564e3c943400395173946f69e6742ada1bfeb085188cda19b2ec9b4869b5b",
+      "covariance": "d4f055905ca4651c1b194ec34c863b3a4f54bc4286be8a97538cf11c1e8ab4f2",
+      "inputs": "90584c80aa1c7dfd51b72eed7b6430857c1aa4a189d84c9d4d0e9ec8cc959d2d",
+      "mean": "d60197c8b6b3187e406e966d8a53e02f5cfa32d19da6299c7253d9ee03d797c9",
+      "survey": "0768c5c7272bd24dc8ad87bcf516af023652814770ca09225510e95c31e37304"
+    },
+    "settings": {
+      "aperture_radii_arcmin": [
+        7.0,
+        14.0,
+        25.0,
+        40.0
+      ],
+      "area_and_noise_origin": "declared controlled test values",
+      "area_steradian": 0.2,
+      "baryon_strength": 0.0,
+      "center_window": 1,
+      "collapse_model": 0,
+      "concentration_a": 10.14,
+      "concentration_b": -0.081,
+      "concentration_c": -1.01,
+      "concentration_pivot": 2000000000000.0,
+      "counts": {
+        "nell": 64,
+        "nk": 512,
+        "nlos": 33,
+        "nmass": 32,
+        "nphi": 32,
+        "nradius": 256,
+        "nwindow": 64
+      },
+      "delta_c": 1.686,
+      "diagonal_noise_steradian": 2e-09,
+      "ell_bounds": [
+        1.0,
+        30000.0
+      ],
+      "estimator": 0,
+      "fit_nz": 33,
+      "ia_and_shear_calibration": "zero; saved nuisance draws not applied",
+      "ia_model": 0,
+      "k_bounds": [
+        1e-05,
+        1000.0
+      ],
+      "kernel_nz": 101,
+      "large_area": 1,
+      "los_bounds": [
+        0.005,
+        3.0
+      ],
+      "mass_bounds": [
+        100000000.0,
+        1e+16
+      ],
+      "neutrino_model": "single_fluid_effective_growth",
+      "noise_mode": 0,
+      "pair_weight": "uniform_area",
+      "phi_bounds": [
+        0.0,
+        6.283185307179586
+      ],
+      "profile_positive_count": 96,
+      "profile_radius_bounds": [
+        1e-07,
+        0.5
+      ],
+      "profile_upsample": 8,
+      "radius_bounds": [
+        1e-07,
+        0.25
+      ],
+      "source_readers": false,
+      "st_a": 0.707,
+      "st_norm": 0.3222,
+      "st_p": 0.3,
+      "table_boost": 8,
+      "theta_count": 2,
+      "window_bounds": [
+        0.01,
+        1000.0
+      ]
+    },
+    "table_sha256": [
+      "18d42bf3f401d009d4a5a6f0424ad94328466172f8e911e661b30cc533a85286",
+      "94d2057d86f5464c2c53635477456806b0b428737cbe794ffcb20ac140b0905c",
+      "240b1bdc288c52496273212c6a05859462bceeee81600ae7466c30ba2828d783",
+      "2b0ec28ba8b1b83c0f569093e1a277b2ac4cf6d96036afbfed5a5869a0caf9c3",
+      "aa72bda59f80a6e5ff6cc39542999afe20b249bcb46cd737c181ef4e343a37cb",
+      "93ef719c2ff6864f181ae0538ae4cb61bc74c3eb8d74889cbda66e7b2c8855fd",
+      "6efa07e17c55073454989094355e66bc33f47908071ca68ea3c0a67809a0f92f",
+      "b19992f9e3407b36b99d308b06131801250d276665b3d3c60c8e586cafae327b",
+      "56e812bf58be79b2e24b35667a34e83f6c34571976b07030fc1b7d83442ffe7a",
+      "29a7de303de3da61a07e6f7e4f408cf590decdc3c7afae5db212518dba663bf7",
+      "8dcf8508ec27709b93199209d27b2b35f7605cd6653f4aa2214201d62ead04d2"
+    ]
+  },
+  "driver": {
+    "bytes": 34618,
+    "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/tests/studies/covariance_scaling.py",
+    "sha256": "aacc29ae551bd75ee452afc33c326f456b9530a116053b5dd2d5ea7b76730a3b"
+  },
+  "excluded": "CAMB, model and Python geometry setup, file I/O",
+  "extension_frozen": {
+    "bytes": 1291536,
+    "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/tuning_20261117/covariance_pair_mask_ten/extension/cosmolike_des_3pcf_interface.so",
+    "sha256": "f557ac8cfefe6de950e56197d17f0504614e465ee7672444061a0dd3e80a8ac2"
+  },
+  "extension_input": {
+    "bytes": 1291536,
+    "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+    "sha256": "f557ac8cfefe6de950e56197d17f0504614e465ee7672444061a0dd3e80a8ac2"
+  },
+  "platform": "macOS-13.7.5-arm64-arm-64bit",
+  "points": 10,
+  "python": "3.11.12 | packaged by conda-forge | (main, Apr 10 2025, 22:18:52) [Clang 18.1.8 ]",
+  "scope": "Gravitational full-filter Map3 covariance; internal geometry, projected spectra and halo preparation included; five nonzero families and zero PB cross family; the selected response is not full SSC.",
+  "tables": [
+    {
+      "bytes": 551662,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_00.npz",
+      "point": -1,
+      "sha256": "18d42bf3f401d009d4a5a6f0424ad94328466172f8e911e661b30cc533a85286"
+    },
+    {
+      "bytes": 549381,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_01.npz",
+      "point": 0,
+      "sha256": "94d2057d86f5464c2c53635477456806b0b428737cbe794ffcb20ac140b0905c"
+    },
+    {
+      "bytes": 551627,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_02.npz",
+      "point": 1,
+      "sha256": "240b1bdc288c52496273212c6a05859462bceeee81600ae7466c30ba2828d783"
+    },
+    {
+      "bytes": 549397,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_03.npz",
+      "point": 2,
+      "sha256": "2b0ec28ba8b1b83c0f569093e1a277b2ac4cf6d96036afbfed5a5869a0caf9c3"
+    },
+    {
+      "bytes": 551656,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_04.npz",
+      "point": 3,
+      "sha256": "aa72bda59f80a6e5ff6cc39542999afe20b249bcb46cd737c181ef4e343a37cb"
+    },
+    {
+      "bytes": 547218,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_05.npz",
+      "point": 4,
+      "sha256": "93ef719c2ff6864f181ae0538ae4cb61bc74c3eb8d74889cbda66e7b2c8855fd"
+    },
+    {
+      "bytes": 551653,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_06.npz",
+      "point": 5,
+      "sha256": "6efa07e17c55073454989094355e66bc33f47908071ca68ea3c0a67809a0f92f"
+    },
+    {
+      "bytes": 551673,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_07.npz",
+      "point": 6,
+      "sha256": "b19992f9e3407b36b99d308b06131801250d276665b3d3c60c8e586cafae327b"
+    },
+    {
+      "bytes": 549444,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_08.npz",
+      "point": 7,
+      "sha256": "56e812bf58be79b2e24b35667a34e83f6c34571976b07030fc1b7d83442ffe7a"
+    },
+    {
+      "bytes": 553923,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_09.npz",
+      "point": 8,
+      "sha256": "29a7de303de3da61a07e6f7e4f408cf590decdc3c7afae5db212518dba663bf7"
+    },
+    {
+      "bytes": 549381,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla/point_10.npz",
+      "point": 9,
+      "sha256": "8dcf8508ec27709b93199209d27b2b35f7605cd6653f4aa2214201d62ead04d2"
+    }
+  ],
+  "threads": [
+    1,
+    4,
+    8
+  ]
+}

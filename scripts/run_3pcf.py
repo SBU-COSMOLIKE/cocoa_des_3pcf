@@ -818,6 +818,21 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
         "fisher_h2": refined_information,
         "fiducial_covariance": fixed,
     }
+    # Retain the five vectors used by the fourth-difference noise estimate.
+    # The center is shared by every column. All displaced coordinates have
+    # already been evaluated by differentiate, so these exact-key reads do
+    # not request additional physical calculations. Saving both spacings
+    # permits a smooth-curvature check when estimating derivative noise.
+    for label, divisor in (("h", 1.0), ("h2", 2.0)):
+        samples = np.empty((len(names), 5, mean.size), dtype=np.float64)
+        for column, name in enumerate(names):
+            step = float(settings["steps"][name]) / divisor
+            for node, offset in enumerate((-2.0, -1.0, 0.0, 1.0, 2.0)):
+                point = dict(reference)
+                point[name] = float(reference[name]) + offset * step
+                samples[column, node] = cached(parameters=point)
+        arrays[f"stencil_values_{label}"] = samples
+    metadata["stencil_offsets"] = [-2.0, -1.0, 0.0, 1.0, 2.0]
     step_changes = np.zeros(len(names), dtype=np.float64)
     for index in range(len(names)):
         scale = np.max(np.abs(refined[:, index]))
