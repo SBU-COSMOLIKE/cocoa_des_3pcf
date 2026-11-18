@@ -6,16 +6,20 @@ The tests are organized by the quantity being checked.
   angular transforms, interpolation and both aperture routes.
 - [Covariance checks](covariance/README.md) cover halo preparation, joint
   cumulant terms, xi spin/noise factors and shared geometry.
-- Python and CLI checks cover exact parameter keys, survey row ordering,
-  derivatives, Fisher weighting and precision expansion.
-- [Validation record](VALIDATION.md) lists the checks actually executed.
-- [BACCO response study](studies/bacco_validation.md) compares direct emulator
-  values, native interpolation and joint-forecast continuation choices;
-  the [example commands](../BACCO.md#running) run its notebook and off-grid check.
+- [Python and CLI checks](#python_cli) cover exact parameter keys, survey
+  row ordering, derivatives, Fisher weighting and precision expansion.
+- <a name="optional_studies"></a>[Optional studies](studies/README.md#optional_studies)
+  measure angular orders, interpolation and source choices, derivative
+  steps, feedback responses and estimator conventions, with saved records
+  in `studies/results/`. Run them separately from the routine tests.
+- The [validation record](VALIDATION.md) holds the dated executed totals
+  in each build mode, the environment they ran in, and the command flow
+  that reproduces them.
 
 1. [Running the checks](#running)
-2. [Build modes and thread ownership](#modes)
-3. [What passing establishes](#scope)
+2. [Python and CLI checks](#python_cli)
+3. [Build modes and thread ownership](#modes)
+4. [What passing establishes](#scope)
 
 ## Running the checks <a name="running"></a>
 
@@ -72,6 +76,66 @@ results, not performance comparisons. The covariance references are
 analytic formulas or independently organized contractions; the aperture
 reference includes the hash of its pinned external source.
 
+## Python and CLI checks <a name="python_cli"></a>
+
+The Python files directly in `tests/` check the likelihood, forecast and
+command-line layers. Most run on small arrays the tests build; a few run
+physical C predictions (`test_pipeline.py`) or a bounded CAMB solve
+(`test_camb_tables.py`).
+
+**Input and configuration contracts.** `test_input_contracts.py` stops
+invalid scientific inputs with a named diagnostic, and
+`test_bacco_configuration.py` refuses invalid BACCO targets before a
+forecast or sampler starts. `refusal_worker.py` runs one deliberately
+invalid call in a separate Python process, so the required diagnostic and
+exit status are observed rather than assumed.
+
+**CAMB preparation.** `test_camb_tables.py` checks bounded CAMB
+preparation against a fresh final-amplitude solve and the opposite unit
+API. `test_camb_setting_identity.py` checks CAMB settings and saved
+identities without running CAMB or native C.
+
+**Pipeline, sources and CLI.** `test_pipeline.py` checks the assembled
+mean pipeline with physical C calculations, and `test_pipeline_cli.py`
+exercises the command-line workflow on small physical tables the tests build.
+`test_pipeline_setting_sequences.py` and
+`test_core_two_point_sequences.py` compare prediction caches and the
+restored DES Y3 two-point bridge with independently initialized
+processes. `test_prepare_demo_sources.py`, `test_source_grids.py`,
+`test_survey.py` and `test_estimator_geometry.py` cover demonstration
+source preprocessing, source and power-table sampling, survey labels and
+radial binning. `test_prediction_provenance.py` checks exact-file
+provenance of saved predictions.
+
+**Forecast arithmetic.** `test_forecast.py`, `test_fisher_comparison.py`,
+`test_fixed_dark_energy.py`, `test_derivative_templates.py` and
+`test_finite_sign_pair.py` check derivatives, joint information
+accounting, fixed dark energy with varied nuisances, covariance-weighted
+degeneracy and finite model distances on analytic examples.
+`test_compression.py`, `test_inference.py`, `test_precision_components.py`
+and `test_precision_notebook.py` cover local Fisher preservation under
+compression, statistical selection and the known-component precision
+examples. `test_fisher_demo_wrappers.py`, `test_fisher_notebook.py` and
+`test_fisher_accuracy.py` check the notebook wrappers and the limits
+of the shared accuracy diagnostic.
+
+**Study readers and reuse.** `test_accuracy.py`,
+`test_accuracy_full_identity.py`, `test_accuracy_step_plot.py`,
+`test_cosmology_step_study.py`, `test_full_smaller_step_study.py` and
+`test_fisher_result_identity.py` check the saved-study readers: exact
+stencil reuse, refusal of changed files around saved means, and
+historical-record arithmetic without relabeling physical provenance.
+`test_coupling_high_orders.py` compares the geometric coupling with
+independent quadrature at the larger study orders, and
+`test_code_comparison.py` checks source identity and isolated execution
+for the external-code comparison.
+
+**Timing controls without measurement.** `test_scaling.py`,
+`test_scaling_plot.py` and `test_scaling_threepcf.py` check benchmark
+control, the timing display and workload preparation using controlled
+numbers, never measured runtimes. `test_quadrature.py` checks fixed
+quadrature measures, fine rules and oscillating integrals.
+
 ## Build modes and thread ownership <a name="modes"></a>
 
 The default build retains strict floating-point arithmetic. Debug mode
@@ -97,7 +161,7 @@ make -C projects/des_3pcf/interface -f MakefileCosmolike -j1
 ```
 
 The Makefile keeps separate strict and debug object directories and
-relinks the selected mode. Thread comparisons retain the same input
+relinks the mode you select. Thread comparisons retain the same input
 arrays and ordered sums.
 There is no timing loop. Separate cold-start and changed-state performance
 measurements belong to a later quiet-machine exercise.
@@ -109,5 +173,5 @@ complex signs, repeated field labels, output layout and caller-owned
 memory. Independent references include the physical TATT components and
 angular transforms as well as the covariance terms. The checks do not
 establish a finite-catalogue covariance, Y3/Y6 publication reproduction
-or survey Fisher accuracy. Those require the declared inputs and
+or survey Fisher accuracy. Those require the inputs and
 refinements of the whole estimator.

@@ -13,7 +13,7 @@ Example from the project directory, after the baseline Fisher has finished:
 Repeat the same command with --execute to request physical calculations.
 The installed script discovers its project from tests/studies/. An explicit
 --project overrides that location. The default explanatory note is its
-sibling angular_order_validation.md. Use a separate output directory and
+sibling angular_order_results.md. Use a separate output directory and
 baseline configuration for NLA. Every invocation defaults to preflight.
 """
 
@@ -553,7 +553,7 @@ def main():
                         help="Override project discovery from this script location.")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--plan-note", type=Path, default=Path(__file__).with_name(
-        "angular_order_validation.md",
+        "angular_order_results.md",
     ))
     parser.add_argument("--execute", action="store_true")
     arguments = parser.parse_args()
