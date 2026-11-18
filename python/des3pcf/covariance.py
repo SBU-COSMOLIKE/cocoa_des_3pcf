@@ -16,7 +16,7 @@ residuals only after these differences have been quantified.
 """
 
 import numpy as np
-from numpy.polynomial.legendre import leggauss
+from scipy.special import roots_legendre
 from .accuracy import accuracy_settings
 
 
@@ -48,7 +48,12 @@ def quadrature(lower, upper, count, logarithmic=False):
     if logarithmic:
         left = np.log(left)
         right = np.log(right)
-    nodes, weights = leggauss(deg=int(count))
+    # The tridiagonal root calculation avoids the dense companion matrix
+    # used by NumPy's rule generator. Fine xi grids can require thousands
+    # of nodes to resolve Bessel oscillations; their preparation must not
+    # allocate a count-by-count dense matrix. This is the same fixed
+    # Gauss-Legendre rule, with no integrand-dependent adaptation.
+    nodes, weights = roots_legendre(n=int(count))
     nodes = left + 0.5 * (nodes + 1.0) * (right - left)
     weights *= 0.5 * (right - left)
     if logarithmic:
