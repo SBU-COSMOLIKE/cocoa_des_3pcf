@@ -41,14 +41,25 @@ TABLE_NAMES = (
 )
 
 
-def default_lsst_settings(cocoa_root):
+def default_lsst_settings(cocoa_root, ia_model="nla"):
     """Return explicit LSST inputs; cocoa_root is the Cocoa directory.
 
     Paths are absolute. The returned dictionary owns its nested lists,
     so changing it does not change another workload's configuration.
     The all-ones mask selects the full vector rather than the M1 subset
-    of the example likelihood. No covariance is computed here.
+    of the example likelihood. ia_model selects "nla" (native code 0)
+    or "tatt" (code 1), both with CFASTPT code 0 and redshift evolution
+    code 3. TATT starts with the existing test's nonzero quadratic IA
+    amplitudes; evaluate subsequently installs each sampled point's IA.
+    No covariance is computed here.
     """
+    if ia_model not in ("nla", "tatt"):
+        raise ValueError("LSST ia_model must be 'nla' or 'tatt'.")
+    model_code = 0
+    quadratic_amplitude = 0.0
+    if ia_model == "tatt":
+        model_code = 1
+        quadratic_amplitude = 0.05
     root = Path(cocoa_root).expanduser().resolve()
     data = root / "projects" / "lsst_y1" / "data"
     extension = root / "projects" / "lsst_y1" / "interface"
@@ -77,7 +88,7 @@ def default_lsst_settings(cocoa_root):
         "photoz_zmid_convention": 0,
         "adopt_limber_gs": 0,
         "adopt_limber_gg": 0,
-        "IA_model": 0,
+        "IA_model": model_code,
         "IA_code": 0,
         "IA_redshift_evolution": 3,
         "bias_model": [
@@ -143,13 +154,19 @@ def default_lsst_settings(cocoa_root):
                 0.0,
             ],
             "A2": [
-                0.0,
+                quadratic_amplitude,
                 -1.51541,
                 0.0,
                 0.0,
                 0.0,
             ],
-            "B_TA": [0.0]*5,
+            "B_TA": [
+                quadratic_amplitude,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+            ],
             "B1": [
                 1.72716,
                 1.65168,
@@ -176,7 +193,15 @@ def _validated_settings(settings):
     """
     if not isinstance(settings, dict) or "cocoa_root" not in settings:
         raise ValueError("LSST settings need the explicit cocoa_root field.")
-    expected = default_lsst_settings(settings["cocoa_root"])
+    code = settings.get("IA_model")
+    if type(code) is not int or code not in (0, 1):
+        raise ValueError("LSST IA_model must be integer 0 (NLA) or 1 (TATT).")
+    model_name = "nla"
+    if code == 1:
+        model_name = "tatt"
+    expected = default_lsst_settings(
+        settings["cocoa_root"], ia_model=model_name,
+    )
     if set(settings) != set(expected):
         raise ValueError("LSST settings must include every declared field.")
     result = copy.deepcopy(settings)
@@ -311,6 +336,9 @@ def lsst_point_bank(settings, npoints=10, seed=137):
     remain at the frozen fiducial. The project's narrowed boxes, rejected
     high clustering amplitudes and odd-index holds are applied unchanged.
     The result records these rules, the exact points and source hashes.
+    NLA and TATT use identical random points. Only TATT's separate warmup
+    point receives the unit test's nonzero A2 and B_TA amplitudes, ensuring
+    its first evaluation prepares the quadratic IA terms before timing.
     """
     resolved = _validated_settings(settings)
     if type(npoints) is not int or npoints != 10:
@@ -336,6 +364,10 @@ def lsst_point_bank(settings, npoints=10, seed=137):
         seed=seed,
     )
     warmup_point = inputs.load_frozen_point(example="example2")
+    warmup_adjustments = {}
+    if resolved["IA_model"] == 1:
+        warmup_adjustments = copy.deepcopy(inputs.TATT_POINT)
+        warmup_point.update(warmup_adjustments)
     _point_state(resolved, warmup_point)
     for point in points:
         _point_state(resolved, point)
@@ -351,7 +383,9 @@ def lsst_point_bank(settings, npoints=10, seed=137):
     return {
         "format": "des3pcf-lsst-scaling-point-bank-v1",
         "example": "example2",
+        "IA_model": resolved["IA_model"],
         "warmup_point": warmup_point,
+        "warmup_adjustments": warmup_adjustments,
         "points": points,
         "held": held,
         "draw_settings": {
@@ -420,7 +454,7 @@ def _validate_tables(bundle):
         raise ValueError("LSST growth must be positive and chi nonnegative.")
 
 
-def prepare_lsst_tables(settings, output_path, point):
+def prepare_lsst_tables(settings, output_path, point, reuse_path=None):
     """Run CAMB for one point and save ten public-helper outputs to an NPZ.
 
     Call only after numerical work is authorized. This is preparation,
@@ -428,6 +462,14 @@ def prepare_lsst_tables(settings, output_path, point):
     the exact sampled point and full request metadata. Prepare the one
     warmup point and ten random points separately. All thread-count blocks
     then load the same archives without repeating CAMB.
+
+    If reuse_path names an earlier NPZ, its cosmology, CAMB settings and
+    helper source hash must match exactly. The physical arrays are then
+    reused without running CAMB, while the target point and nuisance
+    metadata replace the earlier ones. This lets NLA and TATT share all
+    matter tables, including their different IA warmup amplitudes. The
+    new archive records the hash of the reused file and must be written
+    to a different path so that the original run remains intact.
     """
     import numpy as np
 
@@ -436,21 +478,39 @@ def prepare_lsst_tables(settings, output_path, point):
     if filename.suffix != ".npz":
         raise ValueError("LSST table output filename must end in .npz.")
     metadata = _table_metadata(resolved, point)
-    root = Path(resolved["cocoa_root"])
-    core = root / "external_modules" / "code" / "cosmolike_core"
-    if str(core) not in sys.path:
-        sys.path.insert(0, str(core))
-    from cosmolike_notebook_utils import get_camb_cosmology
+    if reuse_path is not None:
+        previous_file = Path(reuse_path).expanduser().resolve()
+        if previous_file == filename:
+            raise ValueError("Write reused LSST tables to a new output path.")
+        previous = load_lsst_tables(previous_file)
+        for name in ("cosmology", "camb"):
+            if previous["metadata"].get(name) != metadata[name]:
+                raise ValueError(
+                    f"Cannot reuse LSST tables: {name} differs from "
+                    "the target point. Prepare new tables with CAMB."
+                )
+        previous_helper = previous["metadata"].get("helper", {})
+        if previous_helper.get("sha256") != metadata["helper"]["sha256"]:
+            raise ValueError("Cannot reuse LSST tables: the CAMB helper "
+                             "source hash changed. Prepare new tables.")
+        arrays = previous["arrays"]
+        metadata["reused_input"] = _file_record(previous_file)
+    else:
+        root = Path(resolved["cocoa_root"])
+        core = root / "external_modules" / "code" / "cosmolike_core"
+        if str(core) not in sys.path:
+            sys.path.insert(0, str(core))
+        from cosmolike_notebook_utils import get_camb_cosmology
 
-    request = copy.deepcopy(metadata["cosmology"])
-    request.update(resolved["camb"])
-    result = get_camb_cosmology(**request)
-    arrays = {}
-    for name, value in zip(TABLE_NAMES, result):
-        if name == "omegan2":
-            arrays[name] = float(value)
-        else:
-            arrays[name] = np.array(value, dtype=np.float64, copy=True)
+        request = copy.deepcopy(metadata["cosmology"])
+        request.update(resolved["camb"])
+        result = get_camb_cosmology(**request)
+        arrays = {}
+        for name, value in zip(TABLE_NAMES, result):
+            if name == "omegan2":
+                arrays[name] = float(value)
+            else:
+                arrays[name] = np.array(value, dtype=np.float64, copy=True)
     bundle = {"metadata": metadata, "arrays": arrays}
     _validate_tables(bundle)
     filename.parent.mkdir(parents=True, exist_ok=True)

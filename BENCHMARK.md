@@ -11,12 +11,12 @@ This command-line study evaluates ten different parameter points with one,
 four and eight OpenMP threads. Each thread count receives the same saved
 points and physical tables. A separate point warms each process before the
 ten measurements begin. The study uses the production interfaces and does
-not execute a notebook. No timing measurements have been made yet.
+not execute a notebook. NLA and TATT are separate cases for each data vector.
 
 | Workload | Declared observable |
 |---|---|
-| DES Y3 three-point TATT | All 80 aperture rows: twenty source triplets and four filter radii, using the finite-triangle geometry in `configs/des_y3_tatt_scaling.yaml` |
-| LSST Y1 3x2pt NLA | All 1560 entries of the existing production vector, with the all-ones mask, 26 angular bins and the declared multipole limit 65000 |
+| LSST Y1 3x2pt, NLA and TATT separately | All 1560 entries of the existing production vector, with the all-ones mask, 26 angular bins and the declared multipole limit 65000 |
+| DES Y3 three-point, NLA and TATT separately | All 80 aperture rows: twenty source triplets and four filter radii, using the finite-triangle geometry in `configs/des_y3_nla_scaling.yaml` and `configs/des_y3_tatt_scaling.yaml` |
 
 The LSST points come from its existing `nmodels_points` test sampler with
 seed 137. Its prior boxes, amplitude rejection and alternating held parameters
@@ -24,7 +24,11 @@ are retained. The DES points follow the same seed-plus-point-index convention
 with explicit cosmological and nuisance-parameter intervals. DES uses
 $`\sigma_8`$ while the LSST sampler uses $`A_s`$; their point banks are separate.
 This compares each workload's scaling relative to its own one-thread result.
-The workloads do not implement the same observable or the same IA model.
+The two data vectors do not implement the same observable. Within each data
+vector, NLA and TATT use the same cosmological points, source shifts and grids.
+Quadratic IA amplitudes are inactive in NLA and active in TATT. The three-point
+NLA calculation omits physical residual-grid preparation, but retains its
+declared multipole and natural-component transform loops.
 
 The supplied Y3 source distribution has twelve negative samples in its first
 bin. Their integrated magnitude is about 0.041% of that bin's signed
@@ -61,14 +65,21 @@ the run before any physical preparation starts.
 python projects/des_3pcf/scripts/benchmark_scaling.py run
 ```
 
-The command starts with LSST Y1. It prepares eleven physical tables with
-one worker, then runs that workload's three CLI children one at a time.
-Only after LSST finishes does it prepare and run the three-point workload.
+The command starts with LSST Y1 NLA, then LSST Y1 TATT, three-point NLA and
+three-point TATT. It prepares eleven physical table archives per case with
+one worker, then runs that case's three CLI children one at a time.
+TATT reuses its NLA case's CAMB arrays only after exact physical-input checks;
+source/configuration identities and the reused file hash are retained.
 The default block order is four, one, then eight threads, with a fresh
 process for every block. Each block evaluates its separate warmup and then
 the ten saved random points.
 The output directory must not already exist; select another path in
 `configs/openmp_scaling.yaml` for a separate study.
+
+The optional `--reuse-from` argument accepts an earlier two-workload study
+directory containing `tables/lsst/`. It reuses verified physical tables only;
+all timed predictions are rerun. This avoids repeating CAMB when expanding a
+completed LSST NLA test to the four-case comparison.
 
 **Step :three:**: regenerate the figure from completed measurements if needed.
 
@@ -109,7 +120,8 @@ logs for inspection. A timing is not accepted merely because it completed.
 
 ## Read the figures and records <a name="results"></a>
 
-The final directory contains `openmp_scaling.pdf`, `openmp_scaling.png`,
+The final directory contains 120 measured predictions and twelve separate
+warmups, with `openmp_scaling.pdf`, `openmp_scaling.png`,
 `timings.csv`, full JSON records, physical tables, output vectors and child
 logs. The left panel shows every elapsed time, its median and the observed
 minimum-to-maximum range. The right panel shows speedup relative to each

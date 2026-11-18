@@ -34,7 +34,12 @@ import yaml
 PROJECT = Path(__file__).resolve().parents[2]
 COCOA = PROJECT.parents[1]
 SCRIPT = PROJECT / "scripts" / "benchmark_scaling.py"
-LABELS = {"threepcf": "DES Y3 three-point TATT", "lsst": "LSST Y1 3x2pt NLA"}
+LABELS = {
+    "lsst_nla": "LSST Y1 3x2pt NLA",
+    "lsst_tatt": "LSST Y1 3x2pt TATT",
+    "threepcf_nla": "DES Y3 three-point NLA",
+    "threepcf_tatt": "DES Y3 three-point TATT",
+}
 
 
 def file_record(path):
@@ -85,14 +90,15 @@ def load_configuration(path):
         "points",
         "threads",
         "thread_order",
-        "threepcf_configuration",
+        "threepcf_nla_configuration",
+        "threepcf_tatt_configuration",
         "output",
         "child_timeout_seconds",
     }
     if not isinstance(config, dict) or set(config) != expected:
         raise ValueError("Scaling YAML must supply exactly the documented fields.")
-    if config["format"] != "des3pcf-openmp-scaling-v1" or config["points"] != 10:
-        raise ValueError("This study requires its v1 format and ten random points.")
+    if config["format"] != "des3pcf-openmp-scaling-v2" or config["points"] != 10:
+        raise ValueError("This study requires its v2 format and ten random points.")
     required_threads = [
         1,
         4,
@@ -111,7 +117,7 @@ def load_configuration(path):
             raise ValueError(f"{name} must be a nonnegative integer.")
     if config["child_timeout_seconds"] == 0:
         raise ValueError("A child timeout must be positive.")
-    for name in ("threepcf_configuration", "output"):
+    for name in ("threepcf_nla_configuration", "threepcf_tatt_configuration", "output"):
         config[name] = str((filename.parent / config[name]).resolve())
     config["configuration_file"] = file_record(filename)
     return config
@@ -133,27 +139,37 @@ def preflight(path):
     from .scaling_threepcf import preflight_threepcf, threepcf_point_bank
 
     config = load_configuration(path)
-    lsst = default_lsst_settings(COCOA)
+    cases = {}
+    for case in LABELS:
+        workload, model = case.split("_")
+        if workload == "lsst":
+            settings = default_lsst_settings(COCOA, ia_model=model)
+            checked = preflight_lsst(settings)
+            bank = lsst_point_bank(settings, npoints=10, seed=config["seed"])
+            specification = {"lsst_settings": settings}
+        else:
+            filename = config[f"threepcf_{model}_configuration"]
+            checked = preflight_threepcf(filename)
+            bank = threepcf_point_bank(filename, npoints=10, seed=config["seed"])
+            specification = {"threepcf_configuration": filename}
+        cases[case] = {
+            "workload": workload,
+            "ia_model": model,
+            "inputs": checked,
+            "bank": bank,
+            "specification": specification,
+        }
     report = {
         "configuration": config,
-        "lsst": preflight_lsst(lsst),
-        "threepcf": preflight_threepcf(config["threepcf_configuration"]),
-        "point_banks": {
-            "lsst": lsst_point_bank(lsst, npoints=10, seed=config["seed"]),
-            "threepcf": threepcf_point_bank(
-                config["threepcf_configuration"],
-                npoints=10,
-                seed=config["seed"],
-            ),
-        },
-        "lsst_settings": lsst,
+        "cases": cases,
         "scope": (
-            "60 timed vectors; six separate untimed warmup vectors; "
-            "22 CAMB preparations excluded from data-vector intervals."
+            "120 timed vectors; twelve separate untimed warmup vectors; "
+            "CAMB excluded from data-vector intervals. Identical physical "
+            "tables may be reused between IA models after exact input checks."
         ),
         "numerical_work_executed": False,
     }
-    report["ready"] = report["threepcf"].get("ready", True)
+    report["ready"] = all(item["inputs"].get("ready", True) for item in cases.values())
     return report
 
 
@@ -246,15 +262,28 @@ def prepare_job(path):
     records = []
     for index, point in enumerate(points):
         destination = Path(job["tables_directory"]) / f"point_{index:02d}.npz"
+        reuse_path = None
+        if job.get("reuse_tables") is not None:
+            previous = Path(job["reuse_tables"])
+            prior_records = json.loads((previous / "preparation.json").read_text())
+            source = prior_records[index]["table"]
+            if file_record(source["path"])["sha256"] != source["sha256"]:
+                raise RuntimeError("A saved preparation archive changed before reuse.")
+            reuse_path = source["path"]
         started = time.perf_counter_ns()
         if job["workload"] == "lsst":
-            prepare_lsst_tables(job["lsst_settings"], destination, point)
+            prepare_lsst_tables(
+                job["lsst_settings"], destination, point, reuse_path=reuse_path,
+            )
         else:
-            prepare_threepcf_tables(job["threepcf_configuration"], point, destination)
+            prepare_threepcf_tables(
+                job["threepcf_configuration"], point, destination, reuse_path=reuse_path,
+            )
         elapsed = (time.perf_counter_ns() - started) * 1.e-9
         records.append({
             "point": index - 1,
             "preparation_seconds": elapsed,
+            "reused_archive": reuse_path,
             "table": file_record(destination),
         })
         _write_json(Path(job["tables_directory"]) / "preparation.json", records)
@@ -370,7 +399,7 @@ def run_job(path):
             })
         else:
             records.append({
-                "workload": LABELS[job["workload"]],
+                "workload": LABELS[job["case"]],
                 "threads": threads,
                 "repetition": index - 1,
                 "seconds": elapsed,
@@ -429,7 +458,7 @@ def validate_vectors(output, workloads=None):
                     )
 
 
-def run_study(path):
+def run_study(path, reuse_from=None):
     """Prepare and run the study, completing the LSST control first.
 
     Each workload finishes its eleven table preparations, three thread-count
@@ -438,6 +467,9 @@ def run_study(path):
 
     Arguments:
       path = scaling YAML filename; its output directory must not exist.
+      reuse_from = optional earlier study with saved LSST physical tables.
+          The archives are hash checked and their physical requests compared
+          before reuse. No saved timing is imported into this study.
     Returns:
       Path to the directory containing inputs, timings, vectors and figures.
     Raises:
@@ -445,10 +477,7 @@ def run_study(path):
     """
     report = preflight(path)
     if not report["ready"]:
-        raise ValueError(
-            "Preflight found unresolved input choices: "
-            + "; ".join(report["threepcf"].get("blockers", []))
-        )
+        raise ValueError("Preflight found unresolved inputs; inspect the case reports.")
     config = report["configuration"]
     output = Path(config["output"])
     output.mkdir(parents=True, exist_ok=False)
@@ -462,42 +491,59 @@ def run_study(path):
     report["numerical_work_executed"] = True
     _write_json(output / "manifest.json", report)
     records = []
-    # Finish the existing LSST calculation first. A failure in this control
-    # stops the study before any three-point physical tables are prepared.
+    # Copy each binary once so both IA models use the same compiled code even
+    # if another team rebuilds a library while this study is running.
     extensions = {
-        "lsst": Path(report["lsst_settings"]["extension_path"]),
+        "lsst": Path(
+            report["cases"]["lsst_nla"]["specification"]["lsst_settings"]
+            ["extension_path"]
+        ),
         "threepcf": PROJECT / "interface" / "cosmolike_des_3pcf_interface.so",
     }
+    binaries = {}
     for workload, extension in extensions.items():
         frozen = output / "extensions" / workload
         frozen.mkdir(parents=True)
         copied = frozen / extension.name
         shutil.copy2(extension, copied)
-        tables = output / "tables" / workload
+        binaries[workload] = file_record(copied)
+    # NLA precedes TATT for each data vector. The physical tables depend on
+    # cosmology and source shifts, so each TATT case can reuse its NLA tables
+    # after the helper proves that those inputs are identical. C predictions
+    # and physical C-model preparation are still recomputed inside the timer.
+    for case, specification in report["cases"].items():
+        workload = specification["workload"]
+        tables = output / "tables" / case
         tables.mkdir(parents=True)
+        reuse_tables = None
+        if specification["ia_model"] == "tatt":
+            reuse_tables = str(output / "tables" / f"{workload}_nla")
+        elif workload == "lsst" and reuse_from is not None:
+            reuse_tables = str(Path(reuse_from).resolve() / "tables" / "lsst")
         job = {
+            "case": case,
             "workload": workload,
-            "bank": report["point_banks"][workload],
-            "extension": str(copied),
-            "extension_sha256": file_record(copied)["sha256"],
-            "lsst_settings": report["lsst_settings"],
-            "threepcf_configuration": config["threepcf_configuration"],
+            "bank": specification["bank"],
+            "extension": binaries[workload]["path"],
+            "extension_sha256": binaries[workload]["sha256"],
             "tables_directory": str(tables),
+            "reuse_tables": reuse_tables,
         }
-        filename = output / f"prepare_{workload}.json"
+        job.update(specification["specification"])
+        filename = output / f"prepare_{case}.json"
         _write_json(filename, job)
-        print(f"Preparing eleven {workload} physical tables with one worker", flush=True)
+        print(f"Preparing eleven {case} physical tables with one worker", flush=True)
         _child("_prepare", filename, threads=1, timeout=config["child_timeout_seconds"])
         template = job
         for threads in config["thread_order"]:
             job = dict(
                 template,
                 threads=threads,
-                result_directory=str(output / f"{workload}_{threads}"),
+                result_directory=str(output / f"{case}_{threads}"),
             )
-            filename = output / f"worker_{workload}_{threads}.json"
+            filename = output / f"worker_{case}_{threads}.json"
             _write_json(filename, job)
-            print(f"Running {workload}: {threads} threads, ten points", flush=True)
+            print(f"Running {case}: {threads} threads, ten points", flush=True)
             _child(
                 "_worker",
                 filename,
@@ -506,7 +552,7 @@ def run_study(path):
             )
             result_file = Path(job["result_directory"]) / "records.json"
             records.extend(json.loads(result_file.read_text()))
-        validate_vectors(output, workloads=[workload])
+        validate_vectors(output, workloads=[case])
     validate_vectors(output)
     _write_json(output / "records.json", records)
     with (output / "timings.csv").open("w", newline="") as stream:
@@ -517,7 +563,7 @@ def run_study(path):
     _write_json(output / "validation.json", {
         "thread_results_bitwise_equal": True,
         "random_points_per_workload": 10,
-        "timed_vectors": 60,
+        "timed_vectors": 120,
     })
     plot_study(path)
     return output

@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import yaml
 
-from des3pcf.scaling import load_configuration, validate_vectors, _runtime_check
+from des3pcf.scaling import LABELS, load_configuration, validate_vectors, _runtime_check
 
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -17,7 +17,8 @@ def test_configuration_keeps_the_requested_worker_counts():
     result = load_configuration(PROJECT / "configs" / "openmp_scaling.yaml")
     assert result["threads"] == [1, 4, 8]
     assert result["points"] == 10
-    assert Path(result["threepcf_configuration"]).name == "des_y3_tatt_scaling.yaml"
+    assert Path(result["threepcf_nla_configuration"]).name == "des_y3_nla_scaling.yaml"
+    assert Path(result["threepcf_tatt_configuration"]).name == "des_y3_tatt_scaling.yaml"
 
 
 @pytest.mark.parametrize("field,value", [
@@ -27,7 +28,7 @@ def test_configuration_keeps_the_requested_worker_counts():
     ("child_timeout_seconds", 0),
 ])
 def test_configuration_refuses_an_ambiguous_study(tmp_path, field, value):
-    """Malformed counts cannot silently change the intended sixty evaluations."""
+    """Malformed counts cannot silently change the intended 120 evaluations."""
     source = PROJECT / "configs" / "openmp_scaling.yaml"
     config = yaml.safe_load(source.read_text())
     config[field] = value
@@ -39,7 +40,7 @@ def test_configuration_refuses_an_ambiguous_study(tmp_path, field, value):
 
 def _saved_vectors(directory):
     """Write small controlled vectors with distinct physical-point identifiers."""
-    for workload in ("threepcf", "lsst"):
+    for workload in LABELS:
         for threads in (1, 4, 8):
             folder = directory / f"{workload}_{threads}"
             folder.mkdir()
@@ -52,7 +53,7 @@ def test_thread_check_requires_bits_and_changed_point_outputs(tmp_path):
     """A sign-of-zero change fails even though a tolerance comparison would pass."""
     _saved_vectors(tmp_path)
     validate_vectors(tmp_path)
-    path = tmp_path / "threepcf_8" / "point_03.npy"
+    path = tmp_path / "threepcf_nla_8" / "point_03.npy"
     values = np.load(path)
     values[1] = 0.0
     np.save(path, values)
@@ -64,7 +65,7 @@ def test_thread_check_rejects_a_stale_point(tmp_path):
     """An identical vector at a changed point cannot be labeled a recomputation."""
     _saved_vectors(tmp_path)
     for threads in (1, 4, 8):
-        folder = tmp_path / f"lsst_{threads}"
+        folder = tmp_path / f"lsst_nla_{threads}"
         np.save(folder / "point_02.npy", np.load(folder / "point_01.npy"))
     with pytest.raises(RuntimeError, match="identical vector"):
         validate_vectors(tmp_path)

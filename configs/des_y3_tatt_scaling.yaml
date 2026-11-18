@@ -4,7 +4,10 @@ format: cosmolike-3pcf-run-v1
 description: Timing-only full Y3 TATT aperture workload with recorded source clipping; not
   a survey inference configuration.
 notes:
+- 'Timing IA model: TATT.'
 - 'Timing only: set negative source-density samples to zero and renormalize each bin.'
+- The NLA benchmark uses the same cosmological, linear-alignment, calibration and source
+  draws, with the same grids. TATT additionally varies a2, eta2 and bta; ct stays zero.
 - This source treatment is authorized for timing only. Keep the original FITS and the generic
   forecast reader unchanged; record the raw hash, removed negative area and normalization.
 - The physical source grid retains 101 nodes but spans 0..3.1, and LOS retains 65 nodes spanning 0.005..3.1.

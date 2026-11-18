@@ -24,13 +24,15 @@ import pytest
 from des3pcf.scaling_plot import plot_thread_scaling
 
 
-def controlled_records():
-    """Return controlled positive times at ten declared parameter-point indices."""
+def controlled_records(workload_count=2):
+    """Return controlled times for one, two or four declared model/workload labels."""
     records = []
-    baselines = {"Controlled workload A": 40.0, "Controlled workload B": 28.0}
+    names = ["Controlled LSST Y1 NLA", "Controlled LSST Y1 TATT",
+             "Controlled 3pcf NLA", "Controlled 3pcf TATT"]
+    baselines = [40.0, 48.0, 28.0, 56.0]
     variations = np.array([0.8, 0.85, 0.9, 0.95, 0.98,
                            1.03, 1.05, 1.12, 1.2, 1.3])
-    for workload, baseline in baselines.items():
+    for workload, baseline in zip(names[:workload_count], baselines[:workload_count]):
         for repetition in range(10):
             for threads, speedup in ((1, 1.0), (4, 2.7), (8, 3.8)):
                 records.append({
@@ -41,13 +43,14 @@ def controlled_records():
     return records
 
 
-def test_complete_points_median_baseline_and_ownership():
+@pytest.mark.parametrize("workload_count", [1, 2, 4])
+def test_complete_points_median_baseline_and_ownership(workload_count):
     """Every supplied ordinate survives, with its own workload's median T1."""
-    records = controlled_records()
+    records = controlled_records(workload_count=workload_count)
     original = copy.deepcopy(records)
     figure, axes = plot_thread_scaling(records=records, title="Controlled test arrays")
-    for workload in range(2):
-        name = ("Controlled workload A", "Controlled workload B")[workload]
+    names = list(dict.fromkeys(record["workload"] for record in records))
+    for workload, name in enumerate(names):
         data = np.array([
             [next(row["seconds"] for row in records if row["workload"] == name
                   and row["threads"] == threads and row["repetition"] == repetition)
@@ -70,6 +73,9 @@ def test_complete_points_median_baseline_and_ownership():
     assert "10 parameter points" in explanation
     assert "machine variation" in explanation
     assert "not CI or repeatability" in explanation
+    labels = [text.get_text() for text in figure.legends[0].get_texts()]
+    assert labels == names + ["Ideal linear speedup"]
+    assert len(axes[0].containers) == workload_count
     assert records == original
     plt.close(figure)
 
@@ -79,12 +85,12 @@ def test_speedup_uses_ratio_of_medians_and_transformed_extrema():
     records = controlled_records()
     changed_times = [1., 2., 3., 4., 5., 9., 10., 11., 12., 13.]
     for record in records:
-        if record["workload"] == "Controlled workload A" and record["threads"] == 4:
+        if record["workload"] == "Controlled LSST Y1 NLA" and record["threads"] == 4:
             record["seconds"] = changed_times[record["repetition"]]
     figure, axes = plot_thread_scaling(records=records)
     baseline = np.median([
         row["seconds"] for row in records
-        if row["workload"] == "Controlled workload A" and row["threads"] == 1
+        if row["workload"] == "Controlled LSST Y1 NLA" and row["threads"] == 1
     ])
     result = axes[1].containers[0]
     summary = result.lines[0].get_ydata()[1]

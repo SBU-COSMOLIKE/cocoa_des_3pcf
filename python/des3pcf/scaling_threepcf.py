@@ -8,6 +8,11 @@ PhysicsModel and computes all twenty source triplets; only the fixed
 transform geometry survives between calls. No nonce or outer mean cache
 is used to manufacture or suppress work.
 
+The two benchmark YAML files declare NLA or TATT in their notes. Both draw
+the same random sequence. NLA then fixes its inactive quadratic-alignment
+and velocity-shear parameters to zero, preserving every shared cosmology,
+linear-alignment, calibration and source-redshift draw.
+
 This module contains no timers. Its preflight and point-bank functions
 read inputs and draw small parameter arrays; neither imports the compiled
 interface nor calls CAMB. Preparation and initialization are explicit
@@ -37,6 +42,52 @@ TIMING_SOURCE_POLICY = (
     "Timing only: set negative source-density samples to zero and "
     "renormalize each bin."
 )
+# These literal notes extend only this benchmark's interpretation of the
+# existing YAML schema; the survey CLI does not infer a different IA model.
+TIMING_IA_DECLARATIONS = {
+    "NLA": "Timing IA model: NLA.",
+    "TATT": "Timing IA model: TATT.",
+}
+NLA_INACTIVE = (
+    "a2",
+    "eta2",
+    "bta",
+    "ct",
+)
+
+
+def _ia_model(config):
+    """Read the declared benchmark model and reject contradictory NLA values.
+
+    Configurations without a benchmark declaration retain the full TATT draw
+    used by this helper. NLA requires an explicit declaration and exactly zero
+    quadratic and velocity-shear coefficients, including parameter overrides.
+
+    Arguments:
+      config = parsed survey configuration with optional benchmark notes.
+    Returns:
+      The string NLA or TATT.
+    Raises:
+      ValueError for two model declarations or a nonzero inactive NLA parameter.
+    """
+    declared = []
+    for name, declaration in TIMING_IA_DECLARATIONS.items():
+        if declaration in config.get("notes", []):
+            declared.append(name)
+    if len(declared) > 1:
+        raise ValueError("Declare only one timing IA model: NLA or TATT.")
+    model = "TATT"
+    if declared:
+        model = declared[0]
+    if model == "NLA":
+        parameters = dict(config["ia"])
+        parameters.update(config["parameters"])
+        for name in NLA_INACTIVE:
+            if parameters.get(name, 0.0) != 0.0:
+                raise ValueError(
+                    f"NLA timing requires {name}=0; remove its nonzero override."
+                )
+    return model
 
 
 def _configuration(path):
@@ -54,6 +105,7 @@ def _configuration(path):
         raise ValueError("Random cosmologies require explicit CAMB preparation.")
     if config["rows"]["mode"] != "measurement" or config["rows"]["aperture"] is None:
         raise ValueError("The scaling workload requires the labeled Y3 aperture FITS.")
+    _ia_model(config=config)
     return driver, config, location, digest
 
 
@@ -64,7 +116,7 @@ def _baseline(config):
     parameters.setdefault("mnu", 0.0)
     parameters.setdefault("num_massive_neutrinos", 1)
     parameters.setdefault("nnu", 3.046)
-    for name in ("a1", "eta1", "a2", "eta2", "bta"):
+    for name in ("a1", "eta1", "a2", "eta2", "bta", "ct"):
         parameters.setdefault(name, 0.0)
     for source in range(1, 5):
         parameters.setdefault(f"m{source}", 0.0)
@@ -107,6 +159,20 @@ def _draw_bounds(config):
     return bounds
 
 
+def _active_draw_bounds(config):
+    """Separate physical draws from random values discarded for pure NLA.
+
+    Sampling still consumes every TATT random value, in the same order.
+    Removing inactive entries only from this returned dictionary identifies
+    which parameters can change in the accepted physical point.
+    """
+    bounds = _draw_bounds(config=config)
+    if _ia_model(config=config) == "NLA":
+        for name in NLA_INACTIVE:
+            bounds.pop(name, None)
+    return bounds
+
+
 def threepcf_point_bank(config_path, npoints=10, seed=137):
     """Return the same JSON-compatible random points for every worker count.
 
@@ -118,20 +184,26 @@ def threepcf_point_bank(config_path, npoints=10, seed=137):
             or isinstance(seed, bool) or int(seed) != seed or seed < 0):
         raise ValueError("Require positive integer npoints and nonnegative integer seed.")
     _, config, path, digest = _configuration(path=config_path)
+    ia_model = _ia_model(config=config)
     baseline = _baseline(config=config)
-    bounds = _draw_bounds(config=config)
+    random_bounds = _draw_bounds(config=config)
+    bounds = _active_draw_bounds(config=config)
     points = []
     warmup = None
     for index in range(int(npoints) + 1):
         point_seed = int(seed) + index
         random = np.random.Generator(np.random.PCG64(point_seed))
         parameters = dict(baseline)
-        for name, interval in bounds.items():
+        for name, interval in random_bounds.items():
             parameters[name] = float(random.uniform(low=interval[0], high=interval[1]))
+        if ia_model == "NLA":
+            for name in NLA_INACTIVE:
+                parameters[name] = 0.0
         record = {
             "index": index if index < npoints else -1,
             "seed": point_seed,
             "configuration_sha256": digest,
+            "ia_model": ia_model,
             "parameters": parameters,
         }
         if index < npoints:
@@ -146,6 +218,7 @@ def threepcf_point_bank(config_path, npoints=10, seed=137):
         "format": FORMAT,
         "configuration": str(path),
         "configuration_sha256": digest,
+        "ia_model": ia_model,
         "warmup_point": warmup,
         "points": points,
         "draw_settings": {
@@ -155,8 +228,15 @@ def threepcf_point_bank(config_path, npoints=10, seed=137):
             "point_seed_rule": "seed+index; warmup uses seed+npoints",
             "parameter_order": list(bounds),
             "bounds": bounds,
+            "random_draw_order": list(random_bounds),
+            "random_draw_bounds": random_bounds,
+            "inactive_after_draw": list(NLA_INACTIVE) if ia_model == "NLA" else [],
             "fixed_parameters": fixed,
-            "thread_counts": [1, 4, 8],
+            "thread_counts": [
+                1,
+                4,
+                8,
+            ],
             "blas_threads": 1,
             "interpretation": "Computational test points, not a posterior or prior.",
         },
@@ -167,6 +247,8 @@ def _point_parameters(point, config, digest):
     """Reject a stale point or a changed fixed convention before physical work."""
     if not isinstance(point, dict) or point.get("configuration_sha256") != digest:
         raise ValueError("Point belongs to a different configuration digest.")
+    if point.get("ia_model", "TATT") != _ia_model(config=config):
+        raise ValueError("Point IA model differs from the declared timing model.")
     baseline = _baseline(config=config)
     parameters = point.get("parameters")
     if not isinstance(parameters, dict) or set(parameters) != set(baseline):
@@ -174,7 +256,7 @@ def _point_parameters(point, config, digest):
     for name, value in parameters.items():
         if isinstance(value, bool) or not np.isfinite(value):
             raise ValueError(f"Point parameter {name} must be a finite number.")
-    bounds = _draw_bounds(config=config)
+    bounds = _active_draw_bounds(config=config)
     for name, value in parameters.items():
         if name in bounds:
             if not bounds[name][0] <= value <= bounds[name][1]:
@@ -371,6 +453,15 @@ def preflight_threepcf(config_path):
         "format": FORMAT,
         "configuration": str(path),
         "configuration_sha256": digest,
+        "ia_model": _ia_model(config=config),
+        "native_ia_work": {
+            "residual_physics_skipped": _ia_model(config=config) == "NLA",
+            "prepared_mode_required_for_skip": True,
+            "shared_work": (
+                "BiHalofit/NLA baseline, multipole preparation and all finite-SAS "
+                "transforms remain. Zero residual multipole loops also remain."
+            ),
+        },
         "ready": not blockers,
         "blockers": blockers,
         "row_count": len(row_labels),
@@ -386,11 +477,120 @@ def preflight_threepcf(config_path):
     }
 
 
-def prepare_threepcf_tables(config_path, point, output_path):
-    """Explicitly run CAMB once and save this point's shifted source tables.
+def _table_request(cosmology, halofit_version, axes, processing):
+    """Identify every input to the physical table producer before running CAMB.
+
+    The producer file hash records its implicit CAMB settings, including flat
+    geometry, PPF dark energy and amplitude calibration. Each array hash records
+    exact float64 bytes and shape. IA and calibration amplitudes do not enter
+    CAMB or source shifting, so they are deliberately absent from this record.
+
+    Arguments:
+      cosmology = complete CAMB cosmology dictionary.
+      halofit_version = explicitly selected nonlinear-power prescription.
+      axes = k, z, los_z and already shifted source arrays in physical h units.
+      processing = source-file hash and declared source-treatment record.
+    Returns:
+      JSON-compatible physical-request dictionary for exact equality checks.
+    """
+    producer = importlib.import_module(name=camb_tables.__module__)
+    arrays = {}
+    for name, values in axes.items():
+        array = np.ascontiguousarray(values, dtype=np.float64)
+        arrays[name] = {
+            "shape": list(array.shape),
+            "sha256": hashlib.sha256(array.tobytes()).hexdigest(),
+        }
+    return {
+        "producer": "CAMB",
+        "producer_source_sha256": hashlib.sha256(
+            Path(producer.__file__).read_bytes()
+        ).hexdigest(),
+        "parameters": dict(cosmology),
+        "halofit_version": halofit_version,
+        "source_fits_sha256": processing["raw_input_sha256"],
+        "source_policy": processing["policy"],
+        "arrays": arrays,
+    }
+
+
+def _reuse_tables(path, request, axes):
+    """Accept an archive only when its physical inputs match this request exactly.
+
+    Array comparisons check the actual loaded grids and shifted sources in
+    addition to their recorded hashes. The original CAMB version, amplitude
+    calibration and power arrays remain attached to the copied table; reusing
+    a calculation does not claim it was recomputed by the current environment.
+
+    Arguments:
+      path = existing scaling NPZ archive proposed for IA-independent reuse.
+      request = physical-request dictionary produced for the target point.
+      axes = target k, z, los_z and shifted source arrays.
+    Returns:
+      Validated arrays, original metadata and the reused file's identity.
+    Raises:
+      ValueError if producer choices, cosmology, arrays or file bytes differ.
+    """
+    filename = Path(path).resolve()
+    digest = hashlib.sha256(filename.read_bytes()).hexdigest()
+    tables, metadata = load_tables(path=filename)
+    if hashlib.sha256(filename.read_bytes()).hexdigest() != digest:
+        raise ValueError("Reused table file changed during loading; retry its read.")
+    if (metadata.get("scaling_format") != FORMAT
+            or metadata.get("scaling_table_request") != request):
+        raise ValueError(
+            "Reused tables have different physical preparation inputs; "
+            "prepare this point separately."
+        )
+    required = {
+        "producer": "CAMB",
+        "parameters": request["parameters"],
+        "halofit_version": request["halofit_version"],
+        "flat_background": True,
+        "growth_definition": "linear sigma8(z)/sigma8(0)",
+        "massive_neutrino_effective_growth": request["parameters"]["mnu"] > 0.0,
+    }
+    for name, expected in required.items():
+        if metadata.get(name) != expected:
+            raise ValueError(
+                f"Reused table metadata differs in {name}; prepare it separately."
+            )
+    for name, expected in axes.items():
+        actual = np.ascontiguousarray(tables[name], dtype=np.float64)
+        reference = np.ascontiguousarray(expected, dtype=np.float64)
+        if (actual.shape != reference.shape
+                or not np.array_equal(actual.view(np.uint64), reference.view(np.uint64))):
+            raise ValueError(
+                f"Reused table {name} differs from the target request; "
+                "prepare this point separately."
+            )
+    record = {
+        "path": str(filename),
+        "sha256": digest,
+        "configuration_sha256": metadata.get("configuration_sha256"),
+        "ia_model": metadata.get("scaling_ia_model"),
+        "verification": "exact_physical_request_and_loaded_axes",
+    }
+    return tables, metadata, record
+
+
+def prepare_threepcf_tables(config_path, point, output_path, reuse_path=None):
+    """Prepare or exactly reuse this point's CAMB and shifted-source tables.
 
     This is the expensive preparation entry. It is never called by
-    preflight or point-bank creation. Existing files are preserved.
+    preflight or point-bank creation. Reuse is allowed only after the cosmology,
+    CAMB options and actual grids/sources match; changing IA alone then requires
+    no second Boltzmann solution. Existing files are preserved.
+
+    Arguments:
+      config_path = explicitly declared NLA or TATT benchmark YAML.
+      point = complete point record belonging to that configuration.
+      output_path = new .npz destination, never an existing file.
+      reuse_path = optional archive for the same cosmology and source shifts.
+    Returns:
+      Absolute path to the archive with target configuration/point metadata.
+    Raises:
+      ValueError for conflicting identities, source support or reuse inputs.
     """
     driver, config, path, digest = _configuration(path=config_path)
     parameters = _point_parameters(point=point, config=config, digest=digest)
@@ -405,13 +605,30 @@ def prepare_threepcf_tables(config_path, point, output_path):
     for name in COSMOLOGY_NAMES:
         cosmology[name] = parameters[name]
     settings = config["physics"]
-    tables, metadata = camb_tables(
-        parameters=cosmology, k=driver.grid_values(settings=settings["k"]),
-        z=redshift, sources=sources,
-        los_z=driver.grid_values(settings=settings["los_z"]),
-        halofit_version=settings["halofit_version"],
+    axes = {
+        "k": driver.grid_values(settings=settings["k"]),
+        "z": redshift,
+        "sources": sources,
+        "los_z": driver.grid_values(settings=settings["los_z"]),
+    }
+    request = _table_request(
+        cosmology=cosmology, halofit_version=settings["halofit_version"],
+        axes=axes, processing=processing,
     )
+    reused = None
+    if reuse_path is None:
+        tables, metadata = camb_tables(
+            parameters=cosmology, k=axes["k"], z=axes["z"], sources=axes["sources"],
+            los_z=axes["los_z"], halofit_version=settings["halofit_version"],
+        )
+    else:
+        tables, metadata, reused = _reuse_tables(
+            path=reuse_path, request=request, axes=axes,
+        )
     metadata["scaling_format"] = FORMAT
+    metadata["scaling_ia_model"] = _ia_model(config=config)
+    metadata["scaling_table_request"] = request
+    metadata["scaling_reused_from"] = reused
     metadata["scaling_point"] = point
     metadata["configuration_sha256"] = digest
     metadata["source_fits"] = str(source_path)

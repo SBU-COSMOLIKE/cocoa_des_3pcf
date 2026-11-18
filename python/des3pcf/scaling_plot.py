@@ -24,20 +24,21 @@ def _timing_arrays(records):
     """Validate complete measurements before creating a Matplotlib figure.
 
     Arguments:
-        records = sixty dictionaries containing workload, threads,
+        records = thirty dictionaries per workload containing workload, threads,
             repetition (parameter-point index) and seconds; extra metadata
             is retained by the caller.
     Returns:
-        names = two workload labels in their first appearance order.
+        names = one, two or four workload labels in first appearance order.
         seconds = owned [workload, thread choice, parameter point] float64 array.
 
     A duplicate is an error even if its value equals the existing record.
     Neither a missing parameter point nor a failed measurement is imputed.
     """
-    if not isinstance(records, (list, tuple)) or len(records) != 60:
+    if not isinstance(records, (list, tuple)) or len(records) not in (30, 60, 120):
         raise ValueError(
-            "provide 60 records: two workloads, three threads, ten parameter points"
+            "provide 30, 60 or 120 records: one, two or four complete workloads"
         )
+    workload_count = len(records) // 30
     names = []
     entries = {}
     for record in records:
@@ -67,9 +68,9 @@ def _timing_arrays(records):
         entries[key] = float(elapsed)
         if workload not in names:
             names.append(workload)
-    if len(names) != 2:
-        raise ValueError("exactly two workloads must be compared")
-    seconds = np.empty((2, 3, 10), dtype=np.float64)
+    if len(names) != workload_count:
+        raise ValueError("each named workload needs exactly thirty measurements")
+    seconds = np.empty((workload_count, 3, 10), dtype=np.float64)
     for workload_index, workload in enumerate(names):
         for thread_index, threads in enumerate((1, 4, 8)):
             for repetition in range(10):
@@ -83,14 +84,17 @@ def _timing_arrays(records):
 
 
 def plot_thread_scaling(records, *, title=None, figsize=(15, 6.5)):
-    """Plot elapsed seconds and speedup for two complete OpenMP timing series.
+    """Plot complete OpenMP timing series, including separate NLA/TATT workloads.
 
     Arguments:
-        records = list of sixty dictionaries with workload (string), threads
+        records = thirty dictionaries per workload, for one, two or four
+            named workloads. Each has workload (string), threads
             (integer 1,4,8), repetition (parameter-point index0..9), seconds
             (positive finite). The ten parameter points must match across
             thread counts; records contain no warmup measurements. The caller
             retains the point coordinates and their sampling definition.
+            Distinct labels identify LSST Y1 and 3pcf, each with NLA or TATT;
+            one- and two-workload inputs also allow partial comparison figures.
         title = optional provenance label, such as "Controlled test arrays".
         figsize = width and height in inches; STIX style is set by the caller.
     Returns:
@@ -139,12 +143,14 @@ def plot_thread_scaling(records, *, title=None, figsize=(15, 6.5)):
                                 constrained_layout=True)
     thread_counts = np.asarray([1.0, 4.0, 8.0])
     jitter = np.linspace(-0.075, 0.075, 10)
-    colors = ("#17629c", "#b34b00")
-    markers = ("o", "s")
-    line_styles = ("solid", "dashdot")
+    colors = ("#17629c", "#b34b00", "#08756c", "#813c8b")
+    markers = ("o", "s", "^", "v")
+    line_styles = ("solid", "dashdot", "dashed", "dotted")
+    workload_offsets = np.linspace(-0.11 * (len(names) - 1),
+                                    0.11 * (len(names) - 1), len(names))
     handles = []
-    for workload in range(2):
-        centers = thread_counts + (-0.13 if workload == 0 else 0.13)
+    for workload in range(len(names)):
+        centers = thread_counts + workload_offsets[workload]
         positions = centers[:, None] + jitter[None, :]
         for panel, (values, summary) in enumerate((
             (seconds[workload], medians[workload]),

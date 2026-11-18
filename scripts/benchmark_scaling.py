@@ -35,13 +35,15 @@ def main():
     parser.add_argument("--config", type=Path,
                         default=PROJECT / "configs" / "openmp_scaling.yaml")
     parser.add_argument("--job", type=Path)
+    parser.add_argument("--reuse-from", type=Path,
+                        help="Reuse verified LSST physical tables from an earlier run.")
     args = parser.parse_args()
     if args.command == "preflight":
         import json
 
         print(json.dumps(preflight(args.config), indent=2, sort_keys=True))
     elif args.command == "run":
-        print(run_study(args.config))
+        print(run_study(args.config, reuse_from=args.reuse_from))
     elif args.command == "plot":
         print(plot_study(args.config))
     elif args.job is None:
