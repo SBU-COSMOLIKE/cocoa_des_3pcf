@@ -5,7 +5,8 @@
 3. [Prepare and evaluate a declared data vector](#evaluate)
 4. [Notebook examples](#notebooks)
 5. [Covariances, Fisher calculations and tests](#tests)
-6. [Survey inputs and credits](#targets)
+6. [Survey inputs](#targets)
+7. [Acknowledgements](#acknowledgements)
 
 ## Purpose and current scope <a name="scope"></a>
 
@@ -133,18 +134,24 @@ python projects/des_3pcf/scripts/run_3pcf.py prepare \
 extension, running CAMB or evaluating a physical integral. The check
 does not establish numerical convergence.
 
-**Step :four:**: prepare the physical tables, then evaluate the mean.
+**Step :four:**: prepare the physical tables.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py prepare \
   projects/des_3pcf/configs/y3_full_filter_example.json
+```
+
+This calibrates the linear amplitude to the requested $`\sigma_8`$ and stores
+power, growth and distance arrays.
+
+**Step :five:**: evaluate the mean using the prepared tables.
+
+```bash
 python projects/des_3pcf/scripts/run_3pcf.py evaluate \
   projects/des_3pcf/configs/y3_full_filter_example.json
 ```
 
-The first command calibrates the linear amplitude to the requested
-$`\sigma_8`$ and stores power, growth and distance arrays. The second
-uses those arrays to calculate every declared observable row. Existing
+This calculates every declared observable row. Existing
 output files are refused unless `--overwrite` is supplied explicitly.
 
 > [!TIP]
@@ -197,7 +204,7 @@ The core's [developer guide](../../external_modules/code/cosmolike_core/.claude/
 contains the implementation map and the transferred design study. It is
 the entry point for continuing the port in another checkout.
 
-## Survey inputs and credits <a name="targets"></a>
+## Survey inputs <a name="targets"></a>
 
 The intended survey applications are separate DES Y3 and DES Y6 Fisher
 forecasts, retaining the full selected two-point vector as the primary
@@ -225,8 +232,53 @@ values to infer from another release.
 | `configs/y3_finite_sas_example.json` | Pinned Y3 measured-row definitions, finite-triangle aperture calculation and labeled external joint covariance |
 | `configs/y6_full_filter_example.json` | Y6 forecast geometry with explicitly missing external source/catalogue inputs |
 
-The work builds on [Sunao Sugiyama's fastnc](https://github.com/git-sunao/fastnc/tree/tatt),
-[Rafael Gomes's 3pcf_integrator](https://github.com/rchgomes/3pcf_integrator)
-and [his Y6 pipeline](https://github.com/rchgomes/desy6-3pcf), with the
-aperture formulas and TreeCorr contributions credited in the
-[source and paper record](../../external_modules/code/cosmolike_core/cosmolike/3pcf/CREDITS.md).
+## Acknowledgements <a name="acknowledgements"></a>
+
+**We thank Sunao Sugiyama and Rafael C. H. Gomes for their scientific work
+and for making their three-point methods, implementations and analysis
+pipelines available to the community. Their work is the foundation of this
+CosmoLike port.**
+
+**Special thanks to:**
+
+- **Sunao Sugiyama**, for [fastnc](https://github.com/git-sunao/fastnc), its
+  multipole method for shear three-point correlations, and the numerical
+  organization on which our angular transforms build. We retain explicit
+  references to both the [TATT branch](https://github.com/git-sunao/fastnc/tree/tatt)
+  and the main branch when comparing their numerical conventions.
+- **Rafael C. H. Gomes**, for the intrinsic-alignment modeling and DES
+  two-/three-point analysis, and for
+  [3pcf_integrator](https://github.com/rchgomes/3pcf_integrator) and
+  [desy6-3pcf](https://github.com/rchgomes/desy6-3pcf). These repositories
+  supply the aperture-integration and survey-workflow references used here.
+- **Mike Jarvis**, for [TreeCorr](https://github.com/rmjarvis/TreeCorr) and
+  its aperture kernels and shear-projection conventions, and **Xiao Fang**
+  for the two-dimensional FFTLog method credited by the original transform
+  implementation.
+
+**Users of this port must give appropriate credit to the original software
+and scientific papers.** Please cite the relevant papers below alongside
+Cocoa/CosmoLike and the other methods used in the calculation.
+
+| Original scientific work | Contribution used here |
+|---|---|
+| Sunao Sugiyama, Rafael C. H. Gomes and Mike Jarvis, [Fast modeling of the shear three-point correlation function](https://arxiv.org/abs/2407.01798) | Bispectrum multipoles, natural shear components and the fastnc method |
+| Rafael C. H. Gomes and collaborators, [Cosmology with second and third-order shear statistics for the Dark Energy Survey: Methods and simulated analysis](https://arxiv.org/abs/2503.03964) | Joint two-/three-point analysis, aperture statistics and DES Y3 reference inputs |
+| Rafael C. H. Gomes, Kyle Miller, Sunao Sugiyama, Jonathan Blazek, Thomas Bakx and Bhuvnesh Jain, [Tidal alignment and tidal torquing modeling for the cosmic shear three-point correlation function and mass aperture skewness](https://arxiv.org/abs/2601.09133) | Three-point TATT and velocity-shear intrinsic-alignment modeling |
+
+The aperture formulas are due to
+[Jarvis, Bernstein and Jain](https://arxiv.org/abs/astro-ph/0307393) and
+[Schneider, Kilbinger and Lombardi](https://arxiv.org/abs/astro-ph/0308328).
+The analytic covariance follows work by
+[Linke and collaborators](https://arxiv.org/abs/2212.04485) and
+[Wielders and collaborators](https://arxiv.org/abs/2509.20443).
+The matter-bispectrum model is
+[BiHalofit by Takahashi and collaborators](https://arxiv.org/abs/1911.07886),
+and the precision-matrix expansion follows
+[Friedrich and Eifler](https://arxiv.org/abs/1703.07786).
+
+We also thank **Tim Eifler, Elisabeth Krause and the CosmoLike contributors**
+for the numerical framework, and the Cocoa contributors for the project,
+interface and notebook conventions. The core's `cosmolike/3pcf/CREDITS.md`
+records inspected source revisions and the attribution and license details.
+The original notices are retained with the implementation.

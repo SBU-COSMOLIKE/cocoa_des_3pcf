@@ -2,15 +2,39 @@
 
 The JSON and YAML files describe examples, not validated DES forecasts.
 They use the same schema; YAML is loaded with its safe data-only reader.
-Paths are relative to the configuration file. Run the driver with Cocoa's
-existing Python:
+Paths are relative to the configuration file. We assume Cocoa is activated
+with `source start_cocoa.sh`, the current directory is
+`Cocoa/projects/des_3pcf/`, and the [project thread settings](../README.md#evaluate)
+are applied before starting Python.
+
+**Step :one:**: inspect the preparation inputs.
 
 ```bash
 python scripts/run_3pcf.py prepare configs/y3_full_filter_example.json \
   --validate-config
+```
+
+**Step :two:**: prepare the physical tables.
+
+```bash
 python scripts/run_3pcf.py prepare configs/y3_full_filter_example.json
+```
+
+**Step :three:**: evaluate the declared mean vector.
+
+```bash
 python scripts/run_3pcf.py evaluate configs/y3_full_filter_example.json
+```
+
+**Step :four:**: calculate the covariance after supplying its survey inputs.
+
+```bash
 python scripts/run_3pcf.py covariance configs/y3_full_filter_example.json
+```
+
+**Step :five:**: calculate the requested Fisher derivatives.
+
+```bash
 python scripts/run_3pcf.py fisher configs/y3_full_filter_example.json
 ```
 
