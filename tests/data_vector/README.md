@@ -46,6 +46,21 @@ tests compare the Gamma recurrence with direct complex log-Gamma values,
 including orders 97 and 103. Selected output bins, padding, radial-bin
 averaging, windows, array ownership and worker counts have separate checks.
 
+Two files test whether the numerical answer depends on how unrelated outputs
+are grouped for SIMD. Each comparison preserves the physical nodes and weights;
+only the output request changes. The comparison requires identical float64
+bits, including signed zero.
+
+| File | Fixed calculation and changed request |
+|---|---|
+| `test_multipole_lane_invariance.py` | Read the same multipole coefficient after adding a query or retaining another Legendre order. |
+| `test_physics_lane_invariance.py` | Keep a projected triplet, angular order, NLA power coordinate or aperture filter while adding a neighboring output. |
+
+The NLA cases also pair a valid interpolation coordinate with an extrapolated
+coordinate. The valid read must retain the same arithmetic. These are rounding
+and indexing checks; changing integration resolution would require an accuracy
+comparison instead of bitwise equality.
+
 These tests establish the tested formulas and numerical transformations.
 They do not fix a universal number of angular modes, Fourier nodes or
 triangle samples for DES. The

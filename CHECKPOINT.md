@@ -4,15 +4,19 @@ The reviewed core is checkpointed at `98824eb`, following `d832c5f` and
 `8c58ace`, on the existing core branch `lowrank_fftlog`. These commits contain
 only the isolated 3pcf implementation, shared plotting folder and associated
 documentation. Other teams' core changes remain outside them. The project
-has its own `codex/3pcf-port` branch, starting with `0e7d9af` and `e2fc60a`.
+has its own `codex/3pcf-port` branch, with the executed notebook and workflow
+checkpoint at `68e2baa`, following `0e7d9af` and `e2fc60a`. Core commit
+`34c62d1` adds the plotting README's environment instructions without changing
+the numerical implementation.
 
 The [validation record](tests/VALIDATION.md) gives the executed checks and
-limits. All 281 project checks pass in the strict build, including physical
+limits. All 281 project checks pass in strict and debug builds, including physical
 SIMD lane invariance, cache/state sequences and joint Fisher algebra. The
 large-area covariance work reduction preserves all 16 saved comparison
-arrays bitwise. Earlier debug checks passed; debug validation of the final
-physical-tail and covariance changes is still pending. BLAS is serial and
-OpenMP uses at most four cores for tests.
+arrays bitwise. The debug run reports no sanitizer diagnostics; it uses
+undefined-behavior and floating-point-division checks, not AddressSanitizer.
+The strict extension is restored. BLAS is serial and OpenMP uses at most four
+cores for tests.
 
 The review also corrected squeezed-triangle cancellation, checked workspace
 products before multiplication, and rejected fractional or overflowing

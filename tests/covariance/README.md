@@ -47,6 +47,14 @@ separately from the fixed physical quadrature. The
 [physical guide](../../../../external_modules/code/cosmolike_core/cosmolike/3pcf/COVARIANCE.md)
 records the controlled refinement results and their limits.
 
+`test_large_area_reuse.py` checks which prepared arrays actually enter the
+large-area formulas. Changing an unused shear-profile interpolation grid must
+leave every term unchanged. For a quadratic-only request, the halo response
+is a direct Fourier integral, so changing halo-center offset nodes also leaves
+the answer unchanged. The long-mode survey-window integral remains present.
+Cubic rows still need their radial profiles; the test does not remove that
+physical dependence. Both adapters must preserve the float64 bits.
+
 ## Running covariance checks <a name="running"></a>
 
 Use the [test environment](../README.md#running): BLAS has one thread,

@@ -29,6 +29,7 @@ experiment or survey-scale integration was run.
 | Restore strict extension after debug | Exit 0 |
 | Physical projection output-extension checks before the second rounding correction | Eight failed and fourteen passed, reproducing the physical batch discrepancy |
 | Full strict checks with both rounding corrections and the covariance work reduction | 281 passed, exit 0 |
+| Full debug checks with both rounding corrections and the covariance work reduction | 281 passed, exit 0; no sanitizer diagnostic |
 | Saved covariance comparison before and after omitting unused large-area transforms | All 16 arrays match bitwise; both adapters, joint/xi-only and large-area/finite-window |
 | Large-area profile and halo-offset independence checks | Six passed; included in the 281 checks |
 | Shared plotting array checks | 13 passed; separate from the project checks |
@@ -71,8 +72,9 @@ The 281 project checks include the YAML/CLI path, conditional Fisher
 decomposition, configuration-identity refusals and both sets of SIMD lane
 checks. Notebook execution used Jupyter kernels, with every loaded BLAS pool
 limited to one thread. Plotting checks are a separate array-only collection.
-The debug results above precede the final physical-tail and covariance changes;
-they do not yet establish debug validation of checkpoint `98824eb`.
+The final strict and debug runs both use checkpoint `98824eb`. The strict
+extension is restored after debug verification. The subsequent core commit
+`34c62d1` changes only the plotting README's environment instructions.
 
 ## What the references measure <a name="references"></a>
 
@@ -126,6 +128,13 @@ covariance and multipole tails. Covariance tests add zero-measure nodes;
 multipole tests append an unused query or an extra retained Legendre order.
 These operations move an existing output between scalar and vector paths
 without changing its equation. The corrected outputs retain identical bits.
+
+The physical projection checks apply the same criterion to source-triplet,
+direct-multipole, NLA power and aperture-filter batches. Eight of the 22
+cases failed against the earlier strict extension. All pass after the local
+rounding boundaries and the unpaired NLA reader were made consistent with
+their two-lane operations. Both adapters and both power-reader conventions
+are exercised; quadrature weights and nodes remain fixed in each comparison.
 
 Workspace dimensions enter checked `size_t` multiplication before allocation.
 Notebook integer source labels are checked before conversion to int32, so
