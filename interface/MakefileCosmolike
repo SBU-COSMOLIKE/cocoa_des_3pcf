@@ -59,6 +59,7 @@ endif
 OBJECTS := $(BUILD)/aperture_3pcf.o $(BUILD)/covariance_3pcf.o
 OBJECTS += $(BUILD)/threepcf_wrapper.o $(BUILD)/threepcf_interface.o
 OBJECTS += $(BUILD)/physics_3pcf.o
+OBJECTS += $(BUILD)/feedback_3pcf.o
 OBJECTS += $(BUILD)/physics_grid_3pcf.o
 OBJECTS += $(BUILD)/physics_wrapper.o $(BUILD)/physics_interface.o
 OBJECTS += $(BUILD)/coupling_3pcf.o $(BUILD)/fftlog_3pcf.o

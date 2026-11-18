@@ -10,7 +10,8 @@
 8. [OpenMP timing at random parameter points](BENCHMARK.md)
 9. [Joint Nautilus examples](INFERENCE.md)
 10. [Publication reproduction plan](PAPER_REPRODUCTION_PLAN.md)
-11. [Acknowledgements](#acknowledgements)
+11. [Paired baryonic responses](FEEDBACK.md)
+12. [Acknowledgements](#acknowledgements)
 
 ## Purpose and current scope <a name="scope"></a>
 
@@ -212,6 +213,7 @@ physical comparison.
 | [EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb) | Comparisons with pinned original transforms and aperture kernels, with source discretization differences and stored physical references labeled separately |
 | [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Declared Y3 NLA/TATT means, parameter responses, saved joint Fisher comparisons and the checks needed before interpreting gains |
 | [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Completed default h/h2 Fisher bases, selected-column screening, and full refined-grid checks where available; remaining cases are listed as pending |
+| [EXAMPLE_JOINT_FEEDBACK.ipynb](EXAMPLE_JOINT_FEEDBACK.ipynb) | Shared amplitude for separately supplied power and bispectrum responses |
 | [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | Covariance correction using independent controlled Gaussian simulations, finite-sample product corrections and held-out validation |
 
 We assume the compiled project and the thread environment above. Start in

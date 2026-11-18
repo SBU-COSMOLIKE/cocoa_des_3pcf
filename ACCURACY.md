@@ -72,6 +72,7 @@ doubling its resolution twice.
 | `kernel_boost` | Source-window redshift grid | Sampling |
 | `source_boost` | Independent uniform source-density grid, when declared | Sampling |
 | `fit_z_boost` | Matter-fit redshift anchors | Sampling |
+| `feedback_table_boost` | Paired response dense interpolation ratio | Sampling |
 | `power_table_boost` | Physical model's dense interpolation ratio | Sampling |
 | `triangle_boost` | Coarse projected triangle coordinates | Sampling |
 | `multipole_boost` | Coarse projected multipole coordinates | Sampling |

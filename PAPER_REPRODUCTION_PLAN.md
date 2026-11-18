@@ -156,13 +156,13 @@ The saved Gaussian priors enter once. It reports sigma(S8), the
 assumption toward the published LambdaCDM analysis; it does not reproduce
 its scale cuts, likelihood or posterior gain.
 
-The current bispectrum feedback amplitude `fb` has no matched power-spectrum
-response in the joint wrapper. Both joint routes refuse to interpret that
-amplitude as a shared two-/three-point baryon parameter. A baryonic constraint
-requires an explicit physical family giving both P(k,z) and B(k1,k2,k3,z),
-including their IA convention. The existing matter-transfer plot and a
-specified contamination-bias calculation can precede that extension; neither
-is a measurement of a feedback parameter.
+The [paired feedback model](FEEDBACK.md) supplies a shared amplitude for
+independently specified matter-power and matter-bispectrum responses.
+The additional quadratic IA terms remain DMO, with a fixed covariance.
+The executed example uses artificial teaching responses. A calibrated
+feedback constraint requires a physical paired input and validation of
+those IA and cosmology-dependence assumptions. The older bispectrum-only
+`fb` remains unsuitable as a joint feedback parameter.
 
 ## Example responsibilities
 

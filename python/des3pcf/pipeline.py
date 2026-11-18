@@ -18,6 +18,7 @@ from copy import deepcopy
 from .inputs import validate_tables, shifted_sources, camb_tables, _camb_power_limits
 from .inputs import reconstructed_sources
 from .mean import physics_model, Map3Engine, XiEngine
+from .feedback import FeedbackPair, feedback_power_tables
 from .covariance import quadrature
 from .accuracy import accuracy_settings
 from .ownership import immutable_copy, PreparedGeometry
@@ -32,6 +33,7 @@ COSMOLOGY_NAMES = (
 IA_NAMES = (
     "a1", "eta1", "a2", "eta2", "bta", "ct", "zpivot", "c1rho",
     "power_mode", "ct_mode", "fb", "suppress_only",
+    "feedback_amplitude",
 )
 
 
@@ -79,6 +81,8 @@ class PhysicalProvider:
           None reads saved provenance. They define an immutable source model.
       accuracy = immutable global/stage controls; replace provider.accuracy to
           prepare a new resolution from the same baseline in this interpreter.
+      feedback = optional immutable FeedbackPair. Its ratios are held fixed
+          as cosmology changes; a different pair needs a new provider.
     Side effects:
       Retains the latest cosmology table and source-weighted C model.
       CAMB runs only after a physical parameter changes in camb mode.
@@ -90,6 +94,7 @@ class PhysicalProvider:
         source_readers=False, table_boost=8, fit_nz=33,
         accuracy=None, kmax_boltzmann=5.0, extrap_kmax=None,
         source_nz=None, source_interpolation=None, source_padding=None,
+        feedback=None,
     ):
         """Store the physical baseline and validate the requested producer mode.
 
@@ -103,6 +108,9 @@ class PhysicalProvider:
         if cosmology_mode not in ("fixed_tables", "camb"):
             raise ValueError("Cosmology mode must be fixed_tables or camb.")
         self.compiled = compiled
+        if feedback is not None and not isinstance(feedback, FeedbackPair):
+            raise ValueError("feedback must be an immutable FeedbackPair or None.")
+        self.feedback = feedback
         self.base = immutable_copy(value=validate_tables(tables=reference_tables))
         self.base_metadata = immutable_copy(value=reference_metadata)
         recorded_source = reference_metadata.get(
@@ -251,6 +259,7 @@ class PhysicalProvider:
             "reference_halofit", "nbin", "compiled",
             "reference_producer_settings", "reference_producer_verified",
             "source_interpolation", "source_padding",
+            "feedback",
         )
         if getattr(self, "_reference_locked", False) and name in reference_names:
             raise AttributeError(
@@ -411,6 +420,7 @@ class PhysicalProvider:
                 source_readers=self.source_readers, table_boost=self.table_boost,
                 fit_nz=self.fit_nz,
                 accuracy=self.accuracy,
+                feedback=self.feedback,
             )
             self.model_tables = immutable_copy(value=tables)
             self.model_metadata = immutable_copy(value=metadata)
@@ -586,6 +596,14 @@ class JointPrediction(PreparedGeometry):
         for name in IA_NAMES:
             if name in parameters:
                 ia[name] = parameters[name]
+        feedback_amplitude = ia.get("feedback_amplitude", 0.0)
+        if not np.isfinite(feedback_amplitude):
+            raise ValueError("feedback_amplitude must be finite.")
+        if feedback_amplitude != 0.0:
+            if self.provider.feedback is None:
+                raise ValueError("Nonzero feedback_amplitude needs paired response tables.")
+            if ia.get("fb", 0.0) != 0.0:
+                raise ValueError("Paired feedback cannot be combined with legacy fb.")
         calibration = np.zeros(self.provider.nbin, dtype=np.float64)
         for index in range(self.provider.nbin):
             calibration[index] = parameters.get(f"m{index + 1}", 0.0)
@@ -612,9 +630,14 @@ class JointPrediction(PreparedGeometry):
             else:
                 physical_parameters = dict(self.provider.reference)
                 physical_parameters.update(parameters)
+                two_point_metadata = dict(metadata)
+                two_point_metadata["paired_feedback_amplitude"] = feedback_amplitude
                 even, odd = self.two_point_core.spectra(
-                    parameters=physical_parameters, tables=tables,
-                    metadata=metadata, ia=ia,
+                    parameters=physical_parameters,
+                    tables=feedback_power_tables(
+                        model=model, tables=tables, amplitude=feedback_amplitude,
+                    ),
+                    metadata=two_point_metadata, ia=ia,
                     ell=self.xi_engine.ell, bins=self.xi_engine.rows.bins[:, :2],
                 )
                 xi = self.xi_engine.evaluate_spectra(

@@ -89,7 +89,7 @@ def aligned_fft_grid(theta_lower, dlnt, ell_min, ell_max, minimum_size):
 
 def physics_model(
     compiled, tables, kernel_nz=101, source_readers=False, table_boost=8, fit_nz=33,
-    accuracy=None, adapter="production",
+    accuracy=None, adapter="production", feedback=None,
 ):
     """Construct the owned C model after validating its physical input arrays.
 
@@ -102,6 +102,8 @@ def physics_model(
       fit_nz = uniform redshift anchors for the prepared matter-fit coefficients.
       accuracy = immutable Accuracy controls or their keyword dictionary.
       adapter = production or notebook; both own the resolved input copies.
+      feedback = optional immutable FeedbackPair with paired total-matter
+          responses; the IA dictionary selects its common amplitude.
     Returns:
       production.PhysicsModel, owning copies of its prepared physical state.
     Raises:
@@ -134,6 +136,11 @@ def physics_model(
     if "source_z" in checked:
         arguments["source_z"] = checked["source_z"]
     arguments["los_z"] = controls.los_nodes(baseline=checked["los_z"])
+    if feedback is not None:
+        arguments["feedback"] = dict(feedback.native)
+        arguments["feedback"]["boost"] = controls.count(
+            baseline=feedback.native["boost"], stage="feedback_table_boost",
+        )
     binding = getattr(compiled, adapter)
     return binding.PhysicsModel(
         **arguments, **settings, source_readers=source_readers,

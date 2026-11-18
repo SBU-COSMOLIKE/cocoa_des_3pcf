@@ -185,8 +185,10 @@ class CoreTwoPoint(PreparedGeometry):
     def spectra(self, parameters, tables, metadata, ia, ell, bins):
         """Install shared physical arrays and return row-ordered TATT E/B powers.
 
-        Full Plinear(z,k), not Plinear(0,k)*D(z)^2, is required for the
-        ordinary core's loops. Sources already include photo-z shifts;
+        The ordinary-core setter requires the full Plinear(z,k) table.
+        Its CFASTPT loops read the z=0 linear spectrum and evolve with D^4.
+        Paired feedback changes only nonlinear P; those loops stay fixed.
+        Sources already include photo-z shifts;
         the ordinary core's shift/calibration parameters are set to zero
         to avoid applying those nuisance effects twice. XiEngine applies
         the final multiplicative calibration after its bin integration.
@@ -196,7 +198,8 @@ class CoreTwoPoint(PreparedGeometry):
           tables = physics schema plus p_linear[nz,nk] and optional p_linear_cb.
               Optional source_z[nsource] is independent of the power z[nz].
               Its uniform density samples already contain any photo-z shift.
-          metadata = physical preparation record, including omega_nu_h2.
+          metadata = physical preparation record, including omega_nu_h2 and
+              paired_feedback_amplitude when nonlinear P has been modified.
           ia = fastnc IA parameters, translated by core_ia_parameters.
           ell = requested 1D multipoles.
           bins = zero-based [nrow,2] source pairs.
@@ -209,6 +212,12 @@ class CoreTwoPoint(PreparedGeometry):
           selectors and tables; any preceding notebook model is replaced.
         """
         checked = validate_tables(tables=tables)
+        amplitude = ia.get("feedback_amplitude", 0.0)
+        if metadata.get("paired_feedback_amplitude", 0.0) != amplitude:
+            raise ValueError(
+                "Two-point nonlinear P and IA dictionary name different "
+                "paired_feedback_amplitude values; prepare matching tables."
+            )
         if "p_linear" not in checked:
             raise ValueError(
                 "The TATT two-point route requires full p_linear[z,k] tables."

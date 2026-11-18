@@ -44,6 +44,7 @@ from des3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows, read_survey
 from des3pcf.survey import read_joint_covariance, read_source_distributions
 from des3pcf.pipeline import PhysicalProvider, JointPrediction
 from des3pcf.pipeline import COSMOLOGY_NAMES, IA_NAMES
+from des3pcf.feedback import load_feedback
 from des3pcf.core_two_point import CoreTwoPoint
 from des3pcf.covariance import covariance_inputs, shape_noise
 from des3pcf.accuracy import accuracy_settings
@@ -172,16 +173,23 @@ def load_configuration(path, command):
         "fisher",
         "outputs",
         "accuracy",
+        "feedback",
     }
     checked_fields(
         mapping=config, allowed=top_fields,
         required=top_fields - {"description", "notes", "fisher", "covariance",
-                               "accuracy"},
+                               "accuracy", "feedback"},
         name="configuration",
     )
     # Save all factors, including defaults, so reopening a result cannot
     # substitute a newer code default for its numerical preparation.
     config["accuracy"] = accuracy_settings(value=config.get("accuracy")).record()
+    if "feedback" in config:
+        checked_fields(mapping=config["feedback"], allowed={"path", "boost"},
+                       required={"path", "boost"}, name="feedback")
+        boost = config["feedback"]["boost"]
+        if isinstance(boost, bool) or int(boost) != boost or boost < 1:
+            raise ValueError("feedback.boost must be a positive integer.")
     if config["format"] != FORMAT:
         raise ValueError(f"Configuration format must be {FORMAT}.")
     threads = config["threads"]
@@ -282,6 +290,14 @@ def load_configuration(path, command):
     for name, value in config["ia"].items():
         if not np.isfinite(value):
             raise ValueError(f"IA parameter {name} must be finite.")
+    amplitude = config["parameters"].get(
+        "feedback_amplitude", config["ia"].get("feedback_amplitude", 0.0),
+    )
+    legacy_feedback = config["parameters"].get("fb", config["ia"].get("fb", 0.0))
+    if amplitude != 0.0 and "feedback" not in config:
+        raise ValueError("Nonzero feedback_amplitude requires paired feedback tables.")
+    if amplitude != 0.0 and legacy_feedback != 0.0:
+        raise ValueError("Use either paired feedback_amplitude or legacy fb, not both.")
     rows = config["rows"]
     if rows.get("mode") == "forecast":
         checked_fields(
@@ -462,6 +478,8 @@ def validate_fisher(config):
 def required_files(config, path, command):
     """List actual prerequisites; dry checks do not create or import them."""
     requirements = []
+    if "feedback" in config:
+        requirements.append(("paired feedback responses", config["feedback"]["path"]))
     if command == "prepare":
         requirements.append(("source FITS", config["source"]["path"]))
     else:
@@ -666,6 +684,12 @@ def provider_for_run(compiled, config, path):
     """
     table_path = resolve_path(path, config["physics"]["tables"])
     tables, provenance = load_tables(path=table_path)
+    feedback = None
+    if "feedback" in config:
+        feedback = load_feedback(
+            path=resolve_path(path, config["feedback"]["path"]),
+            boost=config["feedback"]["boost"],
+        )
     if tables["sources"].shape[0] != config["source"]["nbin"]:
         raise ValueError("Table source count differs from source.nbin.")
     provider = PhysicalProvider(
@@ -684,6 +708,7 @@ def provider_for_run(compiled, config, path):
         source_interpolation=config["physics"].get("source_interpolation"),
         source_padding=config["physics"].get("source_padding"),
         accuracy=config["accuracy"],
+        feedback=feedback,
     )
     return provider, provenance
 

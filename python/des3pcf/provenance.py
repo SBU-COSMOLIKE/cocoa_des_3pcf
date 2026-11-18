@@ -105,6 +105,7 @@ def prediction_identity(
         "joint_covariance": config.get("covariance", {}).get("path"),
         "two_point_rows": config["rows"].get("two_point"),
         "aperture_rows": config["rows"].get("aperture"),
+        "paired_feedback": config.get("feedback", {}).get("path"),
     }
     precision = config.get("fisher", {}).get("precision", {})
     if precision.get("mode") == "pme":

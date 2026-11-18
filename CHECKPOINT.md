@@ -1,5 +1,23 @@
 # Work in progress: three-point implementation
 
+The paired baryonic-response component is implemented and reviewed. Both
+matter ratios are independently supplied; their shared log-response amplitude
+changes only the nonlinear-alignment baseline. Quadratic IA stays DMO,
+ratios stay fixed across cosmology, and the covariance stays fixed. The
+executed EXAMPLE_JOINT_FEEDBACK notebook evaluates all 480 rows, restores
+DMO exactly and retains the same physical model. Its three figures were
+inspected, with export margins corrected for the two-point axis labels.
+FEEDBACK.md defines the arrays, domain extension and calibration limits.
+
+The affected 48 checks pass in strict and undefined-behavior debug builds;
+strict is restored. The separate didactic review traced ratio definitions,
+ordered versus sorted triangle sides, owned arrays, serial spline
+preparation, linear readers and complete amplitude keys. Independent
+review found squeezed-triangle median and axis-validation issues, corrected
+before these checks. No hydrodynamically calibrated response or feedback
+posterior is claimed by the artificial demonstration.
+
+
 The projected IA decomposition is implemented in the native projector,
 prepared grids and both array adapters. The new EXAMPLE_IA_COMPONENTS
 notebook evaluates Y3 triples 111 and 134 and compares all signed pieces
