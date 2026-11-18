@@ -1,13 +1,13 @@
 # Fiducial angular-order follow-up after the full triangle checks
 
-The next small study should compare three new numerical configurations for
+The next small study should compare five numerical configurations for
 both NLA and TATT, starting from the completed `triangle_1p5` Fisher
 configuration. Preserve its accuracy overrides, including its triangle
 refinement.
 It should evaluate the same 480-row mean and retain the same joint covariance.
 It should not calculate Fisher derivatives yet. The first two configurations
-separate the Legendre and Fourier cutoffs; the third checks whether the higher
-orders depend on angular integration or coupling interpolation. This is a
+separate the Legendre and Fourier cutoffs. Two further cases isolate angular
+integration and coupling interpolation; the last changes both together. This is a
 proposed study protocol, not a report of completed angular-order tests. The
 accompanying driver defaults to preflight. Keep this protocol unchanged
 during execution: its exact bytes are part of the study identity. Record
@@ -73,7 +73,7 @@ the floating-point calculation exact. By contrast,
 remain unchanged during this particular test.
 [Coupling branches](https://github.com/SBU-COSMOLIKE/cocoa-cosmolike-core/blob/lowrank_fftlog/cosmolike/3pcf/coupling_3pcf.c#L129).
 
-## Three explicit candidates
+## Five explicit candidates
 
 All entries below are overrides of each model's completed `triangle_1p5`
 Fisher configuration. They inherit its existing accuracy overrides.
@@ -90,24 +90,27 @@ baseline and all candidates; do not reset it to one.
 | Inherited triangle_1p5 baseline | 20 | 20 | 20 | 32+32 | 200 | Saved corrected mean, subject to identical provenance |
 | `orders_L50_M20` | 50 | 50 | 20 | 32+32 | 200 | Effect of added Legendre degrees at fixed Fourier cutoff |
 | `orders_L50_M50` | 50 | 50 | 50 | 32+32 | 200 | Effect of added signed Fourier modes relative to the preceding case |
+| `orders_L50_M50_angular` | 50 | 50 | 50 | 64+64 | 200 | Effect of prepared angular sampling at fixed coupling interpolation |
+| `orders_L50_M50_coupling` | 50 | 50 | 50 | 32+32 | 0 | Effect of removing coupling interpolation at fixed prepared angular sampling |
 | `orders_L50_M50_guard` | 50 | 50 | 50 | 64+64 | 0 | Higher angular sampling and removal of historical coupling interpolation |
 
-For the third case, either explicitly set `nmu_log=nmu_linear=64` or apply
+For the angular-only and combined cases, either explicitly set
+`nmu_log=nmu_linear=64` or apply
 `angular_boost=2` to the original 32+32 counts; do not do both. Keep
 `integration_accuracy_boost=1`. The direct-mode `nmu=64` passes the existing
-`nmu > lmax` validation for all three candidates and can remain unchanged.
+`nmu > lmax` validation for all five candidates and can remain unchanged.
 No automatic constraint relates `mmax` to the number of phi centers, so this
 must be checked by the study rather than expected from an API refusal.
 [Transform domain checks](https://github.com/SBU-COSMOLIKE/cocoa-cosmolike-core/blob/lowrank_fftlog/cosmolike/3pcf/transform_3pcf.c#L125).
 
-The third case is a combined screening guard, not an independent bound on its
-two errors: cancellation between them is possible. If its change matters,
-separate the two controls before choosing a baseline. A useful inexpensive
-addition is to retain the higher-order multipoles for representative ordered
-triplets, such as (1,1,1) and (1,3,4), and pass those same arrays to both
-coupling plans. That isolates the coupling change without recomputing the
-projected bispectrum. Do not retain all twenty dense multipole arrays merely
-to make this diagnostic convenient.
+The last case is a combined guard. The angular-only and coupling-only cases
+make cancellation between its two changes visible. Compare each with the
+shared L50/M50 case, rather than interpreting adjacent cases as isolated
+changes when both settings differ. A useful later diagnostic is to retain
+the multipoles for representative ordered triplets, such as (1,1,1) and
+(1,3,4), and pass those same arrays to both coupling plans. That isolates
+coupling without recomputing the projected bispectrum. Retaining all twenty
+dense multipole arrays is unnecessary for that diagnostic.
 
 ## Why not jump directly to Mmax=100 on 63 point samples?
 
@@ -290,7 +293,7 @@ python tests/studies/angular_order_study.py \
   runs/tatt_accuracy/triangle_1p5.json --output runs/tatt_angular_orders
 ```
 
-**Step :three:**: Request the three sequential TATT mean predictions.
+**Step :three:**: Request the five sequential TATT mean predictions.
 
 Run one physical study at a time. Complete any earlier physical calculation
 before this command.

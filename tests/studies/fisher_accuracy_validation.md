@@ -36,22 +36,58 @@ parameter and one common central mean. Thus the full NLA base requires
 | TATT | 0.1363035239 | 0.1440473499 | +5.681% |
 
 Both joint and xi-only matrices pass the parameter-rank check. The
-likelihood identity F_joint = F_xi + F_Map3_given_xi holds to a relative
-matrix norm of 5.67e-16 for NLA and 2.36e-16 for TATT. This checks the
-cross-covariance accounting; it does not establish derivative accuracy.
+likelihood information satisfies
+
+```math
+F_{\rm joint}^{\rm like}
+=F_\xi^{\rm like}+F_{{\rm Map3}\mid\xi}^{\rm like}.
+```
+
+The conditional term contains the aperture response that cannot be
+predicted from xi through their cross-covariance. The relative matrix
+residual is 5.67e-16 for NLA and 2.36e-16 for TATT. Priors are added once
+after this likelihood decomposition. The equality checks information
+accounting; it does not establish derivative accuracy.
 The discarded initial TATT value 12.93 belongs to an interpolation failure
 and is not one of these bases.
 
-For a derivative column D, the useful step comparison is
-norm(D_h-D_h2)/norm(D_h2), where norm(v)^2 = v^T C^-1 v. It weights xi and
-Map3 with their actual uncertainties and cross correlations, despite their
-very different raw amplitudes. The Hubble-h column changes by 1.751% for
+For a derivative column $`D`$, compare the two steps using
+
+```math
+\frac{\lVert D_h-D_{h/2}\rVert_C}{\lVert D_{h/2}\rVert_C},
+\qquad \lVert v\rVert_C^2=v^{\mathsf T}C^{-1}v.
+```
+
+The subscript $`C`$ specifies the full joint covariance metric. It weights
+xi and Map3 with their uncertainties and cross correlations, despite their
+different raw amplitudes. The Hubble-h column changes by 1.751% for
 NLA and 1.793% for TATT; the Omega_m column changes by 0.426% and 0.431%.
 Photo-z changes are smaller than 0.06% in both models at these two steps.
 That last observation is a step comparison at one source resolution;
 it is not a source-grid refinement of every photo-z column.
 
 ## The selected-column experiment
+
+The cost reduction comes from keeping the full default Fisher matrix as
+the marginalization reference. A numerical candidate supplies only the
+columns selected for inspection. The saved default arrays also supply
+the parameter-covariance weights in the shared noise formula. Increasing
+one integration count therefore does not initially require rebuilding
+every nuisance derivative.
+
+| Calculation | IA model | Distinct mean evaluations |
+|---|---|---:|
+| Full default base, with two derivative spacings | NLA | 103 |
+| Full default base, with two derivative spacings | TATT | 121 |
+| One candidate, four selected columns | NLA | 17 |
+| One candidate, four selected columns | TATT | 17 |
+| Two-column smaller/larger-step follow-up, reusing default means | NLA | 8 |
+| Two-column smaller/larger-step follow-up, reusing default means | TATT | 8 |
+
+These are model-evaluation counts, not timing measurements. Reusing
+the default matrix makes candidate selection less expensive; it does
+not turn the noise formula into a convergence bound. The triangle
+example below explains why a full follow-up is still needed.
 
 The shared core functions estimate diagonal false information from the
 fourth difference of the retained mean vectors and weight it by the
@@ -111,9 +147,45 @@ Thus Hubble h dominates the measured fourth-difference noise ranking,
 while Omega_m drives this coherent triangle sensitivity. The cheap test
 has located a useful full follow-up without replacing that follow-up.
 
+## Full derivatives and compensating nuisance changes
+
+The completed NLA triangle refinement changes every derivative column.
+Its 4 x 5 x 480 selected stencil values agree bit for bit with the
+earlier four-column scan. Reconstructing those four derivatives in the
+same arithmetic also gives identical bits. The difference below therefore
+comes from updating the remaining columns, rather than from different
+predictions at the shared parameter points.
+
+| NLA derivative matrix at h/2 | w0–wa FoM | Ratio to the full default h/2 FoM |
+|---|---:|---:|
+| All columns at default triangle resolution | 0.1911739287 | 1.000000 |
+| Only the four selected columns refined | 0.1783249932 | 0.932789 |
+| Only the other thirteen columns refined | 0.2049386912 | 1.072001 |
+| All seventeen columns refined | 0.1914995559 | 1.001703 |
+
+Both partial substitutions mix two numerical grids. They change the
+relations between parameter responses, which determine what survives
+nuisance marginalization. Refining all columns restores compensating
+changes that either mixed matrix misses. The FoM is a nonlinear function
+of the derivative matrix, so the two partial shifts do not add. Their
+large shifts correctly request a full check but do not predict its answer.
+
+At the larger derivative step, the full NLA FoM changes from 0.1800586574
+to 0.1805178664, a 0.255% change. Thus the full triangle-grid changes are
+smaller than the original h-versus-h/2 disagreement. This result does not
+settle the derivative-step choice, higher angular orders or other
+integration grids.
+
+The paper-related quantity also needs its own check. With dark energy
+fixed and all other parameters marginalized, the NLA joint/xi
+matter-density–S8 FoM ratio changes from 2.138926 to 2.156096 at h/2,
+an increase of 0.803%. The joint S8 error changes from 0.01546466 to
+0.01542283. These are local demonstration constraints under the stated
+uncut vector and priors; they are not the paper's posterior comparison.
+
 ## Step follow-up and remaining checks
 
-The targeted step study has now calculated eight new means per model.
+The targeted step study adds eight means per model.
 Here h labels the original derivative spacing for each column; the
 physical Hubble parameter is a separate use of that letter. The absolute
 original spacings are 0.003 for Omega_m and 0.005 for Hubble h.
@@ -159,8 +231,9 @@ source reconstruction and remains motivation for the selected node
 count, rather than a current-source accuracy certificate.
 
 Physical assumptions remain separate: the finite-SAS weights have not
-been matched to the catalogue estimator; the fixed covariance omits
-connected TATT changes; small xi scales have no validated baryonic cut;
+been matched to the catalogue estimator; reusing the supplied fixed
+covariance does not validate its Gaussian or connected TATT contributions;
+small xi scales have no validated baryonic cut;
 and a bispectrum-only feedback parameter cannot supply a complete joint
 feedback forecast. The notebook records numerical evidence for its
 declared demonstration, rather than adopting published improvements as
@@ -168,17 +241,62 @@ targets that the calculation must reach.
 
 ## Reproduce the saved-array and step studies
 
-Start in `Cocoa/projects/des_3pcf` with Cocoa active and serial BLAS.
-These two commands inspect saved arrays and write reports under
-`runs/fisher_array_diagnostics`; they evaluate no physical model.
+Start in `Cocoa/projects/des_3pcf` with Cocoa active.
+
+**Step :one:**: Set thread ownership for the current platform.
+
+Linux:
+
+```bash
+export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4
+export OMP_PROC_BIND=close OMP_PLACES=cores OMP_DYNAMIC=false
+export OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+export BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+```
+
+macOS:
+
+```bash
+export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4
+export OMP_PROC_BIND=disabled OMP_PLACES=cores OMP_DYNAMIC=false
+export OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1 BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+```
+
+**Step :two:**: Inspect nuisance projection with independent matrix algebra.
+
+The saved-array reports use serial BLAS, write under
+`runs/fisher_array_diagnostics`, and evaluate no physical model.
 
 ```bash
 python tests/studies/analyze_des3pcf_fisher_amplification.py
 ```
 
+**Step :three:**: Separate xi and aperture contributions to step sensitivity.
+
 ```bash
 python tests/studies/analyze_des3pcf_fisher_step_blocks.py
 ```
+
+**Step :four:**: Check that both full triangle archives are available.
+
+```bash
+python tests/studies/full_triangle_report.py
+```
+
+**Step :five:**: Compare their full derivatives and parameter constraints.
+
+```bash
+python tests/studies/full_triangle_report.py --execute
+```
+
+Here `--execute` requests array analysis only. This report verifies the
+selected and full stencils, contrasts partial and full substitutions,
+and compares IA errors and the matter-density/amplitude information gain
+with dark energy fixed or varied. Missing full archives are reported;
+they are never calculated by this command.
+
+**Step :six:**: List the missing points for a parameter-step follow-up.
 
 The following command checks the original baseline and lists the eight
 new physical points. It does not evaluate them. Use a new output directory
@@ -190,8 +308,10 @@ python tests/studies/cosmology_step_study.py \
   --output runs/nla_step_followup --larger-step
 ```
 
-Adding `--execute` requests those means with the YAML's four-worker
-OpenMP setting. This is an explicit physical calculation:
+**Step :seven:**: Calculate the eight additional physical means.
+
+For this separate script, `--execute` requests predictions with the
+YAML's four-worker OpenMP setting. Run one physical study at a time.
 
 ```bash
 python tests/studies/cosmology_step_study.py \

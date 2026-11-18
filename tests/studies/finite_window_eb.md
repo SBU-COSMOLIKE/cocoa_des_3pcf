@@ -41,7 +41,8 @@ IA expressions. [Gomes et al., Section II.6](https://arxiv.org/html/2601.09133v1
 
 ## Why single-B and double-B terms have different orders
 
-Expand the fields in powers of the initial linear density:
+For the deterministic shape model, expand the fields in powers of the
+initial linear density:
 
 ```math
 E=E^{(1)}+E^{(2)}+\cdots,\qquad
@@ -71,7 +72,7 @@ The nonlinear power replacement selected by `power_mode: 2` changes
 the scale dependence of the retained expressions. It does not create
 the missing contractions with two quadratic B legs. These counting
 statements concern the perturbative operators underlying that declared
-nonlinear prescription.
+nonlinear prescription. They do not count stochastic shape correlations.
 
 ## What an exact aperture removes
 
@@ -175,6 +176,17 @@ Unequal source bins and scalene triangles help expose a response that
 symmetry could conceal. The transformation must preserve orientation,
 spin phases and all required source/field placements. Inserting the
 template into the existing parity-even Legendre route is not this test.
+The B-bearing shear carries an explicit factor of $`i`$ relative to E;
+conjugating that shear changes the factor to $`-i`$. The independent
+transformation must track that sign for each natural component.
+
+The implemented single-B vertex is proportional to
+$`b_{\rm TA}C_1+C_2/3`$. Here $`C_1`$ and $`C_2`$ are the physical linear
+and quadratic alignment coefficients at each redshift. Pure NLA sets
+both the density-weighting and quadratic terms to zero, giving an exact
+single-B control. The implemented velocity-shear term alone also leaves
+that vertex zero. These null configurations test the physical template
+separately from its aperture transformation.
 
 The implemented mirror prescription is a sum of the weights with aperture
 radii two and three exchanged. For equal radii it doubles the same weight;
@@ -207,7 +219,7 @@ and posterior coverage require additional calculations. A measured null
 should state its precision and tested configurations.
 
 The present claim is a **finite-SAS aperture prediction from the paper's
-E-only TATT bispectrum, with unquantified leakage from omitted B
+E-only TATT bispectrum, with an untested response to omitted single-B
 bispectra**. Matching that approximation is not an implementation error.
 The absent finite-response test prevents treating it as a verified
 prediction of every TATT contribution to the cut shear statistic.
