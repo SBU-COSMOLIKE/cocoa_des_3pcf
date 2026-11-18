@@ -19,7 +19,7 @@ from des3pcf.provenance import file_digest
 from test_fisher_result_identity import artificial_saved_workflow
 
 
-def saved_accuracy_study(tmp_path):
+def saved_accuracy_study(tmp_path, cosmological=False):
     """Create one baseline, one selected-column archive and one full candidate.
 
     The candidate has a doubled two-parameter Fisher matrix, so its exact
@@ -37,7 +37,19 @@ def saved_accuracy_study(tmp_path):
     # labels, configured spacings and archived arrays must describe the
     # same experiment even though no physical mean is evaluated here.
     config["fisher"]["steps"] = {"a1": 0.02, "eta1": 0.04}
-    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    pair = ["a1", "eta1"]
+    if cosmological:
+        # These are historical array records, not requests for a CAMB
+        # evaluation. Four columns separate the varied subset from its FoM.
+        config["physics"]["cosmology_mode"] = "camb"
+        config["fisher"]["steps"] = {
+            "omega_m": 0.003,
+            "h": 0.005,
+            "w0": 0.02,
+            "wa": 0.04,
+        }
+        pair = ["w0", "wa"]
+    path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
     _, _, baseline_configuration_digest = driver.load_configuration(
         path=path, command="fisher",
     )
@@ -46,9 +58,21 @@ def saved_accuracy_study(tmp_path):
     arrays.pop("observed_values")
     for key in ("row_labels", "row_kind", "row_bins", "row_angles_radians"):
         arrays.pop(key)
-    arrays["parameter_names"] = np.asarray(["a1", "eta1"])
-    arrays["fisher_h"] = np.eye(2)
-    arrays["fisher_h2"] = np.eye(2)
+    names = list(config["fisher"]["steps"])
+    nparameter = len(names)
+    arrays["parameter_names"] = np.asarray(names)
+    arrays["fisher_h"] = np.eye(nparameter)
+    arrays["fisher_h2"] = np.eye(nparameter)
+    # A simple linear response gives unambiguous saved node identities.
+    # The artificial Fisher/noise scores below test plotting denominators,
+    # not a scientific reconstruction from this toy's derivatives.
+    for label, divisor in (("h", 1.0), ("h2", 2.0)):
+        values = np.empty((nparameter, 5, rows.values.size))
+        for column, name in enumerate(names):
+            step = config["fisher"]["steps"][name]/divisor
+            for index, offset in enumerate((-2.0, -1.0, 0.0, 1.0, 2.0)):
+                values[column, index] = (column + 1)*offset*step
+        arrays[f"stencil_values_{label}"] = values
     baseline = Path(config["outputs"]["fisher"])
     driver.save_result(
         path=baseline,
@@ -63,14 +87,14 @@ def saved_accuracy_study(tmp_path):
     candidate["accuracy"]["chi_boost"] = 2.0
     candidate["outputs"]["fisher"] = str(output / "chi_2_full_fisher.npz")
     case_path = output / "chi_2.yaml"
-    case_path.write_text(yaml.safe_dump(candidate), encoding="utf-8")
+    case_path.write_text(yaml.safe_dump(candidate, sort_keys=False), encoding="utf-8")
     _, _, case_digest = driver.load_configuration(path=case_path, command="fisher")
     case_metadata = deepcopy(metadata)
     case_metadata["configuration_sha256"] = case_digest
     case_metadata["configuration"] = candidate
     case_arrays = dict(arrays)
-    case_arrays["fisher_h"] = 2.0 * np.eye(2)
-    case_arrays["fisher_h2"] = 2.0 * np.eye(2)
+    case_arrays["fisher_h"] = 2.0 * np.eye(nparameter)
+    case_arrays["fisher_h2"] = 2.0 * np.eye(nparameter)
     driver.save_result(
         path=Path(candidate["outputs"]["fisher"]),
         arrays=case_arrays,
@@ -84,12 +108,12 @@ def saved_accuracy_study(tmp_path):
         "prediction_identity": metadata["prediction_identity"],
         "dependency_sha256": {},
         "selected_columns": [0, 1],
-        "absolute_steps": [0.01, 0.02],
+        "absolute_steps": [config["fisher"]["steps"][name]/2 for name in names],
     }
     np.savez(
         file=output / "chi_2_noise.npz",
         identity_json=np.asarray(json.dumps(identity)),
-        a=np.zeros(2),
+        a=np.zeros(nparameter),
     )
     report = {
         "format": "des3pcf-fisher-accuracy-result-v1",
@@ -98,16 +122,16 @@ def saved_accuracy_study(tmp_path):
         "baseline_result_sha256": file_digest(path=baseline),
         "prediction_identity": metadata["prediction_identity"],
         "dependency_sha256": {},
-        "parameter_names": ["a1", "eta1"],
+        "parameter_names": names,
         "selected_columns": [0, 1],
-        "absolute_steps": [0.01, 0.02],
-        "pair": ["a1", "eta1"],
+        "absolute_steps": identity["absolute_steps"],
+        "pair": pair,
         "baseline_fom": 1.0,
         "cases": [
             {
                 "name": "chi_2",
                 "configuration": str(case_path),
-                "a": [0.0, 0.0],
+                "a": np.zeros(nparameter).tolist(),
             },
         ],
     }

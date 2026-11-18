@@ -42,6 +42,89 @@ def _plotters():
     return importlib.import_module("cosmolike_notebook_utils.3pcf.fisher_accuracy")
 
 
+def _validate_step_vectors(summary, arrays, baseline, configuration, columns, steps):
+    """Check archived coordinate reuse without recomputing any diagnostic.
+
+    Arguments:
+      summary, arrays = recorded step metadata and owned NPZ arrays.
+      baseline = original Fisher arrays; configuration = its recorded inputs.
+      columns, steps = validated selected indices and absolute base steps.
+    Returns:
+      None when every stored stencil and new physical coordinate is consistent.
+    Historical reads do not import today's shared noise implementation.
+    This verifies saved-node reuse and coordinates, not that a prediction
+    was accurate or that a recorded FoM equals a newly recomputed value.
+    """
+    units = {
+        "h4": (-2, -1, 0, 1, 2),
+        "h2": (-4, -2, 0, 2, 4),
+        "h": (-8, -4, 0, 4, 8),
+        "two_h": (-16, -8, 0, 8, 16),
+    }
+    nrow = len(baseline["row_labels"])
+    labels = [case["step_label"] for case in summary["cases"]]
+    seen = {}
+    for label in labels:
+        key = f"stencil_values_{label}"
+        derivative_key = f"selected_derivatives_{label}"
+        if key not in arrays or derivative_key not in arrays:
+            raise ValueError(f"Step study lacks retained arrays for {label}.")
+        values = arrays[key]
+        derivatives = arrays[derivative_key]
+        if (values.dtype != np.float64 or values.shape != (len(columns), 5, nrow)
+                or not np.all(np.isfinite(values))
+                or derivatives.dtype != np.float64
+                or derivatives.shape != (nrow, len(columns))
+                or not np.all(np.isfinite(derivatives))):
+            raise ValueError(
+                f"Step study has invalid retained-array shape/type for {label}."
+            )
+        if label in ("h", "h2"):
+            expected = baseline[key][columns]
+            if not np.array_equal(values.view(np.uint64), expected.view(np.uint64)):
+                raise ValueError(f"Step study changes saved baseline nodes for {label}.")
+        for index, unit in enumerate(units[label]):
+            value = values[:, index]
+            if unit in seen and not np.array_equal(
+                value.view(np.uint64), seen[unit].view(np.uint64),
+            ):
+                raise ValueError(f"Step study changes shared quarter-step node {unit}.")
+            seen[unit] = value
+    reference = dict(configuration["ia"])
+    reference.update(configuration["parameters"])
+    names = baseline["parameter_names"][columns].tolist()
+    new_units = (-1, 1)
+    if "two_h" in labels:
+        new_units = (-1, 1, -16, 16)
+    expected_points = {}
+    for index, name in enumerate(names):
+        for unit in new_units:
+            point = dict(reference)
+            point[name] = float(reference[name]) + unit*(steps[index]/4.0)
+            expected_points[(name, unit)] = point
+    recorded = set()
+    for record in summary["new_point_plan"]:
+        name = record.get("name")
+        unit = record.get("quarter_step_unit")
+        if isinstance(unit, bool) or not isinstance(unit, int):
+            raise ValueError("Step study quarter-step units must be integers.")
+        key = (name, unit)
+        if key not in expected_points or key in recorded:
+            raise ValueError("Step study repeats or changes a declared new coordinate.")
+        point = record.get("point")
+        expected = expected_points[key]
+        if not isinstance(point, dict) or set(point) != set(expected):
+            raise ValueError("Step study changes the physical parameter dictionary.")
+        for parameter in expected:
+            value = float(point[parameter])
+            if (not np.isfinite(value)
+                    or value.hex() != float(expected[parameter]).hex()):
+                raise ValueError("Step study changes a declared physical coordinate.")
+        recorded.add(key)
+    if recorded != set(expected_points):
+        raise ValueError("Step study is missing a declared new physical coordinate.")
+
+
 def _case_label(name):
     """Use physical numerical-stage names instead of internal keys on figures."""
     labels = {
@@ -355,6 +438,10 @@ class AccuracyStudy:
           FileNotFoundError for incomplete saved work. No model is evaluated.
         """
         baseline_report, baseline, baseline_metadata = self.load()
+        # The dedicated producer fixes its FoM pair. Do not relabel those
+        # saved numbers through a scan configured for another ellipse.
+        if baseline_report.get("pair") != ["w0", "wa"]:
+            raise ValueError("The cosmology step producer supports only the w0-wa pair.")
         directory = Path(directory).resolve()
         summary = json.loads((directory/"summary.json").read_text(encoding="utf-8"))
         if (summary.get("format") != "des3pcf-cosmology-step-study-v1"
@@ -381,6 +468,11 @@ class AccuracyStudy:
             if selected != summary["selected_parameters"]:
                 raise ValueError("Step summary changes its selected parameters.")
             base_steps = archive["absolute_base_steps"].copy()
+            retained = {}
+            for name in archive.files:
+                if (name.startswith("stencil_values_")
+                        or name.startswith("selected_derivatives_")):
+                    retained[name] = archive[name].copy()
         expected_steps = []
         configuration = baseline_metadata["configuration"]
         for parameter in selected:
@@ -452,6 +544,10 @@ class AccuracyStudy:
                 ratios[1, index] = partial
             labels.append(names[label])
             ordered_cases.append(case)
+        _validate_step_vectors(
+            summary=summary, arrays=retained, baseline=baseline,
+            configuration=configuration, columns=columns, steps=base_steps,
+        )
         return {
             "summary": summary,
             "labels": labels,

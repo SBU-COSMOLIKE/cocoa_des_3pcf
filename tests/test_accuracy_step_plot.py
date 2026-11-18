@@ -12,7 +12,7 @@ from test_accuracy_full_identity import saved_accuracy_study
 def saved_step_fixture(study):
     """Save artificial two-column diagnostics with a deliberately nonunit h2 score."""
     report, baseline, metadata = study.load()
-    selected = baseline["parameter_names"].tolist()
+    selected = baseline["parameter_names"][:2].tolist()
     base_steps = []
     for name in selected:
         base_steps.append(metadata["configuration"]["fisher"]["steps"][name])
@@ -33,9 +33,13 @@ def saved_step_fixture(study):
             "selected_derivative_replacement_status": "resolved",
         })
     points = []
-    for name in selected:
+    reference = dict(metadata["configuration"]["ia"])
+    reference.update(metadata["configuration"]["parameters"])
+    for index, name in enumerate(selected):
         for unit in (-1, 1, -16, 16):
-            points.append({"name": name, "quarter_step_unit": unit})
+            point = dict(reference)
+            point[name] = float(reference[name]) + unit*(base_steps[index]/4.0)
+            points.append({"name": name, "quarter_step_unit": unit, "point": point})
     summary = {
         "format": "des3pcf-cosmology-step-study-v1",
         "configuration": str(study.configuration),
@@ -57,6 +61,22 @@ def saved_step_fixture(study):
         "absolute_base_steps": base_steps,
         "row_labels": baseline["row_labels"],
     }
+    units = {
+        "h4": (-2, -1, 0, 1, 2),
+        "h2": (-4, -2, 0, 2, 4),
+        "h": (-8, -4, 0, 4, 8),
+        "two_h": (-16, -8, 0, 8, 16),
+    }
+    nrow = len(baseline["row_labels"])
+    for label, offsets in units.items():
+        values = np.empty((2, 5, nrow))
+        derivatives = np.empty((nrow, 2))
+        for column in range(2):
+            for index, unit in enumerate(offsets):
+                values[column, index] = (column + 1)*unit*(base_steps[column]/4.0)
+            derivatives[:, column] = column + 1
+        arrays[f"stencil_values_{label}"] = values
+        arrays[f"selected_derivatives_{label}"] = derivatives
     directory = study.output.parent/"steps"
     directory.mkdir()
     write_step_fixture(directory=directory, summary=summary, arrays=arrays)
@@ -76,7 +96,7 @@ def write_step_fixture(directory, summary, arrays):
 
 def test_step_plot_ratios_use_the_same_two_column_h2_denominator(tmp_path):
     """A current source edit cannot relabel or invalidate matching historical records."""
-    study, source, _ = saved_accuracy_study(tmp_path=tmp_path)
+    study, source, _ = saved_accuracy_study(tmp_path=tmp_path, cosmological=True)
     directory, _, _ = saved_step_fixture(study=study)
     source.write_bytes(source.read_bytes()+b" later physical source revision")
     loaded = study.load_step_study(directory=directory)
@@ -96,7 +116,7 @@ def test_step_plot_ratios_use_the_same_two_column_h2_denominator(tmp_path):
 @pytest.mark.parametrize("mismatch", ["summary", "baseline", "physical_identity"])
 def test_step_plot_refuses_inconsistent_historical_records(tmp_path, mismatch):
     """Matching filenames or plot shapes cannot substitute for recorded provenance."""
-    study, _, _ = saved_accuracy_study(tmp_path=tmp_path)
+    study, _, _ = saved_accuracy_study(tmp_path=tmp_path, cosmological=True)
     directory, summary, arrays = saved_step_fixture(study=study)
     if mismatch == "summary":
         summary["cases"][0]["diagonal_noise_inflation_ratio"] = 9.0
@@ -112,4 +132,47 @@ def test_step_plot_refuses_inconsistent_historical_records(tmp_path, mismatch):
             message = "files changed"
         write_step_fixture(directory=directory, summary=summary, arrays=arrays)
     with pytest.raises(ValueError, match=message):
+        study.load_step_study(directory=directory)
+
+
+@pytest.mark.parametrize(
+    "problem",
+    ["missing", "shape", "nonfinite", "baseline", "shared", "new_point", "duplicate"],
+)
+def test_step_plot_checks_actual_stencils_and_physical_points(tmp_path, problem):
+    """Consistent JSON metadata cannot conceal inconsistent retained vectors."""
+    study, _, _ = saved_accuracy_study(tmp_path=tmp_path, cosmological=True)
+    directory, summary, arrays = saved_step_fixture(study=study)
+    if problem == "missing":
+        arrays.pop("stencil_values_h4")
+        message = "lacks retained arrays"
+    elif problem == "shape":
+        arrays["stencil_values_h4"] = arrays["stencil_values_h4"][:, :, :-1]
+        message = "shape/type"
+    elif problem == "nonfinite":
+        arrays["selected_derivatives_h4"][0, 0] = np.nan
+        message = "shape/type"
+    elif problem == "baseline":
+        arrays["stencil_values_h"][0, 0, 0] += 0.1
+        message = "baseline nodes|shared quarter-step"
+    elif problem == "shared":
+        arrays["stencil_values_h4"][0, 0, 0] += 0.1
+        message = "shared quarter-step"
+    elif problem == "new_point":
+        record = summary["new_point_plan"][0]
+        record["point"][record["name"]] += 0.1
+        message = "physical coordinate"
+    else:
+        summary["new_point_plan"][1] = deepcopy(summary["new_point_plan"][0])
+        message = "repeats or changes"
+    write_step_fixture(directory=directory, summary=summary, arrays=arrays)
+    with pytest.raises(ValueError, match=message):
+        study.load_step_study(directory=directory)
+
+
+def test_step_plot_refuses_a_different_fom_pair(tmp_path):
+    """The standalone producer's w0-wa result cannot be relabeled as another pair."""
+    study, _, _ = saved_accuracy_study(tmp_path=tmp_path)
+    directory, _, _ = saved_step_fixture(study=study)
+    with pytest.raises(ValueError, match="only the w0-wa pair"):
         study.load_step_study(directory=directory)

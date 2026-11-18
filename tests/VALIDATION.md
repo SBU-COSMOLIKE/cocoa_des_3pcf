@@ -24,6 +24,15 @@ The rows, covariance and input/code identities stayed fixed during those
 calculations. The build and earlier check history below identify which
 native implementation these Python checks exercise.
 
+The saved-step reader's focused group passes **20 tests** (6.24 seconds),
+including refusal of missing or malformed retained arrays, changed shared
+nodes, changed physical coordinates, duplicate new points and a different
+FoM pair. This reading check remains historical: it compares archived
+records, without requiring today's physical source or noise helper. A
+separate array-only rescore of the preserved NLA/TATT step records reproduces
+their selected derivatives and every recorded ratio exactly; it verifies
+those records' arithmetic without relabeling their physical provenance.
+
 The three real Nautilus `--check` examples also pass with the corrected
 likelihood scalar handling and 480 rows. Their A1 displacement is 0.01;
 all three restore the exact fiducial prediction. Synthetic NLA and TATT
