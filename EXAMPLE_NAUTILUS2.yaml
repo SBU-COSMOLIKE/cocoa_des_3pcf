@@ -1,0 +1,153 @@
+format: cosmolike-3pcf-inference-v1
+description: Synthetic joint xi/Map3 likelihood with TATT and fixed Gaussian covariance.
+notes:
+- The synthetic data vector is generated from this exact mean at the declared initial
+  point. The external simulated values are used only for row labels and the paired covariance.
+- All 400 xi and 80 Map3 rows are retained. Small-scale baryonic contamination, exact finite-SAS
+  estimator agreement and connected IA covariance changes are not validated by this demonstration.
+- The likelihood is a normalized fixed Gaussian with the complete joint cross-covariance.
+  It applies no Hartlap, Percival or PME correction and no MOPED compression.
+- Source clipping and normalization follow the explicitly recorded demonstration source
+  file. These processed curves are not a calibrated replacement for the published source
+  model.
+- Uniform cosmological and IA ranges below are demonstration priors. In particular sigma8
+  is sampled uniformly, unlike a uniform S8 prior in the published inference.
+- Gaussian source-calibration widths and means follow 2503.03964 Table 3; finite bounds
+  explicitly truncate and renormalize each Gaussian prior.
+- Flat dark energy w0=-1,wa=0 and mnu=0.06 eV are fixed. Ct and the bispectrum-only feedback
+  fb remain fixed at zero.
+- A short --check verifies physical response and restored state; it does not establish
+  numerical convergence or a converged posterior.
+prediction: configs/des_y3_tatt_demo_fisher.yaml
+projection_overrides:
+  signed_baseline: 1
+threads: 1
+data:
+  mode: synthetic_fiducial
+selection:
+  mode: all
+initial:
+  w0: -1.0
+  wa: 0.0
+  m1: -0.0063
+  m2: -0.0198
+  m3: -0.0241
+  m4: -0.0369
+priors:
+  omega_m:
+    distribution: uniform
+    minimum: 0.1
+    maximum: 0.5
+    latex: \Omega_{\rm m}
+  omega_b:
+    distribution: uniform
+    minimum: 0.03
+    maximum: 0.07
+    latex: \Omega_{\rm b}
+  h:
+    distribution: uniform
+    minimum: 0.55
+    maximum: 0.91
+    latex: h
+  ns:
+    distribution: uniform
+    minimum: 0.87
+    maximum: 1.07
+    latex: n_{\rm s}
+  sigma8:
+    distribution: uniform
+    minimum: 0.6
+    maximum: 1.0
+    latex: \sigma_8
+  a1:
+    distribution: uniform
+    minimum: -5.0
+    maximum: 5.0
+    latex: A_1
+  eta1:
+    distribution: uniform
+    minimum: -5.0
+    maximum: 5.0
+    latex: \eta_1
+  m1:
+    distribution: normal
+    mean: -0.0063
+    sigma: 0.0091
+    minimum: -0.1
+    maximum: 0.1
+    latex: m_1
+  m2:
+    distribution: normal
+    mean: -0.0198
+    sigma: 0.0078
+    minimum: -0.1
+    maximum: 0.1
+    latex: m_2
+  m3:
+    distribution: normal
+    mean: -0.0241
+    sigma: 0.0076
+    minimum: -0.1
+    maximum: 0.1
+    latex: m_3
+  m4:
+    distribution: normal
+    mean: -0.0369
+    sigma: 0.0076
+    minimum: -0.1
+    maximum: 0.1
+    latex: m_4
+  dz1:
+    distribution: normal
+    mean: 0.0
+    sigma: 0.018
+    minimum: -0.1
+    maximum: 0.1
+    latex: \Delta z_1
+  dz2:
+    distribution: normal
+    mean: 0.0
+    sigma: 0.015
+    minimum: -0.1
+    maximum: 0.1
+    latex: \Delta z_2
+  dz3:
+    distribution: normal
+    mean: 0.0
+    sigma: 0.011
+    minimum: -0.1
+    maximum: 0.1
+    latex: \Delta z_3
+  dz4:
+    distribution: normal
+    mean: 0.0
+    sigma: 0.017
+    minimum: -0.1
+    maximum: 0.1
+    latex: \Delta z_4
+  a2:
+    distribution: uniform
+    minimum: -5.0
+    maximum: 5.0
+    latex: A_2
+  eta2:
+    distribution: uniform
+    minimum: -5.0
+    maximum: 5.0
+    latex: \eta_2
+  bta:
+    distribution: uniform
+    minimum: 0.0
+    maximum: 2.0
+    latex: b_{\rm TA}
+check:
+  parameter: a1
+  delta: 0.01
+sampler:
+  n_live: 1000
+  n_networks: 4
+  n_eff: 10000
+  n_like_max: 100000
+  f_live: 0.01
+  seed: 137
+output: runs/nautilus_tatt_synthetic

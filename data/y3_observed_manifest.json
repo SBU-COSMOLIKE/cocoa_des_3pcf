@@ -1,0 +1,127 @@
+{
+  "repository": "https://github.com/rchgomes/3pcf_integrator",
+  "commit": "d6098d326dcb03bc750adcc9627119f52d928944",
+  "selection": "Observed unblinded DES Y3 vectors and joint covariance paired by the pinned unblind-metacal-796sims-february-Percival-2ptfix-3pcfsc joint NLA configuration; reproducing the publication additionally requires its estimator, cuts, compression, priors and likelihood.",
+  "companion_paper": "https://arxiv.org/abs/2508.14018v2",
+  "methods_paper": "https://arxiv.org/abs/2503.03964v2",
+  "data_kind": "observed_unblinded",
+  "files": [
+    {
+      "path": "data/dv/real_2pt_desy3_unblind_g2flip_matchElisa_2025Mar10.fits",
+      "git_blob_sha1": "f782d0eabf7265a35bc1dd1d6725f7de16a3f7a8",
+      "bytes": 1336320
+    },
+    {
+      "path": "data/dv/real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits",
+      "git_blob_sha1": "bc296c07b48b7d3f7be37d8fa29289fb25df1dd2",
+      "bytes": 66240
+    },
+    {
+      "path": "data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+      "git_blob_sha1": "963bb0fcb42c00e9b7b47d4a87c99efc00edd688",
+      "bytes": 1848960
+    },
+    {
+      "path": "config/3pt.ini",
+      "git_blob_sha1": "f0d69f9b8c9488f39b75b5dd0fc026bab2690ed6",
+      "bytes": 3559
+    },
+    {
+      "path": "config/joint.ini",
+      "git_blob_sha1": "621fb3cdb0ae63d1d99e681602b7c851418a4916",
+      "bytes": 2576
+    },
+    {
+      "path": "config/cosmic-shear.ini",
+      "git_blob_sha1": "a9b2b0016c61fb294291387a01e448fc1afcdeb2",
+      "bytes": 4844
+    },
+    {
+      "path": "config/moped.ini",
+      "git_blob_sha1": "56dc9e7bcc97f0d6fe045b98a050256f7e1dc5a4",
+      "bytes": 1228
+    },
+    {
+      "path": "config/astrophysical.ini",
+      "git_blob_sha1": "103e239bbd2e2d59bfa068ba7a6eecf2d83bd81d",
+      "bytes": 577
+    },
+    {
+      "path": "config/cosmo.ini",
+      "git_blob_sha1": "047df7629876b40a5d5bccc3a2d8b818793318ac",
+      "bytes": 319
+    },
+    {
+      "path": "config/linear-power.ini",
+      "git_blob_sha1": "e9a1aae22da192803a9ad1f1ae01c929c158a1eb",
+      "bytes": 1448
+    },
+    {
+      "path": "config/unblind-metacal-796sims-february-Percival-2ptfix-3pcfsc/des-y3-shear-values.ini",
+      "git_blob_sha1": "d6a1d9e58d4220cca0f14241a795741601e325a2",
+      "bytes": 950
+    },
+    {
+      "path": "config/unblind-metacal-796sims-february-Percival-2ptfix-3pcfsc/unblind-metacal-shear-2pt-map3-NLA-all.ini",
+      "git_blob_sha1": "cbf1d7b0f0538443e5c9f89dcb1ecee0bc0f7ded",
+      "bytes": 2530
+    }
+  ],
+  "header_inspection": {
+    "observables_in_order": [
+      "xip",
+      "xim",
+      "map3"
+    ],
+    "row_counts": [
+      200,
+      200,
+      80
+    ],
+    "joint_covariance_offsets": [
+      0,
+      200,
+      400
+    ],
+    "xi_bin_edge_range_arcmin": [
+      2.5,
+      250.0
+    ],
+    "equal_aperture_radii_arcmin": [
+      7.0,
+      14.0,
+      25.0,
+      40.0
+    ],
+    "source_midpoint_count": 301,
+    "source_midpoint_range": [
+      0.0,
+      2.995
+    ],
+    "negative_source_density_counts": [
+      12,
+      0,
+      0,
+      0
+    ],
+    "source_table_bytes_sha256": "3dc3e5d10ef2dfcbf84a4dbbe41dc1cf15ffda9671a795d4d293b78541108aac",
+    "exact_reference_source_columns": [
+      "Z_LOW",
+      "Z_MID",
+      "Z_HIGH",
+      "BIN1",
+      "BIN2",
+      "BIN3",
+      "BIN4"
+    ],
+    "exact_reference_xi_columns": [
+      "BIN1",
+      "BIN2",
+      "ANGBIN",
+      "ANGLEMIN",
+      "ANGLEMAX"
+    ],
+    "reference_two_point": "data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+    "warning": "The observed two-point FITS has a400-by-400 covariance but retains extra gammat/wtheta block headers. Use the separately pinned480-by-480 joint covariance."
+  }
+}

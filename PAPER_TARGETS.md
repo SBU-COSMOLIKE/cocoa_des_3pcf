@@ -48,6 +48,17 @@ does not include every external file referenced by the upstream pipeline.
 In particular, a reference in an INI file is not evidence that its target
 has been downloaded or that the dependency version has been pinned.
 
+Observed unblinded Y3 inputs are separately recorded in the
+[observed manifest](data/y3_observed_manifest.json) and downloaded by
+[fetch_y3_observed.py](scripts/fetch_y3_observed.py). Its exact upstream
+joint configuration pairs the March 10 two-point vector with the March 11
+Map3 vector and the February 25 joint covariance. These are measurements,
+not the synthetic vectors in the twelve-file reference selection above.
+The corresponding observational paper is
+[Gomes et al., 2508.14018v2](https://arxiv.org/abs/2508.14018v2).
+The [reproduction plan](PAPER_REPRODUCTION_PLAN.md) distinguishes available
+measurements from a verified match to their estimator and likelihood.
+
 ## The Y3 methods-paper target
 
 The NLA reference uses 796 mock patches from 199 parent skies, an 8 arcmin
