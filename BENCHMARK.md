@@ -146,6 +146,14 @@ establish survey-level convergence of the chosen grids or a published forecast.
 
 ## Saved measurements <a name="measurements"></a>
 
+The [final optimization comparison](benchmarks/2026-11-18/README.md)
+contains the [mean timing and scaling plot](benchmarks/2026-11-18/threepcf_optimization.pdf)
+and the [covariance plot](benchmarks/2026-11-18/covariance_optimization.pdf).
+Optimized eight-worker medians are 1.467 seconds for NLA and 1.956 seconds
+for TATT. These retain the original benchmark resolution; subsequent TATT
+interpolation and source-resolution corrections have not been timed on a
+quiet machine. They are not timings of the accuracy-tested Fisher settings.
+
 The [Apple M2 Pro record](benchmarks/2026-11-17/README.md) contains the completed
 NLA and TATT comparison, individual measurements, binary identities and saved
 vectors. Eight-thread median times are 2.285 seconds for the 80-entry NLA
