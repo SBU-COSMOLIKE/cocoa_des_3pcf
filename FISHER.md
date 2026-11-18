@@ -280,3 +280,9 @@ The Y6 example needs the external source/catalogue inputs and final priors.
 It must not inherit Y3 source curves, area or noise by default. Absolute
 forecast errors and joint gains should be reported only after those
 choices and the numerical refinements are recorded for that release.
+
+
+The [joint IA convention study](tests/studies/joint_ia_conventions.md)
+derives the amplitude, pivot, sign and density-operator conversion between
+the two-point and three-point calculations. Matching those coefficients
+still leaves growth and source interpolation to be refined separately.

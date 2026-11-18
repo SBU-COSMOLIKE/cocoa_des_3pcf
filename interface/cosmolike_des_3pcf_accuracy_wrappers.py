@@ -45,6 +45,11 @@ def _plotters():
 def _validate_step_vectors(summary, arrays, baseline, configuration, columns, steps):
     """Check archived coordinate reuse without recomputing any diagnostic.
 
+    One integer coordinate unit is one quarter of the original YAML step.
+    For example, unit 2 is the saved +Delta/2 prediction and unit 1 is the
+    new +Delta/4 prediction. Integer labels identify shared physical points
+    without a tolerance that could confuse two nearby parameter values.
+
     Arguments:
       summary, arrays = recorded step metadata and owned NPZ arrays.
       baseline = original Fisher arrays; configuration = its recorded inputs.
@@ -68,7 +73,10 @@ def _validate_step_vectors(summary, arrays, baseline, configuration, columns, st
         key = f"stencil_values_{label}"
         derivative_key = f"selected_derivatives_{label}"
         if key not in arrays or derivative_key not in arrays:
-            raise ValueError(f"Step study lacks retained arrays for {label}.")
+            raise ValueError(
+                f"Step study lacks retained arrays for {label}: require {key} "
+                f"and {derivative_key}; regenerate the complete step archive."
+            )
         values = arrays[key]
         derivatives = arrays[derivative_key]
         if (values.dtype != np.float64 or values.shape != (len(columns), 5, nrow)
@@ -77,7 +85,11 @@ def _validate_step_vectors(summary, arrays, baseline, configuration, columns, st
                 or derivatives.shape != (nrow, len(columns))
                 or not np.all(np.isfinite(derivatives))):
             raise ValueError(
-                f"Step study has invalid retained-array shape/type for {label}."
+                f"Step study has invalid retained-array shape/type for {label}: "
+                f"stencils {values.shape}/{values.dtype}, derivatives "
+                f"{derivatives.shape}/{derivatives.dtype}; require finite float64 "
+                f"arrays of shapes {(len(columns), 5, nrow)} and "
+                f"{(nrow, len(columns))}. Regenerate the step archive."
             )
         if label in ("h", "h2"):
             expected = baseline[key][columns]

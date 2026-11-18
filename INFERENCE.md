@@ -197,6 +197,13 @@ scored by a triangular solve. Selecting fewer data rows selects both axes
 of C before factorization; selecting a submatrix of the full precision
 would answer a different, conditional question.
 
+The small numerical units of shear correlations can make the determinant
+term large and positive. A positive log likelihood is allowed: a continuous
+probability density can exceed one. Compare likelihood differences using
+the same data rows and units. The `--check` chi-squared is evaluated at the
+configured fiducial before fitting; it is not a best-fit goodness-of-fit
+statistic or a diagnosis of which model assumption causes a residual.
+
 Nautilus's `Prior` receives normalized uniform or Gaussian distributions.
 Finite Gaussian bounds in the YAML explicitly truncate and renormalize the
 density. The likelihood adds no prior penalty. Fisher prior entries in the

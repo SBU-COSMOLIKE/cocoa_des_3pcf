@@ -375,6 +375,9 @@ def load_joint_simulations(path, expected_labels, expected_kind,
       expected_labels, expected_kind = exact ordered row identities of the
           analytic covariance; each group must contain xi and Map3 rows.
       expected_estimator = declared estimator string, e.g. finite_sas.
+          A family name does not verify triangle cuts, weights, masks or
+          source calibration; compare their input/measurement manifests
+          separately before interpreting a survey correction.
       excluded_parent_ids = parents used for analytic tuning or validation;
           any overlap is refused before a sample covariance is formed.
     Returns:

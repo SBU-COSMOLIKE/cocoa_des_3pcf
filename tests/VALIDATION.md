@@ -13,12 +13,13 @@ The existing DES Y3 extension is used to check the Python two-point bridge.
 
 ## Executed checks <a name="executed"></a>
 
-The current complete strict collection passes **549 tests** (91.09 seconds,
+The current complete strict collection passes **561 tests** (91.42 seconds,
 exit 0). This includes finite sign-pair, full-check provenance, saved-node
 step-study, historical step-plot and integer-selector regression tests.
-Four additional analytic tests of fixed dark energy pass separately
-(0.23 seconds); they check retained nuisance marginalization, the prior
-counted once, unresolved directions and input immutability. The step study also passed preflight against
+The complete collection also includes four analytic fixed-dark-energy
+tests and eight retained-stencil rejection cases. The former check retained
+nuisance marginalization, the prior counted once, unresolved directions
+and input immutability. The step study also passed preflight against
 both actual Fisher archives and then evaluated eight new means per model.
 The rows, covariance and input/code identities stayed fixed during those
 calculations. The build and earlier check history below identify which
@@ -49,6 +50,14 @@ selectors were converted to floats before an IA displacement called the
 native projection. The likelihood now retains integer types, and independent
 regressions require actual integer-index semantics for both Python and
 NumPy integer selectors. The physical mean equations did not change.
+
+The IA/Fisher notebook executed twelve code cells with thirteen figures;
+the original-code notebook executed nine cells with five figures. All
+figures were inspected. The new full NLA/TATT baseline runs reproduce all
+31 numerical arrays of their preserved prior calculations bit for bit.
+Their original metadata stays separate from the fresh implementation
+identities; the equality record is `runs/baseline_refresh_comparison.json`.
+The selected scans and full triangle checks are separate later calculations.
 
 The native interpolation/source-grid checkpoint is `6a7eae7` on
 `lowrank_fftlog`. Its full project collection passed **502 tests in strict
