@@ -1,0 +1,457 @@
+{
+  "bacco_implementation": {
+    "python_sha256": {
+      "__init__.py": "b8117fba4009e620ffba776d1c41b219440e5886c88ecbc6b623bd03d530bcab",
+      "_version.py": "750fc29705f648189b9e5a061a6dc9e8233cd881a097cdb0b893e490975366a9",
+      "baryonic_boost.py": "5ca59f71ae0f08bb2a96d7be3527490e8609e04f6597443ce77597964f66f296",
+      "lbias_expansion.py": "c74448f04d502319709672d8a8e37e55fae410e245a7e874f08560f799cc211a",
+      "lbias_expansion_RSD.py": "d304aa66480e0a9402dbdcb67cb437477d26937e23e050b9dac9d8cdac6684ec",
+      "matter_bispectrum.py": "ebeab14bfbe7bb26a9ba9d3715362fdaa1dc94a7e439edfed2f56f5dd162808b",
+      "matter_powerspectrum.py": "f86b7a5393852a5beca76c98d66a057e2b974a343b7e21ae052affcb06750cb8",
+      "utils.py": "8f988bbfefb491d0a0f4e8d6f576c015bdc23b2499bff8ff2826bf9b8ee9c970"
+    },
+    "weights": {
+      "B": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/baccoemu/bispectrum_baryonic_boost/bispectra_ratio_bcm_emu_folded.pkl",
+        "sha256": "4c33ea38950751d3ce68ccad315b83f51dfd2c4d7ef9e44aff9bae636037462b"
+      },
+      "P": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/baccoemu/bispectrum_baryonic_boost/powerspectra_ratio_bcm_emu_folded.pkl",
+        "sha256": "07c378ba38140fb1dee9eb7580f850e0e8328312993f7214cf8e622931c34e1b"
+      }
+    }
+  },
+  "cases": [
+    {
+      "accuracy": {
+        "accuracy_boost": 1.0,
+        "angular_boost": 1.0,
+        "aperture_ell_boost": 1.0,
+        "aperture_phi_boost": 1.0,
+        "chi_boost": 1.0,
+        "covariance_ell_boost": 1.0,
+        "covariance_k_boost": 1.0,
+        "covariance_mass_boost": 1.0,
+        "covariance_phi_boost": 1.0,
+        "covariance_radius_boost": 1.0,
+        "covariance_window_boost": 1.0,
+        "feedback_k_boost": 1.0,
+        "feedback_table_boost": 1.0,
+        "feedback_u_boost": 1.0,
+        "feedback_v_boost": 1.0,
+        "feedback_z_boost": 1.0,
+        "fft_boost": 1.0,
+        "fit_z_boost": 1.0,
+        "integration_accuracy_boost": 1.0,
+        "kernel_boost": 1.0,
+        "multipole_boost": 1.0,
+        "power_table_boost": 1.0,
+        "profile_boost": 1.0,
+        "profile_upsample_boost": 1.0,
+        "source_boost": 1.0,
+        "triangle_boost": 1.0,
+        "xi_ell_boost": 1.0,
+        "xi_theta_boost": 1.0
+      },
+      "bispectrum_relative_error": {
+        "maximum_absolute": 0.010069592272654804,
+        "root_mean_square": 0.002467704495423565,
+        "worst_index": [
+          4
+        ]
+      },
+      "counts": {
+        "nk": 97,
+        "nu": 33,
+        "nv": 9,
+        "nz": 17
+      },
+      "name": "baseline",
+      "native_boost": 2,
+      "power_relative_error": {
+        "maximum_absolute": 0.004430434024739749,
+        "root_mean_square": 0.0006992950423536939,
+        "worst_index": [
+          28,
+          2
+        ]
+      }
+    },
+    {
+      "accuracy": {
+        "accuracy_boost": 1.0,
+        "angular_boost": 1.0,
+        "aperture_ell_boost": 1.0,
+        "aperture_phi_boost": 1.0,
+        "chi_boost": 1.0,
+        "covariance_ell_boost": 1.0,
+        "covariance_k_boost": 1.0,
+        "covariance_mass_boost": 1.0,
+        "covariance_phi_boost": 1.0,
+        "covariance_radius_boost": 1.0,
+        "covariance_window_boost": 1.0,
+        "feedback_k_boost": 1.0,
+        "feedback_table_boost": 1.0,
+        "feedback_u_boost": 1.0,
+        "feedback_v_boost": 1.0,
+        "feedback_z_boost": 2.0,
+        "fft_boost": 1.0,
+        "fit_z_boost": 1.0,
+        "integration_accuracy_boost": 1.0,
+        "kernel_boost": 1.0,
+        "multipole_boost": 1.0,
+        "power_table_boost": 1.0,
+        "profile_boost": 1.0,
+        "profile_upsample_boost": 1.0,
+        "source_boost": 1.0,
+        "triangle_boost": 1.0,
+        "xi_ell_boost": 1.0,
+        "xi_theta_boost": 1.0
+      },
+      "bispectrum_relative_error": {
+        "maximum_absolute": 0.009425044910911451,
+        "root_mean_square": 0.002420102078019304,
+        "worst_index": [
+          4
+        ]
+      },
+      "counts": {
+        "nk": 97,
+        "nu": 33,
+        "nv": 9,
+        "nz": 33
+      },
+      "name": "z",
+      "native_boost": 2,
+      "power_relative_error": {
+        "maximum_absolute": 0.004428508243316864,
+        "root_mean_square": 0.0006509430270788229,
+        "worst_index": [
+          28,
+          2
+        ]
+      }
+    },
+    {
+      "accuracy": {
+        "accuracy_boost": 1.0,
+        "angular_boost": 1.0,
+        "aperture_ell_boost": 1.0,
+        "aperture_phi_boost": 1.0,
+        "chi_boost": 1.0,
+        "covariance_ell_boost": 1.0,
+        "covariance_k_boost": 1.0,
+        "covariance_mass_boost": 1.0,
+        "covariance_phi_boost": 1.0,
+        "covariance_radius_boost": 1.0,
+        "covariance_window_boost": 1.0,
+        "feedback_k_boost": 2.0,
+        "feedback_table_boost": 1.0,
+        "feedback_u_boost": 1.0,
+        "feedback_v_boost": 1.0,
+        "feedback_z_boost": 1.0,
+        "fft_boost": 1.0,
+        "fit_z_boost": 1.0,
+        "integration_accuracy_boost": 1.0,
+        "kernel_boost": 1.0,
+        "multipole_boost": 1.0,
+        "power_table_boost": 1.0,
+        "profile_boost": 1.0,
+        "profile_upsample_boost": 1.0,
+        "source_boost": 1.0,
+        "triangle_boost": 1.0,
+        "xi_ell_boost": 1.0,
+        "xi_theta_boost": 1.0
+      },
+      "bispectrum_relative_error": {
+        "maximum_absolute": 0.004498071178828056,
+        "root_mean_square": 0.0012207576488214625,
+        "worst_index": [
+          4
+        ]
+      },
+      "counts": {
+        "nk": 193,
+        "nu": 33,
+        "nv": 9,
+        "nz": 17
+      },
+      "name": "k",
+      "native_boost": 2,
+      "power_relative_error": {
+        "maximum_absolute": 0.0022281048424032113,
+        "root_mean_square": 0.000391489190001424,
+        "worst_index": [
+          28,
+          2
+        ]
+      }
+    },
+    {
+      "accuracy": {
+        "accuracy_boost": 1.0,
+        "angular_boost": 1.0,
+        "aperture_ell_boost": 1.0,
+        "aperture_phi_boost": 1.0,
+        "chi_boost": 1.0,
+        "covariance_ell_boost": 1.0,
+        "covariance_k_boost": 1.0,
+        "covariance_mass_boost": 1.0,
+        "covariance_phi_boost": 1.0,
+        "covariance_radius_boost": 1.0,
+        "covariance_window_boost": 1.0,
+        "feedback_k_boost": 1.0,
+        "feedback_table_boost": 1.0,
+        "feedback_u_boost": 2.0,
+        "feedback_v_boost": 1.0,
+        "feedback_z_boost": 1.0,
+        "fft_boost": 1.0,
+        "fit_z_boost": 1.0,
+        "integration_accuracy_boost": 1.0,
+        "kernel_boost": 1.0,
+        "multipole_boost": 1.0,
+        "power_table_boost": 1.0,
+        "profile_boost": 1.0,
+        "profile_upsample_boost": 1.0,
+        "source_boost": 1.0,
+        "triangle_boost": 1.0,
+        "xi_ell_boost": 1.0,
+        "xi_theta_boost": 1.0
+      },
+      "bispectrum_relative_error": {
+        "maximum_absolute": 0.009933430018575828,
+        "root_mean_square": 0.0024057381597398044,
+        "worst_index": [
+          4
+        ]
+      },
+      "counts": {
+        "nk": 97,
+        "nu": 65,
+        "nv": 9,
+        "nz": 17
+      },
+      "name": "u",
+      "native_boost": 2,
+      "power_relative_error": {
+        "maximum_absolute": 0.004430434024739749,
+        "root_mean_square": 0.0006992950423536939,
+        "worst_index": [
+          28,
+          2
+        ]
+      }
+    },
+    {
+      "accuracy": {
+        "accuracy_boost": 1.0,
+        "angular_boost": 1.0,
+        "aperture_ell_boost": 1.0,
+        "aperture_phi_boost": 1.0,
+        "chi_boost": 1.0,
+        "covariance_ell_boost": 1.0,
+        "covariance_k_boost": 1.0,
+        "covariance_mass_boost": 1.0,
+        "covariance_phi_boost": 1.0,
+        "covariance_radius_boost": 1.0,
+        "covariance_window_boost": 1.0,
+        "feedback_k_boost": 1.0,
+        "feedback_table_boost": 1.0,
+        "feedback_u_boost": 1.0,
+        "feedback_v_boost": 2.0,
+        "feedback_z_boost": 1.0,
+        "fft_boost": 1.0,
+        "fit_z_boost": 1.0,
+        "integration_accuracy_boost": 1.0,
+        "kernel_boost": 1.0,
+        "multipole_boost": 1.0,
+        "power_table_boost": 1.0,
+        "profile_boost": 1.0,
+        "profile_upsample_boost": 1.0,
+        "source_boost": 1.0,
+        "triangle_boost": 1.0,
+        "xi_ell_boost": 1.0,
+        "xi_theta_boost": 1.0
+      },
+      "bispectrum_relative_error": {
+        "maximum_absolute": 0.010083201477227188,
+        "root_mean_square": 0.0024698451943448827,
+        "worst_index": [
+          4
+        ]
+      },
+      "counts": {
+        "nk": 97,
+        "nu": 33,
+        "nv": 17,
+        "nz": 17
+      },
+      "name": "v",
+      "native_boost": 2,
+      "power_relative_error": {
+        "maximum_absolute": 0.004430434024739749,
+        "root_mean_square": 0.0006992950423536939,
+        "worst_index": [
+          28,
+          2
+        ]
+      }
+    },
+    {
+      "accuracy": {
+        "accuracy_boost": 1.0,
+        "angular_boost": 1.0,
+        "aperture_ell_boost": 1.0,
+        "aperture_phi_boost": 1.0,
+        "chi_boost": 1.0,
+        "covariance_ell_boost": 1.0,
+        "covariance_k_boost": 1.0,
+        "covariance_mass_boost": 1.0,
+        "covariance_phi_boost": 1.0,
+        "covariance_radius_boost": 1.0,
+        "covariance_window_boost": 1.0,
+        "feedback_k_boost": 1.0,
+        "feedback_table_boost": 1.5,
+        "feedback_u_boost": 1.0,
+        "feedback_v_boost": 1.0,
+        "feedback_z_boost": 1.0,
+        "fft_boost": 1.0,
+        "fit_z_boost": 1.0,
+        "integration_accuracy_boost": 1.0,
+        "kernel_boost": 1.0,
+        "multipole_boost": 1.0,
+        "power_table_boost": 1.0,
+        "profile_boost": 1.0,
+        "profile_upsample_boost": 1.0,
+        "source_boost": 1.0,
+        "triangle_boost": 1.0,
+        "xi_ell_boost": 1.0,
+        "xi_theta_boost": 1.0
+      },
+      "bispectrum_relative_error": {
+        "maximum_absolute": 0.008596748347701633,
+        "root_mean_square": 0.002042046373239963,
+        "worst_index": [
+          4
+        ]
+      },
+      "counts": {
+        "nk": 97,
+        "nu": 33,
+        "nv": 9,
+        "nz": 17
+      },
+      "name": "table",
+      "native_boost": 3,
+      "power_relative_error": {
+        "maximum_absolute": 0.004208494745502889,
+        "root_mean_square": 0.000652883646526828,
+        "worst_index": [
+          28,
+          2
+        ]
+      }
+    }
+  ],
+  "configuration_sha256": "62b227bfceae4db76f53d8e7362264b77cddab727513399b677ff3dc08bc9c82",
+  "dependencies": {
+    "configuration": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_bacco_fisher.yaml",
+      "sha256": "62b227bfceae4db76f53d8e7362264b77cddab727513399b677ff3dc08bc9c82"
+    },
+    "native_extension": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+      "sha256": "36a8f3c9b03194fe7fed4ac29eb4cfb9d50d44adcae537eecbc78f160ab6fde8"
+    },
+    "physical_tables": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_bacco_physics.npz",
+      "sha256": "e95b7dcb32d7af5b2f4807eb8a944a37be1e48a1ccf0952c16edc6d7ce660527"
+    },
+    "study_script": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/tests/studies/check_bacco_interpolation.py",
+      "sha256": "b3f90e17fa9048f1b37a9ca6842011e5ae86c4352adf0d4fef142cd416baf5f4"
+    }
+  },
+  "errors": "native/direct minus one; array indices are zero-based",
+  "implementation": {
+    "python_implementation_sha256": {
+      "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+      "python/des3pcf/accuracy.py": "72b59414dd1e027b073058a52ff4d373fddcac149e79a362cc2906df10a2b3a2",
+      "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+      "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+      "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+      "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+      "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+      "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+      "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+      "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+      "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+      "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+      "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+      "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+      "python/des3pcf/inputs.py": "8750a32b1c1382f92d5c5f98253fea8630777648f4277d057993a5be0b3f2e5b",
+      "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+      "python/des3pcf/mean.py": "1d902219599af26a2574fd9dc8b41773bd3ad536ed9135c8db669a1893264cfb",
+      "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+      "python/des3pcf/pipeline.py": "ec7cda344230017b8a3a42e52670b553eac965d2ed8be37e9733a9dc26f24b66",
+      "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+      "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+      "python/des3pcf/provenance.py": "faf37d9fec9c7a7982fd83f66de676a8607fad0bee0a23cbdedf6aa7937ff9dd",
+      "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+      "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+      "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+      "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+      "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+      "scripts/run_3pcf.py": "b628a082f628f38cec8276a0d8f00f251d999cbf6e63cd4a4648122ded159d5c"
+    },
+    "three_point_extension": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+      "sha256": "36a8f3c9b03194fe7fed4ac29eb4cfb9d50d44adcae537eecbc78f160ab6fde8"
+    }
+  },
+  "interpretation": "Response interpolation only; shared continuation and neutrino closure are not independently validated, and no survey accuracy is claimed.",
+  "neutrino_fraction": 0.004280530798366911,
+  "parameters": {
+    "M1_z0_cen_baccoemu": 10.5,
+    "M_c_baccoemu": 14.0,
+    "beta_baccoemu": -0.22,
+    "dz1": 0,
+    "dz2": 0,
+    "dz3": 0,
+    "dz4": 0,
+    "eta_baccoemu": -0.3,
+    "h": 0.722,
+    "m1": 0,
+    "m2": 0,
+    "m3": 0,
+    "m4": 0,
+    "mnu": 0.06,
+    "nnu": 3.046,
+    "ns": 0.959,
+    "num_massive_neutrinos": 3,
+    "omega_b": 0.0463,
+    "omega_m": 0.289,
+    "sigma8": 0.7865548373195137,
+    "theta_inn_baccoemu": -0.86,
+    "w0": -1,
+    "wa": 0
+  },
+  "power_queries_per_sample": 3,
+  "sample_count": 48,
+  "settings": {
+    "boost": 2,
+    "high_k_anchor": 10.0,
+    "high_k_mode": "shape_preserving",
+    "high_z_mode": "hold",
+    "high_z_width": 1.0,
+    "logk_max": 14.0,
+    "logk_min": -15.0,
+    "logu_min": -16.0,
+    "low_k_anchor": 0.02,
+    "neutrino_model": "coherent_linear_neutrinos",
+    "nk": 97,
+    "nu": 33,
+    "nv": 9,
+    "nz": 17
+  }
+}

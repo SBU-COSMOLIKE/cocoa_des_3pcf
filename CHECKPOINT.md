@@ -1,5 +1,32 @@
 # Work in progress: three-point implementation
 
+The BACCO joint response producer regenerates paired power and bispectrum
+ratios at each cosmology and physical gas-parameter point. CAMB supplies
+the cold fluctuation amplitude and explicit linear neutrino power. The
+project converts the cold responses to total matter using a declared mixed
+neutrino-bispectrum approximation and records the Fourier and redshift
+continuations. This change uses the existing native response interface;
+cosmolike_core C sources and READMEs were not edited.
+
+The executed EXAMPLE_FISHER_BACCO notebook varies sigma8, two logarithmic gas
+coordinates and two IA amplitudes, keeping other parameters fixed and adding
+no Gaussian priors. In this local comparison, Map3 lowers the gas errors
+by about 16% and increases their pair FoM by about 40%. The tested neutrino
+and high-wavenumber prescriptions give FoM ratios of 1.392 to 1.396.
+Doubling response scale intervals changes the joint pair FoM by 0.357%
+and the five joint errors by at most 0.289%. All five displaced forecast
+cases restore the fiducial mean bit for bit. The affected collection passes
+155 tests; all eight notebook code cells executed and four figures were
+inspected. Results and exact scope are in the
+[BACCO validation record](tests/studies/bacco_validation.md).
+
+The local eta error extends outside the emulator's training range, so it
+is not a calibrated posterior interval. Mixed neutrino bispectra, feedback
+in quadratic IA, the fixed covariance and the remaining estimator choices
+still require physical checks. Only scale sampling was refined in all five
+derivative columns; other response-grid changes were mean comparisons.
+The separate 25-parameter Fisher YAML has not been run in this validation.
+
 Optional fixed compression, normalized Percival inference and recovered
 aperture conventions are implemented. EXAMPLE_COMPRESSION executes the
 three-row noise-tracer example and the historical TATT derivative algebra.
@@ -47,8 +74,8 @@ correlations, and physical simulation calibration remain open. These checks
 are not replaced by agreement of local Fisher matrices or by a positive
 sample covariance.
 
-The paired baryonic-response component is implemented and reviewed. Both
-matter ratios are independently supplied; their shared log-response amplitude
+The fixed-file paired baryonic-response component is implemented and reviewed.
+Both matter ratios are independently supplied; their shared log-response amplitude
 changes only the nonlinear-alignment baseline. Quadratic IA stays DMO,
 ratios stay fixed across cosmology, and the covariance stays fixed. The
 executed EXAMPLE_JOINT_FEEDBACK notebook evaluates all 480 rows, restores
@@ -61,9 +88,10 @@ artificial response functions: three SP(k) relations, BCEmu, FLAMINGO,
 BACCO and BCemu2025. It compares all 400 two-point rows and separately
 evaluates the installed Burger2025 cold-matter P/B pair at two redshifts
 and two triangle shapes. Paired physical inputs therefore exist locally.
-They are not yet a calibrated total-matter joint forecast: the current
-massive-neutrino field conversion, full triangle-domain extension and
-response regeneration across cosmology remain to be implemented/tested.
+That scenario notebook does not convert the cold pair into a total-matter
+joint forecast. EXAMPLE_FISHER_BACCO separately implements and tests the
+declared neutrino conversion, triangle-domain continuation and response
+regeneration; its remaining calibration limits are recorded above.
 The notebook also checks FLAMINGO's high-k continuation against a constant
 extension above 10 h/Mpc. FEEDBACK.md explains these assumptions.
 All seven notebook code cells executed, six exported figures were inspected,

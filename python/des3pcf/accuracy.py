@@ -47,6 +47,10 @@ class Accuracy:
     source_boost: float = 1.0
     power_table_boost: float = 1.0
     feedback_table_boost: float = 1.0
+    feedback_z_boost: float = 1.0
+    feedback_k_boost: float = 1.0
+    feedback_u_boost: float = 1.0
+    feedback_v_boost: float = 1.0
     fit_z_boost: float = 1.0
     triangle_boost: float = 1.0
     multipole_boost: float = 1.0

@@ -13,7 +13,16 @@ The existing DES Y3 extension is used to check the Python two-point bridge.
 
 ## Executed checks <a name="executed"></a>
 
-The current complete strict collection passes **581 tests** (90.90 seconds,
+The BACCO neutrino and continuation change passes **155 affected tests**,
+including actual emulator/native cache sequences, weight-change detection,
+CAMB cold-amplitude and neutrino-power comparisons, CLI configuration and
+inference checks. Its notebook executed eight code cells; all four figures
+were inspected. The [BACCO study](studies/bacco_validation.md) records the
+five-parameter Fisher comparisons and their limits. This focused run does
+not replace the historical full-collection records below, and used the
+existing compiled extensions without modifying cosmolike_core sources.
+
+The earlier complete strict collection passed **581 tests** (90.90 seconds,
 exit 0). This includes finite sign-pair, full-check provenance, saved-node
 step-study, historical step-plot and integer-selector regression tests.
 It also includes eighteen new full smaller-step reuse checks and two

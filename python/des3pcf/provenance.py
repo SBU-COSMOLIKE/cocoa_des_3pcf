@@ -29,6 +29,30 @@ def file_digest(path):
     return digest.hexdigest()
 
 
+def bacco_identity():
+    """Record installed BACCO code and weights without loading either network.
+
+    The physical model depends on both the saved neural-network weights and
+    the Python code interpreting them. A version string alone would miss a
+    local edit. No missing data are downloaded by this check.
+    """
+    import importlib.util
+    from .baryon_scenarios import installed_bacco_weights
+
+    specification = importlib.util.find_spec("baccoemu")
+    if specification is None:
+        raise FileNotFoundError("Install BACCO and its declared weights first.")
+    package = Path(specification.origin).resolve().parent
+    python_hashes = {}
+    for path in sorted(package.rglob("*.py")):
+        relative = path.relative_to(package).as_posix()
+        python_hashes[relative] = file_digest(path=path)
+    return {
+        "weights": installed_bacco_weights(),
+        "python_sha256": python_hashes,
+    }
+
+
 def implementation_identity(
     project, three_point_path, two_point_path=None, use_camb=False, extra_scripts=(),
 ):
@@ -123,7 +147,7 @@ def prediction_identity(
             "path": str(filename),
             "sha256": file_digest(path=filename),
         }
-    return {
+    result = {
         "format": "des3pcf-prediction-identity-v1",
         "input_files": files,
         "implementation": implementation_identity(
@@ -133,6 +157,9 @@ def prediction_identity(
             use_camb=config["physics"]["cosmology_mode"] == "camb",
         ),
     }
+    if config.get("feedback", {}).get("mode") == "bacco":
+        result["bacco_implementation"] = bacco_identity()
+    return result
 
 
 def verify_prediction_identity(recorded, current, description):

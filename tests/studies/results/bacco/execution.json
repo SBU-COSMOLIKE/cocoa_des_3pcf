@@ -1,0 +1,80 @@
+{
+  "affected_pytest_passed": 155,
+  "blas_workers": 1,
+  "core_sources_modified_for_this_change": false,
+  "date": "2026-11-18",
+  "emulator_workers": 1,
+  "full_25_parameter_forecast_executed": false,
+  "inspected_figures": 4,
+  "notebook_code_cells_executed": 8,
+  "notebook_error_outputs": 0,
+  "openmp_workers_maximum": 4,
+  "saved_cases": {
+    "baseline": {
+      "direct_restoration_exact": true,
+      "prediction_count": 31,
+      "sha256": "dc504779bc84ae254fd1f9a580989dee9984c748621e27ffb7691142efe82b66",
+      "stencil": "five_point"
+    },
+    "cold_on_total": {
+      "direct_restoration_exact": true,
+      "prediction_count": 11,
+      "sha256": "3a20f51786b252c14f8904184de8cc163dbe75b144ab54cc8b7740fea345a743",
+      "stencil": "central"
+    },
+    "feedback_dense": {
+      "direct_restoration_exact": null,
+      "prediction_count": 1,
+      "sha256": "95e37f2b99b9cfc89a333a5e348c90c05523269a941c308fb30ba3b7ffb5860b",
+      "stencil": "mean"
+    },
+    "feedback_k": {
+      "direct_restoration_exact": true,
+      "prediction_count": 11,
+      "sha256": "cb7f90efe027b63a7f2d17a793167df60b6e4dd0ddfc1dc555e96b4ca13d6ed5",
+      "stencil": "central"
+    },
+    "feedback_u": {
+      "direct_restoration_exact": null,
+      "prediction_count": 1,
+      "sha256": "c5dcf734df3006f5d9632e82fe08c35ab37a83ae708c27eadb11eafe94b10ac9",
+      "stencil": "mean"
+    },
+    "feedback_v": {
+      "direct_restoration_exact": null,
+      "prediction_count": 1,
+      "sha256": "b516130384186b887e3dc54221cb5fc7835ce770a98c7c6ac1724765ca9e866f",
+      "stencil": "mean"
+    },
+    "feedback_z": {
+      "direct_restoration_exact": null,
+      "prediction_count": 1,
+      "sha256": "9cbf6ffd423a49fc6de0ea66df38a9a2d77f65df15e2d8b25720bb6465967085",
+      "stencil": "mean"
+    },
+    "high_k_5": {
+      "direct_restoration_exact": true,
+      "prediction_count": 11,
+      "sha256": "26d0259701967ea4f15e63b75bf92a28582442f1203454f16780768656397160",
+      "stencil": "central"
+    },
+    "high_z_fade": {
+      "direct_restoration_exact": null,
+      "prediction_count": 1,
+      "sha256": "531be5a6ad73cc02f33b2484f168d96ebe6f8b6bb899c5afce8aa1663aa3e3c5",
+      "stencil": "mean"
+    },
+    "low_k_004": {
+      "direct_restoration_exact": null,
+      "prediction_count": 1,
+      "sha256": "c739af0372848b1aa76314593fdec28b980ed7e2737a5f330d1bbac915f377ad",
+      "stencil": "mean"
+    },
+    "side_clamp": {
+      "direct_restoration_exact": true,
+      "prediction_count": 11,
+      "sha256": "2e2d35d488a00dc10d3cbc71ddc250d51f3bca0b9fe283f2295d8df1b33a873c",
+      "stencil": "central"
+    }
+  }
+}

@@ -6,7 +6,9 @@ here is R_X(A)=exp(A*log(R_X)), so A=0 is dark-matter-only and A=1 is the
 supplied pair. It is an interpolation model, not a calibrated mapping from
 A to AGN temperature or another physical feedback parameter.
 
-Ratios are held fixed when cosmology changes. The declared IA approximation
+Each pair is an immutable snapshot. A loaded file holds its ratios fixed
+when cosmology changes; BaccoFeedback instead supplies a new pair at each
+physical point. The declared IA approximation
 changes the nonlinear-alignment baseline and holds quadratic IA spectra at
 their dark-matter-only values. Matter-only response tables cannot determine
 the feedback response of intrinsic galaxy shapes. The covariance remains
@@ -102,13 +104,18 @@ class FeedbackPair(PreparedGeometry):
                 or not np.all(np.isfinite(power))
                 or not np.all(np.isfinite(bispectrum))):
             raise ValueError("Feedback log ratios must be finite on their declared axes.")
-        self.metadata = dict(metadata)
+        self.metadata_json = json.dumps(metadata, allow_nan=False, sort_keys=True)
+        self.metadata = json.loads(self.metadata_json)
         self.native = dict(axes)
         self.native["log_power"] = np.ascontiguousarray(power).ravel()
         self.native["log_bispectrum"] = np.ascontiguousarray(bispectrum).ravel()
         self.native["boost"] = int(boost)
         self.native["clamp"] = int(metadata["domain"] == "clamp")
         self._seal_geometry()
+
+    def record(self):
+        """Return an independent JSON-compatible copy of this fixed pair's provenance."""
+        return json.loads(self.metadata_json)
 
 
 def load_feedback(path, boost=2):

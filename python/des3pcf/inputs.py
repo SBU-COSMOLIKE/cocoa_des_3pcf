@@ -25,7 +25,7 @@ ARRAY_NAMES = (
 )
 SCALAR_NAMES = ("omega_m", "omega_de", "w0", "wa", "ns", "sigma8")
 # Full redshift-dependent linear spectra feed the unchanged two-point core.
-OPTIONAL_ARRAY_NAMES = ("p_linear", "p_linear_cb")
+OPTIONAL_ARRAY_NAMES = ("p_linear", "p_linear_cb", "p_linear_nu")
 # Native samples define a reconstruction; source_z defines its numerical
 # read/integration grid. Neither axis is a CAMB transfer-redshift request.
 SOURCE_ARRAY_NAMES = (
@@ -595,6 +595,17 @@ def camb_tables(
     }
     if source_z is not None:
         tables["source_z"] = source_z
+    if neutrino_mass > 0.0:
+        # The optional response conversion uses linear neutrino auto-power.
+        # Keep it explicitly: inferring a tiny neutrino transfer
+        # by subtracting two nearly equal cold/total amplitudes loses accuracy.
+        neutrino_linear = results.get_matter_power_interpolator(
+            nonlinear=False, var1="delta_nu", var2="delta_nu",
+            hubble_units=False, k_hunit=False, extrap_kmax=extrap_kmax,
+        )
+        tables["p_linear_nu"] = (
+            neutrino_linear.P(z=z, kh=physical_k) * power_conversion
+        )
     # 299792.458 above is c in km/s; chi carries the extra h conversion.
     metadata = {
         "producer": "CAMB",
@@ -609,6 +620,11 @@ def camb_tables(
         "parameters": dict(parameters),
         "As": float(amplitude),
         "omega_nu_h2": float(settings.omnuh2),
+        "sigma8_cb": float(np.asarray(results.get_sigmaR(
+            R=8.0, z_indices=-1, var1="delta_nonu", var2="delta_nonu",
+            hubble_units=True,
+        )).item()),
+        "sigma8_cb_definition": "CAMB linear delta_nonu top-hat R=8 Mpc/h at z=0",
         "growth_definition": "linear sigma8(z)/sigma8(0)",
         "massive_neutrino_effective_growth": neutrino_mass > 0.0,
         "flat_background": True,

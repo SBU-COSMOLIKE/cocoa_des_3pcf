@@ -9,6 +9,9 @@ The tests are organized by the quantity being checked.
 - Python and CLI checks cover exact parameter keys, survey row ordering,
   derivatives, Fisher weighting and precision expansion.
 - [Validation record](VALIDATION.md) lists the checks actually executed.
+- [BACCO response study](studies/bacco_validation.md) compares direct emulator
+  values, native interpolation and joint-forecast continuation choices;
+  the [example commands](../BACCO.md#running) run its notebook and off-grid check.
 
 1. [Running the checks](#running)
 2. [Build modes and thread ownership](#modes)
@@ -18,8 +21,9 @@ The tests are organized by the quantity being checked.
 
 We assume Cocoa is active, the component library has been built using the
 [project instructions](../README.md#build), and the current directory is
-`Cocoa/`. The tests create small arrays and use no DES data products,
-Boltzmann solver or cosmological emulator.
+`Cocoa/`. Most tests create small arrays without DES data products or a
+Boltzmann solve. The BACCO component checks also use the installed paired
+emulator and weights; they do not download them or run a survey forecast.
 
 **Step :one:**: reserve parallel work for OpenMP and keep BLAS serial.
 

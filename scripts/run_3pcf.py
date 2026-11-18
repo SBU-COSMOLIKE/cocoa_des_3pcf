@@ -17,6 +17,7 @@ unannounced scale selection occurs.
 """
 
 import argparse
+from dataclasses import asdict
 import hashlib
 import importlib
 import json
@@ -31,6 +32,12 @@ for variable in ("OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
                  "NUMEXPR_NUM_THREADS"):
     os.environ[variable] = "1"
 os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["JAX_PLATFORMS"] = "cpu"
+os.environ["TF_NUM_INTRAOP_THREADS"] = "1"
+os.environ["TF_NUM_INTEROP_THREADS"] = "1"
+os.environ.setdefault(
+    "XLA_FLAGS", "--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1",
+)
 
 import numpy as np
 
@@ -45,6 +52,8 @@ from des3pcf.survey import read_joint_covariance, read_source_distributions
 from des3pcf.pipeline import PhysicalProvider, JointPrediction
 from des3pcf.pipeline import COSMOLOGY_NAMES, IA_NAMES
 from des3pcf.feedback import load_feedback
+from des3pcf.bacco_feedback import BaccoFeedback, BaccoSettings, BACCO_PARAMETERS
+from des3pcf.baryon_scenarios import installed_bacco_weights
 from des3pcf.pixel_window import load_healpix_window
 from des3pcf.core_two_point import CoreTwoPoint
 from des3pcf.covariance import covariance_inputs, shape_noise
@@ -191,11 +200,21 @@ def load_configuration(path, command):
                        allowed={"path", "nside", "sha256"},
                        required={"path", "nside", "sha256"}, name="pixel_window")
     if "feedback" in config:
-        checked_fields(mapping=config["feedback"], allowed={"path", "boost"},
-                       required={"path", "boost"}, name="feedback")
-        boost = config["feedback"]["boost"]
-        if isinstance(boost, bool) or int(boost) != boost or boost < 1:
-            raise ValueError("feedback.boost must be a positive integer.")
+        mode = config["feedback"].get("mode", "file")
+        if mode == "bacco":
+            checked_fields(mapping=config["feedback"], allowed={"mode", "settings"},
+                           required={"mode", "settings"}, name="feedback")
+            config["feedback"]["settings"] = asdict(
+                BaccoSettings(**config["feedback"]["settings"]),
+            )
+        elif mode == "file":
+            checked_fields(mapping=config["feedback"], allowed={"mode", "path", "boost"},
+                           required={"path", "boost"}, name="feedback")
+            boost = config["feedback"]["boost"]
+            if isinstance(boost, bool) or int(boost) != boost or boost < 1:
+                raise ValueError("feedback.boost must be a positive integer.")
+        else:
+            raise ValueError("feedback.mode must be file or bacco.")
     if config["format"] != FORMAT:
         raise ValueError(f"Configuration format must be {FORMAT}.")
     threads = config["threads"]
@@ -275,6 +294,9 @@ def load_configuration(path, command):
     required_parameters = {"omega_m", "omega_b", "h", "ns", "sigma8",
                            "w0", "wa"}
     allowed_parameters = set(COSMOLOGY_NAMES + IA_NAMES)
+    if config.get("feedback", {}).get("mode") == "bacco":
+        allowed_parameters.update(BACCO_PARAMETERS)
+        required_parameters.update(BACCO_PARAMETERS)
     for index in range(nbin):
         allowed_parameters.add(f"m{index + 1}")
         allowed_parameters.add(f"dz{index + 1}")
@@ -304,6 +326,11 @@ def load_configuration(path, command):
         raise ValueError("Nonzero feedback_amplitude requires paired feedback tables.")
     if amplitude != 0.0 and legacy_feedback != 0.0:
         raise ValueError("Use either paired feedback_amplitude or legacy fb, not both.")
+    if config.get("feedback", {}).get("mode") == "bacco":
+        if amplitude != 1.0:
+            raise ValueError("Dynamic BACCO requires fixed feedback_amplitude=1.")
+        if "feedback_amplitude" in config.get("fisher", {}).get("steps", {}):
+            raise ValueError("Vary BACCO's physical parameters, not feedback_amplitude.")
     rows = config["rows"]
     if rows.get("mode") == "forecast":
         checked_fields(
@@ -498,7 +525,11 @@ def required_files(config, path, command):
     """List actual prerequisites; dry checks do not create or import them."""
     requirements = []
     if "feedback" in config:
-        requirements.append(("paired feedback responses", config["feedback"]["path"]))
+        if config["feedback"].get("mode", "file") == "file":
+            requirements.append(("paired feedback responses", config["feedback"]["path"]))
+        else:
+            for name, record in installed_bacco_weights().items():
+                requirements.append((f"BACCO {name} weights", record["path"]))
     if "pixel_window" in config:
         requirements.append(("scalar pixel window", config["pixel_window"]["path"]))
     if command == "prepare":
@@ -716,10 +747,13 @@ def provider_for_run(compiled, config, path):
         provenance["pixel_window"] = window_record
     feedback = None
     if "feedback" in config:
-        feedback = load_feedback(
-            path=resolve_path(path, config["feedback"]["path"]),
-            boost=config["feedback"]["boost"],
-        )
+        if config["feedback"].get("mode", "file") == "bacco":
+            feedback = BaccoFeedback(settings=config["feedback"]["settings"])
+        else:
+            feedback = load_feedback(
+                path=resolve_path(path, config["feedback"]["path"]),
+                boost=config["feedback"]["boost"],
+            )
     if tables["sources"].shape[0] != config["source"]["nbin"]:
         raise ValueError("Table source count differs from source.nbin.")
     provider = PhysicalProvider(
@@ -841,6 +875,8 @@ def evaluate(compiled, config, path, metadata, rows, provider, overwrite):
         two_point_path=second_extension,
     )
     vector = prediction(parameters=config["parameters"])
+    if provider._active_feedback is not None:
+        metadata["feedback_reference"] = provider._active_feedback.record()
     arrays = {"mean": vector}
     if config["rows"]["mode"] == "measurement":
         arrays["mean_minus_data"] = vector - rows.values
@@ -961,6 +997,11 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
     reference = dict(config["ia"])
     reference.update(config["parameters"])
     cached = ExactMeanCache(predict=prediction)
+    # Capture the actual fiducial response before the derivative loop leaves
+    # the provider at a displaced point. ExactMeanCache reuses this center.
+    cached(parameters=reference)
+    if provider._active_feedback is not None:
+        metadata["feedback_reference"] = provider._active_feedback.record()
     names, mean, derivative, refined = differentiate(
         predict=cached, parameters=reference, steps=settings["steps"],
         bounds=settings.get("bounds"),

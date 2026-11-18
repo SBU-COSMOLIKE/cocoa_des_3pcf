@@ -25,6 +25,10 @@ coupling interpolation, with explicit memory estimates and a preflight command.
 Its [completed fiducial results](tests/studies/angular_order_results.md)
 report ten NLA/TATT mean comparisons and the distinction from derivative
 convergence.
+The [BACCO response study](tests/studies/bacco_validation.md) compares
+direct emulator values, native interpolation, response-grid refinement and
+finite-difference steps. It separates those numerical changes from neutrino
+and continuation choices in a five-parameter joint Fisher calculation.
 
 ## Contents <a name="contents"></a>
 
@@ -73,6 +77,10 @@ doubling its resolution twice.
 | `source_boost` | Independent uniform source-density grid, when declared | Sampling |
 | `fit_z_boost` | Matter-fit redshift anchors | Sampling |
 | `feedback_table_boost` | Paired response dense interpolation ratio | Sampling |
+| `feedback_z_boost` | BACCO response redshift intervals | Sampling |
+| `feedback_k_boost` | BACCO response log-wavenumber intervals | Sampling |
+| `feedback_u_boost` | BACCO response log shortest/middle side-ratio intervals | Sampling |
+| `feedback_v_boost` | BACCO response triangle-opening intervals | Sampling |
 | `power_table_boost` | Physical model's dense interpolation ratio | Sampling |
 | `triangle_boost` | Coarse projected triangle coordinates | Sampling |
 | `multipole_boost` | Coarse projected multipole coordinates | Sampling |
@@ -95,6 +103,14 @@ one individually. The analogous distinction holds between covariance profile
 samples and their dense interpolation ratio. Use the individual controls to
 determine which approximation limits a calculation before increasing all of
 them together.
+
+The four BACCO input-axis controls apply to the dynamic producer. A loaded
+fixed response file has no emulator from which to obtain new input values;
+only its dense interpolation can be refined. For dynamic BACCO, a global
+sampling boost increases all four input counts and the dense multiplier,
+so its memory cost can grow rapidly. Refine one axis at a time. The
+[BACCO notebook](EXAMPLE_FISHER_BACCO.ipynb) distinguishes these sampling
+checks from changes to the physical continuation beyond the trained domain.
 
 Projection settings still expose the individual axis counts (`nr`, `nu`,
 `nv`, `np`, `nshape`, `nell`, `npsi`, and the reference-coordinate counts).

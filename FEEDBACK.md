@@ -6,6 +6,7 @@
 4. [Accuracy and state changes](#accuracy)
 5. [Physical calibration](#calibration)
 6. [Existing Cocoa feedback scenarios](#scenarios)
+7. [Cosmology-dependent BACCO forecast](BACCO.md)
 
 ## What changes in the joint mean <a name="model"></a>
 
@@ -27,7 +28,10 @@ B(A)=B_{\rm DMO}\exp(A\ln R_B).
 At $`A=0`$ the prediction returns to DMO; at $`A=1`$ it uses the supplied
 pair. The amplitude interpolates logarithmic responses. It has no calibrated
 interpretation as gas temperature or another feedback parameter. The ratios
-stay fixed when cosmology changes, while the underlying DMO spectra change.
+stay fixed when a loaded response file is reused across cosmologies, while
+the underlying DMO spectra change. The separate [BACCO producer](BACCO.md)
+regenerates both responses at each physical parameter point and fixes this
+extra amplitude to one.
 
 The two-point calculation modifies its nonlinear matter power. The
 three-point calculation modifies its matter-bispectrum baseline. NLA
@@ -177,6 +181,13 @@ with a separate choice that holds its response constant above
 10 h/Mpc. Both are modeling choices outside calibration. Sensitivity
 to them belongs in the eventual scale-cut and accuracy study; the
 availability of physical response models does not settle those tests.
+
+[EXAMPLE_FISHER_BACCO.ipynb](EXAMPLE_FISHER_BACCO.ipynb) connects the paired
+Burger2025 responses to the full joint mean. It makes the neutrino
+conversion and triangle-domain continuation explicit, varies physical
+feedback coordinates, and compares model choices separately from numerical
+refinement. The [BACCO guide](BACCO.md) derives the assumed mixed-neutrino
+response and explains why it still needs physical calibration.
 
 The saved `runs/feedback_scenarios.npz` contains every plotted array,
 model point, theory/weight hash and restoration result. It can be read

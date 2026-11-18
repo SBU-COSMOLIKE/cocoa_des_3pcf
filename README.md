@@ -13,7 +13,8 @@
 11. [Paired baryonic responses](FEEDBACK.md)
 12. [Optional compression and finite-simulation likelihood](COMPRESSION.md)
 13. [Aperture estimator conventions](ESTIMATOR.md)
-14. [Acknowledgements](#acknowledgements)
+14. [BACCO neutrinos and extrapolation](BACCO.md)
+15. [Acknowledgements](#acknowledgements)
 
 ## Purpose and current scope <a name="scope"></a>
 
@@ -220,6 +221,7 @@ physical comparison.
 | [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Completed default h/h2 Fisher bases, selected-column screening, and full refined-grid checks where available; remaining cases are listed as pending |
 | [EXAMPLE_JOINT_FEEDBACK.ipynb](EXAMPLE_JOINT_FEEDBACK.ipynb) | Shared amplitude for separately supplied power and bispectrum responses |
 | [EXAMPLE_FEEDBACK_SCENARIOS.ipynb](EXAMPLE_FEEDBACK_SCENARIOS.ipynb) | Seven physical Cocoa feedback scenarios in power and shear, plus paired BACCO cold-matter responses |
+| [EXAMPLE_FISHER_BACCO.ipynb](EXAMPLE_FISHER_BACCO.ipynb) | Joint BACCO responses with explicit neutrino conversion, continuation and sampling comparisons; conditional feedback/IA Fisher forecast |
 | [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | Covariance correction using independent controlled Gaussian simulations, finite-sample product corrections and held-out validation |
 
 We assume the compiled project and the thread environment above. Start in

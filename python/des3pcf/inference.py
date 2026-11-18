@@ -326,6 +326,11 @@ def analysis_configuration(specification, location, driver):
             raise ValueError(f"Initial parameter {name} is absent from prediction.")
         parameters[name] = value
     distributions = prior_distributions(priors=specification["priors"])
+    if config.get("feedback", {}).get("mode") == "bacco":
+        if parameters.get("feedback_amplitude") != 1.0:
+            raise ValueError("Dynamic BACCO requires fixed feedback_amplitude=1.")
+        if "feedback_amplitude" in distributions:
+            raise ValueError("Sample BACCO's physical parameters, not feedback_amplitude.")
     for name, distribution in distributions.items():
         if name not in parameters:
             raise ValueError(f"Sampled parameter {name} is absent from prediction.")
@@ -471,7 +476,11 @@ def prepare_likelihood(path, driver):
         "two_point_rows": config["rows"]["two_point"],
         "aperture_rows": config["rows"]["aperture"],
     }
-    if "feedback" in config:
+    if config.get("feedback", {}).get("mode", "file") == "bacco":
+        from .provenance import bacco_identity
+
+        record["bacco_implementation"] = bacco_identity()
+    elif "feedback" in config:
         paths["paired_feedback"] = config["feedback"]["path"]
     if "pixel_window" in config:
         paths["pixel_window"] = config["pixel_window"]["path"]

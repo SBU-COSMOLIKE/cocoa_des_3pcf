@@ -19,6 +19,7 @@ from .inputs import validate_tables, shifted_sources, camb_tables, _camb_power_l
 from .inputs import reconstructed_sources
 from .mean import physics_model, Map3Engine, XiEngine
 from .feedback import FeedbackPair, feedback_power_tables
+from .bacco_feedback import BaccoFeedback, BACCO_PARAMETERS
 from .covariance import quadrature
 from .accuracy import accuracy_settings
 from .ownership import immutable_copy, PreparedGeometry
@@ -81,8 +82,9 @@ class PhysicalProvider:
           None reads saved provenance. They define an immutable source model.
       accuracy = immutable global/stage controls; replace provider.accuracy to
           prepare a new resolution from the same baseline in this interpreter.
-      feedback = optional immutable FeedbackPair. Its ratios are held fixed
-          as cosmology changes; a different pair needs a new provider.
+      feedback = optional immutable FeedbackPair or BaccoFeedback producer.
+          A fixed pair retains its ratios across cosmology. BACCO prepares
+          new ratios after any cosmology or physical feedback change.
       pixel_window = optional scalar W(ell), sampled at integers from zero.
           Owned and fixed for this provider; changing it needs a new provider.
           Only three-point angular observables are smoothed, not ordinary xi.
@@ -111,9 +113,10 @@ class PhysicalProvider:
         if cosmology_mode not in ("fixed_tables", "camb"):
             raise ValueError("Cosmology mode must be fixed_tables or camb.")
         self.compiled = compiled
-        if feedback is not None and not isinstance(feedback, FeedbackPair):
-            raise ValueError("feedback must be an immutable FeedbackPair or None.")
+        if feedback is not None and not isinstance(feedback, (FeedbackPair, BaccoFeedback)):
+            raise ValueError("feedback must be a FeedbackPair, BaccoFeedback or None.")
         self.feedback = feedback
+        self._active_feedback = None
         self.pixel_window = None
         if pixel_window is not None:
             from .pixel_window import checked_window
@@ -330,6 +333,8 @@ class PhysicalProvider:
         if self.source_nz is None and controls.source_boost != 1.0:
             raise ValueError("source_boost requires an explicit independent source_nz.")
         self._producer_settings(parameters=self.reference)
+        if isinstance(self.feedback, BaccoFeedback):
+            self.feedback.verify_weights()
         return (
             self.kernel_nz, self.source_readers, self.table_boost, self.fit_nz,
             accuracy_settings(value=self.accuracy),
@@ -355,6 +360,11 @@ class PhysicalProvider:
             if name in parameters:
                 cosmology[name] = parameters[name]
         key = parameter_key(cosmology, names=COSMOLOGY_NAMES)
+        physical_point = dict(self.reference)
+        physical_point.update(parameters)
+        feedback_key = None
+        if isinstance(self.feedback, BaccoFeedback):
+            feedback_key = self.feedback.parameter_key(parameters=physical_point)
         if self.mode not in ("fixed_tables", "camb"):
             raise ValueError("Cosmology mode must be fixed_tables or camb.")
         producer_settings = self._producer_settings(parameters=cosmology)
@@ -393,11 +403,21 @@ class PhysicalProvider:
             raise ValueError("All source redshift shifts must be finite.")
         source_key = tuple(float(value).hex() for value in shifts)
         combined = (
-            key, producer_key, source_key, numerical_key,
+            key, producer_key, source_key, numerical_key, feedback_key,
         )
         if combined != self.model_key:
+            active_feedback = self.feedback
+            if isinstance(self.feedback, BaccoFeedback):
+                active_feedback = self.feedback.prepare(
+                    parameters=physical_point, tables=self.cosmology_tables,
+                    metadata=self.cosmology_metadata, accuracy=self.accuracy,
+                )
             tables = dict(self.cosmology_tables)
             metadata = dict(self.cosmology_metadata)
+            if active_feedback is not None:
+                # A plain JSON copy records the response of this point,
+                # rather than exposing the producer's next cached table.
+                metadata["feedback_response"] = active_feedback.record()
             if self.source_nz is None:
                 # This path preserves the historical finite-grid operation
                 # exactly. Merely storing native samples does not select a
@@ -428,12 +448,13 @@ class PhysicalProvider:
                 source_readers=self.source_readers, table_boost=self.table_boost,
                 fit_nz=self.fit_nz,
                 accuracy=self.accuracy,
-                feedback=self.feedback,
+                feedback=active_feedback,
                 pixel_window=self.pixel_window,
             )
             self.model_tables = immutable_copy(value=tables)
             self.model_metadata = immutable_copy(value=metadata)
             self.model_key = combined
+            self._active_feedback = active_feedback
         return self.model, self.model_tables, self.model_metadata
 
 
@@ -592,6 +613,8 @@ class JointPrediction(PreparedGeometry):
           May prepare new physical tables and the ordinary two-point core.
         """
         allowed = set(COSMOLOGY_NAMES + IA_NAMES)
+        if isinstance(self.provider.feedback, BaccoFeedback):
+            allowed.update(BACCO_PARAMETERS)
         for index in range(self.provider.nbin):
             allowed.add(f"m{index + 1}")
             allowed.add(f"dz{index + 1}")
@@ -600,7 +623,6 @@ class JointPrediction(PreparedGeometry):
                 raise ValueError(
                     f"Unknown prediction parameter {name}; check its spelling."
                 )
-        model, tables, metadata = self.provider.get(parameters=parameters)
         ia = dict(self.ia_defaults)
         for name in IA_NAMES:
             if name in parameters:
@@ -613,6 +635,9 @@ class JointPrediction(PreparedGeometry):
                 raise ValueError("Nonzero feedback_amplitude needs paired response tables.")
             if ia.get("fb", 0.0) != 0.0:
                 raise ValueError("Paired feedback cannot be combined with legacy fb.")
+        if isinstance(self.provider.feedback, BaccoFeedback) and feedback_amplitude != 1.0:
+            raise ValueError("Dynamic BACCO requires fixed feedback_amplitude=1.")
+        model, tables, metadata = self.provider.get(parameters=parameters)
         calibration = np.zeros(self.provider.nbin, dtype=np.float64)
         for index in range(self.provider.nbin):
             calibration[index] = parameters.get(f"m{index + 1}", 0.0)

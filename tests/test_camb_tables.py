@@ -136,6 +136,7 @@ def test_reused_power_matches_fresh_solve_in_native_h_units(
         ("p_linear", False, "delta_tot"),
         ("p_nonlinear", True, "delta_tot"),
         ("p_linear_cb", False, "delta_nonu"),
+        ("p_linear_nu", False, "delta_nu"),
     )
     for name, nonlinear, variable in cases:
         reader = fresh.get_matter_power_interpolator(
@@ -160,6 +161,37 @@ def test_reused_power_matches_fresh_solve_in_native_h_units(
     cold_difference = np.abs(tables["p_linear_cb"]/tables["p_linear"] - 1.0)
     assert np.max(cold_difference) > 0.001
     assert tables["k"][-1]*h > 100.0*metadata["kmax_boltzmann"]
+
+
+def test_cold_sigma8_and_neutrino_archive_use_the_same_cosmology(
+    prepared_and_fresh, tmp_path,
+):
+    """Compare sigma8_cb using physical radii and preserve the neutrino spectrum.
+
+    The production call uses 8 Mpc/h. This reference supplies 8/h Mpc
+    through the opposite radius-unit convention of a fresh CAMB solution.
+    The saved neutrino field must survive NPZ serialization unchanged.
+    """
+    from des3pcf.inputs import load_tables, save_tables
+
+    parameters, tables, metadata, fresh = prepared_and_fresh
+    expected = fresh.get_sigmaR(
+        R=8. / parameters["h"],
+        z_indices=-1,
+        var1="delta_nonu",
+        var2="delta_nonu",
+        hubble_units=False,
+    )
+    np.testing.assert_allclose(
+        actual=metadata["sigma8_cb"], desired=np.asarray(expected).item(),
+        rtol=2.e-12, atol=0.,
+    )
+    assert metadata["sigma8_cb"] > tables["sigma8"]
+    path = tmp_path / "physical.npz"
+    save_tables(path=path, tables=tables, metadata=metadata)
+    restored, record = load_tables(path=path)
+    np.testing.assert_array_equal(x=restored["p_linear_nu"], y=tables["p_linear_nu"])
+    assert record["sigma8_cb"] == metadata["sigma8_cb"]
 
 
 def test_tail_domain_is_separate_from_transfer_cutoff():

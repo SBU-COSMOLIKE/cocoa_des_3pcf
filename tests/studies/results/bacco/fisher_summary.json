@@ -1,0 +1,696 @@
+{
+  "alternative_forecasts": {
+    "cold_on_total": {
+      "central": {
+        "feedback_fom": {
+          "joint": 3.4559876549806785,
+          "two_point": 2.4756626768857157
+        },
+        "rank_status": {
+          "joint": "resolved",
+          "two_point": "resolved"
+        }
+      }
+    },
+    "high_k_5": {
+      "central": {
+        "feedback_fom": {
+          "joint": 3.544971204819626,
+          "two_point": 2.5462870305680925
+        },
+        "rank_status": {
+          "joint": "resolved",
+          "two_point": "resolved"
+        }
+      }
+    },
+    "side_clamp": {
+      "central": {
+        "feedback_fom": {
+          "joint": 3.455657394368064,
+          "two_point": 2.47566981691687
+        },
+        "rank_status": {
+          "joint": "resolved",
+          "two_point": "resolved"
+        }
+      }
+    }
+  },
+  "baseline_forecasts": {
+    "central": {
+      "feedback_fom": {
+        "joint": 3.4559959920619647,
+        "two_point": 2.47566981691687
+      },
+      "rank_status": {
+        "joint": "resolved",
+        "two_point": "resolved"
+      }
+    },
+    "h": {
+      "feedback_fom": {
+        "joint": 3.456697854635792,
+        "two_point": 2.4762468317164203
+      },
+      "rank_status": {
+        "joint": "resolved",
+        "two_point": "resolved"
+      }
+    },
+    "h2": {
+      "feedback_fom": {
+        "joint": 3.456627727680537,
+        "two_point": 2.4761804485243766
+      },
+      "rank_status": {
+        "joint": "resolved",
+        "two_point": "resolved"
+      }
+    }
+  },
+  "baseline_sigma_joint": [
+    0.00980585197371804,
+    0.4711186883734111,
+    0.6509039958668593,
+    0.1757050742361841,
+    0.3614019568077592
+  ],
+  "baseline_sigma_two_point": [
+    0.013478563354638148,
+    0.5587789604642945,
+    0.7713756194922862,
+    0.20808935597178058,
+    0.4216954657296642
+  ],
+  "calibration_claim": false,
+  "covariance_fixed": true,
+  "delta_chi2": {
+    "baseline": 0.0,
+    "cold_on_total": 8.784805619032976e-12,
+    "feedback_dense": 1.0959515681112705e-05,
+    "feedback_k": 1.956521532451779e-05,
+    "feedback_u": 3.888079294722599e-07,
+    "feedback_v": 1.9655538683967844e-09,
+    "feedback_z": 1.5227379878964814e-05,
+    "high_k_5": 0.047337684059943486,
+    "high_z_fade": 3.81521454973373e-15,
+    "low_k_004": 9.666153914402749e-08,
+    "side_clamp": 1.7673272470293718e-06
+  },
+  "identity": {
+    "bacco_implementation": {
+      "python_sha256": {
+        "__init__.py": "b8117fba4009e620ffba776d1c41b219440e5886c88ecbc6b623bd03d530bcab",
+        "_version.py": "750fc29705f648189b9e5a061a6dc9e8233cd881a097cdb0b893e490975366a9",
+        "baryonic_boost.py": "5ca59f71ae0f08bb2a96d7be3527490e8609e04f6597443ce77597964f66f296",
+        "lbias_expansion.py": "c74448f04d502319709672d8a8e37e55fae410e245a7e874f08560f799cc211a",
+        "lbias_expansion_RSD.py": "d304aa66480e0a9402dbdcb67cb437477d26937e23e050b9dac9d8cdac6684ec",
+        "matter_bispectrum.py": "ebeab14bfbe7bb26a9ba9d3715362fdaa1dc94a7e439edfed2f56f5dd162808b",
+        "matter_powerspectrum.py": "f86b7a5393852a5beca76c98d66a057e2b974a343b7e21ae052affcb06750cb8",
+        "utils.py": "8f988bbfefb491d0a0f4e8d6f576c015bdc23b2499bff8ff2826bf9b8ee9c970"
+      },
+      "weights": {
+        "B": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/baccoemu/bispectrum_baryonic_boost/bispectra_ratio_bcm_emu_folded.pkl",
+          "sha256": "4c33ea38950751d3ce68ccad315b83f51dfd2c4d7ef9e44aff9bae636037462b"
+        },
+        "P": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/baccoemu/bispectrum_baryonic_boost/powerspectra_ratio_bcm_emu_folded.pkl",
+          "sha256": "07c378ba38140fb1dee9eb7580f850e0e8328312993f7214cf8e622931c34e1b"
+        }
+      }
+    },
+    "format": "des3pcf-prediction-identity-v1",
+    "implementation": {
+      "camb_implementation": {
+        "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+        "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+        "python_sha256": {
+          "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+          "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+          "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+          "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+          "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+          "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+          "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+          "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+          "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+          "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+          "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+          "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+          "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+          "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+          "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+          "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+          "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+          "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+          "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+          "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+          "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+          "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+          "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+          "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+          "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+          "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+        },
+        "version": "1.6.7"
+      },
+      "python_implementation_sha256": {
+        "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+        "python/des3pcf/accuracy.py": "72b59414dd1e027b073058a52ff4d373fddcac149e79a362cc2906df10a2b3a2",
+        "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+        "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+        "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+        "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+        "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+        "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+        "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+        "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+        "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+        "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+        "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+        "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+        "python/des3pcf/inputs.py": "8750a32b1c1382f92d5c5f98253fea8630777648f4277d057993a5be0b3f2e5b",
+        "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+        "python/des3pcf/mean.py": "1d902219599af26a2574fd9dc8b41773bd3ad536ed9135c8db669a1893264cfb",
+        "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+        "python/des3pcf/pipeline.py": "ec7cda344230017b8a3a42e52670b553eac965d2ed8be37e9733a9dc26f24b66",
+        "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+        "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+        "python/des3pcf/provenance.py": "faf37d9fec9c7a7982fd83f66de676a8607fad0bee0a23cbdedf6aa7937ff9dd",
+        "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+        "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+        "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+        "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+        "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+        "scripts/run_3pcf.py": "b628a082f628f38cec8276a0d8f00f251d999cbf6e63cd4a4648122ded159d5c"
+      },
+      "three_point_extension": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+        "sha256": "36a8f3c9b03194fe7fed4ac29eb4cfb9d50d44adcae537eecbc78f160ab6fde8"
+      },
+      "two_point_extension": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+        "sha256": "71ceee65638f41769fd10361af48f93eb7f6e4d4b5b8bb13422af19fbf45bb8a"
+      }
+    },
+    "input_files": {
+      "aperture_rows": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+        "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+      },
+      "joint_covariance": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+        "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+      },
+      "physical_tables": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_bacco_physics.npz",
+        "sha256": "e95b7dcb32d7af5b2f4807eb8a944a37be1e48a1ccf0952c16edc6d7ce660527"
+      },
+      "pixel_window": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_healpix/pixel_window_n1024.fits",
+        "sha256": "d1d2afc8b0cf662f46664ee680065d703c1082257586c20ace49f8fc672ae8f7"
+      },
+      "source_curves": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+        "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+      },
+      "two_point_rows": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+      }
+    },
+    "resolved_configuration": {
+      "accuracy": {
+        "accuracy_boost": 1.0,
+        "angular_boost": 1.0,
+        "aperture_ell_boost": 1.0,
+        "aperture_phi_boost": 1.0,
+        "chi_boost": 1.0,
+        "covariance_ell_boost": 1.0,
+        "covariance_k_boost": 1.0,
+        "covariance_mass_boost": 1.0,
+        "covariance_phi_boost": 1.0,
+        "covariance_radius_boost": 1.0,
+        "covariance_window_boost": 1.0,
+        "feedback_k_boost": 1.0,
+        "feedback_table_boost": 1.0,
+        "feedback_u_boost": 1.0,
+        "feedback_v_boost": 1.0,
+        "feedback_z_boost": 1.0,
+        "fft_boost": 1.0,
+        "fit_z_boost": 1.0,
+        "integration_accuracy_boost": 1.0,
+        "kernel_boost": 1.0,
+        "multipole_boost": 1.0,
+        "power_table_boost": 1.0,
+        "profile_boost": 1.0,
+        "profile_upsample_boost": 1.0,
+        "source_boost": 1.0,
+        "triangle_boost": 1.0,
+        "xi_ell_boost": 1.0,
+        "xi_theta_boost": 1.0
+      },
+      "covariance": {
+        "estimator": "finite_sas",
+        "estimator_agreement": "unvalidated_exact_sas_bin_support_and_weighting",
+        "likelihood_interpretation": "fixed_gaussian_forecast_no_finite_mock_correction",
+        "mode": "file",
+        "path": "../data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits"
+      },
+      "description": "Y3 joint BACCO Burger2025 forecast with explicit cold/neutrino and continuation assumptions.",
+      "feedback": {
+        "mode": "bacco",
+        "settings": {
+          "boost": 2,
+          "high_k_anchor": 10.0,
+          "high_k_mode": "shape_preserving",
+          "high_z_mode": "hold",
+          "high_z_width": 1.0,
+          "logk_max": 14.0,
+          "logk_min": -15.0,
+          "logu_min": -16.0,
+          "low_k_anchor": 0.02,
+          "neutrino_model": "coherent_linear_neutrinos",
+          "nk": 97,
+          "nu": 33,
+          "nv": 9,
+          "nz": 17
+        }
+      },
+      "fisher": {
+        "bounds": {
+          "M1_z0_cen_baccoemu": [
+            9.01,
+            12.99
+          ],
+          "M_c_baccoemu": [
+            10.02,
+            15.99
+          ],
+          "beta_baccoemu": [
+            -0.99,
+            0.69
+          ],
+          "eta_baccoemu": [
+            -0.69,
+            0.19
+          ],
+          "h": [
+            0.55,
+            0.91
+          ],
+          "ns": [
+            0.87,
+            1.07
+          ],
+          "omega_b": [
+            0.03,
+            0.07
+          ],
+          "omega_m": [
+            0.1,
+            0.5
+          ],
+          "sigma8": [
+            0.4,
+            1.2
+          ],
+          "theta_inn_baccoemu": [
+            -1.99,
+            -0.01
+          ],
+          "w0": [
+            -2.0,
+            -0.3
+          ],
+          "wa": [
+            -2.0,
+            2.0
+          ]
+        },
+        "fom_pairs": [
+          [
+            "omega_m",
+            "sigma8"
+          ],
+          [
+            "a1",
+            "a2"
+          ],
+          [
+            "w0",
+            "wa"
+          ]
+        ],
+        "precision": {
+          "mode": "inverse"
+        },
+        "priors": {
+          "dz1": 0.018,
+          "dz2": 0.015,
+          "dz3": 0.011,
+          "dz4": 0.017,
+          "m1": 0.0091,
+          "m2": 0.0078,
+          "m3": 0.0076,
+          "m4": 0.0076
+        },
+        "steps": {
+          "M1_z0_cen_baccoemu": 0.02,
+          "M_c_baccoemu": 0.02,
+          "a1": 0.01,
+          "a2": 0.02,
+          "beta_baccoemu": 0.01,
+          "bta": 0.02,
+          "dz1": 0.001,
+          "dz2": 0.001,
+          "dz3": 0.001,
+          "dz4": 0.001,
+          "eta1": 0.03,
+          "eta2": 0.03,
+          "eta_baccoemu": 0.01,
+          "h": 0.005,
+          "m1": 0.001,
+          "m2": 0.001,
+          "m3": 0.001,
+          "m4": 0.001,
+          "ns": 0.005,
+          "omega_b": 0.0005,
+          "omega_m": 0.003,
+          "sigma8": 0.005,
+          "theta_inn_baccoemu": 0.01,
+          "w0": 0.02,
+          "wa": 0.04
+        }
+      },
+      "format": "cosmolike-3pcf-run-v1",
+      "ia": {
+        "a1": -0.33,
+        "a2": 0.65,
+        "bta": 0.91,
+        "c1rho": 0.0134,
+        "ct": 0,
+        "ct_mode": 0,
+        "eta1": 2.81,
+        "eta2": 1.69,
+        "fb": 0,
+        "feedback_amplitude": 1.0,
+        "power_mode": 2,
+        "suppress_only": 1,
+        "zpivot": 0.62
+      },
+      "mean": {
+        "aperture_estimator": "finite_sas",
+        "aperture_settings": {
+          "angular_average": "point",
+          "ell_max": 100000,
+          "ell_min": 0.01,
+          "lmax": 20,
+          "minimum_size": 512,
+          "mmax": 20,
+          "nmu": 64,
+          "phi_bins": 100,
+          "projection_batch_size": 20,
+          "projection_mode": "prepared",
+          "projection_settings": {
+            "ell_max": 300000,
+            "ell_min": 0.001,
+            "epmu": 0.0001,
+            "lmax": 20,
+            "multipole_boost": 2,
+            "nell": 64,
+            "nmu_linear": 32,
+            "nmu_log": 32,
+            "np": 32,
+            "npsi": 80,
+            "npsi_linear": 32,
+            "npsi_log": 32,
+            "npu_linear": 24,
+            "npu_log": 24,
+            "nr": 32,
+            "nshape": 160,
+            "nu": 24,
+            "nv": 24,
+            "prepare_multipoles": 1,
+            "psi_scale": 0.02,
+            "reference_mode": false,
+            "residual_scaling": 1,
+            "shape_stretch": 10.1062201,
+            "signed_baseline": 1,
+            "table_boost": 2
+          },
+          "representative_offset": -0.015226,
+          "representative_rule": "area_weighted",
+          "side_min_arcmin": 8.0,
+          "theta_edges_arcmin": {
+            "count": 21,
+            "logarithmic": true,
+            "lower": 0.5,
+            "upper": 80.0
+          },
+          "transform_options": {
+            "npsi": 200,
+            "ordered_legs": true,
+            "padding": 0,
+            "projection": "centroid",
+            "window": false
+          }
+        },
+        "two_point": {
+          "accuracy_boost": 1.0,
+          "directory": "../../des_y3/interface",
+          "ell_internal": 192,
+          "fpt_internal_boost": 0.5,
+          "integration_accuracy": 0,
+          "interpolation_type": 1,
+          "mode": "core_tatt",
+          "module": "cosmolike_des_y3_interface"
+        },
+        "xi_settings": {
+          "ell": {
+            "count": 4096,
+            "logarithmic": true,
+            "lower": 1,
+            "upper": 40000
+          },
+          "pair_weight": "uniform_area",
+          "theta_count": 32
+        }
+      },
+      "notes": [
+        "Theory-convention comparison, not an exact measurement or posterior reproduction.",
+        "Retain the original 20 logarithmic side bins from 0.5 to 80 arcmin; lower edges >=8 arcmin keep indices 11 through 19 on both axes.",
+        "Use the archived 100 angle centers (j+0.5)*pi/100, distinct from the methods paper's stated 63 angular bins.",
+        "Use area-weighted representatives plus the archived empirical factor offset -0.015226. It applies to this radial width only.",
+        "Use exact log(160)/20 rather than rounding the archived dlnt=0.253758.",
+        "Scalar HEALPix nside=1024 window on all three Fourier legs, using ell=0..3071 and zero above; original within-bin triangle weights remain unavailable.",
+        "Source, priors and covariance are the explicit TATT demonstration inputs. All 480 rows are kept; no published posterior claim is made.",
+        "BACCO predicts cold P and B independently. Total matter uses the stated coherent linear-neutrino response closure; mixed neutrino bispectra are not calibrated.",
+        "The five physical BACCO log10 coordinates are varied; feedback_amplitude stays exactly one. Responses are regenerated at each cosmology and BCM point.",
+        "BACCO Burger2025 has no independent h, ns, w0, wa or neutrino-mass coordinates. Their response dependence enters only through Omega_cold and sigma8_cb; the DMO baseline is recomputed fully.",
+        "Massive neutrinos stay fixed at 0.06 eV. Quadratic IA and the supplied covariance retain their DMO prescription. No calibrated-feedback constraint is claimed before these assumptions and response sampling are tested.",
+        "Compare cold_on_total, side_clamp, different continuation anchors, and high_z_mode=fade_to_unity before interpreting a forecast.",
+        "Full 25-parameter example: Gaussian priors apply only to measured shear/photo-z nuisance parameters. Rank failures are reported; no pseudoinverse or invented BCM prior is used."
+      ],
+      "outputs": {
+        "evaluate": "../runs/y3_bacco_mean.npz",
+        "fisher": "../runs/y3_bacco_fisher.npz"
+      },
+      "parameters": {
+        "M1_z0_cen_baccoemu": 10.5,
+        "M_c_baccoemu": 14.0,
+        "beta_baccoemu": -0.22,
+        "dz1": 0,
+        "dz2": 0,
+        "dz3": 0,
+        "dz4": 0,
+        "eta_baccoemu": -0.3,
+        "h": 0.722,
+        "m1": 0,
+        "m2": 0,
+        "m3": 0,
+        "m4": 0,
+        "mnu": 0.06,
+        "nnu": 3.046,
+        "ns": 0.959,
+        "num_massive_neutrinos": 3,
+        "omega_b": 0.0463,
+        "omega_m": 0.289,
+        "sigma8": 0.7865548373195137,
+        "theta_inn_baccoemu": -0.86,
+        "w0": -1,
+        "wa": 0
+      },
+      "physics": {
+        "cosmology_mode": "camb",
+        "extrap_kmax": null,
+        "fit_nz": 33,
+        "halofit_version": "takahashi",
+        "k": {
+          "count": 256,
+          "logarithmic": true,
+          "lower": 1e-05,
+          "upper": 1000
+        },
+        "kernel_nz": 401,
+        "kmax_boltzmann": 5.0,
+        "los_z": {
+          "count": 129,
+          "lower": 0.005,
+          "upper": 3.1
+        },
+        "source_interpolation": "pchip_midpoint",
+        "source_nz": 9601,
+        "source_padding": "zero_at_measured_edges",
+        "source_readers": false,
+        "table_boost": 8,
+        "tables": "../runs/y3_bacco_physics.npz",
+        "z": {
+          "count": 125,
+          "lower": 0,
+          "upper": 3.1
+        }
+      },
+      "pixel_window": {
+        "nside": 1024,
+        "path": "../data/upstream_healpix/pixel_window_n1024.fits",
+        "sha256": "d1d2afc8b0cf662f46664ee680065d703c1082257586c20ace49f8fc672ae8f7"
+      },
+      "rows": {
+        "aperture": "../data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+        "assumed_angle_unit": "arcmin",
+        "mode": "measurement",
+        "two_point": "../data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits"
+      },
+      "source": {
+        "extension": "nz_source",
+        "nbin": 4,
+        "path": "../runs/y3_demo_sources.fits"
+      },
+      "threads": 4
+    },
+    "sampled_parameters": [
+      "sigma8",
+      "M_c_baccoemu",
+      "eta_baccoemu",
+      "a1",
+      "a2"
+    ],
+    "stencil": "five_point",
+    "study_driver_sha256": "aab91ca2114085b6ebe09fe173d29786e443a182aa030b471f44480bc307b0a5"
+  },
+  "joint_over_two_point_errors": [
+    0.7275146256847707,
+    0.8431217381233436,
+    0.8438223602338891,
+    0.8443731944656113,
+    0.8570212064823166
+  ],
+  "parameters": [
+    "sigma8",
+    "M_c_baccoemu",
+    "eta_baccoemu",
+    "a1",
+    "a2"
+  ],
+  "reference_feedback": {
+    "B_neutrinos": "phenomenological mixed-response closure, not calibration",
+    "amplitude_model": "log_response",
+    "coordinates": {
+      "M1_z0_cen": 10.5,
+      "M_c": 14.0,
+      "beta": -0.22,
+      "eta": -0.3,
+      "omega_baryon": 0.0463,
+      "omega_cold": 0.28776292659927194,
+      "sigma8_cold": 0.7899674755054377,
+      "theta_inn": -0.86
+    },
+    "cosmology_dependence": "fixed_ratio",
+    "counts": {
+      "nk": 97,
+      "nu": 33,
+      "nv": 9,
+      "nz": 17
+    },
+    "dense_response_cells": 7037745,
+    "domain": "clamp",
+    "grid_fractions": {
+      "all_soft": 0.3808184942205561,
+      "high_side": 0.4033808879169704,
+      "one_or_more_low_sides": 0.6566697906904092
+    },
+    "ia_response": "nla_only",
+    "independent_response_directions_omitted": [
+      "h",
+      "ns",
+      "mnu",
+      "w0",
+      "wa"
+    ],
+    "matter_field": "total",
+    "name": "BACCO Burger2025 with declared neutrino/continuation model",
+    "neutrino_fraction": 0.004280530798366911,
+    "neutrino_ratio_outside_table": "hold at saved k boundaries",
+    "producer": "dynamic_bacco",
+    "regenerated_per_physical_point": true,
+    "settings": {
+      "boost": 2,
+      "high_k_anchor": 10.0,
+      "high_k_mode": "shape_preserving",
+      "high_z_mode": "hold",
+      "high_z_width": 1.0,
+      "logk_max": 14.0,
+      "logk_min": -15.0,
+      "logu_min": -16.0,
+      "low_k_anchor": 0.02,
+      "neutrino_model": "coherent_linear_neutrinos",
+      "nk": 97,
+      "nu": 33,
+      "nv": 9,
+      "nz": 17
+    },
+    "source_url": "https://arxiv.org/abs/2506.18974",
+    "table_sha256": "2427af103b0cf40a44457dd0b4a76b0f48074516a249f014e5c64ea1352d35f5",
+    "weights": {
+      "B": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/baccoemu/bispectrum_baryonic_boost/bispectra_ratio_bcm_emu_folded.pkl",
+        "sha256": "4c33ea38950751d3ce68ccad315b83f51dfd2c4d7ef9e44aff9bae636037462b"
+      },
+      "P": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/baccoemu/bispectrum_baryonic_boost/powerspectra_ratio_bcm_emu_folded.pkl",
+        "sha256": "07c378ba38140fb1dee9eb7580f850e0e8328312993f7214cf8e622931c34e1b"
+      }
+    }
+  },
+  "row_count": 480,
+  "scale_grid_error_ratios": [
+    0.9986815811427652,
+    0.9990056865931684,
+    0.9971162992360744,
+    1.0000986475641591,
+    1.0000461418359559
+  ],
+  "scale_grid_forecast": {
+    "central": {
+      "feedback_fom": {
+        "joint": 3.468335632154016,
+        "two_point": 2.4853033795241664
+      },
+      "rank_status": {
+        "joint": "resolved",
+        "two_point": "resolved"
+      }
+    }
+  },
+  "step_error_ratios": [
+    0.9999685645896376,
+    1.0000259639981657,
+    1.0000257066204512,
+    0.9999990852625139,
+    0.999990228819617
+  ]
+}
