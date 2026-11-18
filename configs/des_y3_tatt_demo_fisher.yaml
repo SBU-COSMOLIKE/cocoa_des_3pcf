@@ -29,6 +29,11 @@ notes:
   and derivative steps separately before interpreting errors.
 - Source preparation is recorded in runs/y3_demo_sources.json; original upstream FITS bytes
   remain unchanged.
+- Sources use measured-edge PCHIP with 9601 samples, 401 kernel nodes and 129 LOS nodes.
+  This is a declared reconstruction model, not a recalibrated source distribution or
+  a guarantee of bin-probability preservation.
+- The source and radial refinements are measured in tests/studies/source_policy_validation.md.
+  Retain h and h/2 as the principal step check; a still smaller step was not uniformly better.
 - w0 and wa are varied without Gaussian priors. Their FoM is a numerical accuracy diagnostic
   beyond the fixed-dark-energy paper analyses.
 threads: 4
@@ -37,9 +42,9 @@ source:
   extension: nz_source
   nbin: 4
 physics:
-  tables: ../runs/y3_demo_physics.npz
+  tables: ../runs/y3_demo_pchip9601_physics.npz
   cosmology_mode: camb
-  kernel_nz: 201
+  kernel_nz: 401
   k:
     lower: 1.0e-05
     upper: 1000
@@ -52,9 +57,11 @@ physics:
   los_z:
     lower: 0.005
     upper: 3.1
-    count: 65
+    count: 129
   halofit_version: takahashi
-  source_interpolation: linear_midpoint
+  source_interpolation: pchip_midpoint
+  source_nz: 9601
+  source_padding: zero_at_measured_edges
   source_readers: false
   table_boost: 8
   fit_nz: 33
@@ -141,7 +148,11 @@ mean:
       table_boost: 2
       multipole_boost: 2
       npsi: 80
-      nshape: 80
+      nshape: 160
+      shape_stretch: 10.1062201
+      signed_baseline: 1
+      residual_scaling: 1
+      psi_scale: 0.02
       prepare_multipoles: 1
   xi_settings:
     ell:
@@ -229,5 +240,5 @@ fisher:
   precision:
     mode: inverse
 outputs:
-  evaluate: ../runs/y3_tatt_demo_mean.npz
-  fisher: ../runs/y3_tatt_demo_fisher.npz
+  evaluate: ../runs/y3_tatt_measured_edge_demo_mean.npz
+  fisher: ../runs/y3_tatt_measured_edge_demo_fisher.npz

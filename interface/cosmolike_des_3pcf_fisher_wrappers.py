@@ -21,6 +21,7 @@ import subprocess
 import sys
 
 import numpy as np
+from scipy.linalg import solve_triangular
 
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -29,6 +30,8 @@ sys.path.insert(0, str(PROJECT / "scripts"))
 
 import run_3pcf as driver
 from des3pcf.mean import physics_model
+from des3pcf.provenance import prediction_identity
+from des3pcf.provenance import verify_prediction_identity
 from des3pcf.survey import ARCMIN_TO_RADIAN, read_source_distributions
 
 
@@ -134,8 +137,11 @@ class FisherWorkflow:
         return Path(lines[-1])
 
     def load_result(self, command="fisher"):
-        """Load an existing result, refusing to associate it with changed YAML.
+        """Read an archived result with its original recorded provenance.
 
+        This historical reader checks YAML identity but does not establish
+        that the current implementation or source files match the archive.
+        Use ensure_result for an execute-or-reuse workflow with that check.
         The file digest includes comments. Editing a configuration after a
         run requires a new result or explicit inspection of the old file;
         it cannot silently relabel an old forecast as the new calculation.
@@ -168,7 +174,8 @@ class FisherWorkflow:
         Returns:
           Owned arrays and metadata, checked against the current YAML and
           measurement row order. Fisher files also retain the exact supplied
-          covariance. This is a configuration check, not a code-version check.
+          covariance. Current physical input and implementation fingerprints
+          must match; a legacy archive without an identity is refused.
         Raises:
           ValueError for an existing stale result; it is never overwritten.
           RuntimeError when a requested child calculation fails.
@@ -193,6 +200,23 @@ class FisherWorkflow:
         else:
             print(f"Reading saved {command}: {output}")
         arrays, metadata = self.load_result(command=command)
+        second_extension = None
+        core = config["mean"]["two_point"]
+        if core["mode"] == "core_tatt" and np.any(arrays["row_kind"] != "map3"):
+            directory = driver.resolve_path(path, core["directory"])
+            second_extension = directory / (core["module"] + ".so")
+        current_identity = prediction_identity(
+            config=config,
+            configuration_path=path,
+            project=PROJECT,
+            three_point_path=PROJECT / "interface/cosmolike_des_3pcf_interface.so",
+            two_point_path=second_extension,
+        )
+        verify_prediction_identity(
+            recorded=metadata.get("prediction_identity"),
+            current=current_identity,
+            description=f"Saved {command} selected for reuse",
+        )
         rows = driver.rows_for_run(config=config, path=path)
         for key, expected in (
             ("row_labels", rows.labels),
@@ -559,13 +583,34 @@ def fisher_summary(result, metadata):
       result, metadata = saved Fisher arrays and matching run declaration.
     Returns:
       Names, available marginalized errors, rank status, prior declaration,
-      and the relative norm of Fjoint-F2-F3|2 before adding priors.
+      and the relative norm of Fjoint-F2-F3|2 before adding priors. Each
+      derivative change also has a covariance-weighted norm, divided by
+      its h/2 norm using the saved fiducial covariance. A zero reference
+      gives zero for identical columns and infinity for a nonzero change.
       Missing covariances are reported rather than replaced by a pseudoinverse.
     """
     joint = result["fisher_joint_likelihood"]
     difference = joint - result["fisher_two_point_likelihood"]
     difference -= result["fisher_conditional_three_point"]
     scale = np.linalg.norm(joint)
+    # Xi and aperture moments have very different numerical amplitudes.
+    # Whitening [ndata,nparameter] by the full covariance gives every row
+    # its measured error scale and retains cross correlations. The ratio
+    # is unchanged by rescaling the units of either observable.
+    cholesky = np.linalg.cholesky(a=result["fiducial_covariance"])
+    derivative_difference = result["derivatives_h"] - result["derivatives_h2"]
+    whitened_difference = solve_triangular(
+        a=cholesky, b=derivative_difference, lower=True,
+    )
+    whitened_reference = solve_triangular(
+        a=cholesky, b=result["derivatives_h2"], lower=True,
+    )
+    difference_norm = np.linalg.norm(x=whitened_difference, axis=0)
+    reference_norm = np.linalg.norm(x=whitened_reference, axis=0)
+    derivative_change = np.full(shape=reference_norm.shape, fill_value=np.inf)
+    np.divide(difference_norm, reference_norm, out=derivative_change,
+              where=reference_norm > 0.0)
+    derivative_change[(reference_norm == 0.0) & (difference_norm == 0.0)] = 0.0
     report = {
         "names": result["parameter_names"].tolist(),
         "rank_status": metadata["comparison_rank_status"],
@@ -574,6 +619,7 @@ def fisher_summary(result, metadata):
             np.linalg.norm(difference) / scale
         ),
         "derivative_relative_change": result["derivative_relative_change"],
+        "derivative_covariance_relative_change": derivative_change,
     }
     for name in (
         "sigma_two_point",

@@ -173,7 +173,20 @@ def test_example_configuration_resolves_declared_model(number):
         path=location.parent / specification["prediction"], command="evaluate",
     )
     original_prepared = original["mean"]["aperture_settings"]["projection_settings"]
-    assert "signed_baseline" not in original_prepared
+    assert original_prepared["signed_baseline"] == 1
+    # Apply a different valid representation to the in-memory inference
+    # settings. Reloading the prediction file must retain its own choice.
+    specification["projection_overrides"]["signed_baseline"] = 0
+    changed, _, _, _, _ = analysis_configuration(
+        specification=specification, location=location, driver=driver,
+    )
+    assert changed["mean"]["aperture_settings"]["projection_settings"][
+        "signed_baseline"
+    ] == 0
+    restored, _, _ = driver.load_configuration(
+        path=location.parent / specification["prediction"], command="evaluate",
+    )
+    assert restored["mean"] == original["mean"]
     assert initial["w0"] == -1.0
     assert initial["wa"] == 0.0
     if number == 2:

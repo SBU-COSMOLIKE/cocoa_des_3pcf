@@ -23,6 +23,16 @@ undefined-behavior and floating-point-division checks, not AddressSanitizer.
 The strict extension is restored. Compilation uses one worker; numerical
 tests use at most four OpenMP workers and serial BLAS.
 
+With the demonstrated source defaults and saved-result checks, the full
+strict collection passes **524 tests** (89.14 seconds, exit 0). This includes
+11 file-replacement/reuse checks and the unit-invariance check for
+covariance-weighted derivative differences. No C implementation changed
+after the strict/debug native checks above. The first run found five
+test-fixture failures: two fixtures requested cosmological derivatives
+from fixed tables, and three assumed an absent flag that the revised
+example explicitly sets. Their corrections preserve the model validation
+and test that inference overrides leave the prediction file unchanged.
+
 The changes check independent source axes, signed NLA and normalized TATT
 residuals, stretched triangle coordinates, mixed-angle multipole tables,
 both C++ adapters, retained plans, changed triplet batches, and setting
@@ -75,6 +85,10 @@ separate direct-projection, multipole and full-aperture comparisons. The
 first TATT demonstration Fisher result failed these accuracy checks and
 is not accepted. Model/source choices and full derivative convergence
 remain separate from the successful implementation tests.
+The [source study](studies/source_policy_validation.md) records 162 full
+480-row evaluations: 108 in the original six-case comparison and 54 in
+the combined source/kernel/radial follow-up, with no CAMB calls. It supplies
+the declared starting source grids for the new Fisher diagnostic.
 
 The earlier core checkpoint was `98824eb`, following `d832c5f` and `8c58ace`. Checks ran on
 2026-11-17 using Darwin arm64, Clang 19.1.7, Python 3.11.12 and NumPy 1.26.3.

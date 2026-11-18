@@ -102,7 +102,7 @@ def prediction_identity(
     paths = {
         "physical_tables": config["physics"]["tables"],
         "source_curves": config["source"]["path"],
-        "joint_covariance": config["covariance"].get("path"),
+        "joint_covariance": config.get("covariance", {}).get("path"),
         "two_point_rows": config["rows"].get("two_point"),
         "aperture_rows": config["rows"].get("aperture"),
     }

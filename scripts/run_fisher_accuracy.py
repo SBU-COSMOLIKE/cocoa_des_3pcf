@@ -46,6 +46,7 @@ from des3pcf.fisher_accuracy import get_fom_noise_weights, get_stencil_noise
 from des3pcf.fisher_accuracy import predict_fom_noise
 from des3pcf.fisher_accuracy import accuracy_cases_for_request
 from des3pcf.fisher_accuracy import load_retained_noise_case
+from des3pcf.fisher_accuracy import current_noise_case_identity
 from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 
@@ -338,6 +339,25 @@ def run(configuration, plan_path, output, only=None):
                 print(json.dumps({"candidate": name, "column": names[column],
                                   "a": diagnostic["a"]}), flush=True)
             evaluation_count = len(cached.values)
+            second_extension = None
+            if prediction.two_point_core is not None:
+                second_extension = prediction.two_point_core.core.__file__
+            completed_identity = current_noise_case_identity(
+                config=case,
+                configuration_path=case_path,
+                project=PROJECT,
+                three_point_path=compiled.__file__,
+                two_point_path=second_extension,
+                baseline_path=baseline_path,
+                dependency_paths=dependencies,
+                selected_columns=selected,
+                steps=steps,
+            )
+            verify_prediction_identity(
+                recorded=identity,
+                current=completed_identity,
+                description=f"Accuracy case {name} during evaluation",
+            )
             np.savez_compressed(
                 file=destination, a=additions, sigma=sigma, derivatives=derivatives,
                 stencil_values=samples, evaluation_count=evaluation_count,

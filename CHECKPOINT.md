@@ -18,19 +18,30 @@ Native interpolation and independent source-grid changes are committed in
 core `6a7eae7`. The full project collection passes 502 tests in both strict
 and debug builds. The later Python source-edge and provenance additions
 pass 512 strict checks and 44 affected debug checks; strict is restored.
+The current Python saved-result checks and example settings pass the
+full 524-test strict collection. Shared plotting changes are committed
+in core `9e48fed`; 13 array checks pass, with 30 existing plot modes and
+four Fisher display examples rendered and inspected.
 The [interpolation study](tests/studies/interpolation_validation.md) reports
 the separate table checks and full 80-row mean refinement. Corrected
 starting means differ from the finite finer-grid reference by joint
 delta chi-squared about 0.024 for both NLA and TATT, with unchanged xi.
 These are fiducial mean checks, not derivative convergence.
 
-The source reconstruction comparison is pending. The final Y3 midpoint
+The [source reconstruction comparison](tests/studies/source_policy_validation.md)
+is complete for `dz1`, with 162 full joint means. The final Y3 midpoint
 feature is missed by the old 125-point grid; cubic padding to background
 z=3.1 would extend it beyond the supplied upper source edge 3.0. The
-optional measured-edge policy states its support and retains native edges.
-New Fisher archives record exact physical-input/code identities at the
-beginning and end of a run; accuracy screening refuses unverified legacy
-bases. No accepted TATT information gain or completed DES posterior is claimed.
+measured-edge policy states its support and retains native edges. The
+demonstration selects PCHIP9601, kernel401 and LOS129, preserving the
+source-model qualification. The final source refinement changes the main
+derivative by 0.0775% for NLA and 0.0882% for TATT; this does not bound a
+marginalized FoM. Distinct table/result paths preserve the rejected files.
+Mean and Fisher archives record exact physical-input/code identities at
+the beginning and end of a run; accuracy candidates repeat this check
+before saving, and executable notebook reuse refuses changed dependencies
+or unverified legacy results. New full Fisher diagnostics are next.
+No accepted TATT information gain or completed DES posterior is claimed.
 
 The implementation remains on core `lowrank_fftlog` and project `main`.
 Only owned files are committed; the other team's ordinary-core changes

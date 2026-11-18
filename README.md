@@ -50,8 +50,10 @@ they are not accepted Y3 or Y6 likelihood settings.
 The first TATT demonstration Fisher result failed interpolation checks and
 must not be used as a scientific result. The
 [numerical investigation](tests/studies/interpolation_validation.md)
-records the failure, the corrected table comparisons and the remaining
-source and derivative checks. The published timing record uses its
+records the failure and the corrected table comparisons. The
+[source and derivative study](tests/studies/source_policy_validation.md)
+explains the measured-edge reconstruction and the selected demonstration
+grids; the full Fisher checks remain a separate test. The timing record uses its
 original declared coarse settings.
 
 ## Build the compiled library <a name="build"></a>

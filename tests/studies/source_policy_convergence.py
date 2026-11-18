@@ -46,8 +46,9 @@ import scipy
 from scipy.linalg import solve_triangular
 
 
-# Only one preparation axis changes in each refinement case. All cases
-# retain the corrected angular interpolation controls specified below.
+# Named single-axis cases separate source sampling from kernel and LOS
+# sampling. The combined cases test whether those errors cancel when each
+# axis is refined alone. All retain the same angular interpolation controls.
 CASES = {
     "linear1201": ("linear_midpoint", "zero_outside_native", 1201, 201, 1.0),
     "pchip1201": ("pchip_midpoint", "zero_at_measured_edges", 1201, 201, 1.0),
@@ -58,6 +59,12 @@ CASES = {
     ),
     "pchip1201_chi2": (
         "pchip_midpoint", "zero_at_measured_edges", 1201, 201, 2.0,
+    ),
+    "pchip4801_kernel401_chi2": (
+        "pchip_midpoint", "zero_at_measured_edges", 4801, 401, 2.0,
+    ),
+    "pchip9601_kernel401_chi2": (
+        "pchip_midpoint", "zero_at_measured_edges", 9601, 401, 2.0,
     ),
 }
 STEPS = np.asarray([0.001, 0.0005, 0.00025], dtype=np.float64)

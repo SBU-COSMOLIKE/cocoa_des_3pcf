@@ -11,6 +11,8 @@ amplitude, rather than dividing by each nearly zero entry.
 The [executed interpolation study](tests/studies/interpolation_validation.md)
 records why the first TATT demonstration Fisher result was rejected and
 which corrections have been checked on the full aperture vector.
+The [source and photo-z study](tests/studies/source_policy_validation.md)
+separates source-model choices from source, kernel and radial resolution.
 
 ## Contents <a name="contents"></a>
 
@@ -132,6 +134,16 @@ interpolant of the later divided IA kernel; inspect and refine that stage.
 The measured-edge policy also preserves `source_native_low/high` and
 records `source_unshifted_support`. A photo-z shift moves that support;
 the observer and finite background still limit the retained output.
+
+The demonstration uses measured-edge PCHIP with 9601 source samples,
+401 kernel nodes and 129 line-of-sight nodes. At the tested `dz1` step
+0.0005, increasing the source grid from 4801 to 9601 changes its
+covariance-weighted derivative by 0.0775% for NLA and 0.0882% for TATT.
+The smaller 0.00025 step does not improve agreement uniformly. These
+measurements select a stated starting calculation for the full Fisher
+checks; they do not bound its marginalized FoM or validate the other
+photo-z columns. The source study retains the original curves, the
+endpoint assumptions and the remaining radial-refinement questions.
 
 ## Signed bispectra and triangle coordinates <a name="signed-projection"></a>
 

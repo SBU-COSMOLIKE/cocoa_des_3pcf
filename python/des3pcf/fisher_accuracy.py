@@ -36,6 +36,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .provenance import file_digest, prediction_identity
+
 from cosmolike_notebook_utils.fisher import (
     get_fom_noise_weights,
     get_stencil_noise,
@@ -234,3 +236,48 @@ def load_retained_noise_case(path, identity):
             "stencil_values": saved["stencil_values"].copy(),
             "evaluation_count": int(saved["evaluation_count"].item()),
         }
+
+
+def current_noise_case_identity(
+    config, configuration_path, project, three_point_path, two_point_path,
+    baseline_path, dependency_paths, selected_columns, steps,
+):
+    """Read the current complete identity before saving a new accuracy case.
+
+    Physical files, both native libraries, and Python/CAMB implementations
+    use the same fingerprint as a full Fisher result. The diagnostic also
+    depends on its exact baseline archive, configuration, plan, and shared
+    Fisher helper. Comparing this result with the beginning identity detects
+    replacements during candidate evaluation; it cannot inspect code already
+    loaded into memory or changes restored between the two reads.
+
+    Arguments:
+      config = resolved numerical candidate configuration.
+      configuration_path = candidate YAML path whose exact bytes are recorded.
+      project = project root containing the prediction implementation.
+      three_point_path, two_point_path = loaded extension paths; the second
+          is None when the mean does not call the ordinary two-point core.
+      baseline_path = saved Fisher archive used to interpret this candidate.
+      dependency_paths = accuracy plan and diagnostic implementation files.
+      selected_columns = ordered parameter-column indices evaluated here.
+      steps = absolute finite-difference steps in the full parameter order.
+    Returns:
+      JSON-compatible identity, with no physical model evaluation.
+    """
+    dependencies = {}
+    for filename in dependency_paths:
+        dependencies[str(Path(filename).resolve())] = file_digest(path=filename)
+    return {
+        "baseline_result_sha256": file_digest(path=baseline_path),
+        "configuration_sha256": file_digest(path=configuration_path),
+        "dependency_sha256": dependencies,
+        "prediction_identity": prediction_identity(
+            config=config,
+            configuration_path=configuration_path,
+            project=project,
+            three_point_path=three_point_path,
+            two_point_path=two_point_path,
+        ),
+        "selected_columns": list(selected_columns),
+        "absolute_steps": np.asarray(steps, dtype=np.float64).tolist(),
+    }

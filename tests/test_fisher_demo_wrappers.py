@@ -35,3 +35,29 @@ def test_s8_error_keeps_cross_covariance_and_fom_ratio():
     np.testing.assert_allclose(
         summary["joint_over_two_point_fom"], 4.0, rtol=2e-14,
     )
+
+
+def test_derivative_summary_resolves_small_amplitude_aperture_rows():
+    """A tiny raw row can carry order-one information in its own error units."""
+    metadata = {
+        "comparison_rank_status": {"joint": "resolved"},
+        "configuration": {"fisher": {"priors": {}}},
+    }
+    for aperture_unit in (1.0e-8, 1.0):
+        result = {
+            "parameter_names": np.array(["a1"]),
+            "fisher_joint_likelihood": np.array([[2.0]]),
+            "fisher_two_point_likelihood": np.array([[1.5]]),
+            "fisher_conditional_three_point": np.array([[0.5]]),
+            "fiducial_covariance": np.diag([1.0, aperture_unit**2]),
+            "derivatives_h": np.array([[1.0], [aperture_unit]]),
+            "derivatives_h2": np.array([[1.0], [2.0 * aperture_unit]]),
+            "derivative_relative_change": np.array([aperture_unit]),
+        }
+        summary = notebook.fisher_summary(result=result, metadata=metadata)
+        # In covariance units the columns are (1,1) and (1,2), so the
+        # difference has norm1 and the reference has normsqrt(5).
+        np.testing.assert_allclose(
+            actual=summary["derivative_covariance_relative_change"],
+            desired=[1.0 / np.sqrt(5.0)], rtol=2.0e-14,
+        )

@@ -769,10 +769,32 @@ def evaluate(compiled, config, path, metadata, rows, provider, overwrite):
     check_destination(path=destination, overwrite=overwrite)
     prediction = prediction_for_run(compiled=compiled, config=config, path=path,
                                     rows=rows, provider=provider)
+    second_extension = None
+    if prediction.two_point_core is not None:
+        second_extension = prediction.two_point_core.core.__file__
+    metadata["prediction_identity"] = prediction_identity(
+        config=config,
+        configuration_path=path,
+        project=PROJECT,
+        three_point_path=compiled.__file__,
+        two_point_path=second_extension,
+    )
     vector = prediction(parameters=config["parameters"])
     arrays = {"mean": vector}
     if config["rows"]["mode"] == "measurement":
         arrays["mean_minus_data"] = vector - rows.values
+    completed_identity = prediction_identity(
+        config=config,
+        configuration_path=path,
+        project=PROJECT,
+        three_point_path=compiled.__file__,
+        two_point_path=second_extension,
+    )
+    verify_prediction_identity(
+        recorded=metadata["prediction_identity"],
+        current=completed_identity,
+        description="Mean calculation during evaluation",
+    )
     save_result(path=destination, arrays=arrays, metadata=metadata,
                 rows=rows, overwrite=overwrite)
     return destination
