@@ -1,0 +1,8 @@
+interface/*.o
+interface/*.so
+interface/*.d
+interface/.build/
+__pycache__/
+.pytest_cache/
+data/upstream_y3/
+*.pyc

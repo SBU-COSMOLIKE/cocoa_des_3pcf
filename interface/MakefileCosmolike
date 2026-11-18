@@ -1,0 +1,97 @@
+# This target compiles only the shared 3pcf kernels and their adapters.
+# ROOTDIR is Cocoa/, and CONDA_PREFIX selects the existing environment.
+# No package installation or network access is part of this Makefile.
+ROOTDIR ?= $(abspath ../../..)
+PYTHON ?= python3
+ifneq ($(strip $(C_COMPILER)),)
+CC := $(C_COMPILER)
+endif
+ifneq ($(strip $(CXX_COMPILER)),)
+CXX := $(CXX_COMPILER)
+endif
+
+SYSTEM := $(shell uname -s)
+CORE := $(ROOTDIR)/external_modules/code/cosmolike_core
+SOURCE := $(CORE)/cosmolike/3pcf
+TARGET := cosmolike_des_3pcf_interface.so
+BUILD := .build/strict
+
+CPPFLAGS += -I$(ROOTDIR)/.local/include -I$(CORE)
+CPPFLAGS += -I$(CONDA_PREFIX)/include
+CPPFLAGS += -I$(ROOTDIR)/external_modules/code/simde
+PYBIND_FLAGS := $(shell $(PYTHON) -m pybind11 --includes)
+NUMPY_INCLUDE := $(shell $(PYTHON) -c \
+    "import numpy; print(numpy.get_include())")
+CPPFLAGS += -I$(NUMPY_INCLUDE)
+STRICT := -fno-fast-math -fno-associative-math
+STRICT += -frounding-math -ftrapping-math
+COMMON := -fPIC -fopenmp $(STRICT)
+
+ifdef COSMOLIKE_AGGRESSIVE_MODE
+$(error COSMOLIKE_AGGRESSIVE_MODE is retired; use strict IEEE flags)
+endif
+
+ifdef COSMOLIKE_DEBUG_MODE
+BUILD := .build/debug
+COMMON += -O0 -g -Wall -Wextra
+COMMON += -fsanitize=undefined,float-divide-by-zero
+COMMON += -fno-sanitize-recover=all
+else
+COMMON += -O3 -march=native
+endif
+
+CFLAGS += -std=gnu99 $(COMMON)
+CXXFLAGS += -std=c++23 $(COMMON) $(PYBIND_FLAGS)
+LDFLAGS += -L$(ROOTDIR)/.local/lib -L$(CONDA_PREFIX)/lib
+LDFLAGS += -Wl,-rpath,$(ROOTDIR)/.local/lib
+LDFLAGS += -Wl,-rpath,$(CONDA_PREFIX)/lib
+LDLIBS += -lgsl -lgslcblas -larmadillo -lopenblas -lfftw3
+LDLIBS += $(ROOTDIR)/.local/lib/libspdlog.a -lm
+
+ifeq ($(SYSTEM),Darwin)
+SOFLAGS := -dynamiclib -undefined dynamic_lookup
+COMMON += -Wno-pass-failed -fno-reciprocal-math
+else
+SOFLAGS := -shared
+COMMON += -fsignaling-nans
+endif
+
+OBJECTS := $(BUILD)/aperture_3pcf.o $(BUILD)/covariance_3pcf.o
+OBJECTS += $(BUILD)/threepcf_wrapper.o $(BUILD)/threepcf_interface.o
+OBJECTS += $(BUILD)/physics_3pcf.o
+OBJECTS += $(BUILD)/physics_grid_3pcf.o
+OBJECTS += $(BUILD)/physics_wrapper.o $(BUILD)/physics_interface.o
+OBJECTS += $(BUILD)/coupling_3pcf.o $(BUILD)/fftlog_3pcf.o
+OBJECTS += $(BUILD)/transform_3pcf.o
+OBJECTS += $(BUILD)/transform_wrapper.o $(BUILD)/transform_interface.o
+OBJECTS += $(BUILD)/covariance_physics_3pcf.o
+OBJECTS += $(BUILD)/covariance_wrapper.o $(BUILD)/covariance_interface.o
+OBJECTS += $(BUILD)/interface.o
+
+.PHONY: all clean FORCE
+all: $(TARGET)
+
+# Relink the selected mode even when a different mode's extension is
+# newer than this mode's objects. Object directories keep both apart.
+FORCE:
+
+$(BUILD):
+	mkdir -p $(BUILD)
+
+$(BUILD)/%.o: $(SOURCE)/%.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/%.o: $(SOURCE)/%.cpp | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/interface.o: interface.cpp | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+$(TARGET): $(OBJECTS) FORCE
+	$(CXX) $(COMMON) $(SOFLAGS) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $@
+
+# Only artifacts owned by this target are removed.
+clean:
+	rm -f $(TARGET) $(OBJECTS) $(OBJECTS:.o=.d)
+
+-include $(OBJECTS:.o=.d)
