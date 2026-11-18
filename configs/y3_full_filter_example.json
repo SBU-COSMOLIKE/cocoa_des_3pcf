@@ -8,7 +8,8 @@
     "No scale cuts, Gaussian nuisance priors, data compression, Hartlap correction or Percival likelihood are inserted.",
     "Survey area and per-bin shape-noise properties remain unset until supplied for the intended catalogue.",
     "The full-filter covariance is gravitational only; its halo-abundance response is not full SSC.",
-    "Every integration count is a fixed starting choice, not demonstrated DES precision."
+    "Every integration count is a fixed starting choice, not demonstrated DES precision.",
+    "Signed ratios and the stretched shape chart avoid the documented raw-residual interpolation failure. The stretch is half ln(2 ell_max/ell_min); these starting grids still require estimator-specific refinement."
   ],
   "threads": 1,
   "source": {
@@ -127,8 +128,12 @@
         "table_boost": 2,
         "multipole_boost": 2,
         "npsi": 80,
-        "nshape": 80,
-        "prepare_multipoles": 0
+        "nshape": 160,
+        "prepare_multipoles": 0,
+        "shape_stretch": 9.30150115037316,
+        "signed_baseline": 1,
+        "residual_scaling": 1,
+        "psi_scale": 0.02
       }
     },
     "xi_settings": {
@@ -197,7 +202,7 @@
         "logarithmic": true
       },
       "profile_radius": {
-        "lower": 1e-7,
+        "lower": 1e-07,
         "upper": 0.5,
         "count": 512,
         "logarithmic": true,

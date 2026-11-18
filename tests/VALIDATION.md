@@ -33,6 +33,37 @@ from fixed tables, and three assumed an absent flag that the revised
 example explicitly sets. Their corrections preserve the model validation
 and test that inference overrides leave the prediction file unchanged.
 
+The additional finite sign-pair tests and existing derived-quantity tests
+pass **13 checks** (0.22 seconds, exit 0), without CAMB or native model
+calls. The independent construction uses four unit Gaussian variables:
+its known joint squared distance is 15, split into two-point distance 5
+and conditional three-point distance 10. Tests change row order and Map3
+units, remove the independent Map3 contribution, reverse a consistent sign
+convention, and reject mismatched row identities. This command ran from
+the same activated Cocoa directory with serial BLAS:
+
+```bash
+.local/bin/python -m pytest \
+  projects/des_3pcf/tests/test_finite_sign_pair.py \
+  projects/des_3pcf/tests/test_fisher_demo_wrappers.py -q
+```
+
+The later combined saved-result, full-check provenance, finite-distance
+and derived-quantity group passes **28 tests** (1.59 seconds, exit 0).
+Four new tests compare archived baseline/candidate physical identities,
+retain explicitly historical reading after a current source-file change,
+and refuse that change before an executable full-check launch. Identical
+row labels and covariance are insufficient if input or implementation
+bytes changed between the two calculations.
+
+```bash
+.local/bin/python -m pytest \
+  projects/des_3pcf/tests/test_accuracy_full_identity.py \
+  projects/des_3pcf/tests/test_fisher_result_identity.py \
+  projects/des_3pcf/tests/test_finite_sign_pair.py \
+  projects/des_3pcf/tests/test_fisher_demo_wrappers.py -q
+```
+
 The changes check independent source axes, signed NLA and normalized TATT
 residuals, stretched triangle coordinates, mixed-angle multipole tables,
 both C++ adapters, retained plans, changed triplet batches, and setting

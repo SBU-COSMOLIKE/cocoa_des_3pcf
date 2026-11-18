@@ -30,6 +30,7 @@ sys.path.insert(0, str(PROJECT / "scripts"))
 
 import run_3pcf as driver
 from des3pcf.mean import physics_model
+from des3pcf.fisher_comparison import compare_information
 from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 from des3pcf.survey import ARCMIN_TO_RADIAN, read_source_distributions
@@ -769,3 +770,340 @@ def derived_amplitude_summary(result, metadata):
         / summary["two_point"]["omega_m_s8_fom"]
     )
     return summary
+
+
+def finite_sign_pair_separation(first, second, covariance):
+    """Measure the fixed-covariance distance between two saved predictions.
+
+    For delta=mean_first-mean_second, define
+    S=C33-C32 C22^-1 C23 and r=delta3-C32 C22^-1 delta2.
+    The Gaussian distance obeys chi2_joint=chi2_2+r.T S^-1 r.
+    The residual r removes the Map3 change predicted by its covariance
+    with xi. It is generally different from the raw Map3 difference.
+
+    Arguments:
+      first, second = saved evaluate-result dictionaries with finite mean
+          vectors and identical row_labels, row_kind, row_bins, and
+          row_angles_radians. The usual example has 480 rows; a selected
+          vector is permitted if both xi and Map3 rows remain.
+      covariance = positive definite full covariance in exactly that row
+          order and in the same observable units. The caller supplies
+          the covariance from the verified workflow, including C23.
+    Returns:
+      Dictionary with dimensionless joint, two-point and conditional
+      three-point chi-squared distances; owned delta and conditional
+      residual arrays; the Schur covariance and selected row indices.
+      The residual carries the units of the Map3 rows. The identity error
+      is reported and checked at a stated float64 roundoff tolerance.
+    Raises:
+      ValueError for mismatched rows, nonfinite means, invalid covariance,
+      or a numerically unresolved decomposition.
+    Interpretation:
+      No parameters are fitted or marginalized, and no prior, mock-count
+      correction or detection significance is assigned. This function
+      does not verify physical convergence, the covariance sign history,
+      or that only A1/A2 differ between the supplied predictions.
+    """
+    means = []
+    required = (
+        "mean",
+        "row_labels",
+        "row_kind",
+        "row_bins",
+        "row_angles_radians",
+    )
+    for case in (first, second):
+        for key in required:
+            if key not in case:
+                raise ValueError(f"Saved prediction is missing {key}.")
+        original = np.asarray(a=case["mean"])
+        if original.dtype.kind not in "fiu":
+            raise ValueError("Saved mean must contain real numerical values.")
+        mean = np.array(object=original, dtype=np.float64, copy=True)
+        if mean.ndim != 1 or mean.size == 0:
+            raise ValueError(
+                "Saved mean must be a nonempty one-dimensional vector."
+            )
+        if not np.all(np.isfinite(mean)):
+            raise ValueError("Saved mean contains nonfinite values.")
+        means.append(mean)
+    if means[0].shape != means[1].shape:
+        raise ValueError("Saved predictions have different mean-vector shapes.")
+
+    nrow = means[0].size
+    row_shapes = {
+        "row_labels": (nrow,),
+        "row_kind": (nrow,),
+        "row_bins": (nrow, 3),
+        "row_angles_radians": (nrow, 3),
+    }
+    for key, shape in row_shapes.items():
+        first_rows = np.asarray(a=first[key])
+        second_rows = np.asarray(a=second[key])
+        if first_rows.shape != shape or second_rows.shape != shape:
+            raise ValueError(f"Both {key} arrays must have shape {shape}.")
+        if not np.array_equal(first_rows, second_rows):
+            raise ValueError(f"Saved predictions have different {key}.")
+    labels = np.asarray(a=first["row_labels"])
+    if labels.dtype.kind not in "US" or np.unique(labels).size != nrow:
+        raise ValueError("Saved row_labels must be unique string labels.")
+    angles = np.asarray(a=first["row_angles_radians"])
+    if angles.dtype.kind not in "fiu" or not np.all(np.isfinite(angles)):
+        raise ValueError("Saved row angles must be finite numerical values.")
+
+    # The shared block algebra acts on any columns. Supplying a finite
+    # contrast instead of a derivative gives a distance, without fitting
+    # an artificial amplitude parameter or adding parameter priors.
+    difference = means[0] - means[1]
+    comparison = compare_information(
+        derivatives=difference[:, None],
+        names=["fixed_sign_pair_contrast"],
+        kind=np.asarray(a=first["row_kind"]),
+        covariance=covariance,
+    )
+    joint = float(comparison["fisher_joint_likelihood"][0, 0])
+    two_point = float(comparison["fisher_two_point_likelihood"][0, 0])
+    conditional = float(comparison["fisher_conditional_three_point"][0, 0])
+    values = np.array(object=[
+        joint,
+        two_point,
+        conditional,
+    ])
+    if not np.all(np.isfinite(values)) or np.any(values < 0.0):
+        raise ValueError("Gaussian distances must be finite and nonnegative.")
+
+    # Both contractions must agree even when the mean difference is tiny.
+    # A unit-sized denominator would hide relative errors for weak signals.
+    sum_of_blocks = two_point + conditional
+    identity_absolute_error = abs(joint - sum_of_blocks)
+    scale = max(joint, sum_of_blocks)
+    identity_relative_error = 0.0
+    if scale > 0.0:
+        identity_relative_error = identity_absolute_error / scale
+    identity_tolerance = 256.0 * nrow * np.finfo(np.float64).eps
+    if identity_relative_error > identity_tolerance:
+        raise ValueError(
+            "Joint and conditional distances disagree: relative error "
+            f"{identity_relative_error} exceeds {identity_tolerance}. "
+            "Inspect covariance conditioning and row conventions."
+        )
+    conditional_residual = comparison["conditional_derivatives"][:, 0].copy()
+    return {
+        "chi2_joint": joint,
+        "chi2_two_point": two_point,
+        "chi2_conditional_three_point": conditional,
+        "delta_mean": difference.copy(),
+        "conditional_residual": conditional_residual,
+        "conditional_covariance": comparison["conditional_covariance"].copy(),
+        "two_point_indices": comparison["two_point_indices"].copy(),
+        "three_point_indices": comparison["three_point_indices"].copy(),
+        "identity_absolute_error": identity_absolute_error,
+        "identity_relative_error": identity_relative_error,
+        "identity_relative_tolerance": identity_tolerance,
+        "interpretation": "Fixed-model Gaussian distance; no marginalization.",
+    }
+
+
+def ia_figure9_workflows(workflow):
+    """Prepare one no-IA case and the two sign choices in NLA and TATT.
+
+    This comparison holds the source curves, cosmology, estimator, grids,
+    redshift exponents and power prescription of the supplied TATT run
+    fixed. It tests the amplitude choices from the paper's Figure 9, but
+    does not claim its exact source reconstruction or measured estimator.
+
+    Arguments:
+      workflow = current TATT FisherWorkflow with core_tatt two-point
+          predictions and ct=fb=0. Its base eta1 and eta2 are retained.
+    Returns:
+      Dictionary containing five named workflows, two ordered plot groups,
+      their labels, and the complete IA settings of each case. Each group
+      begins with the same no_ia workflow, followed by negative_a1 and
+      positive_a1. Pass that order to plot_mean_responses so every residual
+      uses the same no-IA reference. The existing plot's scaled residual
+      uses max(abs(reference)); it is not a pointwise percentage.
+    Side effects:
+      Writes at most five explicit JSON configurations under runs/ia_response.
+      The two TATT files use the exact names and contents already produced
+      by ia_sign_workflows; their saved predictions can be reused. Only
+      no_ia and the two NLA choices require additional mean predictions.
+      Those three new cases are mean-only files: the inherited TATT Fisher
+      section is removed because its zero-amplitude slopes are inactive.
+      Existing mismatched configuration files are refused, never replaced.
+    Raises:
+      ValueError for an unsupported model or a changed existing file.
+    Physical conventions:
+      NLA sets a2=bta=ct=0. Its eta2 is retained but has no effect when
+      a2=0. No IA sets a1=a2=bta=ct=0, so both redshift exponents have no
+      effect. TATT changes only a1/a2. The supplied eta1/eta2 values are
+      reported explicitly; this helper does not silently impose Table 1.
+    """
+    config, path, _ = driver.load_configuration(
+        path=workflow.configuration,
+        command="evaluate",
+    )
+    if config["mean"]["two_point"]["mode"] != "core_tatt":
+        raise ValueError("The five-case comparison requires core_tatt.")
+    if config["ia"]["ct"] != 0.0 or config["ia"]["fb"] != 0.0:
+        raise ValueError(
+            "The joint comparison requires ct=fb=0; neither has a complete "
+            "shared two-point and three-point response here."
+        )
+    directory = PROJECT / "runs" / "ia_response"
+    cases = (
+        {
+            "tag": "no_ia",
+            "model": "none",
+            "a1": 0.0,
+            "a2": 0.0,
+        },
+        {
+            "tag": "nla_negative_a1",
+            "model": "nla",
+            "a1": -0.2,
+            "a2": 0.0,
+        },
+        {
+            "tag": "nla_positive_a1",
+            "model": "nla",
+            "a1": 0.2,
+            "a2": 0.0,
+        },
+        {
+            "tag": "negative_a1",
+            "model": "tatt",
+            "a1": -0.2,
+            "a2": 0.4,
+        },
+        {
+            "tag": "positive_a1",
+            "model": "tatt",
+            "a1": 0.2,
+            "a2": -0.4,
+        },
+    )
+    prepared = []
+    parameters = {}
+    for case in cases:
+        # JSON round-tripping gives every case its own nested settings.
+        # Retained source/power files are shared inputs, not mutable model
+        # state; each evaluate operation still owns its C preparation.
+        encoded = json.dumps(obj=config)
+        derived = json.loads(s=encoded)
+        path_fields = (
+            ("source", "path"),
+            ("physics", "tables"),
+            ("rows", "two_point"),
+            ("rows", "aperture"),
+            ("covariance", "path"),
+        )
+        for section, key in path_fields:
+            resolved = driver.resolve_path(
+                configuration_path=path,
+                value=derived[section][key],
+            )
+            derived[section][key] = str(resolved)
+        two_point = derived["mean"]["two_point"]
+        directory_two_point = driver.resolve_path(
+            configuration_path=path,
+            value=two_point["directory"],
+        )
+        two_point["directory"] = str(directory_two_point)
+        derived["ia"]["a1"] = case["a1"]
+        derived["ia"]["a2"] = case["a2"]
+        if case["model"] in ("none", "nla"):
+            derived["ia"]["bta"] = 0.0
+            derived["ia"]["ct"] = 0.0
+        if case["model"] == "tatt":
+            # Preserve the existing two TATT JSON files byte for byte.
+            # The base's other settings, including any new numerical
+            # controls, must also match before an old output is reused.
+            derived["description"] = (
+                f"Demonstration IA sign response: A1={case['a1']}, "
+                f"A2={case['a2']}; all other inputs fixed."
+            )
+        elif case["model"] == "nla":
+            derived["description"] = (
+                f"Demonstration NLA sign response: A1={case['a1']}, "
+                "A2=bta=ct=0; base source, cosmology and eta1 retained."
+            )
+        else:
+            derived["description"] = (
+                "Common no-IA demonstration reference: A1=A2=bta=ct=0; "
+                "base source, cosmology and estimator retained."
+            )
+        tag = case["tag"]
+        output_commands = ("evaluate", "fisher")
+        if case["model"] != "tatt":
+            if "fisher" in derived:
+                del derived["fisher"]
+            if "fisher" in derived["outputs"]:
+                del derived["outputs"]["fisher"]
+            output_commands = ("evaluate",)
+            derived["notes"] = [
+                "Fixed-parameter mean comparison: no derivatives, parameter "
+                "priors or marginalized forecast are defined in this file.",
+                "The supplied source reconstruction, selected rows, cosmology, "
+                "estimator and numerical grids are retained explicitly below.",
+                "Estimator agreement and source-model applicability require "
+                "their own checks for the supplied configuration.",
+                "The supplied covariance retains its declared convention "
+                "and physical assumptions across these amplitude choices.",
+                "NLA has A2=bta=ct=0; no IA also has A1=0. Retained redshift "
+                "exponents have no effect when their amplitude is zero.",
+                "Numerical refinement and matching the published source, "
+                "power and estimator choices remain separate checks.",
+            ]
+        for command in output_commands:
+            derived["outputs"][command] = str(
+                directory / f"{tag}_{command}.npz"
+            )
+        target = directory / f"{tag}.json"
+        text = json.dumps(obj=derived, indent=2, sort_keys=True) + "\n"
+        if target.exists() and target.read_text(encoding="utf-8") != text:
+            raise ValueError(f"Existing IA comparison differs: {target}")
+        prepared.append((tag, target, text))
+        parameters[tag] = dict(derived["ia"])
+
+    # Check every destination above before writing any one of the cases.
+    # This leaves an inconsistent old run visible for deliberate review.
+    directory.mkdir(parents=True, exist_ok=True)
+    workflows = {}
+    for tag, target, text in prepared:
+        if not target.exists():
+            with target.open(mode="x", encoding="utf-8") as stream:
+                stream.write(text)
+        workflows[tag] = FisherWorkflow(configuration=target)
+    groups = {
+        "nla": {
+            "keys": [
+                "no_ia",
+                "nla_negative_a1",
+                "nla_positive_a1",
+            ],
+            "labels": [
+                "No IA",
+                r"NLA $A_1=-0.2$",
+                r"NLA $A_1=0.2$",
+            ],
+        },
+        "tatt": {
+            "keys": [
+                "no_ia",
+                "negative_a1",
+                "positive_a1",
+            ],
+            "labels": [
+                "No IA",
+                r"TATT $A_1=-0.2,\ A_2=0.4$",
+                r"TATT $A_1=0.2,\ A_2=-0.4$",
+            ],
+        },
+    }
+    return {
+        "workflows": workflows,
+        "groups": groups,
+        "ia_parameters": parameters,
+        "residual_reference": "no_ia",
+        "interpretation": "Declared-input Figure 9 mechanism comparison.",
+    }

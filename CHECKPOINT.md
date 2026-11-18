@@ -1,12 +1,13 @@
 # Work in progress: three-point implementation
 
-**The first TATT demonstration Fisher result is not accepted.** The
-default prepared projection undersamples squeezed shapes and large Fourier
-angles, and cubic interpolation of the unscaled residual produces artificial
-high-multipole tails. These errors substantially alter the aperture mean.
+**The first TATT demonstration Fisher result is not accepted.** Its
+prepared projection undersampled squeezed shapes and large Fourier
+angles, and cubic interpolation of the unscaled residual produced artificial
+high-multipole tails. These errors substantially altered the aperture mean.
 The saved initial w0–wa FoM of 12.93 is a diagnostic of that calculation,
-not a scientific forecast. Corrections and separate refinement tests are
-underway. The earlier speed comparisons establish thread consistency for
+not a scientific forecast. The corrected interpolation and source preparation
+now have new full NLA and TATT Fisher bases. Further derivative refinement
+is underway. The earlier speed comparisons establish thread consistency for
 their declared coarse calculation; they do not establish the cost of a
 converged forecast.
 
@@ -40,7 +41,17 @@ marginalized FoM. Distinct table/result paths preserve the rejected files.
 Mean and Fisher archives record exact physical-input/code identities at
 the beginning and end of a run; accuracy candidates repeat this check
 before saving, and executable notebook reuse refuses changed dependencies
-or unverified legacy results. New full Fisher diagnostics are next.
+or unverified legacy results.
+
+The new bases contain 103 NLA and 121 TATT distinct mean evaluations.
+Their w0–wa FoMs are respectively 0.18006 and 0.13630 at step h, and
+0.19117 and 0.14405 at h/2. These 6.17% and 5.68% changes prevent a
+convergence claim. Both joint and two-point parameter matrices pass the
+rank check; the conditional-information identities agree at about
+6e-16 or better. The next tests vary numerical settings while keeping
+the physical model, covariance, parameters and priors fixed. The shared
+noise estimator chooses which derivative columns receive those tests;
+complete derivative recalculations remain necessary.
 No accepted TATT information gain or completed DES posterior is claimed.
 
 The implementation remains on core `lowrank_fftlog` and project `main`.

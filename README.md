@@ -148,6 +148,13 @@ python projects/des_3pcf/scripts/prepare_demo_sources.py \
 This records clipping and renormalization of negative density samples in a
 separate JSON file. It preserves the downloaded FITS file. This declared
 demonstration assumption is explained in the [Fisher guide](FISHER.md).
+That JSON records the FITS preprocessing. The later physical NPZ metadata
+records the measured-edge PCHIP reconstruction and its sampling. The source
+ends at z=3.0 while background tables extend to z=3.1; the extra background
+interval contains no sources. The demonstration uses 9601 source nodes,
+125 background nodes, 401 kernel nodes and 129 line-of-sight nodes.
+These separate grids and the reconstruction assumptions are compared in
+the [source study](tests/studies/source_policy_validation.md).
 
 **Step :four:**: check the configuration before preparing physical tables.
 
@@ -197,7 +204,7 @@ physical comparison.
 |---|---|
 | [EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb) | Comparisons with pinned original transforms and aperture kernels, with source discretization differences and stored physical references labeled separately |
 | [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Declared Y3 NLA/TATT means, parameter responses, saved joint Fisher comparisons and the checks needed before interpreting gains |
-| [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | One default Fisher base, selected-column noise screening, and separate full derivative confirmations |
+| [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Completed default h/h2 Fisher bases, selected-column screening, and full refined-grid checks where available; remaining cases are listed as pending |
 | [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | Covariance correction using independent controlled Gaussian simulations, finite-sample product corrections and held-out validation |
 
 We assume the compiled project and the thread environment above. Start in
@@ -218,6 +225,9 @@ figures. Its functions take arrays and do not choose a physical model.
 The [Nautilus guide](INFERENCE.md) supplies separate NLA and TATT synthetic
 examples and an observed-data demonstration. A successful state-restoration
 check does not establish numerical convergence or validate a posterior.
+The [estimator and covariance record](tests/studies/estimator_conventions.md)
+traces the published triangle bins, representative-side rules and the
+remaining provenance question for the joint covariance's Map3 sign.
 
 ## Covariances, Fisher calculations and tests <a name="tests"></a>
 

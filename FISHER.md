@@ -69,7 +69,8 @@ does not silently use a pseudoinverse to manufacture marginalized errors.
 | Source shift `dz1`, ..., `dzN` | Source densities, their normalization and projected kernels |
 | IA coefficients `a1`, `eta1`, `a2`, `eta2`, `bta`, `ct` | Alignment contributions and their projected tables |
 | Shear offsets `m1`, ..., `mN` | Final factors, one per observed shear field |
-| Numerical controls or estimator geometry | A new preparation/plan; these are refinement choices, not cosmological parameters |
+| Numerical resolution at fixed estimator | A new preparation/plan with finer quadrature or interpolation |
+| Estimator boundaries or weights | A changed observable, requiring its own matching measurement and covariance |
 
 `cosmology_mode="fixed_tables"` accepts the stored cosmology and refuses a
 different one. A cosmological Fisher forecast uses `"camb"`. The physical
@@ -84,6 +85,26 @@ Refine the source grid if appreciable density reaches its first cell.
 Shear calibration is applied afterward: a $`(1,1,2)`$ aperture row receives
 $`(1+m_1)^2(1+m_2)`$. Calibration-only displacements reuse the physical
 mean and its geometry.
+
+The demonstration sources have a separate, declared construction. The
+preparation script clips the original negative midpoint densities and
+normalizes each bin, while preserving the original FITS bytes. The
+physical provider then reconstructs a shape-preserving cubic (PCHIP)
+through those processed values, with zeros at the measured outer edges.
+The last source edge is z=3.0; the background table extends to z=3.1.
+The intervening region remains empty. Extending the nonzero final source
+midpoint to the background limit would create an unsupported high-redshift
+tail. The reconstruction is normalized on its sampled grid; it preserves
+the chosen support, but does not preserve every original histogram-cell
+probability. Source reconstruction is a physical input assumption.
+
+The current demonstration samples that reconstruction on 9601 uniform
+redshift nodes, tabulates the projected source kernels at 401 nodes, and
+uses 129 line-of-sight integration nodes. These three resolutions control
+different approximations. Their separate and combined checks are recorded
+in the [source study](tests/studies/source_policy_validation.md).
+Increasing these counts tests the declared reconstruction; it does not
+recalibrate the source distribution or supply its missing uncertainty.
 
 The isolated two-point route computes NLA E power and zero B signal.
 It refuses nonlinear TATT, velocity-shear or a bispectrum-only baryon
@@ -146,6 +167,14 @@ dense read tables, integration rules and transform boundaries. Derivative
 step agreement on an unresolved numerical grid can reproduce the same
 biased derivative twice.
 
+The notebook also computes each column's change after whitening by the
+full covariance, $`C=LL^{\mathsf T}`$. Its ratio is
+$`\|L^{-1}(D_h-D_{h/2})\|/\|L^{-1}D_{h/2}\|`$. It does not depend on
+the numerical units chosen for xi or Map3, and it keeps their cross
+correlations. A maximum raw-component ratio can miss an aperture error
+because its raw amplitude is much smaller than that of xi. The saved
+vectors permit both diagnostics without another physical calculation.
+
 ## How the covariance weights information <a name="information"></a>
 
 With Jacobian $`J_{i\alpha}=\partial\mu_i/\partial p_\alpha`$ and a
@@ -193,6 +222,17 @@ prior. `fisher_prior` is added once to `fisher_two_point` and once to
 their marginalized errors and `sigma_ratio_two_point_over_joint`.
 A large ratio is a local information result under the declared model,
 not evidence that its smallest scales or IA approximation are valid.
+
+The same block decomposition can compare two finite predictions before
+taking any derivative. `finite_sign_pair_separation` substitutes their
+difference for one column and returns the joint, xi and conditional Map3
+squared distances. It adds no parameter prior and fits no nuisance
+parameter. Independent Gaussian examples check both the decomposition
+and invariance when the mean and covariance undergo a consistent Map3
+sign transformation. The
+[estimator and covariance record](tests/studies/estimator_conventions.md)
+explains why changing only the covariance cross block would instead
+change the calculation and why the supplied matrix is retained unchanged.
 
 For a PME run the comparison uses the inverse of its positive precision
 as an effective Gaussian covariance. This preserves the same statistical

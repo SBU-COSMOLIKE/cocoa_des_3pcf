@@ -8,7 +8,8 @@
     "The provided covariance is used as a fixed matrix. Its filename does not establish an independent-realization count.",
     "The point-angle rule and untapered transform reproduce declared historical discretization choices.",
     "ordered_legs=true preserves ordered tomographic IA legs; false is only an explicit historical transpose comparison.",
-    "This comparison is not a validated DES-Y3 Fisher result."
+    "This comparison is not a validated DES-Y3 Fisher result.",
+    "Signed ratios and the stretched shape chart avoid the documented raw-residual interpolation failure. The stretch is half ln(2 ell_max/ell_min); these starting grids still require estimator-specific refinement."
   ],
   "threads": 1,
   "source": {
@@ -128,8 +129,12 @@
         "table_boost": 2,
         "multipole_boost": 2,
         "npsi": 80,
-        "nshape": 80,
-        "prepare_multipoles": 1
+        "nshape": 160,
+        "prepare_multipoles": 1,
+        "shape_stretch": 10.10622010659021,
+        "signed_baseline": 1,
+        "residual_scaling": 1,
+        "psi_scale": 0.02
       }
     },
     "xi_settings": {

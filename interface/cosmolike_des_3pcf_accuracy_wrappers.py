@@ -28,6 +28,8 @@ sys.path.insert(0, str(CORE))
 import run_3pcf as driver
 from cosmolike_des_3pcf_fisher_wrappers import FisherWorkflow
 from des3pcf.forecast import figure_of_merit
+from des3pcf.provenance import prediction_identity
+from des3pcf.provenance import verify_prediction_identity
 
 
 def _digest(path):
@@ -168,6 +170,11 @@ class AccuracyStudy:
         arrays, metadata = FisherWorkflow(
             configuration=self.configuration,
         ).load_result(command="fisher")
+        verify_prediction_identity(
+            recorded=metadata.get("prediction_identity"),
+            current=report.get("prediction_identity"),
+            description="Archived baseline versus accuracy scan",
+        )
         config, path, _ = driver.load_configuration(
             path=self.configuration, command="fisher",
         )
@@ -189,6 +196,15 @@ class AccuracyStudy:
                     raise ValueError("A candidate uses a different parameter selection.")
                 if identity["absolute_steps"] != report["absolute_steps"]:
                     raise ValueError("A candidate uses different parameter steps.")
+                verify_prediction_identity(
+                    recorded=identity.get("prediction_identity"),
+                    current=report.get("prediction_identity"),
+                    description="Archived selected-column case versus baseline",
+                )
+                if identity.get("dependency_sha256") != report.get("dependency_sha256"):
+                    raise ValueError(
+                        "A candidate uses a different diagnostic implementation."
+                    )
                 if not np.array_equal(archive["a"], np.asarray(case["a"])):
                     raise ValueError("Summary noise additions differ from saved arrays.")
         return report, arrays, metadata
@@ -241,7 +257,9 @@ class AccuracyStudy:
         Returns a dictionary with labels, ratios [2,ncase], pending names and
         rank failures. Both rows use the scan's fixed baseline FoM denominator.
         Scientific algebra and rank refusal belong to forecast.figure_of_merit.
-        Every candidate must retain the baseline rows and covariance exactly.
+        Every candidate must retain the baseline rows, covariance, physical
+        inputs and implementation identity. These are comparisons between
+        archived records; the current checkout may differ for historical reads.
         """
         report, baseline, _ = self.load()
         records = [("Default settings", baseline)]
@@ -254,9 +272,14 @@ class AccuracyStudy:
             if not filename.is_file():
                 pending.append(case["name"])
                 continue
-            arrays, _ = FisherWorkflow(
+            arrays, metadata = FisherWorkflow(
                 configuration=case["configuration"],
             ).load_result(command="fisher")
+            verify_prediction_identity(
+                recorded=metadata.get("prediction_identity"),
+                current=report.get("prediction_identity"),
+                description="Archived full candidate versus baseline",
+            )
             for key in ("parameter_names", "row_labels", "row_kind", "row_bins",
                         "row_angles_radians", "fiducial_covariance"):
                 if not np.array_equal(arrays[key], baseline[key]):
@@ -347,10 +370,39 @@ class AccuracyStudy:
         return self.load()
 
     def run_full_check(self, case):
-        """Explicitly run every derivative for one saved candidate configuration."""
-        report, _, _ = self.load()
+        """Run a full candidate only if current files match the archived baseline.
+
+        Historical plotting compares saved identities with one another. This
+        executable method additionally checks current input and code bytes
+        before launching work. The child Fisher calculation repeats its own
+        beginning/end check; a later historical read must still match the base.
+        """
+        report, baseline, _ = self.load()
         for record in report["cases"]:
             if record["name"] == case:
+                config, path, _ = driver.load_configuration(
+                    path=record["configuration"], command="fisher",
+                )
+                second_extension = None
+                core = config["mean"]["two_point"]
+                if (core["mode"] == "core_tatt"
+                        and np.any(baseline["row_kind"] != "map3")):
+                    directory = driver.resolve_path(path, core["directory"])
+                    second_extension = directory / (core["module"] + ".so")
+                current = prediction_identity(
+                    config=config,
+                    configuration_path=path,
+                    project=PROJECT,
+                    three_point_path=(
+                        PROJECT / "interface/cosmolike_des_3pcf_interface.so"
+                    ),
+                    two_point_path=second_extension,
+                )
+                verify_prediction_identity(
+                    recorded=report.get("prediction_identity"),
+                    current=current,
+                    description="Current full-check inputs versus archived baseline",
+                )
                 return FisherWorkflow(
                     configuration=record["configuration"],
                 ).run(command="fisher")

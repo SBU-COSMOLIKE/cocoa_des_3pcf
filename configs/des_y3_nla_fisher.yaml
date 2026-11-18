@@ -137,7 +137,11 @@ mean:
       table_boost: 2
       multipole_boost: 2
       npsi: 80
-      nshape: 80
+      nshape: 160
+      shape_stretch: 10.1062201
+      signed_baseline: 1
+      residual_scaling: 1
+      psi_scale: 0.02
       prepare_multipoles: 1
   xi_settings:
     ell:

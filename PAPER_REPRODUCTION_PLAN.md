@@ -33,6 +33,17 @@ self-calibration but supplies no joint Fisher gain to use as an acceptance
 number. A Fisher result from these examples is an additional calculation.
 [TATT paper, Table 1 and Figure 9](https://arxiv.org/html/2601.09133v1#S3)
 
+`ia_figure9_workflows` prepares five named means: a common no-IA reference,
+two NLA sign choices and two TATT sign choices. The IA notebook shows each
+model against that reference and evaluates the finite sign-pair distance
+with all 480 rows. The latter removes correlated xi fluctuations before
+assigning a conditional Map3 distance. It holds every other parameter fixed;
+it is not a marginalized significance. The figure uses a maximum-reference
+normalization within each bin, while the paper's pointwise denominator is
+a separate plotting convention. The
+[estimator record](tests/studies/estimator_conventions.md) identifies further
+bin, weighting and covariance-sign provenance needed for a matched result.
+
 The existing low-level IA component API is useful for checking signs and
 normalizations. It does not make the total-only aperture API a projected
 GGI/GII/III decomposition. Such curves must be constructed with the intended
@@ -62,6 +73,15 @@ reference. The source table contains twelve negative midpoint densities
 in its first bin. The demonstration's recorded clipping/normalization is
 therefore an explicit source-model approximation for either data selection;
 the downloaded original bytes remain unchanged.
+The current physical calculation also uses measured-edge PCHIP through
+those processed midpoint values. Its nonzero final midpoint falls to zero
+at the measured upper edge z=3.0, followed by an empty interval to the
+background limit z=3.1. It preserves that support rather than each original
+histogram-cell probability. The preprocessing JSON and subsequent physical
+NPZ metadata record these two distinct preparation stages. Matching the
+paper's source treatment requires matching the reconstruction as well as
+the input FITS columns; the [source study](tests/studies/source_policy_validation.md)
+explains why the last source feature matters for derivatives.
 
 Use the separately labeled joint covariance. The two-point file's own
 400-by-400 covariance retains extra gammat/wtheta header entries from its

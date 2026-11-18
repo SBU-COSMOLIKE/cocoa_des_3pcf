@@ -9,7 +9,8 @@
     "The illustrative cosmological baseline is inherited from the Y3 example, not a Y6 best fit.",
     "core_tatt requests the unchanged ordinary CosmoLike CFASTPT E/B model for all xi rows.",
     "Source calibration priors and survey-specific numerical convergence remain to be supplied or established.",
-    "The analytic covariance includes gravitational connected terms only and selected halo response, not nonlinear-IA covariance or full SSC."
+    "The analytic covariance includes gravitational connected terms only and selected halo response, not nonlinear-IA covariance or full SSC.",
+    "Signed ratios and the stretched shape chart avoid the documented raw-residual interpolation failure. The stretch is half ln(2 ell_max/ell_min); these starting grids still require estimator-specific refinement."
   ],
   "threads": 1,
   "source": {
@@ -129,8 +130,12 @@
         "table_boost": 2,
         "multipole_boost": 2,
         "npsi": 80,
-        "nshape": 80,
-        "prepare_multipoles": 0
+        "nshape": 160,
+        "prepare_multipoles": 0,
+        "shape_stretch": 9.30150115037316,
+        "signed_baseline": 1,
+        "residual_scaling": 1,
+        "psi_scale": 0.02
       }
     },
     "xi_settings": {
@@ -202,7 +207,7 @@
         "logarithmic": true
       },
       "profile_radius": {
-        "lower": 1e-7,
+        "lower": 1e-07,
         "upper": 0.5,
         "count": 512,
         "logarithmic": true,
