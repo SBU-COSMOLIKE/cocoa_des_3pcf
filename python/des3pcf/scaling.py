@@ -410,6 +410,19 @@ def run_job(path):
         message = f"{job['workload']} threads={threads} point={index - 1} complete"
         print(message, flush=True)
     _runtime_check(job["extension"], threads)
+    # Peak process memory includes imports, geometry and physical tables;
+    # it is not the incremental memory of one timed prediction. macOS gives
+    # bytes, whereas Linux gives KiB. Read this only after all intervals.
+    import resource
+    import sys
+
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    if sys.platform != "darwin":
+        peak *= 1024
+    _write_json(directory / "memory.json", {
+        "peak_process_resident_bytes": int(peak),
+        "scope": "Whole worker process, including preparation and imports.",
+    })
 
 
 def validate_vectors(output, workloads=None):

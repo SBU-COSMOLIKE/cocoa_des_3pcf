@@ -292,20 +292,29 @@ class Map3Engine(PreparedGeometry):
                     parameters=ia, settings=dict(self.projection_settings),
                 )
             for index, triplet in enumerate(batch):
-                bins = np.ascontiguousarray(triplet, dtype=np.int32)
-                if grids is None:
-                    multipoles = model.multipoles(
-                        ell=self.ell, bins=bins, parameters=ia,
-                        lmax=self.lmax, nmu=self.nmu, component=component,
+                if grids is not None and component == 0:
+                    # The C plan retains only interpolation geometry and a
+                    # temporary buffer. Each physical grid refills that buffer;
+                    # changing cosmology or IA never reuses a prediction.
+                    values = self.plan.aperture_from_grid(
+                        grid=grids[index], weights_real=self.weights_real,
+                        weights_imag=self.weights_imag,
                     )
                 else:
-                    multipoles = grids[index].multipoles(
-                        ell=self.ell, component=component,
+                    if grids is None:
+                        bins = np.ascontiguousarray(triplet, dtype=np.int32)
+                        multipoles = model.multipoles(
+                            ell=self.ell, bins=bins, parameters=ia,
+                            lmax=self.lmax, nmu=self.nmu, component=component,
+                        )
+                    else:
+                        multipoles = grids[index].multipoles(
+                            ell=self.ell, component=component,
+                        )
+                    values = self.plan.aperture_from_multipoles(
+                        b_l=multipoles, weights_real=self.weights_real,
+                        weights_imag=self.weights_imag,
                     )
-                values = self.plan.aperture_from_multipoles(
-                    b_l=multipoles,
-                    weights_real=self.weights_real, weights_imag=self.weights_imag,
-                )
                 factor = 1.0
                 if calibration is not None:
                     for source in triplet:
