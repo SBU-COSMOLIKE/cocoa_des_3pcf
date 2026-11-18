@@ -13,9 +13,12 @@ The existing DES Y3 extension is used to check the Python two-point bridge.
 
 ## Executed checks <a name="executed"></a>
 
-The current complete strict collection passes **561 tests** (91.42 seconds,
+The current complete strict collection passes **581 tests** (90.90 seconds,
 exit 0). This includes finite sign-pair, full-check provenance, saved-node
 step-study, historical step-plot and integer-selector regression tests.
+It also includes eighteen new full smaller-step reuse checks and two
+independent high-order geometric-coupling integrals. The earlier complete
+collection passed 561 tests before those additions.
 The complete collection also includes four analytic fixed-dark-energy
 tests and eight retained-stencil rejection cases. The former check retained
 nuisance marginalization, the prior counted once, unresolved directions
@@ -67,6 +70,14 @@ mixed-grid FoM shifts. At h/2 the full triangle/default FoM ratios are
 remains 6.08% and 5.64%. The
 [accuracy record](studies/fisher_accuracy_validation.md) separates these
 comparisons from a claim of complete convergence.
+
+The complete h/4 follow-up then used 30 new NLA means and 36 new TATT
+means, plus four exactly verified reused points per model. It reconstructs
+each original D_h2 bit for bit and checks its saved Fisher/prior matrices
+before saving the new all-column result. Full h/4-to-h/2 FoM ratios are
+0.991559 and 0.993473 on the triangle-refined grids. Both completed
+studies subsequently pass preflight with zero new predictions required;
+their saved point and final-result receipts remain unchanged.
 
 The Fisher-accuracy notebook also executed twelve code cells and produced
 nine figures from completed saved arrays. Inspection identified a clipped

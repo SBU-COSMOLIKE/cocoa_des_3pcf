@@ -1,6 +1,6 @@
 # Work in progress: three-point implementation
 
-The complete strict collection passes **561 tests** (91.42 seconds).
+The complete strict collection passes **581 tests** (90.90 seconds).
 All three physical Nautilus checks pass with 480 rows and exact restoration
 after an IA displacement. The IA/Fisher notebook executed 12 code cells and
 produced 13 figures; the original-code comparison executed nine cells and
@@ -21,9 +21,15 @@ At h/2, refining all columns changes the w0–wa FoM by +0.170% for NLA
 and -0.055% for TATT. The corresponding four-column substitutions change
 it by -6.72% and -5.30%. All shared stencil predictions and reconstructed
 selected derivatives agree bit for bit: the other nuisance responses
-compensate when refined together. These full results still differ by
-6.08% and 5.64% between parameter steps. A small fourth-difference noise
-score alone does not establish convergence. The
+compensate when refined together. Their original h/h2 results differ by
+6.08% and 5.64% between parameter steps. Complete h/4 derivatives are
+now available as well, requiring only 30 new NLA means and 36 new TATT
+means after exact saved-point reuse. The refined h/2-to-h/4 FoM changes
+are -0.844% and -0.653%. Every reconstructed original D_h2 matches
+bit for bit. Both completed studies pass receipt/identity preflight
+with zero additional means required. These are improved step comparisons,
+not a complete convergence claim. A small fourth-difference noise score
+alone does not establish convergence. The
 [Fisher accuracy record](tests/studies/fisher_accuracy_validation.md)
 contains the complete comparisons and the saved-array reporting command.
 
@@ -40,8 +46,8 @@ angles, and cubic interpolation of the unscaled residual produced artificial
 high-multipole tails. These errors substantially altered the aperture mean.
 The saved initial w0–wa FoM of 12.93 is a diagnostic of that calculation,
 not a scientific forecast. The corrected interpolation and source preparation
-now have new full NLA and TATT Fisher bases. Further derivative refinement
-is underway. The earlier speed comparisons establish thread consistency for
+now have new full NLA and TATT Fisher bases and the completed derivative
+refinements above. The earlier speed comparisons establish thread consistency for
 their declared coarse calculation; they do not establish the cost of a
 converged forecast.
 
@@ -126,7 +132,10 @@ complete joint power/bispectrum feedback model.
 
 The expanded IA notebook, original-code comparison and Fisher-accuracy
 notebook are executed. The accuracy notebook includes the cheap diagnostic,
-step comparisons and completed full triangle checks. Fixed-dark-energy
+step comparisons and completed full triangle checks, plus a dated table
+recording the additional full h/4 results. Its twelve code cells and nine
+figures were executed and inspected; the added table changes prose only.
+Fixed-dark-energy
 summaries select the posterior Fisher
 submatrix before inversion while retaining all other nuisance parameters. The accuracy workflow uses
 the shared core estimator and a single full default Fisher base per

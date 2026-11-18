@@ -277,11 +277,76 @@ difference identifies the error process. The observations reinforce
 why the diagnostic must accompany actual derivative and grid changes,
 instead of being interpreted as a measured independent-noise variance.
 
-The completed full triangle refinements evaluate every derivative at
-both step lengths. Their xi rows contribute most of the baseline step discrepancy;
-increasing only the three-point grids cannot settle it. The targeted
-step comparison is now checked at that refined grid. A smaller-step
-calculation of every column remains a separate test.
+## Full smaller-step derivatives on the refined triangle grid
+
+The next calculation changes the step for every varied parameter. A
+fourth-order central derivative at h/4 is
+
+```math
+D_{h/4}=\frac{d(-h/2)-8d(-h/4)+8d(h/4)-d(h/2)}{3h}.
+```
+
+The complete triangle archive already contains the outer points and
+the center. Only +/-h/4 are missing. Thus the full new derivative
+matrix requires two new means per parameter: 34 for NLA and 40 for
+TATT. The completed two-column study supplies four of those points,
+reducing the actual new evaluations to 30 and 36. Its four additional
+large-step points are not needed here. The reuse changes the cost,
+not the set of derivatives included in the Fisher matrix.
+
+Both calculations completed with exact parameter coordinates, unchanged
+physical/numerical settings, all 480 rows, the same covariance and priors.
+The saved-vector lookup remains separate from the physical engine's
+cache. The existing derivative routine first reconstructs the original
+D_h2 bit for bit, then forms D_h4. Rebuilt original Fisher and prior
+matrices also agree with their archive. The new results have their own
+format and record an explicit step divisor; no old result is relabeled.
+
+| Model on triangle-refined grid | Full FoM at h | Full FoM at h/2 | Full FoM at h/4 | h/4 relative to h/2 |
+|---|---:|---:|---:|---:|
+| NLA | 0.1805178664 | 0.1914995559 | 0.1898830823 | -0.8441% |
+| TATT | 0.1362851406 | 0.1439674353 | 0.1430277060 | -0.6527% |
+
+Every two-point and joint parameter matrix remains rank resolved.
+The smaller-step disagreements are substantially below the previous
+6.08% and 5.64% comparisons. They also differ in sign from the partial
+two-column changes: the remaining cosmological and nuisance derivatives
+matter. No one-percent acceptance tolerance is inferred from these
+numbers. They establish the measured change between two complete
+derivative matrices at this particular integration and interpolation
+setting.
+
+The corresponding fixed-dark-energy quantities are:
+
+| Model | Joint/xi Omega_m–S8 FoM gain at h/2 | Gain at h/4 | Joint sigma(S8) at h/2 | Joint sigma(S8) at h/4 |
+|---|---:|---:|---:|---:|
+| NLA | 2.156096 | 2.163192 | 0.01542283 | 0.01533137 |
+| TATT | 2.944914 | 2.942680 | 0.01548462 | 0.01544720 |
+
+The gain changes by +0.329% for NLA and -0.0759% for TATT. Dark energy
+is fixed at w0=-1, wa=0 in this table, with every other parameter
+marginalized and each Gaussian prior included once. The IA notebook's
+original figures continue to use the separately declared default grid;
+these follow-up numbers do not silently replace its saved forecast.
+
+The step test is not a Richardson extrapolation to an assumed exact
+answer. A smooth quintic test verifies the derivative routine's formal
+factor-of-sixteen error reduction when its spacing is halved. The
+physical calculation also contains interpolation and internal numerical
+integrals; the polynomial example does not establish their smoothness
+or convergence. Its xi rows contribute most of the original step
+discrepancy, so increasing only three-point grids cannot settle every
+remaining derivative question.
+
+The executable is [full_smaller_step_study.py](full_smaller_step_study.py).
+Eighteen independent array tests check its analytic derivative behavior,
+coordinates, reused nodes and provenance refusals. The complete results
+are `runs/nla_full_h4/full_h4.npz` and
+`runs/tatt_full_h4/full_h4.npz`, with matching JSON summaries and
+receipts. Their completed preflights require zero additional physical
+means. Commands below inspect or execute this explicit follow-up.
+
+## Remaining comparisons
 
 The current candidate plan leaves the angular truncations Lmax=Mmax=20
 fixed. Its multipole control refines interpolation tables, not those
@@ -308,19 +373,19 @@ Start in `Cocoa/projects/des_3pcf` with Cocoa active.
 Linux:
 
 ```bash
-export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4
-export OMP_PROC_BIND=close OMP_PLACES=cores OMP_DYNAMIC=false
-export OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-export BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4 \
+  OMP_PROC_BIND=close OMP_PLACES=cores OMP_DYNAMIC=false \
+  OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 ```
 
 macOS:
 
 ```bash
-export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4
-export OMP_PROC_BIND=disabled OMP_PLACES=cores OMP_DYNAMIC=false
-export OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-export VECLIB_MAXIMUM_THREADS=1 BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4 \
+  OMP_PROC_BIND=disabled OMP_PLACES=cores OMP_DYNAMIC=false \
+  OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  VECLIB_MAXIMUM_THREADS=1 BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 ```
 
 **Step :two:**: Inspect nuisance projection with independent matrix algebra.
@@ -383,3 +448,37 @@ The script verifies the saved baseline, row order, covariance and physical
 dependencies before work and again before saving. Its metadata also hashes
 the baseline archive, configuration, study script and shared diagnostic.
 It refuses an occupied output directory and retains every assembled stencil.
+
+**Step :eight:** inspect the full smaller-step follow-up.
+
+The commands below assume the matching completed triangle-refined
+two-column studies described above. If those studies are unavailable,
+omit `--reuse-step-study` and choose a different new output directory;
+then all 34 or 40 quarter-step means are calculated. A default-grid
+two-column study cannot supply points for a triangle-refined calculation.
+
+```bash
+python tests/studies/full_smaller_step_study.py \
+  runs/nla_accuracy/triangle_1p5.json --output runs/nla_full_h4 \
+  --reuse-step-study runs/nla_triangle_step_study
+```
+
+**Step :nine:** calculate or verify the full NLA smaller-step result.
+
+```bash
+python tests/studies/full_smaller_step_study.py \
+  runs/nla_accuracy/triangle_1p5.json --output runs/nla_full_h4 \
+  --reuse-step-study runs/nla_triangle_step_study --execute
+```
+
+**Step :one::zero:** run the corresponding TATT calculation separately.
+
+```bash
+python tests/studies/full_smaller_step_study.py \
+  runs/tatt_accuracy/triangle_1p5.json --output runs/tatt_full_h4 \
+  --reuse-step-study runs/tatt_triangle_step_study --execute
+```
+
+Each completed point has an immutable receipt. A matching completed
+study needs no new physical means, while missing or mismatched receipts
+are refused. Interrupted incomplete files are not silently overwritten.
