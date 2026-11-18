@@ -71,7 +71,7 @@ The five sampled feedback coordinates retain the names used by Cocoa's
 `bfmt` theory block. Each is a base-ten logarithm. Their physical meaning
 comes from the model that redistributes halo gas and stellar mass.
 
-| Sampled parameter | Quantity supplied to BACCO | Physical role |
+| Sampled parameter | Quantity sent to BACCO | Physical role |
 |---|---|---|
 | `M_c_baccoemu` | $`\log_{10}[M_c/(h^{-1}M_\odot)]`$ | Halo mass scale governing gas retention |
 | `eta_baccoemu` | $`\log_{10}\eta`$ | Extent of ejected gas |
@@ -97,13 +97,11 @@ neutrinos are massive.
 
 Burger2025 has no independent input for $`h`$, $`n_s`$, $`w_0`$, $`w_a`$,
 or neutrino mass. Recomputing CAMB at a new cosmology changes the DMO
-spectra fully, and changes the response through the supported
-$`\Omega_c`$, $`\Omega_b`$ and $`\sigma_{8,c}`$ coordinates. It does not
-restore the omitted independent response directions. A dark-energy
-forecast therefore assumes that those remaining effects on the baryonic
-ratios are negligible; regenerating a table is not evidence for that
-assumption. Keep neutrino mass fixed in the example and test this response
-restriction before using dark-energy errors as a calibrated forecast.
+spectra fully and moves the response through the supported
+$`\Omega_c`$, $`\Omega_b`$ and $`\sigma_{8,c}`$ coordinates. A dark-energy
+forecast therefore assumes that the remaining response directions are
+negligible; keep neutrino mass fixed in the example until that assumption
+has been tested.
 [Burger et al., Appendix C](https://arxiv.org/html/2506.18974v2#A3)
 
 The installed weight files determine the accepted parameter bounds.
@@ -132,8 +130,8 @@ $`h k`$ when the input number $`k`$ uses h/Mpc.
 
 ## Converting the power response <a name="power"></a>
 
-The default prescription is named `coherent_linear_neutrinos`.
-Here **linear refers to the neutrino power spectrum supplied by CAMB**.
+The default prescription is `coherent_linear_neutrinos`.
+Here **linear refers to the neutrino power spectrum that CAMB computes**.
 The calculation uses a linear neutrino auto-spectrum and approximates
 the cold-neutrino cross-spectrum by
 
@@ -147,7 +145,7 @@ cross-correlation coefficient of one: cold and neutrino fluctuations
 have aligned Fourier phases in this approximation. Cataneo et al. use
 this cross-spectrum approximation in their matter-power calculation.
 That precedent does not calibrate its baryonic or bispectrum extension.
-[Cataneo et al., Equations 1 and 2](https://researchonline.ljmu.ac.uk/id/eprint/13332/1/On%20the%20road%20to%20percent%20accuracy%20III%20non-linear%20reaction%20of%20the%20matter%20power%20spectrum%20to%20massive%20neutrinos.pdf)
+[Cataneo et al., arXiv:1909.02561, equations 1 and 2](https://arxiv.org/abs/1909.02561)
 
 Expanding the total-density relation gives
 
@@ -167,7 +165,7 @@ N=f_\nu\sqrt{P_{\nu\nu,L}},\qquad C=A-N.
 Here $`P_m^D`$ is the project's existing nonlinear total-matter spectrum.
 $`N`$ is the mass-weighted neutrino fluctuation amplitude, and $`C`$ is
 the cold amplitude needed to recover that total spectrum. The construction
-preserves the supplied DMO baseline exactly. It infers a cold nonlinear
+preserves the DMO baseline exactly. It infers a cold nonlinear
 spectrum through $`f_c\sqrt{P_c^D}=C`$; this inferred spectrum is part
 of the approximation.
 
@@ -307,7 +305,7 @@ wavenumber. The continuation belongs in the saved model definition,
 separately from the interpolation resolution.
 
 The diagnostic emulator calls refuse out-of-domain requests. Projection
-preparation uses the explicitly selected continuation below. The high
+preparation uses the continuation defined below. The high
 anchor $`K`$ is the largest wavenumber sent to the emulator, and the low
 floor $`L`$ is its smallest. Both lie inside the installed bounds. Choosing
 $`K=10\,h/{\rm Mpc}`$ or $`K=17.6\,h/{\rm Mpc}`$ defines two distinct
@@ -325,7 +323,8 @@ k_i'=\max(L,s k_i).
 
 The common factor $`s`$ preserves triangle shape while moving its
 largest side to the high anchor. Raising any remaining short side
-to $`L`$ changes the shape in a declared way. The alternative `side_clamp`
+to $`L`$ changes the shape; the saved model definition records this
+choice. The alternative `side_clamp`
 maps each original side independently into $`[L,K]`$. It generally
 changes the ratios of high sides. Both choices require checking the
 triangle after finite-precision conversion.
@@ -349,8 +348,8 @@ g(t)=t^2(3-2t)\quad(0\leq t\leq1),\qquad
 
 The function rises from zero to one and has zero slope at both endpoints.
 It gives $`R_{B,c}^{\rm cont}\to1`$ as the whole triangle shrinks,
-with a leading change proportional to $`k_{\max}^2`$. This taper is
-applied only when all sides are small. For power, use the corresponding
+with a leading change proportional to $`k_{\max}^2`$. The calculation
+applies this taper only when all sides are small. For power, use the corresponding
 one-wavenumber taper below $`L`$ and a constant response above $`K`$.
 The joins are continuous; boundary clamping still introduces changes
 of slope that require numerical refinement checks.
@@ -367,8 +366,8 @@ and mass fractions at the actual requested redshift.
 $`k_3=k_1+k_2`$. A one-sided limit from nondegenerate triangles supplies
 its value. The chosen interior point must remain nondegenerate after
 BACCO's float32 conversion. Silent removal of a triangle would shift
-every subsequent table entry. Exact zero sides are approached through
-limits rather than sent into the emulator.
+every subsequent table entry. Preparation approaches an exact zero side
+through a limit instead of sending it into the emulator.
 
 Preparation continues the cold responses first and then converts them
 to total matter at the physical query. In the mixed-bispectrum formula,
@@ -399,7 +398,7 @@ F_{\alpha\beta}=\sum_{i,j}J_{i\alpha}(C^{-1})_{ij}J_{j\beta}.
 The covariance couples measurement rows, including two-point/Map3
 cross-correlations. Keeping all other parameters fixed gives a different
 question from marginalizing their uncertainty. The inverse Fisher
-matrix gives marginalized parameter covariances only when the selected
+matrix gives marginalized parameter covariances only when the chosen
 parameters and stated priors make it invertible. The
 [Fisher guide](FISHER.md) describes the project's derivative and
 covariance conventions.
@@ -450,10 +449,10 @@ bispectrum responses throughout this sequence.
 
 The NLA intrinsic-alignment baseline follows the converted matter
 responses. NLA means nonlinear alignment, in which the shape response
-uses a nonlinear matter spectrum. Quadratic terms in the tidal alignment
-and tidal torquing model, TATT, retain their DMO inputs. This convention
-does not calculate how gas feedback changes galaxy-shape alignment.
-The covariance stays at the separately specified reference model.
+uses a nonlinear matter spectrum. The quadratic terms of the tidal
+alignment and tidal torquing model, TATT, and the covariance keep their
+DMO reference; the [paired-response guide](FEEDBACK.md#model) explains
+that convention.
 
 ## Tests and interpretation <a name="tests"></a>
 
@@ -476,7 +475,7 @@ limit cannot replace a comparison with hydrodynamical simulations.
 | Large-wavelength limit | Unity when the whole triangle shrinks at fixed shape |
 | Squeezed triangle | A short-scale response survives when only one side shrinks |
 | Fourier joins | Continuity and stable projection across low and high anchors |
-| Redshift joins | Continuity under the selected hold or fade prescription |
+| Redshift joins | Continuity under the chosen hold or fade prescription |
 | CAMB interval | Stability when changing the saved spectral interval used for the neutrino ratio |
 | Float32 endpoints | No lost rows at nearly flattened triangles or side boundaries |
 | Emulator boundaries | Explicit refusal of displaced cosmologies or feedback parameters outside their boxes |
@@ -501,30 +500,26 @@ can add false information and make an error bar smaller. The
 derivative check; the physical model choices need their own comparisons.
 
 Report the chosen anchors, the redshift continuation, and how much of
-the projected response depends on them. Counts of table points outside
-training ranges do not measure their contribution to the observable.
-Changes in the projected vectors under alternative continuations and
-more restrictive angular cuts provide that information. A small spread
-between the chosen models is a sensitivity result, not a bound on all
-unmodeled feedback effects.
+the projected response depends on them. Changes in the projected vectors
+under alternative continuations and tighter angular cuts measure that
+dependence; counts of table points outside the training ranges do not.
+A small spread between the chosen models bounds sensitivity to those
+choices, not all unmodeled feedback effects.
 
 ## Calibration limits and credits <a name="limits"></a>
 
-The matter conversion preserves the declared DMO baselines and the
-massless and smooth-neutrino limits. Its treatment of mixed bispectra
-still needs calibration. The linear-neutrino power approximation also
-omits feedback-induced changes to neutrino clustering. Those effects
-must be assessed for the selected neutrino masses and survey scales.
-Agreement for power alone does not establish bispectrum accuracy.
-[Führer and Wong](https://arxiv.org/html/1412.2764)
+The matter conversion preserves the DMO baselines and the massless and
+smooth-neutrino limits. Its mixed-bispectrum assignment and its neglect
+of feedback-induced changes to neutrino clustering still need calibration
+against simulations at the neutrino masses and scales of the survey.
+[Führer and Wong](https://arxiv.org/abs/1412.2764)
 
 The emulator's training error, its baryonification model error, the
-DMO nonlinear-spectrum error, and the continuation error are different
+DMO nonlinear-spectrum error, and the continuation error are separate
 sources of uncertainty. Triangle shapes inside the individual-side
-bounds can still lie outside the configurations directly measured for
-training. An analysis of the smallest apertures must also check its
-finite-triangle estimator and intrinsic-alignment assumptions. Supplying
-paired ratios does not settle those questions.
+bounds can still lie outside the configurations measured for training,
+and an analysis of the smallest apertures must also check its
+finite-triangle estimator and intrinsic-alignment assumptions.
 
 The chosen feedback family can test whether adding Map3 separates gas
 parameters from cosmology and intrinsic alignment. Reproducing a paper's
@@ -598,12 +593,13 @@ python projects/des_3pcf/scripts/run_3pcf.py prepare \
   projects/des_3pcf/configs/des_y3_bacco_fisher.yaml
 ```
 
-Older physical archives without `p_linear_nu` or `sigma8_cb` are refused.
-The separate BACCO archive preserves the earlier demonstration inputs.
-CAMB still solves the declared bounded wavenumber range and uses its power
-interpolator to extend the saved high-wavenumber tail.
+The preparation step refuses an older physical archive that lacks
+`p_linear_nu` or `sigma8_cb`; the separate BACCO archive preserves the
+earlier demonstration inputs. CAMB solves the bounded wavenumber range in
+the configuration and uses its power interpolator to extend the saved
+high-wavenumber tail.
 
-**Step :three:**: evaluate the declared joint mean.
+**Step :three:**: evaluate the joint mean.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py evaluate \
@@ -620,22 +616,23 @@ Use the project directory as the kernel's working directory. The notebook
 reads matching saved cases by default. Set `RUN_CALCULATIONS=True` to
 compute missing cases sequentially. It varies $`\sigma_8`$, two feedback
 coordinates and two IA amplitudes, with no Gaussian priors; all other
-parameters remain fixed. The full covariance, including its cross block,
-is retained in every comparison.
+parameters remain fixed. Every comparison keeps the full covariance,
+including its cross block.
 
-**Step :five:**: run the separate 25-parameter Fisher calculation when its
-assumptions and numerical settings have been chosen.
+**Step :five:**: run the separate 25-parameter Fisher calculation after
+choosing its assumptions and numerical settings.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py fisher \
   projects/des_3pcf/configs/des_y3_bacco_fisher.yaml
 ```
 
-This releases all five feedback coordinates, the declared cosmological
-parameters and the calibration, redshift and IA nuisance parameters.
-The supplied Gaussian priors apply only to the measured shear-calibration
-and photo-z parameters. A parameter-rank failure is saved explicitly;
-no pseudoinverse supplies an artificial marginalized FoM.
+This releases all five feedback coordinates, the cosmological parameters
+in the configuration, and the calibration, redshift and IA nuisance
+parameters. The Gaussian priors apply only to the measured
+shear-calibration and photo-z parameters. The run saves a parameter-rank
+failure explicitly; no pseudoinverse supplies an artificial marginalized
+FoM.
 
 **Step :six:**: check native interpolation against direct converted responses.
 
@@ -646,6 +643,7 @@ python projects/des_3pcf/tests/studies/check_bacco_interpolation.py
 The study uses 48 deterministic triangles at six redshifts, including
 the continuation boundaries and a squeezed shape. It refines redshift,
 scale, both shape axes and the dense reader separately. Its direct
-reference shares the declared continuation and neutrino formulas, so
+reference shares the continuation and neutrino formulas above, so
 agreement tests interpolation rather than those physical assumptions.
-Existing output files are refused; `--output` selects a new study directory.
+The script refuses existing output files; `--output` chooses a new study
+directory.

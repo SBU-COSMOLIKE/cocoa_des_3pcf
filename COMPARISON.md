@@ -1,10 +1,10 @@
 # Comparing with the original codes
 
-1. [Inputs and source identity](#inputs-and-source-identity)
-2. [Which operations are compared](#which-operations-are-compared)
-3. [Process ownership and outputs](#process-ownership-outputs-and-interpretation)
-4. [Executed example](#executed-example)
-5. [Credits and checks](#credits-and-checks)
+1. [Inputs and source identity](#inputs)
+2. [Which operations are compared](#operations)
+3. [Process ownership, outputs and interpretation](#ownership)
+4. [Executed example](#executed)
+5. [Credits and checks](#credits)
 
 `EXAMPLE_COMPARE_CODES.ipynb` runs small numerical comparisons with the
 original Python files. The YAML beside it names the source locations and
@@ -22,13 +22,12 @@ previously saved original outputs. The result table labels the latter
 reproduction: catalogue measurement, the original CosmoSIS chain, survey
 cuts, final covariance choices and numerical convergence remain separate.
 
-## Inputs and source identity
+## Inputs and source identity <a name="inputs"></a>
 
 Start from the built `des_3pcf` extension in an activated Cocoa environment.
 Run the notebook with this project as its working directory. The example
-YAML points to the local read-only snapshots used during the source study.
-Another installation should replace those three paths with its own
-checkouts. Paths are resolved relative to the YAML file. Setting a path to
+YAML points to local read-only snapshots of the three sources. Another
+installation should replace those three paths with its own checkouts. Paths are resolved relative to the YAML file. Setting a path to
 `null` reports that source as unavailable; no source is downloaded or
 installed by the runner.
 
@@ -42,29 +41,29 @@ The manifest in `data/code_comparison_manifest.json` records SHA256 hashes
 for all 15 imported TATT package files and the two standalone files. A
 commit label alone does not establish that a local checkout is unchanged.
 The runner checks the bytes before executing any source. Missing or changed
-files produce an explicit unavailable result. Original files are not
-rewritten, and Python bytecode output is disabled in the child processes.
+files produce an explicit unavailable result. The runner does not rewrite
+original files and disables Python bytecode output in the child processes.
 
 The full TATT import needs NumPy, SciPy, Astropy, Pandas and mpi4py. The
 standalone main transform needs NumPy and SciPy. Rafael's aperture file
 needs NumPy. The preflight report names these dependencies and also reports
 CosmoSIS and TreeCorr availability. The latter two are not needed for these
-standalone comparisons and are not replaced with fake modules. An import
-or runtime failure is recorded with its stderr rather than hidden by a
-different calculation.
+standalone comparisons, and the runner replaces neither with a fake
+module. The report records an import or runtime failure with its stderr
+rather than hiding it behind a different calculation.
 
-## Which operations are compared
+## Which operations are compared <a name="operations"></a>
 
 **Two-Bessel transforms.** Both implementations receive identical Fourier
 samples, Bessel orders, Mellin biases, logarithmic bin widths and zero
 padding. The TATT implementation calculates a Fourier-coefficient taper
 but returns the untapered array. The pinned main implementation returns
 the tapered array. The C call therefore uses `window=False` for TATT and
-`window=True` for main. These are two named comparisons. Calling them both
+`window=True` for main. These are two separate comparisons. Calling them both
 with the same taper flag would compare different finite operators.
 
-**Natural shear components.** An explicit smooth, symmetric set of
-bispectrum multipoles is supplied through the original public
+**Natural shear components.** The comparison supplies an explicit smooth,
+symmetric set of bispectrum multipoles through the original public
 `set_bispectrum` interface. Its radial factor is a Gaussian in
 `ELL=sqrt(ell1^2+ell2^2)`, with a symmetric angular factor in `sin(2 PSI)`.
 This controlled input isolates the angular coupling, FFTLog, radial bin
@@ -103,7 +102,7 @@ the default sample cap.
 For the 16-point test configuration, the full natural-component difference
 is 4.21e-4 when both codes use the 200-node interpolation, and 7.10e-3 when
 the C calculation instead uses exact coupling. These are observed
-differences between the declared finite operators, not DES accuracy
+differences between the two finite operators, not DES accuracy
 limits. The 1e-3 source-comparison check allows the demonstrated rectangle
 bias in that small configuration. It does not replace the independent C
 tests against the defining angular integral or the Gaussian-moment test
@@ -115,16 +114,17 @@ array on a Cartesian product of two logarithmic side grids and a uniform
 opening-angle grid. Angles and filter radii are radians; side widths are
 natural-log widths, and the opening-angle width is radians. The input
 components are already in the convention expected by the aperture
-integral. No extra component swap or overall minus sign is applied to
-this controlled input.
+integral, so the comparison applies no extra component swap or overall
+minus sign to this controlled input.
 
 The equal-radius result is a source-agreement check. The unequal-radius
 result exposes a known original-source discrepancy. In Rafael's adapted
 file, `k2.all() == 1` and `k3.all() == 1` check whether all ratios are
 nonzero. Positive unequal ratios therefore enter the equal-filter branch.
 The unchanged original code and the general C kernel should disagree for
-the declared unequal filters. That case is marked `expected_discrepancy`.
-It is not used to justify changing the C answer to reproduce the error.
+unequal filters. The report marks that case `expected_discrepancy`; the
+project does not use it to justify changing the C answer to reproduce the
+error.
 Separate saved references and tests cover the general unequal-filter
 expression, its mirror contribution and complex contraction.
 
@@ -138,14 +138,15 @@ error; the tree and IA tests use tighter checks. A right-triangle ddB zero
 has a separate high-precision, vertex-scaled roundoff check. Relative error
 on that vanishing value is not a measure of physical accuracy.
 
-## Process ownership, outputs and interpretation
+## Process ownership, outputs and interpretation <a name="ownership"></a>
 
 Original-code runs occur in separate serial child processes. The TATT
 package's mutable class dictionaries therefore die with the process and
-cannot affect a later notebook cell. All BLAS thread environment variables
-are set to one before a child imports NumPy. OpenMP uses the YAML value,
-restricted to 1 through 4; the example uses 1. No timing result or speedup
-claim is produced.
+cannot affect a later notebook cell. The runner sets every BLAS thread
+environment variable to one before a child imports NumPy. OpenMP uses the
+YAML value, restricted to 1 through 4; the example uses 1. The comparison
+measures agreement, not speed; timing belongs to
+[the scaling study](BENCHMARK.md).
 
 The notebook also keeps a public `threadpoolctl` one-thread controller
 alive and checks every already-loaded BLAS pool. Environment variables
@@ -167,20 +168,25 @@ absolute residuals, retaining the original units and signs. Natural shear
 components include both real and imaginary parts. A plotted slice does not
 replace the full-array diagnostic stored in the report.
 
-The supplied 32-point Fourier grid and small angular truncations are
-controlled examples. Increase resolutions only through a declared
-convergence study. Small-grid agreement checks conventions and
-implementation; it does not set the numerical error budget for DES Y3 or
-Y6.
+The 32-point Fourier grid and small angular truncations are controlled
+examples. Increase resolutions only through a convergence study that records its settings.
+Small-grid agreement checks conventions and implementation; it does not
+set the numerical error budget for DES Y3 or Y6.
 
-## Executed example
+## Executed example <a name="executed"></a>
 
-The default notebook was executed with `nfft=32`, `lmax=3`, `mmax=5`, seven
-opening angles, one OpenMP worker and one thread for every BLAS library.
-All nine code cells completed. The full-array diagnostics below correspond
-to that configuration; the 16-point values above belong to the smaller
-automated test. Each value is a dimensionless maximum scaled difference,
-not a percentage or a forecast error budget.
+The committed notebook outputs use one OpenMP worker, one thread for
+every BLAS library, and this transform configuration:
+
+    nfft: 32            # Fourier grid points
+    lmax: 3             # Legendre truncation
+    mmax: 5             # angular Fourier truncation
+    opening angles: 7
+
+The full-array diagnostics below belong to that configuration; the
+16-point values above belong to the smaller automated test. Each value is
+a dimensionless maximum scaled difference, not a percentage or a forecast
+error budget.
 
 | Comparison | Maximum scaled difference | Interpretation |
 | --- | ---: | --- |
@@ -195,13 +201,13 @@ not a percentage or a forecast error budget.
 | Frozen IA, linear-power prescription | 4.25e-15 | Stored reference, all 19 terms |
 | Frozen IA, nonlinear-power prescription | 1.69e-15 | Stored reference, all 19 terms |
 
-`EXAMPLE_COMPARE_CODES.ipynb` includes the executed outputs from these
-cells, including all five figures. A matching execution copy and the
-individual PNG files are also written under `outputs/code_comparison/`.
-The figures were inspected for labels, signs, residual units and the
-visible expected unequal-filter discrepancy.
+[EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb) keeps these
+cells with their outputs, including all five figures. The runner also
+writes a matching execution copy and the individual PNG files under
+`outputs/code_comparison/`. Rerunning the notebook against the YAML
+beside it reproduces the table and the figures.
 
-## Credits and checks
+## Credits and checks <a name="credits"></a>
 
 The fastnc implementations are credited to Sunao Sugiyama and Rafael
 Heringer Gomes. Rafael's `fast_map3.py` credits Mike Jarvis and TreeCorr

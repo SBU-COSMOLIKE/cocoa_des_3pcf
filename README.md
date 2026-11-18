@@ -2,19 +2,23 @@
 
 1. [Purpose and current scope](#scope)
 2. [Build the compiled library](#build)
-3. [Prepare and evaluate a declared data vector](#evaluate)
+3. [Prepare and evaluate a data vector](#evaluate)
 4. [Notebook examples](#notebooks)
 5. [Covariances, Fisher calculations and tests](#tests)
 6. [Survey inputs](#targets)
 7. [Accuracy controls](ACCURACY.md)
-8. [OpenMP timing at random parameter points](BENCHMARK.md)
-9. [Joint Nautilus examples](INFERENCE.md)
-10. [Publication reproduction plan](PAPER_REPRODUCTION_PLAN.md)
-11. [Paired baryonic responses](FEEDBACK.md)
-12. [Optional compression and finite-simulation likelihood](COMPRESSION.md)
-13. [Aperture estimator conventions](ESTIMATOR.md)
-14. [BACCO neutrinos and extrapolation](BACCO.md)
-15. [Acknowledgements](#acknowledgements)
+8. [OpenMP scaling at ten random parameter points](BENCHMARK.md)
+9. [Comparing with the original codes](COMPARISON.md)
+10. [Joint forecasts without compressing the two-point vector](FISHER.md)
+11. [Joint xi and aperture covariance](covariance/README.md)
+12. [Configuration files](configs/README.md)
+13. [Joint xi± and Map3 inference with Nautilus](INFERENCE.md)
+14. [Paper targets and joint DES forecasts](PAPER_TARGETS.md)
+15. [Paired baryonic responses](FEEDBACK.md)
+16. [Optional compression and finite-simulation likelihoods](COMPRESSION.md)
+17. [Matching the aperture estimator](ESTIMATOR.md)
+18. [BACCO feedback in a joint shear forecast](BACCO.md)
+19. [Acknowledgements](#acknowledgements)
 
 ## Purpose and current scope <a name="scope"></a>
 
@@ -22,21 +26,24 @@ This project builds and tests the three-point code in
 `cosmolike_core/cosmolike/3pcf/`. It follows the LSST Y1 project layout:
 the core owns numerical C routines and the production/notebook C++
 adapters, while this project owns the compiled-module registration and
-tests. Existing LSST Y1 files are not used as editable dependencies.
+tests. The project does not treat any existing LSST Y1 file as an
+editable dependency.
 
-The compiled calculation predicts BiHalofit matter bispectra, the selected
-TATT and velocity-shear intrinsic-shape terms, angular shear correlations,
-and third-order aperture moments. It also constructs the declared analytic
-joint covariance. Python prepares physical tables, reads survey files and
-forms Fisher derivatives. The default retains the full selected two-point vector.
-[Optional fixed compression](COMPRESSION.md) applies the same matrix to
+The compiled calculation predicts BiHalofit matter bispectra, TATT and
+velocity-shear intrinsic-shape terms, angular shear correlations, and
+third-order aperture moments. It also constructs the analytic joint
+covariance that a configuration requests. Python prepares physical
+tables, reads survey files and forms Fisher derivatives. By default the
+joint vector keeps every two-point row;
+[optional fixed compression](COMPRESSION.md) applies the same matrix to
 data, predictions and both covariance axes.
 The
 [core module guide](../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md)
 explains the equations and estimator limits; the
 [numerical guide](../../external_modules/code/cosmolike_core/cosmolike/3pcf/NUMERICS.md)
 explains coarse calculations, dense linear reads, fixed quadrature and
-shared work. The existing two-point source files are unchanged.
+shared work. The port leaves the existing two-point source files
+unchanged.
 
 ```mermaid
 flowchart TB
@@ -45,22 +52,13 @@ flowchart TB
   B --> D["covariance: separate analytic terms"]
   C --> E["fisher: parameter derivatives and covariance weighting"]
   D --> E
-  F["Labeled measured joint covariance"] --> E
+  F["Measured joint covariance and row labels"] --> E
 ```
 
 The graph describes an executable calculation. Publication reproduction
-also requires the same estimator, cuts, priors and likelihood assumptions.
-The supplied examples are explicit starting configurations for refinement;
-they are not accepted Y3 or Y6 likelihood settings.
-
-The first TATT demonstration Fisher result failed interpolation checks and
-must not be used as a scientific result. The
-[numerical investigation](tests/studies/interpolation_validation.md)
-records the failure and the corrected table comparisons. The
-[source and derivative study](tests/studies/source_policy_validation.md)
-explains the measured-edge reconstruction and the selected demonstration
-grids; the full Fisher checks remain a separate test. The timing record uses its
-original declared coarse settings.
+also requires the same estimator, cuts, priors and likelihood
+assumptions. The example configurations are starting points for
+refinement, not accepted Y3 or Y6 likelihood settings.
 
 ## Build the compiled library <a name="build"></a>
 
@@ -82,32 +80,33 @@ source start_cocoa.sh
 make -C projects/des_3pcf/interface -f MakefileCosmolike -j1
 ```
 
-The extension is written into `interface/`. It exposes `production` and
-`notebook` adapters to the same C calculations. The first borrows correctly
-typed contiguous arrays; the second copies through Armadillo arrays for
-interactive inspection. Both return arrays owned by Python.
+The build writes the extension into `interface/`. It exposes `production`
+and `notebook` adapters to the same C calculations. The first borrows
+correctly typed contiguous arrays; the second copies through Armadillo
+arrays for interactive inspection. Both return arrays owned by Python.
 
 > [!NOTE]
 > This project is a local development build. It is not registered as a
 > downloadable Cocoa project with a remote URL or release pin. The main
 > setup scripts and other projects' compile settings are unchanged.
 
-## Prepare and evaluate a declared data vector <a name="evaluate"></a>
+## Prepare and evaluate a data vector <a name="evaluate"></a>
 
 We assume the build above, Cocoa activated, and a shell in `Cocoa/`.
 The example uses the public Y3 source distributions. Numerical outputs
-go to the paths named in the YAML file. Every configuration path is
+go to the paths that the YAML file names. Every configuration path is
 relative to that file, independently of the shell's directory.
 
-**Step :one:**: retrieve or verify the selected pinned Y3 inputs.
+**Step :one:**: retrieve or verify the pinned Y3 inputs.
 
 ```bash
 python projects/des_3pcf/scripts/fetch_y3_reference.py
 ```
 
-This reads twelve files named in `data/y3_reference_manifest.json`, checks
-their lengths and Git blob hashes, and stores them in `data/upstream_y3/`.
-It does not download the whole simulation archive or execute upstream code.
+This reads the twelve files that `data/y3_reference_manifest.json` lists,
+checks their lengths and Git blob hashes, and stores them in
+`data/upstream_y3/`. It does not download the whole simulation archive or
+execute upstream code.
 
 **Step :two:**: select four OpenMP workers and serial BLAS.
 
@@ -142,7 +141,7 @@ export BLIS_NUM_THREADS=1
 Set the YAML `threads` field to the intended worker count as well. The
 driver applies that count after importing its compiled module.
 
-**Step :three:**: create the explicitly processed demonstration source file.
+**Step :three:**: create the processed demonstration source file.
 
 ```bash
 python projects/des_3pcf/scripts/prepare_demo_sources.py \
@@ -151,16 +150,12 @@ python projects/des_3pcf/scripts/prepare_demo_sources.py \
   --extension nz_source --nbin 4
 ```
 
-This records clipping and renormalization of negative density samples in a
-separate JSON file. It preserves the downloaded FITS file. This declared
-demonstration assumption is explained in the [Fisher guide](FISHER.md).
-That JSON records the FITS preprocessing. The later physical NPZ metadata
-records the measured-edge PCHIP reconstruction and its sampling. The source
-ends at z=3.0 while background tables extend to z=3.1; the extra background
-interval contains no sources. The demonstration uses 9601 source nodes,
-125 background nodes, 401 kernel nodes and 129 line-of-sight nodes.
-These separate grids and the reconstruction assumptions are compared in
-the [source study](tests/studies/source_policy_validation.md).
+This clips the negative density samples in the public FITS table,
+renormalizes each bin, and records the clipping in a separate JSON file.
+It preserves the downloaded FITS file. The [Fisher guide](FISHER.md)
+explains this demonstration-source assumption, and the
+[accuracy guide](ACCURACY.md#source-curves) defines the reconstruction
+and the sampling grids built from the processed file.
 
 **Step :four:**: check the configuration before preparing physical tables.
 
@@ -190,8 +185,9 @@ python projects/des_3pcf/scripts/run_3pcf.py evaluate \
   projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml
 ```
 
-This calculates every declared observable row. Existing
-output files are refused unless `--overwrite` is supplied explicitly.
+This calculates every observable row that the configuration defines. The
+driver refuses to replace an existing output file unless the command adds
+`--overwrite`.
 
 > [!TIP]
 > For configuration choices and derivative checks, see the
@@ -200,32 +196,26 @@ output files are refused unless `--overwrite` is supplied explicitly.
 
 ## Notebook examples <a name="notebooks"></a>
 
-[EXAMPLE_IA_COMPONENTS.ipynb](EXAMPLE_IA_COMPONENTS.ipynb) separates the
-projected IA operators and ordered GGI/GII/III placements through the finite
-aperture estimator. It checks their sum against the ordinary total and explains
-the physical grouping used in the paper's Figures 5–6. Its signed VS curves
-retain an explicitly documented manuscript/code discrepancy.
-
-
 The notebooks explain the quantities before calling project wrappers and
 the shared plotting functions. Model calculations use at most four OpenMP
 workers and serial BLAS. Loading saved results never silently starts a new
-survey calculation. Numerical and estimator checks are stated beside each
-physical comparison.
+survey calculation. Each physical comparison states its numerical and
+estimator checks beside it.
 
 | Notebook | What the examples examine |
 |---|---|
 | [EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb) | Comparisons with pinned original transforms and aperture kernels, with source discretization differences and stored physical references labeled separately |
+| [EXAMPLE_IA_COMPONENTS.ipynb](EXAMPLE_IA_COMPONENTS.ipynb) | Projected IA operators and ordered GGI/GII/III placements through the finite aperture estimator, their sum against the ordinary total, and the recorded manuscript/code discrepancy in the signed VS curves |
 | [EXAMPLE_COMPRESSION.ipynb](EXAMPLE_COMPRESSION.ipynb) | Optional xi-only, conditional and joint compression; local Fisher checks and finite-simulation assumptions |
-| [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Declared Y3 NLA/TATT means, parameter responses, saved joint Fisher comparisons and the checks needed before interpreting gains |
-| [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Completed default h/h2 Fisher bases, selected-column screening, and full refined-grid checks where available; remaining cases are listed as pending |
-| [EXAMPLE_JOINT_FEEDBACK.ipynb](EXAMPLE_JOINT_FEEDBACK.ipynb) | Shared amplitude for separately supplied power and bispectrum responses |
+| [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Y3 NLA and TATT means, parameter responses, saved joint Fisher comparisons and the checks needed before interpreting gains |
+| [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Completed default h/h2 Fisher bases, screening of individually refined derivative columns, and full refined-grid checks where available; the notebook lists remaining cases as pending |
+| [EXAMPLE_JOINT_FEEDBACK.ipynb](EXAMPLE_JOINT_FEEDBACK.ipynb) | Shared amplitude for power and bispectrum responses read from separate files |
 | [EXAMPLE_FEEDBACK_SCENARIOS.ipynb](EXAMPLE_FEEDBACK_SCENARIOS.ipynb) | Seven physical Cocoa feedback scenarios in power and shear, plus paired BACCO cold-matter responses |
 | [EXAMPLE_FISHER_BACCO.ipynb](EXAMPLE_FISHER_BACCO.ipynb) | Joint BACCO responses with explicit neutrino conversion, continuation and sampling comparisons; conditional feedback/IA Fisher forecast |
 | [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | Covariance correction using independent controlled Gaussian simulations, finite-sample product corrections and held-out validation |
 
 We assume the compiled project and the thread environment above. Start in
-`Cocoa/` and use the selected Cocoa Python kernel.
+`Cocoa/` and use the Cocoa Python kernel.
 
 **Step :one:**: open the project notebooks.
 
@@ -239,12 +229,11 @@ the published claims from the proposed Fisher experiments. The
 [shared plotting guide](../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/3pcf/README.md)
 teaches the triangle maps, aperture panels, signed components and covariance
 figures. Its functions take arrays and do not choose a physical model.
-The [Nautilus guide](INFERENCE.md) supplies separate NLA and TATT synthetic
-examples and an observed-data demonstration. A successful state-restoration
-check does not establish numerical convergence or validate a posterior.
+The [Nautilus guide](INFERENCE.md) gives separate NLA and TATT synthetic
+examples and an observed-data demonstration.
 The [estimator and covariance record](tests/studies/estimator_conventions.md)
-traces the published triangle bins, representative-side rules and the
-remaining provenance question for the joint covariance's Map3 sign.
+traces the published triangle bins, the representative-side rules and the
+open provenance question for the joint covariance's Map3 sign.
 
 ## Covariances, Fisher calculations and tests <a name="tests"></a>
 
@@ -259,41 +248,44 @@ covariance calculations, strict/debug builds and thread comparisons. The
 These small checks exercise formulas, array layout and ownership without
 running a survey-size calculation or measuring speed.
 
-The core's [developer guide](../../external_modules/code/cosmolike_core/.claude/skills/cosmolike-dev/references/threepcf.md)
-contains the implementation map and the transferred design study. It is
-the entry point for continuing the port in another checkout.
+The C implementation lives in
+`external_modules/code/cosmolike_core/cosmolike/3pcf/`. Its
+[module guide](../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md)
+and
+[numerical guide](../../external_modules/code/cosmolike_core/cosmolike/3pcf/NUMERICS.md)
+are the entry points for continuing the port in another checkout.
 
 ## Survey inputs <a name="targets"></a>
 
 The intended survey applications are separate DES Y3 and DES Y6 Fisher
-forecasts, retaining the full selected two-point vector as the primary
-joint option. Reproduction targets are
+forecasts, keeping the full two-point vector as the primary joint option.
+Reproduction targets are
 [the joint two-/three-point analysis](https://arxiv.org/abs/2503.03964)
 and [the TATT/velocity-shear analysis](https://arxiv.org/abs/2601.09133).
-The Y3 repository contains source distributions, simulated and **observed
-unblinded aperture vectors**, and joint covariance products. The selected
-reference has
-200 $`\xi_+`$, 200 $`\xi_-`$ and 80 aperture rows; its labeled covariance
-has dimension 480. The downloader records which specific files it selects.
-The finite-SAS example reads those rows and preserves their ordering.
-It does not infer that its finite triangle settings or likelihood are the
-final publication settings merely from the filenames.
-The observed files have a separate [pinned manifest](data/y3_observed_manifest.json)
-and [download procedure](INFERENCE.md#observed). Synthetic data remain useful
-for testing a declared model without confusing estimator differences with
-an observed residual.
+The Y3 repository contains source distributions, simulated and observed
+unblinded aperture vectors, and joint covariance products. The reference
+files contain 200 $`\xi_+`$, 200 $`\xi_-`$ and 80 aperture rows; the
+matching covariance has dimension 480. The downloader records which
+specific files it selects. The finite-SAS example reads those rows and
+preserves their ordering. It does not infer that its finite triangle
+settings or likelihood are the final publication settings merely from the
+filenames. The observed files have a separate
+[pinned manifest](data/y3_observed_manifest.json) and
+[download procedure](INFERENCE.md#observed). Synthetic data remain useful
+for testing a model without confusing estimator differences with an
+observed residual.
 
-The inspected Y6 repository keeps its measurement files external. Its
-example therefore leaves the source path unset and makes the proposed
-forecast radii explicit. The analytic examples also leave catalogue area
-and per-bin number density/shape dispersion unset. Gaussian nuisance
-priors are empty. These are missing survey inputs, rather than numerical
-values to infer from another release.
+The Y6 repository keeps its measurement files external. Its example
+therefore leaves the source path unset and makes the proposed forecast
+radii explicit. The analytic examples also leave catalogue area and
+per-bin number density/shape dispersion unset. Gaussian nuisance priors
+are empty. These are missing survey inputs, rather than numerical values
+to infer from another release.
 
 | Configuration | Observable and covariance choice |
 |---|---|
-| `configs/y3_full_filter_example.json` | Unrestricted aperture filters, all declared xi bins and the analytic covariance model |
-| `configs/y3_finite_sas_example.json` | Pinned Y3 measured-row definitions, finite-triangle aperture calculation and labeled external joint covariance |
+| `configs/y3_full_filter_example.json` | Unrestricted aperture filters, every xi bin and the analytic covariance model |
+| `configs/y3_finite_sas_example.json` | Pinned Y3 measured-row definitions, finite-triangle aperture calculation and the external joint covariance with its row labels |
 | `configs/y6_full_filter_example.json` | Y6 forecast geometry with explicitly missing external source/catalogue inputs |
 
 ## Acknowledgements <a name="acknowledgements"></a>
@@ -345,4 +337,4 @@ We also thank **Tim Eifler, Elisabeth Krause and the CosmoLike contributors**
 for the numerical framework, and the Cocoa contributors for the project,
 interface and notebook conventions. The core's `cosmolike/3pcf/CREDITS.md`
 records inspected source revisions and the attribution and license details.
-The original notices are retained with the implementation.
+The implementation keeps the original notices.

@@ -20,8 +20,9 @@ The calculation here exposes the conventions recovered from Rafael Gomes's
 [archived Y3 code](https://github.com/rchgomes/3pcf_integrator/tree/d6098d326dcb03bc750adcc9627119f52d928944).
 [The source-by-source review](tests/studies/estimator_conventions.md)
 records the differences between that code, the paper's stated binning and
-what the measured files establish. Implementing a named theory convention
-makes a comparison possible; it does not resolve missing catalogue details.
+what the measured files establish. Implementing one theory convention
+explicitly makes a comparison possible; it does not resolve missing
+catalogue details.
 
 ## Side bins, cuts and representative lengths <a name="geometry"></a>
 
@@ -29,7 +30,7 @@ The original Y3 radial bank has 20 logarithmic bins from 0.5 to 80 arcmin.
 The FFT transform needs that complete regularly spaced bank. A low-side cut
 therefore zeros the corresponding aperture weights; it does not generate a
 replacement logarithmic grid beginning at the cut. `side_min_arcmin: 8`
-retains lower edges greater than or equal to 8 arcmin, namely original
+keeps lower edges greater than or equal to 8 arcmin, namely original
 indices 11 through 19. The same selection applies to both side axes and
 preserves the reflected-triangle contribution. A notebook can instead pass
 an explicit boolean `side_keep` array to `Map3Engine`.
@@ -41,21 +42,21 @@ $`t_{\rm rep}=t_{\rm lower}\exp(\Delta/2)`$ in the aperture kernel and
 radial measure. `area_weighted` uses the mean for the area measure
 $`t\,dt`$:
 
-$$
+```math
 \frac{t_{\rm rep}}{t_{\rm lower}}
 =\frac{2}{3}\frac{e^{3\Delta}-1}{e^{2\Delta}-1}
 +\mathrm{representative\_offset}.
-$$
+```
 
 The archived Y3 offset is -0.015226, labeled empirical in that code. It is
-a change to a dimensionless factor, not an angular displacement. It was
-used with the archived radial width and must not be transferred blindly
-to narrower bins. Representatives outside their bins are refused. The Y6
+a change to a dimensionless factor, not an angular displacement. That code
+used it with the archived radial width; do not transfer it blindly to
+narrower bins. The code refuses a representative outside its bin. The Y6
 code's analytic default uses zero offset; these are separate conventions.
 
-The example uses the active archived 100 angular centers
+The example uses the archived 100 angular centers
 $`\phi_j=(j+1/2)\pi/100`$. The methods paper describes 63 angular bins;
-that difference remains explicit. `angular_average: point` retains point
+that difference remains explicit. `angular_average: point` keeps point
 samples. The optional `x_modes` averages Fourier modes before the centroid
 rotation; it is not a catalogue-weighted average after that rotation.
 
@@ -66,41 +67,42 @@ one scalar window per Fourier leg,
 $`B^W=W(\ell_1)W(\ell_2)W(\ell_3)B`$. The required input is the
 HEALPix table's `TEMPERATURE` column, following `healpy.pixwin` with its
 scalar default. Its polarization column is a different choice. Applying a
-scalar window to this prediction reproduces a declared archived convention;
+scalar window to this prediction reproduces the archived convention;
 it does not establish that the catalogue estimator is exactly that field
 average.
 
 The [pinned manifest](data/pixel_window_manifest.json) identifies the official
 72-kB FITS by commit, byte count and SHA256. At nside=1024, the default
-retains integer multipoles 0 through 3071, although the FITS contains more
-rows. The reader uses linear interpolation and zero above 3071. The final
-retained window value is about 0.646, so this extension is discontinuous.
-Its tiny floating-point excess above one at ell=0 is preserved.
+keeps integer multipoles 0 through 3071, although the FITS contains more
+rows. The reader uses linear interpolation and zero above 3071. The window
+value at multipole 3071 is about 0.646, so this extension is
+discontinuous. The reader preserves the window's tiny floating-point
+excess above one at $`\ell=0`$.
 
 The native implementation stores independent copies in the physical model
 and each prepared projection grid. A grid remains usable after deleting its
 model. Multipole preparation includes $`W(\ell_3(\mu))`$ inside the
-angular integral. The factors for the first two legs are applied after
-interpolating the prepared multipoles, which prevents interpolation from
-creating nonzero support above their cutoff. Both full-filter callbacks
-apply all three factors once. No zero is inserted into a logarithmic
-bispectrum interpolation table.
+angular integral. The implementation applies the factors for the first two
+legs after interpolating the prepared multipoles, which prevents
+interpolation from creating nonzero support above their cutoff. Both
+full-filter callbacks apply all three factors once, and the preparation
+inserts no zero into a logarithmic bispectrum interpolation table.
 
-Raw matter, projected-bispectrum queries and ordinary xi predictions retain
+Raw matter, projected-bispectrum queries and ordinary xi predictions keep
 their unsmoothed definitions. The pixel option applies to the three-point
 angular observables only, matching this particular archived route. A user
-who needs smoothing in a two-point estimator must declare and validate that
+who needs smoothing in a two-point estimator must state and validate that
 separately. The current analytical covariance has no matching pixel factors
-and refuses a smoothed physical-model owner. A supplied measured covariance
+and refuses a smoothed physical-model owner. A measured covariance
 still needs estimator agreement; a successful matrix factorization cannot
-establish that agreement.
+establish it.
 
 ## Run the comparison configuration <a name="run"></a>
 
 [des_y3_archived_geometry.yaml](configs/des_y3_archived_geometry.yaml)
 combines the recovered radial bank, lower-edge selection, empirical side
 representatives, 100 angular centers and scalar pixel window. Its physical
-inputs and numerical settings remain the declared TATT demonstration. It
+inputs and numerical settings remain those of the TATT demonstration. It
 uses exact $`\log(160)/20`$ for the radial width rather than the rounded
 0.253758 in the archived configuration. It is a theory-convention comparison,
 not a published posterior reconstruction.
@@ -114,13 +116,13 @@ and prepared demonstration sources/tables.
 python projects/des_3pcf/scripts/fetch_pixel_window.py
 ```
 
-**Step :two:**: evaluate the explicitly declared comparison vector.
+**Step :two:**: evaluate the comparison vector.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py evaluate projects/des_3pcf/configs/des_y3_archived_geometry.yaml
 ```
 
-The runtime reader performs no download. The input SHA256, retained ell
+The runtime reader performs no download. The input SHA256, kept multipole
 range, interpolation and upper extension enter the saved provenance.
 Replacing the window requires a new model/provider; notebook callers can
 construct that owner without restarting the kernel.
@@ -129,7 +131,7 @@ construct that owner without restarting the kernel.
 
 The unit checks establish array ownership, the three-leg factors, exact
 first/second-leg cutoff support, the complex aperture contraction, and
-restoration after changing a retained plan's physical window. They compare
+restoration after changing a plan's physical window. They compare
 direct angular sums independently and exercise both C++ adapters. They do
 not certify the survey prediction's angular resolution. The third-leg
 cutoff introduces a jump inside its angular integral; refine `nshape`,
@@ -137,15 +139,14 @@ angular sampling and output multipole grids before interpreting small
 residuals. Compare each convention separately at fixed physical inputs.
 
 Exact catalogue agreement still requires the original triangle selection,
-within-bin means/weights, angular conversion and mask treatment. The chosen
-lower-edge cut is explicit but not proven to be the original measurement
-rule. Exact likelihood reproduction also needs the published scale cuts,
-source treatment, priors and fixed compression matrix. The independent
-mock-vector calibration, shared-sky correlations and covariance sign
-provenance remain open. These limitations are separate from the implemented
-[compression and finite-simulation choices](COMPRESSION.md).
+within-bin means and weights, angular conversion and mask treatment; the
+chosen lower-edge cut is explicit but not proven to be the original
+measurement rule. The [paper-target record](PAPER_TARGETS.md#gaps) lists
+the remaining reproduction gaps, including the covariance sign provenance,
+and the [compression guide](COMPRESSION.md) describes the separate
+compression and finite-simulation choices.
 
 **We thank Sunao Sugiyama and Rafael Gomes for the original theory and
 analysis implementations**, and the HEALPix/healpy authors for the pixel
-window tables. Sources and retained licenses are listed in the
-[core credits](../../external_modules/code/cosmolike_core/cosmolike/3pcf/CREDITS.md).
+window tables. Sources and licenses are listed in the core credits file,
+`external_modules/code/cosmolike_core/cosmolike/3pcf/CREDITS.md`.

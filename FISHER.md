@@ -1,6 +1,6 @@
 # Joint forecasts without compressing the two-point vector
 
-1. [Run a declared forecast](#run)
+1. [Run a forecast](#run)
 2. [Reading parameter-response shapes](#templates)
 3. [Which physical calculation changes?](#parameters)
 4. [What the saved derivatives mean](#derivatives)
@@ -8,27 +8,27 @@
 6. [Correcting an analytic precision with simulations](#precision)
 7. [Y3 and Y6 reproduction requirements](#reproduction)
 
-## Run a declared forecast <a name="run"></a>
+## Run a forecast <a name="run"></a>
 
 The worked entry point is [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb),
 with [the TATT demonstration YAML](configs/des_y3_tatt_demo_fisher.yaml) and
 [the NLA demonstration YAML](configs/des_y3_nla_demo_fisher.yaml). It reads
-declared physical predictions and saved Fisher derivatives. Preparation
+saved physical predictions and Fisher derivatives. Preparation
 and new model evaluations require explicit calls. The notebook calls
 [the project wrappers](interface/cosmolike_des_3pcf_fisher_wrappers.py),
 which run the same CLI; neither path has a different physical kernel.
 The [current numerical record](tests/studies/fisher_accuracy_validation.md)
-distinguishes complete default bases from selected-column tests and
+distinguishes complete default bases from screening-column tests and
 remaining full refinement checks.
 
-Both YAML designs retain all 400 public xi rows and 80 aperture rows. This
+Both YAML designs keep all 400 public xi rows and 80 aperture rows. This
 is an executable forecast design whose smallest xi scales and exact
 finite-triangle estimator agreement remain unvalidated. It is not the
 published 307-row scale selection or its compressed posterior analysis.
 The configuration notes and [paper targets](PAPER_TARGETS.md) state these
-limits before any result is interpreted. Velocity shear and bispectrum-only
-baryon feedback are fixed to zero because the chosen two-point model does
-not supply the corresponding complete joint response.
+limits before any result is interpreted. The configuration fixes velocity
+shear and bispectrum-only baryon feedback to zero because the two-point
+model supplies no matching complete joint response.
 
 We assume Cocoa is active, the current directory is `Cocoa/`, and the
 compiled library, thread environment and physical tables have been prepared
@@ -45,7 +45,7 @@ leave it empty. `fisher.bounds` can reject a displacement outside a
 physical domain before any prediction is evaluated. `fisher.fom_pairs`
 names the two-parameter marginalized figures of merit to report.
 
-**Step :two:**: check the selected inputs.
+**Step :two:**: check the inputs without computing a prediction.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py fisher \
@@ -59,7 +59,7 @@ python projects/des_3pcf/scripts/run_3pcf.py fisher \
   projects/des_3pcf/configs/des_y3_tatt_demo_fisher.yaml
 ```
 
-The numerical file retains the configuration, row labels, fiducial mean,
+The numerical file keeps the configuration, row labels, fiducial mean,
 two derivative estimates, two Fisher matrices and the fiducial covariance.
 It also records a rank failure when parameters remain unconstrained. It
 does not silently use a pseudoinverse to manufacture marginalized errors.
@@ -74,17 +74,18 @@ parameter interval. The illustrated intervals are one for the IA amplitudes
 and 0.1 for $`\sigma_8`$. They set the display scale and impose no prior.
 No curve is divided by its own maximum, so the relative response sizes
 remain visible. The
-[template wrappers](interface/cosmolike_des_3pcf_template_wrappers.py) select
+[template wrappers](interface/cosmolike_des_3pcf_template_wrappers.py) read
 the saved h/2 derivative columns without evaluating another mean.
 
-The construction follows the
-[FoG and counterterm note](../lssty1xdesi/notes/fog_parameter_degeneracy_study/fog_parameter_degeneracy_study.tex).
+The construction follows the FoG and counterterm note of the lssty1xdesi
+project,
+`projects/lssty1xdesi/notes/fog_parameter_degeneracy_study/fog_parameter_degeneracy_study.tex`.
 For responses $`a`$ and $`b`$, it fits $`a\simeq cb`$ with the full
 covariance. One coefficient uses every xi row; another uses every joint
 row, including the cross-covariance. Lower panels show what remains after
 subtracting the fitted response. Applying the xi coefficient to Map3
 tests whether the same parameter exchange imitates both observables.
-The figures select source auto-bins for legibility; the fits include all
+The figures show source auto-bins for legibility; the fits include all
 auto- and cross-bin rows. Other parameters are fixed in this comparison.
 
 The signed derivative overlap has magnitude one for proportional shapes.
@@ -94,8 +95,8 @@ metric, even though adding measurements can increase absolute information
 and reduce parameter errors. This pairwise statement differs from the
 forecast that marginalizes all nuisance parameters. The notebook displays
 both the reproduced fraction and absolute residual norms to distinguish
-these effects. It retains the forecast's stated numerical and physical
-limitations.
+these effects. The forecast's numerical and physical limitations above
+still apply.
 
 ## Which physical calculation changes? <a name="parameters"></a>
 
@@ -110,19 +111,19 @@ limitations.
 
 `cosmology_mode="fixed_tables"` accepts the stored cosmology and refuses a
 different one. A cosmological Fisher forecast uses `"camb"`. The physical
-provider retains the latest cosmology and source-weighted model with exact
+provider keeps the latest cosmology and source-weighted model with exact
 parameter comparisons. A derivative displacement is never rounded away
 because it is close to the reference value.
 
 A positive photo-z shift uses $`n_i(z-\Delta z_i)`$, moving the population
-to greater redshift. The curve is zero outside its supplied support, has
+to greater redshift. The curve is zero outside its measured support, has
 its observer endpoint set to zero, and is normalized after shifting.
 Refine the source grid if appreciable density reaches its first cell.
-Shear calibration is applied afterward: a $`(1,1,2)`$ aperture row receives
-$`(1+m_1)^2(1+m_2)`$. Calibration-only displacements reuse the physical
-mean and its geometry.
+The code applies shear calibration afterward: a $`(1,1,2)`$ aperture row
+receives $`(1+m_1)^2(1+m_2)`$. Calibration-only displacements reuse the
+physical mean and its geometry.
 
-The demonstration sources have a separate, declared construction. The
+The demonstration sources have their own recorded construction. The
 preparation script clips the original negative midpoint densities and
 normalizes each bin, while preserving the original FITS bytes. The
 physical provider then reconstructs a shape-preserving cubic (PCHIP)
@@ -134,13 +135,11 @@ tail. The reconstruction is normalized on its sampled grid; it preserves
 the chosen support, but does not preserve every original histogram-cell
 probability. Source reconstruction is a physical input assumption.
 
-The current demonstration samples that reconstruction on 9601 uniform
-redshift nodes, tabulates the projected source kernels at 401 nodes, and
-uses 129 line-of-sight integration nodes. These three resolutions control
-different approximations. Their separate and combined checks are recorded
-in the [source study](tests/studies/source_policy_validation.md).
-Increasing these counts tests the declared reconstruction; it does not
-recalibrate the source distribution or supply its missing uncertainty.
+The [accuracy guide](ACCURACY.md#source-curves) records the sampling
+counts the demonstration uses for that reconstruction and the measured
+checks behind them. Increasing those counts tests the reconstruction as
+stated; it does not recalibrate the source distribution or supply its
+missing uncertainty.
 
 The isolated two-point route computes NLA E power and zero B signal.
 It refuses nonlinear TATT, velocity-shear or a bispectrum-only baryon
@@ -151,8 +150,8 @@ pivot. It changes no ordinary-core source file. Full linear power at
 every redshift and cold-plus-baryon power for massive neutrinos are
 required inputs to that bridge.
 
-The selected three-point projection retains the all-E terms used in the
-paper comparison. The low-level IA engine's nineteen components do not
+The three-point projection keeps the all-E terms used in the paper
+comparison. The low-level IA engine's nineteen components do not
 make this a full E/B natural-component prediction. Two-point TATT includes
 its E/B spectra through CFASTPT. For a finite-triangle aperture estimator,
 test leakage between E and B with the actual support and weights before
@@ -222,16 +221,17 @@ F_{\alpha\beta}=J_{i\alpha}(C^{-1})_{ij}J_{j\beta}
 ```
 
 The implementation solves with a Cholesky factor of $`C`$ rather than
-forming its inverse. Every retained xi and aperture row participates,
+forming its inverse. Every kept xi and aperture row participates,
 including their cross-covariance. A Gaussian prior with width
-$`\sigma_p`$ adds $`1/\sigma_p^2`$ to its parameter diagonal. The new Y3
-YAML files explicitly use the calibration/photo-z widths in the methods
-paper's Table 3. Their zero calibration fiducial and TATT cosmology define a
-new forecast; those widths do not turn it into the original posterior run.
+$`\sigma_p`$ adds $`1/\sigma_p^2`$ to its parameter diagonal. The Y3
+YAML files use the calibration/photo-z widths in the methods
+paper's Table 3. Their zero calibration fiducial and TATT cosmology define
+a different forecast; those widths do not turn it into the original
+posterior run.
 
 The covariance is held fixed during differentiation. No parameter-dependent
 covariance information term is included. Inverting the full parameter
-matrix marginalizes over the other varied parameters. For a selected
+matrix marginalizes over the other varied parameters. For a chosen
 pair, the reported figure of merit is
 $`1/\sqrt{\det C_{\rm parameter,pair}}`$. This convention omits any
 additional confidence-contour area constant.
@@ -256,19 +256,18 @@ condition on discarded data. `fisher_conditional_three_point` contains no
 prior. `fisher_prior` is added once to `fisher_two_point` and once to
 `fisher_joint`. When both parameter matrices are resolved, the file saves
 their marginalized errors and `sigma_ratio_two_point_over_joint`.
-A large ratio is a local information result under the declared model,
+A large ratio is a local information result under the stated model,
 not evidence that its smallest scales or IA approximation are valid.
 
 The same block decomposition can compare two finite predictions before
-taking any derivative. `finite_sign_pair_separation` substitutes their
-difference for one column and returns the joint, xi and conditional Map3
-squared distances. It adds no parameter prior and fits no nuisance
-parameter. Independent Gaussian examples check both the decomposition
-and invariance when the mean and covariance undergo a consistent Map3
-sign transformation. The
-[estimator and covariance record](tests/studies/estimator_conventions.md)
-explains why changing only the covariance cross block would instead
-change the calculation and why the supplied matrix is retained unchanged.
+taking any derivative. The saved comparison substitutes the difference
+of the two means for one derivative column and returns the joint, xi and
+conditional Map3 squared distances. It adds no parameter prior and fits
+no nuisance parameter. Independent Gaussian examples check both the
+decomposition and invariance when the mean and covariance undergo a
+consistent Map3 sign transformation. The
+[paper-target record](PAPER_TARGETS.md#observed) records why the project
+keeps the observed covariance, including its cross block, unchanged.
 
 For a PME run the comparison uses the inverse of its positive precision
 as an effective Gaussian covariance. This preserves the same statistical
@@ -278,16 +277,23 @@ covariance for only the two-point comparison.
 
 ## Correcting an analytic precision with simulations <a name="precision"></a>
 
-The precision-matrix expansion uses an analytic model as the baseline and
-simulations to estimate its residual covariance. It does not require
-compressing the two-point rows. It does require the simulated vectors to
-represent exactly the same estimator and row order as the analytic model.
+The precision-matrix expansion, PME, uses an analytic model as the
+baseline and simulations to estimate its residual covariance. It does not
+require compressing the two-point rows. It does require the simulated
+vectors to represent exactly the same estimator and row order as the
+analytic model.
 See [Friedrich and Eifler](https://arxiv.org/abs/1703.07786) for the method.
 
-For the CLI, `fisher.precision` declares `mode="pme"`, `order=1` or `2`,
-the full joint `sample_covariance` file and its matrix `key`, and the
-integer `independent_count`. It must also explicitly declare
-`sample_assumption="independent_gaussian_vectors"`. Correlated rotations
+For the CLI, the `fisher.precision` block sets these keys:
+
+    mode: pme
+    order: 1 or 2
+    sample_covariance.path: full joint sample-covariance file
+    sample_covariance.key: matrix key inside that file
+    independent_count: number of independent simulated vectors
+    sample_assumption: independent_gaussian_vectors
+
+The caller must state `sample_assumption` explicitly. Correlated rotations
 of one simulation are not independent realizations merely because they
 produce several stored vectors.
 
@@ -302,8 +308,8 @@ control of the expansion truncation and the assumed simulation statistics.
 
 ## Y3 and Y6 reproduction requirements <a name="reproduction"></a>
 
-The supplied Y3 reference vector is a specific public simulated-data
-configuration, with provenance in the download manifest. Matching its
+The Y3 reference vector is a specific public simulated-data
+product, with provenance in the download manifest. Matching its
 rows and covariance is a file-consistency check. Reproducing the paper
 also needs the final triangle estimator, scale selection, nuisance priors,
 physical conventions and likelihood treatment. The full-filter analytic
@@ -313,7 +319,6 @@ The Y6 example needs the external source/catalogue inputs and final priors.
 It must not inherit Y3 source curves, area or noise by default. Absolute
 forecast errors and joint gains should be reported only after those
 choices and the numerical refinements are recorded for that release.
-
 
 The [joint IA convention study](tests/studies/joint_ia_conventions.md)
 derives the amplitude, pivot, sign and density-operator conversion between

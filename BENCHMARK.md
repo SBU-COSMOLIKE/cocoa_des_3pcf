@@ -14,48 +14,48 @@ points and physical tables. A separate point warms each process before the
 ten measurements begin. The study uses the production interfaces and does
 not execute a notebook. NLA and TATT are separate cases for each data vector.
 
-| Workload | Declared observable |
+| Workload | Observable |
 |---|---|
-| LSST Y1 3x2pt, NLA and TATT separately | All 1560 entries of the existing production vector, with the all-ones mask, 26 angular bins and the declared multipole limit 65000 |
+| LSST Y1 3x2pt, NLA and TATT separately | All 1560 entries of the existing production vector, with the all-ones mask, 26 angular bins and multipole limit 65000 |
 | DES Y3 three-point, NLA and TATT separately | All 80 aperture rows: twenty source triplets and four filter radii, using the finite-triangle geometry in `configs/des_y3_nla_scaling.yaml` and `configs/des_y3_tatt_scaling.yaml` |
 
 The LSST points come from its existing `nmodels_points` test sampler with
-seed 137. Its prior boxes, amplitude rejection and alternating held parameters
-are retained. The DES points follow the same seed-plus-point-index convention
+seed 137. The study keeps its prior boxes, amplitude rejection and
+alternating held parameters. The DES points follow the same seed-plus-point-index convention
 with explicit cosmological and nuisance-parameter intervals. DES uses
 $`\sigma_8`$ while the LSST sampler uses $`A_s`$; their point banks are separate.
 This compares each workload's scaling relative to its own one-thread result.
 The two data vectors do not implement the same observable. Within each data
 vector, NLA and TATT use the same cosmological points, source shifts and grids.
 Quadratic IA amplitudes are inactive in NLA and active in TATT. The three-point
-NLA calculation omits physical residual-grid preparation, but retains its
-declared multipole and natural-component transform loops.
+NLA calculation omits physical residual-grid preparation but keeps its
+multipole and natural-component transform loops.
 
-The supplied Y3 source distribution has twelve negative samples in its first
-bin. Their integrated magnitude is about 0.041% of that bin's signed
-normalization. The timing-only configuration explicitly clips negative
-samples to zero and normalizes the distributions. It records the original
-file identity, removed negative area and normalization. Its redshift grid
-extends to 3.1 to retain the declared positive source shifts. This input policy
-does not change the original FITS file or the forecast configurations and is
-not an accepted source-calibration prescription for a scientific result.
+The public Y3 source distribution has twelve negative samples in its first
+bin, with integrated magnitude about 0.041% of that bin's signed
+normalization. The timing-only configuration clips negative samples to
+zero, normalizes the distributions, and records the original file
+identity, the removed negative area and the normalization; its redshift
+grid extends to 3.1 so the positive source shifts stay inside it. The
+[Fisher guide](FISHER.md) explains the matching demonstration-source
+assumption. This input policy serves timing only and changes neither the
+original FITS file nor the forecast configurations.
 
 The three-point inputs use a CAMB solve cutoff of 5 and interpolation support
-through 1000, both in $`\mathrm{Mpc}^{-1}`$. The saved table still spans
-$`10^{-5}`$ to $`1000\,h\,\mathrm{Mpc}^{-1}`$. These are separate controls:
-the high-wavenumber table reads use CAMB's extrapolating power interpolator.
-Amplitude normalization reuses the computed matter transfers. The
-[accuracy guide](ACCURACY.md#camb-limits) explains the units and convergence
-question attached to the extrapolated tail.
+through 1000, both in $`\mathrm{Mpc}^{-1}`$; the saved table spans
+$`10^{-5}`$ to $`1000\,h\,\mathrm{Mpc}^{-1}`$. The
+[accuracy guide](ACCURACY.md#camb-limits) explains these two separate
+limits, their units and the convergence question attached to the
+extrapolated tail.
 
 ## Run on a quiet machine <a name="run"></a>
 
 We assume Cocoa is activated with `source start_cocoa.sh`, the current
 directory is `Cocoa/`, and both project extensions are built. The driver
 sets all BLAS vendors to one thread before numerical imports. Its children
-set OpenMP to the requested count with a thread limit of eight. This study
-has explicit authorization to use eight threads; routine development tests
-retain their four-thread cap.
+set OpenMP to the requested count with a thread limit of eight. The study
+design measures one, four and eight workers; the project's tests and
+notebooks keep their four-worker cap.
 
 **Step :one:**: inspect the input files and parameter banks without a calculation.
 
@@ -77,8 +77,9 @@ python projects/des_3pcf/scripts/benchmark_scaling.py run
 The command starts with LSST Y1 NLA, then LSST Y1 TATT, three-point NLA and
 three-point TATT. It prepares eleven physical table archives per case with
 one worker, then runs that case's three CLI children one at a time.
-TATT reuses its NLA case's CAMB arrays only after exact physical-input checks;
-source/configuration identities and the reused file hash are retained.
+TATT reuses its NLA case's CAMB arrays only after exact physical-input checks,
+and the run records the source/configuration identities and the reused file
+hash.
 The default block order is four, one, then eight threads, with a fresh
 process for every block. Each block evaluates its separate warmup and then
 the ten saved random points.
@@ -103,19 +104,20 @@ scientific calculation and cannot fill in a missing measurement.
 
 The three-point interval constructs the point's physical C model and computes
 all twenty triplets through projection, natural-component transforms and
-aperture integration. Its fixed angular geometry and FFT plans are retained.
-The LSST interval installs the point's cosmology and nuisances and calls
-`compute_data_vector_masked`. Successive points change physical inputs through
-the ordinary setters. No internal nonce is edited and no run-mode toggle is
-used to manufacture a cache miss.
+aperture integration. It keeps the fixed angular geometry and FFT plans.
+The LSST interval installs the point's cosmology and nuisances and
+evaluates the masked production data vector through the existing entry
+point. Successive points change physical inputs through the ordinary
+setters. The driver edits no internal nonce and uses no run-mode toggle
+to manufacture a cache miss.
 
 CAMB, table-file reads, extension imports, global initialization, the first
-geometry evaluation and output checks are outside those intervals. Physical
-table preparation times, including CAMB and source processing, are recorded
-separately. The figure therefore measures the
+geometry evaluation and output checks are outside those intervals. The run
+records physical table preparation times, including CAMB and source
+processing, separately. The figure therefore measures the
 data-vector calculation, not the full wall time of a sampler or Fisher run.
-In particular, the LSST covariance is loaded only to initialize its existing
-production entry point; no covariance calculation is part of the benchmark.
+The driver loads the LSST covariance only to initialize the existing
+production entry point; the benchmark performs no covariance calculation.
 
 Each child reads its OpenMP runtime's maximum thread count and verifies that
 every loaded BLAS pool has one thread. The run saves copies and hashes of the
@@ -125,7 +127,8 @@ developing the core: a Git branch name alone does not identify a compiled file.
 The same parameter point must return identical float64 bits at all three
 thread counts. Changed parameter points must also change the vector. Any
 failure stops the summary and preserves the individual results and child
-logs for inspection. A timing is not accepted merely because it completed.
+logs for inspection. The summary does not accept a timing merely because
+it completed.
 
 ## Read the figures and records <a name="results"></a>
 
@@ -142,22 +145,16 @@ parameter dependence and machine variation; it is not a confidence interval
 or ten repeated measurements at one cosmology. Point-by-point times remain
 available in the CSV and JSON files. Accuracy settings, observable rows and
 thread count must accompany any performance claim. These timings do not
-establish survey-level convergence of the chosen grids or a published forecast.
+establish survey-level convergence of these grids or a published forecast.
 
 ## Saved measurements <a name="measurements"></a>
 
-The [final optimization comparison](benchmarks/2026-11-18/README.md)
-contains the [mean timing and scaling plot](benchmarks/2026-11-18/threepcf_optimization.pdf)
-and the [covariance plot](benchmarks/2026-11-18/covariance_optimization.pdf).
-Optimized eight-worker medians are 1.467 seconds for NLA and 1.956 seconds
-for TATT. These retain the original benchmark resolution; subsequent TATT
-interpolation and source-resolution corrections have not been timed on a
-quiet machine. They are not timings of the accuracy-tested Fisher settings.
-
-The [Apple M2 Pro record](benchmarks/2026-11-17/README.md) contains the completed
-NLA and TATT comparison, individual measurements, binary identities and saved
-vectors. Eight-thread median times are 2.285 seconds for the 80-entry NLA
-vector and 3.966 seconds for TATT, each about five times faster than its
-one-thread result. All thread-count comparisons preserve float64 bits.
-LSST Y1 is retained as the control calculation. CAMB is excluded from these
-durations; the linked record defines the other included and excluded work.
+Dated records under `benchmarks/` keep the measured times, figures,
+binary identities and saved vectors; this guide does not repeat their
+numbers. The [repeated-work comparison](benchmarks/2026-11-18/README.md)
+measures the implementation this project builds, for both the mean
+prediction and the covariance workload. The
+[Apple M2 Pro record](benchmarks/2026-11-17/README.md) measures the
+original implementation on the same ten points and machine, with LSST Y1
+as the control calculation. Each record names its resolution and the work
+inside its intervals; neither times the accuracy-tested Fisher settings.
