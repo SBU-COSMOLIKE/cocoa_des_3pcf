@@ -14,8 +14,11 @@ import pytest
 
 
 PROJECT = Path(__file__).resolve().parents[1]  # Owns interface/ and tests/.
+CORE = PROJECT.parents[1] / "external_modules" / "code" / "cosmolike_core"
 sys.path.insert(0, str(PROJECT / "interface"))
 sys.path.insert(0, str(PROJECT / "python"))
+# Fisher diagnostics are shared source, not a separately installed package.
+sys.path.insert(0, str(CORE))
 
 
 @pytest.fixture(scope="session")

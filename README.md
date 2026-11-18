@@ -8,7 +8,9 @@
 6. [Survey inputs](#targets)
 7. [Accuracy controls](ACCURACY.md)
 8. [OpenMP timing at random parameter points](BENCHMARK.md)
-9. [Acknowledgements](#acknowledgements)
+9. [Joint Nautilus examples](INFERENCE.md)
+10. [Publication reproduction plan](PAPER_REPRODUCTION_PLAN.md)
+11. [Acknowledgements](#acknowledgements)
 
 ## Purpose and current scope <a name="scope"></a>
 
@@ -45,6 +47,13 @@ also requires the same estimator, cuts, priors and likelihood assumptions.
 The supplied examples are explicit starting configurations for refinement;
 they are not accepted Y3 or Y6 likelihood settings.
 
+The first TATT demonstration Fisher result failed interpolation checks and
+must not be used as a scientific result. The
+[numerical investigation](tests/studies/interpolation_validation.md)
+records the failure, the corrected table comparisons and the remaining
+source and derivative checks. The published timing record uses its
+original declared coarse settings.
+
 ## Build the compiled library <a name="build"></a>
 
 We assume an existing Cocoa installation, its usual environment, and a
@@ -79,8 +88,8 @@ interactive inspection. Both return arrays owned by Python.
 
 We assume the build above, Cocoa activated, and a shell in `Cocoa/`.
 The example uses the public Y3 source distributions. Numerical outputs
-go to the paths named in the JSON file. Every configuration path is
-relative to that JSON file, independently of the shell's directory.
+go to the paths named in the YAML file. Every configuration path is
+relative to that file, independently of the shell's directory.
 
 **Step :one:**: retrieve or verify the selected pinned Y3 inputs.
 
@@ -92,12 +101,12 @@ This reads twelve files named in `data/y3_reference_manifest.json`, checks
 their lengths and Git blob hashes, and stores them in `data/upstream_y3/`.
 It does not download the whole simulation archive or execute upstream code.
 
-**Step :two:**: select one worker for an initial calculation.
+**Step :two:**: select four OpenMP workers and serial BLAS.
 
 Linux:
 
 ```bash
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=4
 export OMP_THREAD_LIMIT=4
 export OMP_PROC_BIND=close
 export OMP_PLACES=cores
@@ -111,7 +120,7 @@ export BLIS_NUM_THREADS=1
 macOS:
 
 ```bash
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=4
 export OMP_THREAD_LIMIT=4
 export OMP_PROC_BIND=disabled
 export OMP_PLACES=cores
@@ -122,35 +131,48 @@ export VECLIB_MAXIMUM_THREADS=1
 export BLIS_NUM_THREADS=1
 ```
 
-Set the JSON `threads` field to the intended worker count as well. The
+Set the YAML `threads` field to the intended worker count as well. The
 driver applies that count after importing its compiled module.
 
-**Step :three:**: check the configuration before preparing physical tables.
+**Step :three:**: create the explicitly processed demonstration source file.
+
+```bash
+python projects/des_3pcf/scripts/prepare_demo_sources.py \
+  --input projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits \
+  --output projects/des_3pcf/runs/y3_demo_sources.fits \
+  --extension nz_source --nbin 4
+```
+
+This records clipping and renormalization of negative density samples in a
+separate JSON file. It preserves the downloaded FITS file. This declared
+demonstration assumption is explained in the [Fisher guide](FISHER.md).
+
+**Step :four:**: check the configuration before preparing physical tables.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py prepare \
-  projects/des_3pcf/configs/y3_full_filter_example.json --validate-config
+  projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml --validate-config
 ```
 
 `--validate-config`: report missing inputs without importing a compiled
 extension, running CAMB or evaluating a physical integral. The check
 does not establish numerical convergence.
 
-**Step :four:**: prepare the physical tables.
+**Step :five:**: prepare the physical tables.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py prepare \
-  projects/des_3pcf/configs/y3_full_filter_example.json
+  projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml
 ```
 
 This calibrates the linear amplitude to the requested $`\sigma_8`$ and stores
 power, growth and distance arrays.
 
-**Step :five:**: evaluate the mean using the prepared tables.
+**Step :six:**: evaluate the mean using the prepared tables.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py evaluate \
-  projects/des_3pcf/configs/y3_full_filter_example.json
+  projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml
 ```
 
 This calculates every declared observable row. Existing
@@ -164,14 +186,17 @@ output files are refused unless `--overwrite` is supplied explicitly.
 ## Notebook examples <a name="notebooks"></a>
 
 The notebooks explain the quantities before calling project wrappers and
-the shared plotting functions. Their bounded examples use one OpenMP worker
-and serial BLAS. Full survey calculations are explicit opt-in cells and
-require the numerical and estimator checks described beside them.
+the shared plotting functions. Model calculations use at most four OpenMP
+workers and serial BLAS. Loading saved results never silently starts a new
+survey calculation. Numerical and estimator checks are stated beside each
+physical comparison.
 
-| Notebook | What its executed examples establish |
+| Notebook | What the examples examine |
 |---|---|
 | [EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb) | Comparisons with pinned original transforms and aperture kernels, with source discretization differences and stored physical references labeled separately |
-| [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Public Y3 input/row inspection and a controlled IA response; the full survey Fisher calculation is configured separately |
+| [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | Declared Y3 NLA/TATT means, parameter responses, saved joint Fisher comparisons and the checks needed before interpreting gains |
+| [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | One default Fisher base, selected-column noise screening, and separate full derivative confirmations |
+| [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | Covariance correction using independent controlled Gaussian simulations, finite-sample product corrections and held-out validation |
 
 We assume the compiled project and the thread environment above. Start in
 `Cocoa/` and use the selected Cocoa Python kernel.
@@ -188,6 +213,9 @@ the published claims from the proposed Fisher experiments. The
 [shared plotting guide](../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/3pcf/README.md)
 teaches the triangle maps, aperture panels, signed components and covariance
 figures. Its functions take arrays and do not choose a physical model.
+The [Nautilus guide](INFERENCE.md) supplies separate NLA and TATT synthetic
+examples and an observed-data demonstration. A successful state-restoration
+check does not establish numerical convergence or validate a posterior.
 
 ## Covariances, Fisher calculations and tests <a name="tests"></a>
 
@@ -213,13 +241,18 @@ forecasts, retaining the full selected two-point vector as the primary
 joint option. Reproduction targets are
 [the joint two-/three-point analysis](https://arxiv.org/abs/2503.03964)
 and [the TATT/velocity-shear analysis](https://arxiv.org/abs/2601.09133).
-The Y3 repository contains source distributions, simulated aperture
-vectors and joint covariance products. The selected reference has
+The Y3 repository contains source distributions, simulated and **observed
+unblinded aperture vectors**, and joint covariance products. The selected
+reference has
 200 $`\xi_+`$, 200 $`\xi_-`$ and 80 aperture rows; its labeled covariance
 has dimension 480. The downloader records which specific files it selects.
 The finite-SAS example reads those rows and preserves their ordering.
 It does not infer that its finite triangle settings or likelihood are the
 final publication settings merely from the filenames.
+The observed files have a separate [pinned manifest](data/y3_observed_manifest.json)
+and [download procedure](INFERENCE.md#observed). Synthetic data remain useful
+for testing a declared model without confusing estimator differences with
+an observed residual.
 
 The inspected Y6 repository keeps its measurement files external. Its
 example therefore leaves the source path unset and makes the proposed

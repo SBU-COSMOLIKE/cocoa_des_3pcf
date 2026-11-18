@@ -20,6 +20,8 @@ BLAS uses one thread. The original experiment is described in
 | TATT | Original | 19.741 | 6.415 | 3.966 |
 | TATT | Shared work | 12.123 | 3.259 | 1.956 |
 
+![Saved mean-prediction timings and speedup](threepcf_optimization.png)
+
 The retained implementation prepares fixed interpolation coordinates once,
 shares triangle and intrinsic-alignment geometry, and refills cosmology- and
 IA-dependent values at each changed point. Signed angular modes are assigned
@@ -34,12 +36,20 @@ are not an accuracy determination for the published DES analysis. In
 particular, a 1.956-second median does not include CAMB or a complete joint
 likelihood evaluation.
 
+Direct projected-bispectrum checks also found large high-multipole errors
+in the coarse TATT interpolation used by this record. Bitwise agreement
+establishes that the work-sharing changes preserved that calculation; it
+does not make the original interpolation accurate. These timings cannot
+be quoted as the cost of a converged TATT forecast.
+
 ## Covariance workload <a name="covariance"></a>
 
 | Implementation | One worker | Four workers | Eight workers |
 |---|---:|---:|---:|
 | Original | 2.907 | 0.997 | 0.636 |
 | Shared work | 1.913 | 0.581 | 0.472 |
+
+![Saved covariance timings and speedup](covariance_optimization.png)
 
 This separate calculation uses eighty full-aperture entries, gravity-only
 physics, and the large-area limit for short modes. Its illustrative area is
@@ -69,8 +79,10 @@ Each dot is a different physical point. Ranges show the observed minimum
 and maximum, including parameter dependence and machine variation; they
 are not uncertainty estimates from repeated measurements of one model.
 
-To regenerate the separate mean and covariance PNG/PDF figures, run this
-single command from this directory in the Cocoa environment:
+We assume Cocoa is active and the current directory is this benchmark
+folder. The plotting operation uses only the saved numbers.
+
+**Step :one:**: regenerate the separate mean and covariance PNG/PDF figures.
 
 ```bash
 python plot_optimization.py

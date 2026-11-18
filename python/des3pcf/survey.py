@@ -276,7 +276,7 @@ def read_joint_covariance(path, rows):
     return matrix
 
 
-def read_source_distributions(path, nbin, extension="nz_source"):
+def read_source_distributions(path, nbin, extension="nz_source", with_edges=False):
     """Read source n(z) midpoint values from a two-point FITS file.
 
     This function preserves the supplied midpoint-curve convention.
@@ -287,8 +287,11 @@ def read_source_distributions(path, nbin, extension="nz_source"):
       path = FITS file containing the named source extension.
       nbin = number of BIN columns to read.
       extension = FITS table with Z_MID and BIN1,...,BINnbin.
+      with_edges = also return the supplied Z_LOW/Z_HIGH, without inferring
+          edges or interpreting cell heights as integrated probabilities.
     Returns:
       z[nz] and sources[nbin,nz], with no hidden renormalization.
+      If with_edges is True, append native_low[nz] and native_high[nz].
     Raises:
       ValueError for missing columns, nonfinite/negative densities or bad z order.
     """
@@ -297,17 +300,24 @@ def read_source_distributions(path, nbin, extension="nz_source"):
         names = ["Z_MID"]
         for index in range(nbin):
             names.append(f"BIN{index + 1}")
+        if with_edges:
+            names.extend(("Z_LOW", "Z_HIGH"))
         _columns(table=table, names=names, extension=extension)
         z = np.array(table["Z_MID"], dtype=np.float64, copy=True)
         sources = np.empty((nbin, z.size), dtype=np.float64)
         for index in range(nbin):
             sources[index] = table[f"BIN{index + 1}"]
+        if with_edges:
+            low = np.array(table["Z_LOW"], dtype=np.float64, copy=True)
+            high = np.array(table["Z_HIGH"], dtype=np.float64, copy=True)
     if (z.size < 2 or np.any(np.diff(z) <= 0.0) or np.any(z < 0.0)
             or not np.all(np.isfinite(z)) or not np.all(np.isfinite(sources))
             or np.any(sources < 0.0)):
         raise ValueError(
             "Source curves require increasing finite z and nonnegative n(z)."
         )
+    if with_edges:
+        return z, sources, low, high
     return z, sources
 
 

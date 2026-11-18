@@ -194,6 +194,8 @@ class CoreTwoPoint(PreparedGeometry):
         Arguments:
           parameters = cosmological h and omega_b, matching the supplied tables.
           tables = physics schema plus p_linear[nz,nk] and optional p_linear_cb.
+              Optional source_z[nsource] is independent of the power z[nz].
+              Its uniform density samples already contain any photo-z shift.
           metadata = physical preparation record, including omega_nu_h2.
           ia = fastnc IA parameters, translated by core_ia_parameters.
           ell = requested 1D multipoles.
@@ -223,7 +225,16 @@ class CoreTwoPoint(PreparedGeometry):
                 "Massive-neutrino core preparation requires linear P_cb[z,k]."
             )
         first, second, density = core_ia_parameters(ia=ia, nbin=self.nbin)
-        source_table = np.column_stack((checked["z"], checked["sources"].T))
+        source_z = checked.get("source_z", checked["z"])
+        # The ordinary midpoint reader reconstructs uniform coordinates
+        # from the endpoint spacing. Refuse an irregular independent axis
+        # instead of silently passing coordinates that reader would move.
+        uniform = np.linspace(start=source_z[0], stop=source_z[-1],
+                              num=source_z.size)
+        tolerance = 32.0 * np.finfo(float).eps * source_z[-1]
+        if not np.allclose(source_z, uniform, rtol=0.0, atol=tolerance):
+            raise ValueError("The two-point bridge requires a uniform source_z grid.")
+        source_table = np.column_stack((source_z, checked["sources"].T))
         lens_table = source_table[:, :2].copy()
         self.restore_core()
         core = self.core

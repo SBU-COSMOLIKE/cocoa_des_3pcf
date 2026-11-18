@@ -10,11 +10,10 @@
 ## Run a declared forecast <a name="run"></a>
 
 The worked entry point is [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb),
-with [the TATT YAML](configs/des_y3_tatt_fisher.yaml) and
-[the NLA comparison YAML](configs/des_y3_nla_fisher.yaml). Its saved outputs
-cover input verification, the public joint covariance and a small controlled
-IA response. Survey CAMB preparation, the full mean and the production
-Fisher stencil remain explicitly disabled. The notebook calls
+with [the TATT demonstration YAML](configs/des_y3_tatt_demo_fisher.yaml) and
+[the NLA demonstration YAML](configs/des_y3_nla_demo_fisher.yaml). It reads
+declared physical predictions and saved Fisher derivatives. Preparation
+and new model evaluations require explicit calls. The notebook calls
 [the project wrappers](interface/cosmolike_des_3pcf_fisher_wrappers.py),
 which run the same CLI; neither path has a different physical kernel.
 
@@ -46,14 +45,14 @@ names the two-parameter marginalized figures of merit to report.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py fisher \
-  projects/des_3pcf/configs/y3_full_filter_example.json --validate-config
+  projects/des_3pcf/configs/des_y3_tatt_demo_fisher.yaml --validate-config
 ```
 
 **Step :three:**: run the derivatives and save the result.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py fisher \
-  projects/des_3pcf/configs/y3_full_filter_example.json
+  projects/des_3pcf/configs/des_y3_tatt_demo_fisher.yaml
 ```
 
 The numerical file retains the configuration, row labels, fiducial mean,

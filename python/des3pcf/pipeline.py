@@ -16,6 +16,7 @@ import numpy as np
 from copy import deepcopy
 
 from .inputs import validate_tables, shifted_sources, camb_tables, _camb_power_limits
+from .inputs import reconstructed_sources
 from .mean import physics_model, Map3Engine, XiEngine
 from .covariance import quadrature
 from .accuracy import accuracy_settings
@@ -70,6 +71,12 @@ class PhysicalProvider:
       source_readers = use upstream spline readers only for reference comparisons.
       table_boost = uniform read-table refinement; cubic preparation occurs once.
       fit_nz = coarse uniform redshift anchors for the matter-fit coefficients.
+      source_nz = optional fixed source sampling count, independent of CAMB z.
+          Changing it rebuilds source kernels without a new Boltzmann solve.
+          Sampling accuracy_boost and source_boost refine its intervals;
+          they never enable an independent grid or reconstruction implicitly.
+      source_interpolation, source_padding = explicit reconstruction choices;
+          None reads saved provenance. They define an immutable source model.
       accuracy = immutable global/stage controls; replace provider.accuracy to
           prepare a new resolution from the same baseline in this interpreter.
     Side effects:
@@ -82,6 +89,7 @@ class PhysicalProvider:
         cosmology_mode="fixed_tables", kernel_nz=101, halofit_version="takahashi",
         source_readers=False, table_boost=8, fit_nz=33,
         accuracy=None, kmax_boltzmann=5.0, extrap_kmax=None,
+        source_nz=None, source_interpolation=None, source_padding=None,
     ):
         """Store the physical baseline and validate the requested producer mode.
 
@@ -97,6 +105,48 @@ class PhysicalProvider:
         self.compiled = compiled
         self.base = immutable_copy(value=validate_tables(tables=reference_tables))
         self.base_metadata = immutable_copy(value=reference_metadata)
+        recorded_source = reference_metadata.get(
+            "source_reconstruction", "linear_midpoint",
+        )
+        if source_interpolation is None:
+            source_interpolation = recorded_source
+        if source_interpolation not in ("linear_midpoint", "pchip_midpoint"):
+            raise ValueError(
+                "Source reconstruction must be linear_midpoint or pchip_midpoint."
+            )
+        if ("source_reconstruction" in reference_metadata
+                and source_interpolation != recorded_source):
+            raise ValueError(
+                "Source reconstruction differs from the saved physical tables."
+            )
+        if source_padding is None:
+            source_padding = reference_metadata.get(
+                "source_padding", "zero_outside_native",
+            )
+        allowed_padding = ("zero_outside_native",)
+        if source_interpolation == "pchip_midpoint":
+            allowed_padding = ("zero_at_observer_and_background_edge",
+                               "zero_at_measured_edges")
+        if source_padding not in allowed_padding:
+            raise ValueError(
+                "Select the explicit padding policy for this reconstruction."
+            )
+        if ("source_padding" in reference_metadata
+                and source_padding != reference_metadata["source_padding"]):
+            raise ValueError("Source padding differs from the saved physical tables.")
+        self.source_interpolation = source_interpolation
+        self.source_padding = source_padding
+        if source_padding == "zero_at_measured_edges":
+            for name in ("source_native_low", "source_native_high"):
+                if name not in self.base:
+                    raise ValueError(
+                        "Measured-edge sources require saved native FITS edges."
+                    )
+        if source_nz is None and "source_z" in self.base:
+            source_nz = self.base["source_z"].size
+        if source_interpolation == "pchip_midpoint" and source_nz is None:
+            raise ValueError("PCHIP preparation requires an independent source_nz count.")
+        self.source_nz = source_nz
         self.accuracy = accuracy_settings(value=accuracy)
         self.mode = cosmology_mode
         if int(kernel_nz) != kernel_nz or kernel_nz < 4:
@@ -186,18 +236,21 @@ class PhysicalProvider:
         self.model_key = None
         self.model = None
         self.model_tables = None
+        self.model_metadata = None
         self._reference_locked = True
 
     def __setattr__(self, name, value):
         """Protect the physical baseline while keeping numerical controls changeable.
 
-        Replacing tables or source counts requires a new provider. That new
-        object can coexist with the old one in the same notebook kernel.
+        Replacing tables, source-bin counts or the source reconstruction
+        requires a new provider, which can coexist with the old one in this
+        kernel. Source sampling count source_nz is a mutable numerical control.
         """
         reference_names = (
             "base", "base_metadata", "reference", "reference_cosmology_key",
             "reference_halofit", "nbin", "compiled",
             "reference_producer_settings", "reference_producer_verified",
+            "source_interpolation", "source_padding",
         )
         if getattr(self, "_reference_locked", False) and name in reference_names:
             raise AttributeError(
@@ -248,11 +301,23 @@ class PhysicalProvider:
                 raise ValueError(f"{name}={value!r} must be an integer >= {minimum}.")
         if not isinstance(self.source_readers, (bool, np.bool_)):
             raise ValueError("source_readers must be an explicit Boolean choice.")
+        if self.source_nz is not None:
+            value = self.source_nz
+            if (isinstance(value, (bool, np.bool_)) or not np.isscalar(value)
+                    or not np.isfinite(value) or int(value) != value
+                    or value < 4 or value > np.iinfo(np.int32).max):
+                raise ValueError("source_nz must be an integer from four to INT_MAX.")
+        elif "source_z" in self.base or self.source_interpolation == "pchip_midpoint":
+            raise ValueError("An independent source model requires a source_nz count.")
+        controls = accuracy_settings(value=self.accuracy)
+        if self.source_nz is None and controls.source_boost != 1.0:
+            raise ValueError("source_boost requires an explicit independent source_nz.")
         self._producer_settings(parameters=self.reference)
         return (
             self.kernel_nz, self.source_readers, self.table_boost, self.fit_nz,
             accuracy_settings(value=self.accuracy),
             self.kmax_boltzmann, self.extrap_kmax,
+            self.source_nz, self.source_interpolation, self.source_padding,
         )
 
     def get(self, parameters):
@@ -298,6 +363,7 @@ class PhysicalProvider:
                     halofit_version=self.halofit_version,
                     kmax_boltzmann=self.kmax_boltzmann,
                     extrap_kmax=self.extrap_kmax,
+                    source_z=self.base.get("source_z"),
                 )
             self.cosmology_tables = immutable_copy(value=tables)
             self.cosmology_metadata = immutable_copy(value=metadata)
@@ -314,9 +380,32 @@ class PhysicalProvider:
         )
         if combined != self.model_key:
             tables = dict(self.cosmology_tables)
-            tables["sources"] = shifted_sources(
-                z=self.base["z"], sources=self.base["sources"], shifts=shifts,
-            )
+            metadata = dict(self.cosmology_metadata)
+            if self.source_nz is None:
+                # This path preserves the historical finite-grid operation
+                # exactly. Merely storing native samples does not select a
+                # different source reconstruction or sampling resolution.
+                tables["sources"] = shifted_sources(
+                    z=self.base["z"], sources=self.base["sources"], shifts=shifts,
+                )
+            else:
+                count = self.accuracy.count(
+                    baseline=self.source_nz, stage="source_boost", endpoints=True,
+                )
+                nodes = np.linspace(start=0.0, stop=self.base["z"][-1],
+                                    num=count)
+                native_z = self.base.get("source_native_z",
+                                        self.base.get("source_z", self.base["z"]))
+                native = self.base.get("source_native", self.base["sources"])
+                tables["sources"], source_record = reconstructed_sources(
+                    native_z=native_z, native_sources=native, source_z=nodes,
+                    shifts=shifts, reconstruction=self.source_interpolation,
+                    padding=self.source_padding,
+                    native_low=self.base.get("source_native_low"),
+                    native_high=self.base.get("source_native_high"),
+                )
+                tables["source_z"] = nodes
+                metadata.update(source_record)
             self.model = physics_model(
                 compiled=self.compiled, tables=tables, kernel_nz=self.kernel_nz,
                 source_readers=self.source_readers, table_boost=self.table_boost,
@@ -324,8 +413,9 @@ class PhysicalProvider:
                 accuracy=self.accuracy,
             )
             self.model_tables = immutable_copy(value=tables)
+            self.model_metadata = immutable_copy(value=metadata)
             self.model_key = combined
-        return self.model, self.model_tables, self.cosmology_metadata
+        return self.model, self.model_tables, self.model_metadata
 
 
 class JointPrediction(PreparedGeometry):

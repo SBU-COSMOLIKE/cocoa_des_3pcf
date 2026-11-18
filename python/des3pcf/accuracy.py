@@ -28,6 +28,8 @@ class Accuracy:
       Remaining *_boost values = additional multipliers for just that stage.
           chi_boost refines the supplied LOS intervals; kernel_boost changes
           source-window sampling; fit_z_boost changes matter-fit anchors.
+          source_boost refines an explicitly independent source_nz grid,
+          leaving the selected reconstruction and CAMB redshifts unchanged.
           power_table_boost changes the C model's dense reader ratio.
           triangle/multipole/fft/profile boosts change their named tables.
           angular_boost changes the bispectrum angular integration nodes.
@@ -42,6 +44,7 @@ class Accuracy:
     integration_accuracy_boost: float = 1.0
     chi_boost: float = 1.0
     kernel_boost: float = 1.0
+    source_boost: float = 1.0
     power_table_boost: float = 1.0
     fit_z_boost: float = 1.0
     triangle_boost: float = 1.0

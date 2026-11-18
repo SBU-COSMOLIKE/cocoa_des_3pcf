@@ -130,6 +130,26 @@ def test_public_examples_dry_check_without_physics():
                                                   "path": None}]
 
 
+@pytest.mark.parametrize("padding", (None, "zero_at_observer_and_background_edge",
+                                    "zero_at_measured_edges"))
+def test_pchip_requires_declared_source_count_and_padding(toy_configuration, padding):
+    """Selecting a reconstruction cannot silently invent endpoint probabilities."""
+    path, config, _ = toy_configuration
+    config["physics"]["source_interpolation"] = "pchip_midpoint"
+    if padding is not None:
+        config["physics"]["source_nz"] = 65
+        config["physics"]["source_padding"] = padding
+        config["accuracy"] = {"source_boost": 2.0}
+    path.write_text(json.dumps(config), encoding="utf-8")
+    result = run_driver(command="fisher", config=path, validate=True)
+    if padding is not None:
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout)["schema_valid"] is True
+    else:
+        assert result.returncode != 0
+        assert "PCHIP needs" in result.stderr
+
+
 def test_evaluate_and_fixed_covariance_fisher(toy_configuration):
     """Keep all rows and check calibration derivatives against their algebra."""
     path, config, rows = toy_configuration

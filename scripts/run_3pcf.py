@@ -39,7 +39,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT / "python"))
 
 from des3pcf.inputs import camb_tables, load_tables, save_tables
-from des3pcf.inputs import shifted_sources
+from des3pcf.inputs import shifted_sources, reconstructed_sources
 from des3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows, read_survey
 from des3pcf.survey import read_joint_covariance, read_source_distributions
 from des3pcf.pipeline import PhysicalProvider, JointPrediction
@@ -52,6 +52,8 @@ from des3pcf.forecast import parameter_covariance, figure_of_merit
 from des3pcf.forecast import symmetric_matrix
 from des3pcf.fisher_comparison import compare_information, marginalized_errors
 from des3pcf.precision import precision_expansion
+from des3pcf.provenance import prediction_identity
+from des3pcf.provenance import verify_prediction_identity
 
 
 FORMAT = "cosmolike-3pcf-run-v1"
@@ -199,6 +201,7 @@ def load_configuration(path, command):
         allowed={"tables", "cosmology_mode", "kernel_nz", "k", "z",
                  "los_z", "halofit_version", "source_interpolation",
                  "source_readers", "table_boost", "fit_nz",
+                 "source_nz", "source_padding",
                  "kmax_boltzmann", "extrap_kmax"},
         required={"tables", "cosmology_mode", "kernel_nz"}, name="physics",
     )
@@ -215,6 +218,27 @@ def load_configuration(path, command):
         raise ValueError("physics.kernel_nz must be at least four.")
     if not isinstance(physics.get("source_readers", False), bool):
         raise ValueError("physics.source_readers must be a boolean.")
+    reconstruction = physics.get("source_interpolation", "linear_midpoint")
+    if reconstruction not in ("linear_midpoint", "pchip_midpoint"):
+        raise ValueError("Choose linear_midpoint or explicit pchip_midpoint sources.")
+    source_nz = physics.get("source_nz")
+    if source_nz is not None:
+        if (isinstance(source_nz, bool) or not np.isscalar(source_nz)
+                or not np.isfinite(source_nz)
+                or int(source_nz) != source_nz or source_nz < 4
+                or source_nz > np.iinfo(np.int32).max):
+            raise ValueError("physics.source_nz must be an integer from four to INT_MAX.")
+    padding = physics.get("source_padding", "zero_outside_native")
+    if reconstruction == "pchip_midpoint":
+        if source_nz is None or padding not in (
+            "zero_at_observer_and_background_edge", "zero_at_measured_edges",
+        ):
+            raise ValueError(
+                "PCHIP needs source_nz and explicit source_padding: "
+                "zero_at_observer_and_background_edge or zero_at_measured_edges."
+            )
+    elif padding != "zero_outside_native":
+        raise ValueError("Linear midpoint sources require zero_outside_native padding.")
     # These are physical wavenumbers in 1/Mpc, not the saved k grid's h/Mpc.
     # Separating them bounds CAMB work while retaining the requested read grid.
     physics.setdefault("kmax_boltzmann", 5.0)
@@ -229,8 +253,8 @@ def load_configuration(path, command):
         for name in ("k", "z", "los_z", "halofit_version"):
             if name not in physics:
                 raise ValueError(f"prepare requires physics.{name}.")
-        if physics.get("source_interpolation") != "linear_midpoint":
-            raise ValueError("prepare requires explicit linear_midpoint n(z).")
+        if "source_interpolation" not in physics:
+            raise ValueError("prepare requires an explicit source_interpolation choice.")
         redshift = grid_values(settings=physics["z"])
         if redshift[0] != 0 or redshift.size > 150:
             raise ValueError("CAMB table z must start at 0 with <=150 nodes.")
@@ -536,28 +560,60 @@ def save_result(path, arrays, metadata, rows, overwrite):
 
 
 def prepare(config, path, metadata, overwrite):
-    """Interpolate source midpoint curves and run the optional CAMB producer."""
+    """Prepare the declared source reconstruction and independent CAMB tables.
+
+    Midpoint samples of the selected source FITS are saved unchanged. That
+    FITS may itself be the explicitly processed demonstration input; its
+    content hash distinguishes it from the downloaded calibration file.
+    The optional source_nz
+    controls only source preparation; it never raises CAMB's redshift count.
+    Legacy linear preparation without that control retains its old result.
+    """
     settings = config["physics"]
     destination = resolve_path(path, settings["tables"])
     check_destination(path=destination, overwrite=overwrite)
     source_path = resolve_path(path, config["source"]["path"])
-    source_z, source_values = read_source_distributions(
+    with_edges = settings.get("source_padding") == "zero_at_measured_edges"
+    source_data = read_source_distributions(
         path=source_path, nbin=config["source"]["nbin"],
         extension=config["source"]["extension"],
+        with_edges=with_edges,
     )
+    source_z, source_values = source_data[:2]
+    native_low = None
+    native_high = None
+    if with_edges:
+        native_low, native_high = source_data[2:]
     redshift = grid_values(settings=settings["z"])
     outside = source_z > redshift[-1]
     if np.any(source_values[:, outside] > 0):
         raise ValueError(
             "Extend physics.z: nonzero source support lies beyond it."
         )
-    sources = np.empty((source_values.shape[0], redshift.size))
-    for index in range(source_values.shape[0]):
-        sources[index] = np.interp(x=redshift, xp=source_z,
-                                   fp=source_values[index], left=0, right=0)
-    raw_integrals = np.trapz(sources, x=redshift, axis=1)
-    sources = shifted_sources(z=redshift, sources=sources,
-                              shifts=np.zeros(source_values.shape[0]))
+    source_nodes = None
+    source_record = {
+        "source_reconstruction": settings["source_interpolation"],
+        "source_padding": settings.get("source_padding", "zero_outside_native"),
+    }
+    if settings.get("source_nz") is None:
+        sources = np.empty((source_values.shape[0], redshift.size))
+        for index in range(source_values.shape[0]):
+            sources[index] = np.interp(x=redshift, xp=source_z,
+                                      fp=source_values[index], left=0, right=0)
+        raw_integrals = np.trapz(sources, x=redshift, axis=1)
+        sources = shifted_sources(z=redshift, sources=sources,
+                                  shifts=np.zeros(source_values.shape[0]))
+    else:
+        source_nodes = np.linspace(start=0.0, stop=redshift[-1],
+                                   num=int(settings["source_nz"]))
+        sources, source_record = reconstructed_sources(
+            native_z=source_z, native_sources=source_values, source_z=source_nodes,
+            shifts=np.zeros(source_values.shape[0]),
+            reconstruction=settings["source_interpolation"],
+            padding=settings.get("source_padding", "zero_outside_native"),
+            native_low=native_low, native_high=native_high,
+        )
+        raw_integrals = np.asarray(source_record["source_shift_normalizations"])
     tables, preparation = camb_tables(
         parameters=config["parameters"], k=grid_values(settings=settings["k"]),
         z=redshift, sources=sources,
@@ -565,10 +621,25 @@ def prepare(config, path, metadata, overwrite):
         halofit_version=settings["halofit_version"],
         kmax_boltzmann=settings["kmax_boltzmann"],
         extrap_kmax=settings["extrap_kmax"],
+        source_z=source_nodes,
     )
+    tables["source_native_z"] = source_z
+    tables["source_native"] = source_values
+    if with_edges:
+        tables["source_native_low"] = native_low
+        tables["source_native_high"] = native_high
     preparation.update(metadata)
+    preparation.update(source_record)
     preparation["source_fits"] = str(source_path)
-    preparation["source_interpolation"] = "linear_midpoint_zero_outside"
+    preparation["source_fits_sha256"] = hashlib.sha256(
+        source_path.read_bytes()
+    ).hexdigest()
+    if settings["source_interpolation"] == "pchip_midpoint":
+        import scipy
+
+        preparation["source_reconstruction_library"] = "scipy.interpolate.PchipInterpolator"
+        preparation["source_reconstruction_library_version"] = scipy.__version__
+    preparation["source_interpolation"] = settings["source_interpolation"]
     preparation["source_integrals_before_normalization"] = (
         raw_integrals.tolist()
     )
@@ -609,6 +680,9 @@ def provider_for_run(compiled, config, path):
         source_readers=config["physics"].get("source_readers", False),
         table_boost=config["physics"].get("table_boost", 8),
         fit_nz=config["physics"].get("fit_nz", 33),
+        source_nz=config["physics"].get("source_nz"),
+        source_interpolation=config["physics"].get("source_interpolation"),
+        source_padding=config["physics"].get("source_padding"),
         accuracy=config["accuracy"],
     )
     return provider, provenance
@@ -791,6 +865,16 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
         metadata["precision_expansion_diagnostics"] = diagnostics
     prediction = prediction_for_run(compiled=compiled, config=config, path=path,
                                     rows=rows, provider=provider)
+    two_point_path = None
+    if prediction.two_point_core is not None:
+        two_point_path = prediction.two_point_core.core.__file__
+    metadata["prediction_identity"] = prediction_identity(
+        config=config,
+        configuration_path=path,
+        project=PROJECT,
+        three_point_path=compiled.__file__,
+        two_point_path=two_point_path,
+    )
     reference = dict(config["ia"])
     reference.update(config["parameters"])
     cached = ExactMeanCache(predict=prediction)
@@ -829,7 +913,8 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
             step = float(settings["steps"][name]) / divisor
             for node, offset in enumerate((-2.0, -1.0, 0.0, 1.0, 2.0)):
                 point = dict(reference)
-                point[name] = float(reference[name]) + offset * step
+                if offset != 0.0:
+                    point[name] = float(reference[name]) + offset * step
                 samples[column, node] = cached(parameters=point)
         arrays[f"stencil_values_{label}"] = samples
     metadata["stencil_offsets"] = [-2.0, -1.0, 0.0, 1.0, 2.0]
@@ -878,6 +963,22 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
     metadata["covariance_is_fixed"] = True
     metadata["compression"] = "none"
     metadata["cached_mean_count"] = len(cached.values)
+    # Another process may replace a source table or binary during this
+    # long derivative calculation. Re-read file identities immediately
+    # before saving; a changed run must not inherit its initial label.
+    # This cannot inspect the native code already loaded in memory.
+    completed_identity = prediction_identity(
+        config=config,
+        configuration_path=path,
+        project=PROJECT,
+        three_point_path=compiled.__file__,
+        two_point_path=two_point_path,
+    )
+    verify_prediction_identity(
+        recorded=metadata["prediction_identity"],
+        current=completed_identity,
+        description="Fisher calculation during evaluation",
+    )
     save_result(path=destination, arrays=arrays, metadata=metadata,
                 rows=rows, overwrite=overwrite)
     return destination

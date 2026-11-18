@@ -21,6 +21,7 @@ import yaml
 
 from .likelihood import FixedGaussianLikelihood
 from .pipeline import COSMOLOGY_NAMES
+from .provenance import file_digest, implementation_identity
 
 
 FORMAT = "cosmolike-3pcf-inference-v1"
@@ -30,24 +31,6 @@ DISCRETE_PARAMETERS = {
     "ct_mode",
     "suppress_only",
 }
-
-
-def file_digest(path):
-    """Read a file in bounded chunks and return its SHA-256 identifier.
-
-    Arguments:
-      path = local input file.
-    Returns:
-      hexadecimal digest of its exact bytes, without interpreting the file.
-    """
-    digest = hashlib.sha256()
-    with Path(path).open(mode="rb") as stream:
-        while True:
-            content = stream.read(1024 * 1024)
-            if not content:
-                break
-            digest.update(content)
-    return digest.hexdigest()
 
 
 def fields(mapping, allowed, required, name):
@@ -405,47 +388,17 @@ def prepare_likelihood(path, driver):
         }
     record["table_provenance"] = table_metadata
     record["effective_prediction_configuration"] = config
-    record["three_point_extension"] = {
-        "path": compiled.__file__,
-        "sha256": file_digest(path=compiled.__file__),
-    }
+    two_point_path = None
     if prediction.two_point_core is not None:
-        extension_path = prediction.two_point_core.core.__file__
-        record["two_point_extension"] = {
-            "path": extension_path,
-            "sha256": file_digest(path=extension_path),
-        }
-    # Physical input preparation and sampling also depend on Python source.
-    # Recording these small files prevents a changed response or prior rule
-    # from continuing a checkpoint merely because both C binaries match.
+        two_point_path = prediction.two_point_core.core.__file__
     project = Path(driver.__file__).resolve().parents[1]
-    implementation = list((project / "python" / "des3pcf").glob("*.py"))
-    implementation.append(Path(driver.__file__))
-    implementation.append(project / "scripts" / "run_nautilus.py")
-    record["python_implementation_sha256"] = {}
-    for filename in sorted(implementation):
-        relative = filename.relative_to(project).as_posix()
-        record["python_implementation_sha256"][relative] = file_digest(path=filename)
-    if config["physics"]["cosmology_mode"] == "camb":
-        import camb
-        from camb import baseconfig
-
-        # Sampled cosmologies ask CAMB for additional power tables. Its
-        # version string alone does not detect a locally rebuilt Fortran
-        # library, so that library and its Python wrappers enter the identity.
-        package = Path(camb.__file__).resolve().parent
-        library = Path(baseconfig.CAMBL).resolve()
-        record["camb_implementation"] = {
-            "version": camb.__version__,
-            "library_path": str(library),
-            "library_sha256": file_digest(path=library),
-            "python_sha256": {},
-        }
-        for filename in sorted(package.rglob("*.py")):
-            relative = filename.relative_to(package).as_posix()
-            record["camb_implementation"]["python_sha256"][relative] = file_digest(
-                path=filename,
-            )
+    record.update(implementation_identity(
+        project=project,
+        three_point_path=compiled.__file__,
+        two_point_path=two_point_path,
+        use_camb=config["physics"]["cosmology_mode"] == "camb",
+        extra_scripts=("scripts/run_nautilus.py",),
+    ))
     if specification["data"]["mode"] == "observed":
         manifest_path = project / "data" / "y3_observed_manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))

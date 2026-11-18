@@ -1,0 +1,35 @@
+# One default-accuracy Fisher base supplies every marginalization weight.
+# Each candidate changes numerical resolution, keeping the physical model,
+# estimator, parameter steps, covariance, priors and selected rows fixed.
+format: des3pcf-fisher-accuracy-v1
+pair: [w0, wa]
+selection_fraction: 0.95
+maximum_columns: 5
+step_divisor: 2.0
+candidates:
+  - name: source_2
+    accuracy: {source_boost: 2.0}
+  - name: kernel_2
+    accuracy: {kernel_boost: 2.0}
+  - name: chi_2
+    accuracy: {chi_boost: 2.0}
+  - name: triangle_1p5
+    accuracy: {triangle_boost: 1.5}
+  - name: multipole_1p5
+    accuracy: {multipole_boost: 1.5}
+  - name: angular_2
+    accuracy: {angular_boost: 2.0}
+  - name: fft_1p5
+    accuracy: {fft_boost: 1.5}
+  - name: core_2pt_1p5
+    two_point: {accuracy_boost: 1.5}
+  - name: xi_ell_2
+    accuracy: {xi_ell_boost: 2.0}
+  - name: xi_theta_2
+    accuracy: {xi_theta_boost: 2.0}
+  - name: sampling_1p5
+    accuracy: {accuracy_boost: 1.5}
+  - name: sampling_2
+    accuracy: {accuracy_boost: 2.0}
+  - name: integration_2
+    accuracy: {integration_accuracy_boost: 2.0}

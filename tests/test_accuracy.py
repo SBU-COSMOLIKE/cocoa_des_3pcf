@@ -31,7 +31,7 @@ def test_nested_los_refinement_preserves_nodes_and_baseline():
 
 
 @pytest.mark.parametrize("name", [
-    "chi_boost", "kernel_boost", "power_table_boost", "fit_z_boost",
+    "chi_boost", "kernel_boost", "source_boost", "power_table_boost", "fit_z_boost",
     "triangle_boost", "multipole_boost", "angular_boost", "fft_boost",
     "profile_boost", "profile_upsample_boost", "aperture_ell_boost",
     "aperture_phi_boost", "xi_ell_boost", "xi_theta_boost",

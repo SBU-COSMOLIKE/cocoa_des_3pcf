@@ -112,6 +112,10 @@ def physics_model(
         raise ValueError(
             "Physical-model spline preparation requires at least four k/z nodes."
         )
+    if checked.get("source_z", checked["z"]).size < 4:
+        raise ValueError(
+            "Physical-model source preparation requires at least four nodes."
+        )
     if int(kernel_nz) != kernel_nz or kernel_nz < 4:
         raise ValueError("kernel_nz must be an integer of at least four.")
     if abs(checked["omega_m"] + checked["omega_de"] - 1.0) > 1.0e-8:
@@ -127,6 +131,8 @@ def physics_model(
     arguments = {}
     for name in ARRAY_NAMES + SCALAR_NAMES:
         arguments[name] = checked[name]
+    if "source_z" in checked:
+        arguments["source_z"] = checked["source_z"]
     arguments["los_z"] = controls.los_nodes(baseline=checked["los_z"])
     binding = getattr(compiled, adapter)
     return binding.PhysicsModel(

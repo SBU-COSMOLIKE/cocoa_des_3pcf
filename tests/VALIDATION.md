@@ -13,7 +13,70 @@ The existing DES Y3 extension is used to check the Python two-point bridge.
 
 ## Executed checks <a name="executed"></a>
 
-The core checkpoint is `98824eb`, following `d832c5f` and `8c58ace`. Checks ran on
+The native interpolation/source-grid checkpoint is `6a7eae7` on
+`lowrank_fftlog`. Its full project collection passed **502 tests in strict
+and debug builds**, with no sanitizer diagnostics. The subsequent
+Python-only measured-source-edge and prediction-provenance additions pass
+the full **512-test strict collection**. Their affected source, survey,
+CLI and provenance group passes **44 tests in debug**. Both debug runs use
+undefined-behavior and floating-point-division checks, not AddressSanitizer.
+The strict extension is restored. Compilation uses one worker; numerical
+tests use at most four OpenMP workers and serial BLAS.
+
+The changes check independent source axes, signed NLA and normalized TATT
+residuals, stretched triangle coordinates, mixed-angle multipole tables,
+both C++ adapters, retained plans, changed triplet batches, and setting
+restoration. The two-node angular test deliberately keeps physical endpoints
+identical while changing interpolation coordinates; it verifies that the
+retained-query key includes the coordinate definition. Extreme PUV edge
+conditioning is recorded as a separate limitation, not hidden by relaxing
+the interior reconstruction tests.
+
+The following commands ran from `Cocoa/` after activating its environment
+and setting serial BLAS and the four-worker OpenMP cap.
+
+**Step :one:**: run the strict project collection.
+
+```bash
+.local/bin/python -m pytest projects/des_3pcf/tests -q
+```
+
+**Step :two:**: select the debug extension with one compilation worker.
+
+```bash
+COSMOLIKE_DEBUG_MODE=1 make -C projects/des_3pcf/interface -f MakefileCosmolike -j1
+```
+
+**Step :three:**: run the project collection with that extension. This full
+run contains the 502 checks preceding the Python-only additions.
+
+```bash
+.local/bin/python -m pytest projects/des_3pcf/tests -q
+```
+
+**Step :four:**: check the added Python source/provenance paths in debug.
+
+```bash
+.local/bin/python -m pytest \
+  projects/des_3pcf/tests/test_source_grids.py \
+  projects/des_3pcf/tests/test_pipeline_cli.py \
+  projects/des_3pcf/tests/test_survey.py \
+  projects/des_3pcf/tests/test_prediction_provenance.py -q
+```
+
+**Step :five:**: restore the strict extension.
+
+```bash
+make -C projects/des_3pcf/interface -f MakefileCosmolike -j1
+```
+
+The [interpolation study](studies/interpolation_validation.md) reports
+separate direct-projection, multipole and full-aperture comparisons. The
+first TATT demonstration Fisher result failed these accuracy checks and
+is not accepted. Model/source choices and full derivative convergence
+remain separate from the successful implementation tests.
+
+The earlier core checkpoint was `98824eb`, following `d832c5f` and `8c58ace`. Checks ran on
 2026-11-17 using Darwin arm64, Clang 19.1.7, Python 3.11.12 and NumPy 1.26.3.
 Compilation used one worker. BLAS used one thread. OpenMP comparisons used
 at most four workers, with one worker for ordinary calculations. No timing

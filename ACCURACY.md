@@ -8,11 +8,18 @@ in a separate comparison. This separation is especially useful for a signed
 IA contribution that crosses zero: compare its error with a declared component
 amplitude, rather than dividing by each nearly zero entry.
 
+The [executed interpolation study](tests/studies/interpolation_validation.md)
+records why the first TATT demonstration Fisher result was rejected and
+which corrections have been checked on the full aperture vector.
+
 ## Contents <a name="contents"></a>
 
 - [Two global controls](#global)
 - [Individual stages](#stages)
+- [Source curves and photo-z derivatives](#source-curves)
+- [Signed bispectra and triangle coordinates](#signed-projection)
 - [CAMB solve and extrapolation limits](#camb-limits)
+- [Choosing Fisher accuracy from a default-accuracy base](#fisher-noise)
 - [Changing settings in a notebook](#notebook)
 - [What remains fixed](#fixed)
 
@@ -49,6 +56,7 @@ doubling its resolution twice.
 |---|---|---|
 | `chi_boost` | LOS intervals, with nested old nodes | Both |
 | `kernel_boost` | Source-window redshift grid | Sampling |
+| `source_boost` | Independent uniform source-density grid, when declared | Sampling |
 | `fit_z_boost` | Matter-fit redshift anchors | Sampling |
 | `power_table_boost` | Physical model's dense interpolation ratio | Sampling |
 | `triangle_boost` | Coarse projected triangle coordinates | Sampling |
@@ -78,6 +86,89 @@ Projection settings still expose the individual axis counts (`nr`, `nu`,
 These allow an even narrower test than a whole triangle-grid boost. The
 direct reference route and the prepared production route remain explicit
 choices; a boost does not switch between them.
+
+## Source curves and photo-z derivatives <a name="source-curves"></a>
+
+Three redshift grids have different jobs. CAMB's `physics.z` samples power
+and background quantities. An optional `physics.source_nz` samples the
+source density on its own uniform grid, without requesting more CAMB
+transfer redshifts. `physics.kernel_nz` samples the prepared lensing and
+alignment windows. Increasing one count cannot establish convergence of
+the other two. `source_boost` multiplies the independent source intervals
+and leaves the original measured samples unchanged; it is refused when
+no independent source grid was declared.
+
+The source reconstruction is also a physical input choice.
+`linear_midpoint` joins the supplied midpoint samples by straight lines.
+`pchip_midpoint` uses a shape-preserving cubic through those same samples.
+The latter requires an explicit endpoint policy. `zero_at_measured_edges`
+uses the supplied FITS `Z_LOW`/`Z_HIGH` support, intersected with nonnegative
+redshift, and a zero plateau to the larger background upper bound.
+`zero_at_observer_and_background_edge` instead extends the reconstruction
+to the background boundary. These can produce different curves; neither
+preserves each histogram cell's integrated probability. The added zero
+endpoints and the reconstruction choice are recorded with the tables.
+Neither choice clips negative samples. The demonstration's separately
+authorized clipping is recorded when its source FITS file is created.
+
+Why does this matter for Fisher derivatives? A photo-z shift evaluates
+$`n(z-\Delta z)`$. At a knot of a piecewise-linear curve, its left and
+right slopes can differ. Sampling a small shift exactly at that knot
+can introduce an absolute-shift term, proportional to $`|\Delta z|`$,
+in a finite-grid prediction. A fourth difference then measures this
+coherent interpolation effect as well as any random numerical noise.
+PCHIP makes the interior first derivative continuous, but it does not
+make a nonzero endpoint slope continuous with a zero extension. Boundary
+support, normalization and source resolution still need separate checks.
+
+Each shift and resolution change reconstructs the immutable native
+samples directly. It never shifts an already shifted curve. The native
+axis and densities are retained as `source_native_z` and `source_native`;
+`source_z` names the numerical sampling axis. Both C++ adapters copy
+these physical inputs into the owned C model. The two-point bridge receives
+the same shifted samples and applies no second photo-z shift. Nonnegative
+source samples alone do not guarantee a nonnegative natural-cubic
+interpolant of the later divided IA kernel; inspect and refine that stage.
+The measured-edge policy also preserves `source_native_low/high` and
+records `source_unshifted_support`. A photo-z shift moves that support;
+the observer and finite background still limit the retained output.
+
+## Signed bispectra and triangle coordinates <a name="signed-projection"></a>
+
+A signed IA contribution can cross zero and vary by many orders of
+magnitude across Fourier scale. Interpolating its raw amplitude with a
+cubic can produce tails much larger than the physical value. The optional
+`residual_scaling: 1` instead stores the signed ratio of the TATT residual
+to the positive equilateral gravitational bispectrum at the same perimeter.
+The positive scale is interpolated logarithmically and multiplied back
+after reading the ratio. `signed_baseline: 1` similarly represents the NLA
+baseline by positive GGG and signed NLA/GGG. These are numerical
+representations of the declared components, not changes to IA coefficients
+or a prescription to replace negative values by their absolute magnitude.
+
+Resolution also depends on the coordinate. The PUV residual uses perimeter
+$`p=\ell_1+\ell_2+\ell_3`$ and fractions $`u=\ell_1/p`$,
+$`v=\ell_2/p`$. `shape_stretch` controls how a uniform bounded-tanh
+coordinate concentrates samples near squeezed triangles. Increasing this
+concentration reduces central resolution at fixed `nshape`; test the count
+and coordinate together against direct projected values. The historical
+stretch of three does not resolve every squeezed fraction allowed by the
+wide demonstration Fourier range.
+
+The prepared multipoles use scale $`E=\sqrt{\ell_1^2+\ell_2^2}`$ and
+an angle $`\psi`$ that specifies the side ratio. With `psi_scale: 0`,
+the angular coordinate is $`\log\psi`$. A positive value $`s`$ chooses
+$`x=\log\psi+\psi/s`$: spacing is logarithmic for small angles and
+approximately linear for angles much larger than $`s`$. The table is
+uniform in $`x`$, so cubic preparation and arithmetic-index linear reads
+remain possible. Both ordered-leg charts are retained. Compare the
+prepared multipoles with direct angular integration of the same projected
+grid to isolate this interpolation stage from the underlying physics.
+
+These optional representations and coordinate choices are under numerical
+validation. Their successful unit tests do not establish a converged survey
+forecast. The first TATT demonstration Fisher result failed these checks
+and must not be interpreted as evidence for stronger parameter constraints.
 
 ## CAMB solve and extrapolation limits <a name="camb-limits"></a>
 
@@ -161,6 +252,87 @@ defaults. Numerical settings for the ordinary two-point CFASTPT module are a
 separate explicit configuration; its integration selector has the meaning
 defined by the ordinary core, not this project's multiplicative quadrature
 factor.
+
+## Choosing Fisher accuracy from a default-accuracy base <a name="fisher-noise"></a>
+
+A Fisher calculation can report artificially small errors when numerical
+noise contaminates its derivatives. A difference of nearby predictions is
+divided by a small parameter step. Squaring that derivative in
+$`F=D^T C^{-1}D+F_{\rm prior}`$ turns some of the noise into positive
+information. Agreement of the fiducial mean alone does not test this effect.
+
+The expensive part of the screening calculation is performed once at
+**default accuracy**: build the full derivative matrix and Fisher matrix,
+including the stated priors. The shared core functions
+`get_fom_noise_weights`, `get_stencil_noise`, and `predict_fom_noise` in
+`cosmolike_notebook_utils/fisher.py` implement the estimate derived in the
+LSST Y1×DESI Fisher note's section on derivative accuracy. The project uses
+these functions, retaining the same meaning of each quantity.
+
+Let $`S=F^{-1}`$ be the parameter covariance and $`S_w`$ its marginalized
+$`(w_0,w_a)`$ block. For parameter $`p_j`$, the default-accuracy calculation
+supplies a weight
+
+$$
+R_j^2\sigma_j^2=S_{j,w}S_w^{-1}S_{w,j},\qquad \sigma_j^2=S_{jj}.
+$$
+
+The weight measures how uncertainty in that parameter affects the dark-energy
+ellipse. A nuisance parameter can matter even though it is neither $`w_0`$
+nor $`w_a`$. Its covariance with the pair must be retained when marginalizing.
+At each candidate accuracy, measure only the columns selected by these
+weights and the baseline noise audit; rebuilding the entire derivative base
+at every setting would lose the method's cost advantage.
+
+Five equally spaced predictions give the fourth difference
+$`\Delta^4m=m(-2h)-4m(-h)+6m(0)-4m(h)+m(2h)`$. If evaluation errors have
+approximately independent, equal-size fluctuations along this stencil,
+
+$$
+\widehat\sigma_{\rm eval,j}^2=
+\frac{\Delta^4m_j^T C^{-1}\Delta^4m_j}{70},\qquad
+a_j=\frac{130}{144}\frac{\widehat\sigma_{\rm eval,j}^2}{h_j^2},\qquad
+\delta\ln{\rm FoM}\simeq\frac12\sum_j R_j^2a_j\sigma_j^2.
+$$
+
+Here $`h_j`$ is an absolute step in the units of parameter $`p_j`$. The
+project's adapter supplies parameter offsets about zero to the shared core
+function, so the core's relative-step convention cannot accidentally rescale
+a YAML step or reverse its interpretation at a negative fiducial value.
+The factors 70 and 130 are sums of squared stencil coefficients. They
+describe independent numerical errors, not a new physical covariance term.
+For large predicted shifts, the shared function also evaluates the exact
+ratio $`{\rm FoM}(F+\operatorname{diag}a)/{\rm FoM}(F)`$ instead of truncating
+the matrix calculation at first order.
+
+The full default-accuracy run saves the five vectors at both $`h`$ and
+$`h/2`$ for every parameter. Its baseline noise audit therefore needs no
+additional model evaluations. A candidate examining $`k`$ columns at one
+spacing needs $`1+4k`$ distinct evaluations, including a shared center.
+Omitted columns are listed, and their measured baseline contribution is
+reported. A small baseline contribution is not a bound on how that column's
+noise changes at another accuracy.
+
+This procedure screens settings; it does not certify convergence. A smooth
+fourth derivative also enters $`\Delta^4m`$, while an odd numerical error can
+cancel from it and still bias the first derivative. Correlations between
+nearby evaluations violate the independent-noise estimate. The final check
+therefore compares full Fisher matrices at selected finer settings and at
+both step sizes, with the covariance, priors, physical model and rows held
+fixed. Separate range, angular-truncation and source-table checks remain
+necessary. Report the actual FoMs from those full derivatives, never an
+estimated corrected scientific FoM obtained by subtracting the noise model.
+
+A concrete diagnostic is a numerical cusp, $`m(p)=v|p-p_0|`$. A centered
+five-point fourth difference at $`p_0`$ is $`-4hv`$. Its inferred vector
+noise amplitude therefore scales as $`h`$, while the corresponding false
+information estimate can remain constant when the step is halved. That
+behavior is not independent random noise. Smooth fourth-derivative
+contamination instead scales as $`h^4`$; ideal independent evaluation noise
+has roughly constant amplitude. Compare one-sided slopes, shifted stencil
+centers and more than two step sizes when a table-cell crossing or source
+boundary could be responsible. Shared stencil samples mean these scaling
+checks are diagnostics, not independent statistical measurements.
 
 ## What remains fixed <a name="fixed"></a>
 
