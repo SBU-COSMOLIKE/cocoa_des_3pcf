@@ -69,6 +69,32 @@ The two changes partly cancel in the covariance metric; their squared
 distances must not be added as independent error variances. This is why
 the protocol retained separate angular-only and coupling-only cases.
 
+## Independent check of the larger-order geometric coupling
+
+The finite Fourier sum was also compared with a direct fixed
+Gauss-Legendre integral of its defining angular expression. This tests
+the geometric routine separately from any cosmology or aperture mean.
+The new [component test](../test_coupling_high_orders.py) covers every
+L from 0 through 50 and every M from 0 through 100 at seven side-ratio
+angles, including equal sides and both angular endpoints. Endpoint
+phases are supplied in their analytic limiting forms.
+
+Both the 512-node and 1024-node tests pass. Their largest absolute
+differences from the native sum are 8.27e-13 and 1.46e-12, respectively;
+on the natural coupling normalization 4*pi² these are 2.09e-14 and
+3.71e-14. Zero coefficients are included through this absolute metric,
+without division by a vanishing reference. The change between the two
+quadrature calculations is about 2.01e-12, so the slightly larger
+1024-node residual is consistent with the scale of their numerical
+agreement rather than evidence of monotonic improvement from more nodes.
+The numerical record is `runs/high_order_coupling_check.json`.
+
+These checks do not test every angle arbitrarily close to equal sides,
+the subsequent Bessel transform, or the full aperture estimator at
+M=100. They establish a separate component check at the larger orders
+without assuming that a small final aperture change validates every
+intermediate quantity. Both OpenMP and BLAS used one worker.
+
 ## What this establishes and what it leaves open
 
 These fiducial distances are small in the supplied covariance metric,

@@ -244,10 +244,44 @@ The smaller steps give closer agreement for the quantity tested here:
 better. This is evidence about two columns at the default grid, rather
 than a complete finer-grid or all-column step-convergence result.
 
+The same eight-mean experiment is now complete on each full
+triangle-refined grid. Here the denominator and every unchanged
+derivative come from that model's full `triangle_1p5` h/2 archive:
+
+| Selected-column spacing on triangle-refined grid | NLA FoM / refined base | TATT FoM / refined base | NLA diagonal-noise inflation | TATT diagonal-noise inflation |
+|---|---:|---:|---:|---:|
+| h/4 | 1.004076 | 1.002550 | 1.000138 | 1.000212 |
+| h/2 | 1.000000 | 1.000000 | 1.009152 | 1.008189 |
+| h | 0.946568 | 0.954660 | 1.021609 | 1.022916 |
+| 2h | 0.987116 | 0.987006 | 1.007038 | 1.006343 |
+
+The smaller-step changes remain close to the default-grid comparison.
+The stored evidence is in `runs/nla_triangle_step_study/` and
+`runs/tatt_triangle_step_study/`, separately from the default-grid files
+used by the notebook's current step plots. The h/2 substitution differs
+from one by about 2e-12 or less because the helper accumulates the
+identical retained vectors in a different arithmetic order. This is
+distinct from the physical h/4 changes of 0.408% and 0.255%.
+
+The noise interpretation also deserves a numerical check. At a fixed
+variance of independent evaluation jitter, halving the parameter step
+would increase its expected false-information coefficient by four,
+because that coefficient contains an inverse step squared. Here the
+measured fourth-difference coefficient instead decreases: its h/4-to-h/2
+ratio on the refined grid is 0.0737/0.0765 for Omega_m in NLA/TATT and
+0.00704/0.01057 for Hubble h. A smooth fourth-derivative contribution
+would scale differently again: its fourth difference is proportional
+to the fourth power of the step, giving a coefficient proportional to
+the sixth power. Neither these two spacings nor one measured fourth
+difference identifies the error process. The observations reinforce
+why the diagnostic must accompany actual derivative and grid changes,
+instead of being interpreted as a measured independent-noise variance.
+
 The completed full triangle refinements evaluate every derivative at
 both step lengths. Their xi rows contribute most of the baseline step discrepancy;
 increasing only the three-point grids cannot settle it. The targeted
-step comparison must also be checked at the selected refined grid.
+step comparison is now checked at that refined grid. A smaller-step
+calculation of every column remains a separate test.
 
 The current candidate plan leaves the angular truncations Lmax=Mmax=20
 fixed. Its multipole control refines interpolation tables, not those

@@ -73,6 +73,15 @@ nine figures from completed saved arrays. Inspection identified a clipped
 axis label in the step panels. The shortened label was rerendered and
 all affected figures were inspected; all nine final figures are readable.
 
+Two additional component tests compare the finite Fourier coupling with
+independent 512- and 1024-node angular integrals at all L<=50 and M<=100,
+for seven side-ratio angles. Both pass with serial OpenMP and BLAS.
+The largest discrepancy divided by 4*pi² is 3.71e-14. These tests
+validate the sampled geometric coefficients, not a complete transform
+or a Fisher truncation choice. The
+[angular results](studies/angular_order_results.md) record the ten
+separate NLA/TATT fiducial comparisons and their remaining limits.
+
 The native interpolation/source-grid checkpoint is `6a7eae7` on
 `lowrank_fftlog`. Its full project collection passed **502 tests in strict
 and debug builds**, with no sanitizer diagnostics. The subsequent
