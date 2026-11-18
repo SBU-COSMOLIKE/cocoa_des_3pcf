@@ -245,11 +245,22 @@ parameter correlations, then repeat at several fiducial IA choices and
 with halved/doubled derivative steps. Any claimed improvement should
 survive numerical refinement and the stated prior choices.
 
+The IA notebook also fixes w0=-1 and wa=0 at the saved fiducial while
+retaining every other varied cosmological, IA, photo-z and shear-calibration
+parameter. It selects the retained Fisher rows and columns before inversion;
+selecting the covariance after inversion would still marginalize dark energy.
+The saved Gaussian priors enter once. It reports sigma(S8), the
+(Omega_m,S8) FoM ratio and IA errors for each experiment. This changes one
+assumption toward the published LambdaCDM analysis; it does not reproduce
+its scale cuts, likelihood or posterior gain.
+
 The primary Y3 forecast should vary all five TATT parameters alongside the
 chosen cosmological and calibration parameters. Fixing the redshift slopes
 or $`b_{\rm TA}`$ can be a separate diagnostic, clearly identified as
 such. Use the [Fisher guide](FISHER.md) for exact project parameter keys.
-If the prepared logarithmic projection rejects a negative baseline, the
+The supplied examples select `signed_baseline=1`, interpolating a positive
+gravity baseline and a signed NLA/gravity ratio. If another prepared
+logarithmic projection rejects a negative baseline, the
 notebook must report the affected parameter range and use an appropriate
 supported evaluation path; it must not silently omit derivative points.
 Refine the original power/source/redshift sampling separately from the

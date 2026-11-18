@@ -121,7 +121,7 @@ mean-angle, or bin-window table is present in either inspected product.
 
 The two pinned measurement-packing scripts provide a further provenance
 check. The unblinded script reads an
-already compressed, externally stored 80-entry Map3 NumPy vector and copies
+already processed, externally stored 80-entry Map3 NumPy vector and copies
 it into the FITS VALUE column. Its opening comment records that a prior
 version omitted the triangle cut, but the script does not apply that cut
 or define its bins. The CosmoGrid script extracts the final 80 entries of

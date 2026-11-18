@@ -11,7 +11,7 @@ relative importance in a measured statistic.
 
 | Publication target | Calculation with this project | Acceptance condition |
 |---|---|---|
-| 2601.09133, Figure 9 | Compare the two stated IA amplitude pairs in xi+ and Map3 | Common source curves, cosmology and no-IA denominator; refined angular transforms |
+| 2601.09133, Figure 9 response mechanism | Compare both NLA and TATT sign choices in xi+ and Map3 | One no-IA reference; declared power, source and estimator choices; numerical refinement |
 | 2601.09133, Figures 3–4 | Scan IA amplitudes for the two illustrated source triplets at 14 arcmin | Figure 3 uses eta1=eta2=1; distinguish Ct from Ct/C1 |
 | 2601.09133, Figures 1–2 | Compare the real natural component Gamma0 at a 60-degree opening angle | Ordered source legs and side labels; paper Lmax=50, Mmax=100 followed by refinement |
 | 2601.09133, Figures 5–6 | Separate operator contributions and numbers of intrinsic-shape fields | Verify component sum closure; projected field-placement diagnostics require an additional explicit calculation |
@@ -36,8 +36,9 @@ number. A Fisher result from these examples is an additional calculation.
 `ia_figure9_workflows` prepares five named means: a common no-IA reference,
 two NLA sign choices and two TATT sign choices. The IA notebook shows each
 model against that reference and evaluates the finite sign-pair distance
-with all 480 rows. The latter removes correlated xi fluctuations before
-assigning a conditional Map3 distance. It holds every other parameter fixed;
+with all 480 rows. It subtracts the Map3 mean difference predicted from the
+xi mean difference through C32 C22^-1, then weights the remaining difference
+by the conditional Map3 covariance. It holds every other parameter fixed;
 it is not a marginalized significance. The figure uses a maximum-reference
 normalization within each bin, while the paper's pointwise denominator is
 a separate plotting convention. The
@@ -87,6 +88,10 @@ Use the separately labeled joint covariance. The two-point file's own
 400-by-400 covariance retains extra gammat/wtheta header entries from its
 source format; it must not be used to infer a joint Map3 covariance.
 Measured xi and Map3 must be selected together with both covariance axes.
+The inspected packing scripts do not recover the realization-level Map3
+sign processing used to estimate C23. The selected covariance stays
+unchanged: this is unresolved provenance, not evidence of a wrong sign.
+See Section 6 of the [estimator record](tests/studies/estimator_conventions.md).
 
 The observational companion,
 [2508.14018v2, Sections IV–VI](https://arxiv.org/html/2508.14018v2#S4),
@@ -129,12 +134,22 @@ eta2 evolution and ordered source permutations also need explicit comparison.
 
 ## IA information and baryonic feedback
 
-The inference and Fisher examples use one joint mean and retain C23. They
-can ask whether additional Map3 information tightens a marginalized IA
-combination rather than only changing a plotted curve. The useful diagnostic
-is the joint result alongside the selected two-point result, with the same
-prior information added once. Conditional three-point information separates
+The Fisher notebook compares two-point and joint information with common
+priors and the retained cross-covariance. The supplied Nautilus examples
+define joint sampling runs. A posterior comparison of the additional Map3
+information requires a separately recorded two-point selection with the
+same prior distributions and convergence checks. The Fisher comparison
+already supplies both experiments with the same prior information added once. Conditional three-point information separates
 the effect of correlations from treating the measurements as independent.
+
+The IA notebook also fixes w0=-1 and wa=0 at the saved fiducial while
+retaining every other varied cosmological, IA, photo-z and shear-calibration
+parameter. It selects the retained Fisher rows and columns before inversion;
+selecting the covariance after inversion would still marginalize dark energy.
+The saved Gaussian priors enter once. It reports sigma(S8), the
+(Omega_m,S8) FoM ratio and IA errors for each experiment. This changes one
+assumption toward the published LambdaCDM analysis; it does not reproduce
+its scale cuts, likelihood or posterior gain.
 
 The current bispectrum feedback amplitude `fb` has no matched power-spectrum
 response in the joint wrapper. Both joint routes refuse to interpret that
@@ -148,6 +163,7 @@ is a measurement of a feedback parameter.
 
 | Entry | Scientific role |
 |---|---|
+| `EXAMPLE_FISHER_IA.ipynb` | IA sign responses, finite model distances and two-point/joint local information with varied or fixed dark energy |
 | `EXAMPLE_FISHER_ACCURACY.ipynb` | Numerical-refinement and Fisher interpretation through the shared prediction |
 | `EXAMPLE_NAUTILUS1.yaml` | NLA sampling of a noiseless mean-generated synthetic data vector |
 | `EXAMPLE_NAUTILUS2.yaml` | TATT sampling of a noiseless mean-generated synthetic data vector |

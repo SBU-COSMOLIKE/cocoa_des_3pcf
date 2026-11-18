@@ -246,3 +246,11 @@ demonstration. Their raw negative source-density samples have not been
 altered in the downloaded files. The model retains the separately recorded
 processed demonstration source file, and therefore does not claim that its
 source treatment is the publication's calibrated prescription.
+
+The pinned upstream configuration pairs the observed vectors and covariance.
+The inspected packing scripts do not recover the realization-level Map3 sign
+processing used to estimate C23. The selected covariance is retained unchanged;
+this is unresolved provenance, not evidence of a wrong sign. See Section 6
+of the [estimator record](tests/studies/estimator_conventions.md). A successful
+observed `--check` establishes parameter response and restored prediction
+state; it does not resolve that provenance or reproduce the published fit.
