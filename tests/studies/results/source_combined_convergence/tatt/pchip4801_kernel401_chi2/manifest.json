@@ -1,0 +1,375 @@
+{
+  "case": "pchip4801_kernel401_chi2",
+  "configuration": {
+    "accuracy": {
+      "accuracy_boost": 1.0,
+      "angular_boost": 1.0,
+      "aperture_ell_boost": 1.0,
+      "aperture_phi_boost": 1.0,
+      "chi_boost": 2.0,
+      "covariance_ell_boost": 1.0,
+      "covariance_k_boost": 1.0,
+      "covariance_mass_boost": 1.0,
+      "covariance_phi_boost": 1.0,
+      "covariance_radius_boost": 1.0,
+      "covariance_window_boost": 1.0,
+      "fft_boost": 1.0,
+      "fit_z_boost": 1.0,
+      "integration_accuracy_boost": 1.0,
+      "kernel_boost": 1.0,
+      "multipole_boost": 1.0,
+      "power_table_boost": 1.0,
+      "profile_boost": 1.0,
+      "profile_upsample_boost": 1.0,
+      "source_boost": 1.0,
+      "triangle_boost": 1.0,
+      "xi_ell_boost": 1.0,
+      "xi_theta_boost": 1.0
+    },
+    "covariance": {
+      "estimator": "finite_sas",
+      "estimator_agreement": "unvalidated_exact_sas_bin_support_and_weighting",
+      "likelihood_interpretation": "fixed_gaussian_forecast_no_finite_mock_correction",
+      "mode": "file",
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits"
+    },
+    "description": "Demonstration DES Y3 TATT joint xi\u00b1 + Map3 Fisher forecast with w0 and wa, all 480 public rows and recorded source clipping.",
+    "fisher": {
+      "bounds": {
+        "h": [
+          0.55,
+          0.91
+        ],
+        "ns": [
+          0.87,
+          1.07
+        ],
+        "omega_b": [
+          0.03,
+          0.07
+        ],
+        "omega_m": [
+          0.1,
+          0.5
+        ],
+        "sigma8": [
+          0.4,
+          1.2
+        ],
+        "w0": [
+          -2.0,
+          -0.3
+        ],
+        "wa": [
+          -2.0,
+          2.0
+        ]
+      },
+      "fom_pairs": [
+        [
+          "omega_m",
+          "sigma8"
+        ],
+        [
+          "a1",
+          "a2"
+        ],
+        [
+          "w0",
+          "wa"
+        ]
+      ],
+      "precision": {
+        "mode": "inverse"
+      },
+      "priors": {
+        "dz1": 0.018,
+        "dz2": 0.015,
+        "dz3": 0.011,
+        "dz4": 0.017,
+        "m1": 0.0091,
+        "m2": 0.0078,
+        "m3": 0.0076,
+        "m4": 0.0076
+      },
+      "steps": {
+        "a1": 0.01,
+        "a2": 0.02,
+        "bta": 0.02,
+        "dz1": 0.001,
+        "dz2": 0.001,
+        "dz3": 0.001,
+        "dz4": 0.001,
+        "eta1": 0.03,
+        "eta2": 0.03,
+        "h": 0.005,
+        "m1": 0.001,
+        "m2": 0.001,
+        "m3": 0.001,
+        "m4": 0.001,
+        "ns": 0.005,
+        "omega_b": 0.0005,
+        "omega_m": 0.003,
+        "sigma8": 0.005,
+        "w0": 0.02,
+        "wa": 0.04
+      }
+    },
+    "format": "cosmolike-3pcf-run-v1",
+    "ia": {
+      "a1": -0.33,
+      "a2": 0.65,
+      "bta": 0.91,
+      "c1rho": 0.0134,
+      "ct": 0,
+      "ct_mode": 0,
+      "eta1": 2.81,
+      "eta2": 1.69,
+      "fb": 0,
+      "power_mode": 2,
+      "suppress_only": 1,
+      "zpivot": 0.62
+    },
+    "mean": {
+      "aperture_estimator": "finite_sas",
+      "aperture_settings": {
+        "angular_average": "point",
+        "ell_max": 100000,
+        "ell_min": 0.01,
+        "lmax": 20,
+        "minimum_size": 512,
+        "mmax": 20,
+        "nmu": 64,
+        "phi_bins": 63,
+        "projection_batch_size": 20,
+        "projection_mode": "prepared",
+        "projection_settings": {
+          "ell_max": 300000,
+          "ell_min": 0.001,
+          "epmu": 0.0001,
+          "lmax": 20,
+          "multipole_boost": 2,
+          "nell": 64,
+          "nmu_linear": 32,
+          "nmu_log": 32,
+          "np": 32,
+          "npsi": 80,
+          "npsi_linear": 32,
+          "npsi_log": 32,
+          "npu_linear": 24,
+          "npu_log": 24,
+          "nr": 32,
+          "nshape": 160,
+          "nu": 24,
+          "nv": 24,
+          "prepare_multipoles": 1,
+          "psi_scale": 0.02,
+          "reference_mode": false,
+          "residual_scaling": 1,
+          "shape_stretch": 10.1062201,
+          "signed_baseline": 1,
+          "table_boost": 2
+        },
+        "theta_edges_arcmin": {
+          "count": 11,
+          "logarithmic": true,
+          "lower": 8.0,
+          "upper": 80.0
+        },
+        "transform_options": {
+          "npsi": 200,
+          "ordered_legs": true,
+          "padding": 0,
+          "projection": "centroid",
+          "window": false
+        }
+      },
+      "two_point": {
+        "accuracy_boost": 1.0,
+        "directory": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface",
+        "ell_internal": 192,
+        "fpt_internal_boost": 0.5,
+        "integration_accuracy": 0,
+        "interpolation_type": 1,
+        "mode": "core_tatt",
+        "module": "cosmolike_des_y3_interface"
+      },
+      "xi_settings": {
+        "ell": {
+          "count": 4096,
+          "logarithmic": true,
+          "lower": 1,
+          "upper": 40000
+        },
+        "pair_weight": "uniform_area",
+        "theta_count": 32
+      }
+    },
+    "notes": [
+      "Demonstration forecast with explicit source clipping and normalization; not a reproduction of a published posterior.",
+      "Keep all 400 xi and 80 Map3 rows and every cross-covariance entry; no implicit scale cuts or MOPED.",
+      "The published covariance applies an approximately 8 arcmin lower cut to BOTH measured SAS side parameters. Its aperture radii remain 7,14,25,40 arcmin.",
+      "The explicit 8-to-80 arcmin, 10-side-bin, 63-angle-bin model below is a design approximation; exact retained measurement edges, bin averaging and emulator equivalence require validation.",
+      "The public covariance is reused at fixed cosmology and NLA physics while the mean uses TATT. Connected IA covariance changes are omitted.",
+      "All 400 xi rows include scales removed by the published two-point cuts. No claim of baryon robustness is valid before an explicit cut/model study.",
+      "IA Table 1 fiducial choices follow2601.09133; source curves/covariance follow the public Y3 simulation files. This is deliberately a new mixed-input forecast.",
+      "power_mode=2 means nonlinear P(k,z) in quadratic three-point IA. Compare mode0 and historical mode1 as distinct physical prescriptions.",
+      "Photo-z and calibration Gaussian widths follow2503.03964 Table3. No Gaussian prior is inferred from a uniform parameter range.",
+      "Velocity shear ct and bispectrum-only feedback fb are fixed to zero because the chosen two-point model has no corresponding complete joint response.",
+      "BiHalofit and effective-growth neutrino approximations remain; mnu is fixed rather than forecast.",
+      "Numerical grids are starting choices. Refine transforms, projection, CFASTPT, ell quadrature and derivative steps separately before interpreting errors.",
+      "Source preparation is recorded in runs/y3_demo_sources.json; original upstream FITS bytes remain unchanged.",
+      "w0 and wa are varied without Gaussian priors. Their FoM is a numerical accuracy diagnostic beyond the fixed-dark-energy paper analyses."
+    ],
+    "outputs": {
+      "evaluate": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/source_combined_convergence/tatt/pchip4801_kernel401_chi2/center.npz",
+      "fisher": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/source_combined_convergence/tatt/pchip4801_kernel401_chi2/not_a_full_fisher.npz"
+    },
+    "parameters": {
+      "dz1": 0,
+      "dz2": 0,
+      "dz3": 0,
+      "dz4": 0,
+      "h": 0.722,
+      "m1": 0,
+      "m2": 0,
+      "m3": 0,
+      "m4": 0,
+      "mnu": 0.06,
+      "nnu": 3.046,
+      "ns": 0.959,
+      "num_massive_neutrinos": 3,
+      "omega_b": 0.0463,
+      "omega_m": 0.289,
+      "sigma8": 0.7865548373195137,
+      "w0": -1,
+      "wa": 0
+    },
+    "physics": {
+      "cosmology_mode": "fixed_tables",
+      "extrap_kmax": null,
+      "fit_nz": 33,
+      "halofit_version": "takahashi",
+      "k": {
+        "count": 256,
+        "logarithmic": true,
+        "lower": 1e-05,
+        "upper": 1000
+      },
+      "kernel_nz": 401,
+      "kmax_boltzmann": 5.0,
+      "los_z": {
+        "count": 65,
+        "lower": 0.005,
+        "upper": 3.1
+      },
+      "source_interpolation": "pchip_midpoint",
+      "source_nz": 4801,
+      "source_padding": "zero_at_measured_edges",
+      "source_readers": false,
+      "table_boost": 8,
+      "tables": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/source_combined_convergence/tatt/pchip4801_kernel401_chi2/sources_and_physics.npz",
+      "z": {
+        "count": 125,
+        "lower": 0,
+        "upper": 3.1
+      }
+    },
+    "rows": {
+      "aperture": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+      "assumed_angle_unit": "arcmin",
+      "mode": "measurement",
+      "two_point": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits"
+    },
+    "source": {
+      "extension": "nz_source",
+      "nbin": 4,
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits"
+    },
+    "threads": 4
+  },
+  "configuration_sha256": "c4dbdb011d9dadba65d6c971b841b643d8aa468046accf2ba496d92cf2f340ed",
+  "covariance_use": "fixed full joint inverse metric, including xi/Map3 cross blocks",
+  "dependencies": {
+    "format": "des3pcf-prediction-identity-v1",
+    "implementation": {
+      "python_implementation_sha256": {
+        "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+        "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+        "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+        "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+        "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+        "python/des3pcf/fisher_accuracy.py": "806141de40d3de252f7f662225f608162e93429c0b7bb70eacc8abca48e4174c",
+        "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+        "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+        "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+        "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+        "python/des3pcf/likelihood.py": "33f1cfc9e0ab3f0477d761748d5fe1de1577298a170d964f68646c0c849f2a53",
+        "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+        "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+        "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+        "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+        "python/des3pcf/provenance.py": "c2647732505400a59d98e59bde16f53fa5e887e670789a48a4bb3a75f1cbef19",
+        "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+        "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+        "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+        "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+        "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+        "scripts/run_3pcf.py": "7fd3907ed1af537ddfcecf0c1d0234f0f2b2fc76fe88c1a726b7757b87f12710"
+      },
+      "three_point_extension": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+        "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+      },
+      "two_point_extension": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+        "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+      }
+    },
+    "input_files": {
+      "aperture_rows": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+        "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+      },
+      "joint_covariance": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+        "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+      },
+      "physical_tables": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/source_combined_convergence/tatt/pchip4801_kernel401_chi2/sources_and_physics.npz",
+        "sha256": "3432fd3ba2fb0d1d3f7412e95ae340dd1459b0c37bdf52a1b2c13ffa6b49bcbb"
+      },
+      "source_curves": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+        "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+      },
+      "two_point_rows": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+        "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+      }
+    },
+    "parent_configuration_sha256": "1392fefdc4d87a0e65dddee513f5ba4e83bd171f978a8e8fcddc42a1e48efd3e",
+    "parent_tables_sha256": "17bc028bde21fe20536a6b659b69c5fa78173cf7475374e945efd3c818c17a5d",
+    "study_script_sha256": "8f8494680c83986549c457b12422e41d6ef9bd4c14b7c008599a85d72bbbed70"
+  },
+  "derivative_steps": [
+    0.001,
+    0.0005,
+    0.00025
+  ],
+  "dz1_offsets": [
+    0.0,
+    -0.002,
+    0.002,
+    -0.001,
+    0.001,
+    -0.0005,
+    0.0005,
+    -0.00025,
+    0.00025
+  ],
+  "format": "des3pcf-source-policy-study-v1",
+  "interpretation": "Deterministic source-support and resolution study; fourth differences are not assumed to be independent random jitter. No full Fisher rerun.",
+  "model": "tatt",
+  "no_camb": true
+}

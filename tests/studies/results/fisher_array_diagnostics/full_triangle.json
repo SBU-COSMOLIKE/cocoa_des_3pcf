@@ -1,0 +1,3227 @@
+{
+  "format": "des3pcf-full-triangle-array-report-v1",
+  "provenance": {
+    "input_sha256": {
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml": "8c5ed2fe7d80d1816c91ef02c2b2ce97385e61becc75b983e3358798e3b882ba",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_tatt_demo_fisher.yaml": "19aaf4118a76641a0d7434e97ffe730c637b513dc67b932f655ef38b76c24786",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/chi_2.json": "1b3f6f37347a58227b1ea78d0cc6e1f0ebed03c76477306388bd2c014d71f089",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/chi_2_full_fisher.npz": null,
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/chi_2_noise.npz": "bfb5a9dde7839743a5c26d20a3642b6f4a7b77514ac07cc7f27d6e34b5f8151d",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/core_2pt_1p5.json": "d8ddd37dd3f0c8501680b83c622f6e612c24af4a54933145ca93b77d59485952",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/core_2pt_1p5_full_fisher.npz": null,
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/core_2pt_1p5_noise.npz": "308a8d20d642736876035821c74c1913fc1ad021ce83404c7fe1efd5874be256",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/summary.json": "3d9c6bc8edf7cedf6a91b90b44c2ae73490ce2bdde78b0d9a5d7f76dc136d2bd",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/triangle_1p5.json": "b7f193183af5f939b5607277d0d7b93036136baebf09ea82b545728eb81fc2e2",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/triangle_1p5_full_fisher.npz": "2509d27b7f106a0a23156fd8543acaff0dca57540583bff0a8ac38daa205681c",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/triangle_1p5_noise.npz": "4642fd9771a64f80bab49ddfd077133fb64ed24c7a63d1ba66c359f54470b0c1",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/xi_ell_2.json": "d0cdf6d9f1cbc0d2d34858308a1313963964a2c8f7bbc4f361130b4adfc74909",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/xi_ell_2_full_fisher.npz": null,
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/xi_ell_2_noise.npz": "220f44eefb69e5225157d309c5db6fd59fa28a9d85ae710d275147211f2dc25c",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/chi_2.json": "35fad57dd99b18518bf7e3bbef49cfd130711f82b075f9c7b4bae61f9bd8615d",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/chi_2_full_fisher.npz": null,
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/chi_2_noise.npz": "53b751226f52d4671999e931f1fb482b53566a775d19bd0b8e778e7c22502e1b",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/core_2pt_1p5.json": "80a59e44583ca9aff543a107d93f34b1c37ba01c4a2235b8214d8f1745d7ea06",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/core_2pt_1p5_full_fisher.npz": null,
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/core_2pt_1p5_noise.npz": "a118c3d3082f7e2d5d610ac2bcc2528c595e03150311996fd37790065564d746",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/summary.json": "ac9c424d53612b8c998afe3377b1236ac95b77849f9997df79c39aa99d0aab54",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/triangle_1p5.json": "26ed7bad3715f5261570883a2621c76f519aa39db7bbf1b360a5766945e241fd",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/triangle_1p5_full_fisher.npz": "6fbb521a8422e6930e75fad3874f1b9e14d49aa80e5ab2f2383312bd2e2009da",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/triangle_1p5_noise.npz": "6ba1195e453d8a4b49792d079aeeceb2135b2931d239361481613e229986a734",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/xi_ell_2.json": "f746103beff038d08df7f029bcbe977f94caa1a9b6469df3dd2339d39116fcbb",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/xi_ell_2_full_fisher.npz": null,
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/xi_ell_2_noise.npz": "e1349c04127b6fd99afd3f13b8096e1273d383c64acc86929febc4ce6894eb09",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_nla_measured_edge_demo_fisher.npz": "99a1687cf0945b17cf229b3d321d8ef3eaf54415c34707b43f145118ae517be9",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_tatt_measured_edge_demo_fisher.npz": "fcaad62d7a4c89f47114e944f0dde4b906055889526123eb51b321577b1142d6"
+    },
+    "analysis_code_sha256": {
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_accuracy_wrappers.py": "0a364b2abd95bde02e221e5e08c016301a2a0dd1c7bd54596edf50a89255dbb0",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_fisher_wrappers.py": "e1efcfcb9382c99161b982db515f23743a063bad7e5dae9f8defab813fa56614",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941",
+      "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/tests/studies/full_triangle_report.py": "709f1a60e400070522788cd746b8f5bbacf6da29a58ad7fab316c79dd8abdd4b"
+    }
+  },
+  "analysis_libraries": {
+    "numpy": "1.26.3",
+    "scipy": "1.12.0"
+  },
+  "scope": "Historical saved-array comparison. Archived physical identities must agree between default, screening and full candidates. Current analysis code is fingerprinted separately; no physical model is evaluated.",
+  "models": {
+    "nla": {
+      "selected_stencil_reproducibility": {
+        "columns": [
+          {
+            "parameter": "w0",
+            "stencils_bitwise_equal": true,
+            "mismatched_stencil_values": 0,
+            "maximum_absolute_stencil_difference": 0.0,
+            "derivative_bitwise_equal": true,
+            "center_bitwise_equal": true
+          },
+          {
+            "parameter": "wa",
+            "stencils_bitwise_equal": true,
+            "mismatched_stencil_values": 0,
+            "maximum_absolute_stencil_difference": 0.0,
+            "derivative_bitwise_equal": true,
+            "center_bitwise_equal": true
+          },
+          {
+            "parameter": "h",
+            "stencils_bitwise_equal": true,
+            "mismatched_stencil_values": 0,
+            "maximum_absolute_stencil_difference": 0.0,
+            "derivative_bitwise_equal": true,
+            "center_bitwise_equal": true
+          },
+          {
+            "parameter": "omega_m",
+            "stencils_bitwise_equal": true,
+            "mismatched_stencil_values": 0,
+            "maximum_absolute_stencil_difference": 0.0,
+            "derivative_bitwise_equal": true,
+            "center_bitwise_equal": true
+          }
+        ],
+        "all_bitwise_equal": true,
+        "interpretation": "Bitwise agreement isolates full-versus-selected substitution differences from any change in these four evaluated stencils. It does not validate the omitted derivatives or the physical model."
+      },
+      "established_full_checks": {
+        "labels": [
+          "Default settings",
+          "Triangle tables \u00d71.5"
+        ],
+        "ratios": [
+          [
+            0.9418578079936928,
+            0.9442598559442409
+          ],
+          [
+            1.0,
+            1.0017033035056482
+          ]
+        ],
+        "pending": [
+          "chi_2",
+          "core_2pt_1p5",
+          "xi_ell_2"
+        ],
+        "rank_failures": []
+      },
+      "physical_prediction_identity": {
+        "format": "des3pcf-prediction-identity-v1",
+        "input_files": {
+          "physical_tables": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+            "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+          },
+          "source_curves": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+            "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+          },
+          "joint_covariance": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+            "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+          },
+          "two_point_rows": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+            "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+          },
+          "aperture_rows": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+            "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+          }
+        },
+        "implementation": {
+          "three_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+            "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+          },
+          "two_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+            "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+          },
+          "python_implementation_sha256": {
+            "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+            "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+            "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+            "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+            "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+            "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+            "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+            "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+            "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+            "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+            "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+            "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+            "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+            "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+            "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+            "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+            "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+            "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+            "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+            "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+            "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+            "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+          },
+          "camb_implementation": {
+            "version": "1.6.7",
+            "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+            "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+            "python_sha256": {
+              "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+              "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+              "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+              "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+              "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+              "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+              "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+              "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+              "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+              "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+              "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+              "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+              "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+              "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+              "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+              "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+              "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+              "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+              "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+              "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+              "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+              "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+              "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+              "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+              "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+              "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+            }
+          }
+        }
+      },
+      "parameter_names": [
+        "omega_m",
+        "sigma8",
+        "omega_b",
+        "h",
+        "ns",
+        "a1",
+        "eta1",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "dz1",
+        "dz2",
+        "dz3",
+        "dz4",
+        "w0",
+        "wa"
+      ],
+      "selected_parameters": [
+        "w0",
+        "wa",
+        "h",
+        "omega_m"
+      ],
+      "unselected_parameters": [
+        "sigma8",
+        "omega_b",
+        "ns",
+        "a1",
+        "eta1",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "dz1",
+        "dz2",
+        "dz3",
+        "dz4"
+      ],
+      "fiducial_distance": {
+        "chi2_joint": 0.01911907148212703,
+        "chi2_two_point": 0.0,
+        "chi2_conditional_three_point": 0.019119071482127048
+      },
+      "fixed_default_h2_w0wa_fom_denominator": 0.19117392871568467,
+      "steps": {
+        "h": {
+          "information": {
+            "default": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.18005865744569724,
+              "saved_fisher_reconstruction_relative_max": 0.0,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.1541507711952406,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.019105952698556437,
+                    "omega_m_s8_fom": 1017.5853841971358,
+                    "sigma_ia": {
+                      "a1": 1.039867028245122,
+                      "eta1": 9.087987480819251
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015368215641001664,
+                    "omega_m_s8_fom": 2192.0323401252654,
+                    "sigma_ia": {
+                      "a1": 0.89705240158132,
+                      "eta1": 7.9320762204054365
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1592043301060773,
+                    "eta1": 1.145726191768078
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.06513008463452259,
+                        0.028990214931359348
+                      ],
+                      [
+                        0.028990214931361048,
+                        0.01352968998656866
+                      ]
+                    ],
+                    "sigma_s8": 0.11631719557558401,
+                    "omega_m_s8_fom": 156.6380755767439
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.01748137250302421,
+                        0.007936246797440292
+                      ],
+                      [
+                        0.00793624679744019,
+                        0.0038563162672501363
+                      ]
+                    ],
+                    "sigma_s8": 0.06209924530338623,
+                    "omega_m_s8_fom": 475.13107381204037
+                  },
+                  "joint_over_two_point_fom": 3.033305101984943,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 1.0701528767415647,
+                      "eta1": 18.89958863289604
+                    },
+                    "joint": {
+                      "a1": 0.9509553753617291,
+                      "eta1": 11.581314793145152
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1253449998476475,
+                    "eta1": 1.6319035420816375
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.9418578079936928,
+              "ratio_to_same_step_default_w0wa_fom": 1.0
+            },
+            "full_triangle": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.18051786638936698,
+              "saved_fisher_reconstruction_relative_max": 0.0,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.1700191000900593,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.019105952698556437,
+                    "omega_m_s8_fom": 1017.5853841971358,
+                    "sigma_ia": {
+                      "a1": 1.039867028245122,
+                      "eta1": 9.087987480819251
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015329333038422654,
+                    "omega_m_s8_fom": 2208.179719680266,
+                    "sigma_ia": {
+                      "a1": 0.8947707509786386,
+                      "eta1": 7.921545234197774
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1621602819580177,
+                    "eta1": 1.1472493323128268
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.06513008463452259,
+                        0.028990214931359348
+                      ],
+                      [
+                        0.028990214931361048,
+                        0.01352968998656866
+                      ]
+                    ],
+                    "sigma_s8": 0.11631719557558401,
+                    "omega_m_s8_fom": 156.6380755767439
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.0175206699803666,
+                        0.007943705517756387
+                      ],
+                      [
+                        0.007943705517756201,
+                        0.0038519102819099755
+                      ]
+                    ],
+                    "sigma_s8": 0.06206375981126164,
+                    "omega_m_s8_fom": 477.51378368689353
+                  },
+                  "joint_over_two_point_fom": 3.0485166644743313,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 1.0701528767415647,
+                      "eta1": 18.89958863289604
+                    },
+                    "joint": {
+                      "a1": 0.9501578014520141,
+                      "eta1": 11.528334792510828
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1262896280030288,
+                    "eta1": 1.6394031725357086
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.9442598559442409,
+              "ratio_to_same_step_default_w0wa_fom": 1.0025503297102403
+            },
+            "selected_four_only": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.16699508438865202,
+              "saved_fisher_reconstruction_relative_max": null,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.177091902623339,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.019105952698556437,
+                    "omega_m_s8_fom": 1017.5853841971358,
+                    "sigma_ia": {
+                      "a1": 1.039867028245122,
+                      "eta1": 9.087987480819251
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015065374146076886,
+                    "omega_m_s8_fom": 2215.3769001634437,
+                    "sigma_ia": {
+                      "a1": 0.8819283788600963,
+                      "eta1": 7.837605021139226
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1790833055958163,
+                    "eta1": 1.1595362940984588
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.06513008463452259,
+                        0.028990214931359348
+                      ],
+                      [
+                        0.028990214931361048,
+                        0.01352968998656866
+                      ]
+                    ],
+                    "sigma_s8": 0.11631719557558401,
+                    "omega_m_s8_fom": 156.6380755767439
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.020309840012649547,
+                        0.009198980033140725
+                      ],
+                      [
+                        0.00919898003314046,
+                        0.004416574859640209
+                      ]
+                    ],
+                    "sigma_s8": 0.06645731607310221,
+                    "omega_m_s8_fom": 443.73524720436484
+                  },
+                  "joint_over_two_point_fom": 2.8328696300086973,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 1.0701528767415647,
+                      "eta1": 18.89958863289604
+                    },
+                    "joint": {
+                      "a1": 0.9423965413207758,
+                      "eta1": 11.666119096980516
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1355653695860741,
+                    "eta1": 1.6200407758384472
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.8735243634450196,
+              "ratio_to_same_step_default_w0wa_fom": 0.9274482369114354
+            },
+            "unselected_complement_only": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.19424340467729148,
+              "saved_fisher_reconstruction_relative_max": null,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.1530121097609816,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.019105952698556437,
+                    "omega_m_s8_fom": 1017.5853841971358,
+                    "sigma_ia": {
+                      "a1": 1.039867028245122,
+                      "eta1": 9.087987480819251
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015610970499111344,
+                    "omega_m_s8_fom": 2190.8736548922143,
+                    "sigma_ia": {
+                      "a1": 0.9081295076218157,
+                      "eta1": 8.007929759942035
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.145064684626642,
+                    "eta1": 1.1348735257744111
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.06513008463452259,
+                        0.028990214931359348
+                      ],
+                      [
+                        0.028990214931361048,
+                        0.01352968998656866
+                      ]
+                    ],
+                    "sigma_s8": 0.11631719557558401,
+                    "omega_m_s8_fom": 156.6380755767439
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.015086246628781661,
+                        0.006855380889987388
+                      ],
+                      [
+                        0.006855380889987608,
+                        0.003368575668738882
+                      ]
+                    ],
+                    "sigma_s8": 0.05803943201599135,
+                    "omega_m_s8_fom": 511.44932770059336
+                  },
+                  "joint_over_two_point_fom": 3.26516605759761,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 1.0701528767415647,
+                      "eta1": 18.89958863289604
+                    },
+                    "joint": {
+                      "a1": 0.9564347239597215,
+                      "eta1": 11.4830309805646
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1188979759235844,
+                    "eta1": 1.6458710827205991
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 1.0160559338934325,
+              "ratio_to_same_step_default_w0wa_fom": 1.078778479373435
+            }
+          },
+          "derivative_columns": [
+            {
+              "parameter": "omega_m",
+              "default_derivative_C_norm": 489.01556514016175,
+              "derivative_difference_C_norm": 1.2073563504424443,
+              "relative_derivative_C_norm_change": 0.0024689528033660676,
+              "absolute_parameter_step": 0.003,
+              "step_times_derivative_difference_C_norm": 0.003622069051327333
+            },
+            {
+              "parameter": "sigma8",
+              "default_derivative_C_norm": 324.0896423647016,
+              "derivative_difference_C_norm": 1.0996353530160723,
+              "relative_derivative_C_norm_change": 0.0033929975206632513,
+              "absolute_parameter_step": 0.005,
+              "step_times_derivative_difference_C_norm": 0.0054981767650803615
+            },
+            {
+              "parameter": "omega_b",
+              "default_derivative_C_norm": 143.5530826988041,
+              "derivative_difference_C_norm": 0.6889115459519926,
+              "relative_derivative_C_norm_change": 0.004799002104311701,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 0.0003444557729759963
+            },
+            {
+              "parameter": "h",
+              "default_derivative_C_norm": 31.229055370047174,
+              "derivative_difference_C_norm": 0.06025627128487179,
+              "relative_derivative_C_norm_change": 0.0019294938822474147,
+              "absolute_parameter_step": 0.005,
+              "step_times_derivative_difference_C_norm": 0.00030128135642435897
+            },
+            {
+              "parameter": "ns",
+              "default_derivative_C_norm": 60.3582582037848,
+              "derivative_difference_C_norm": 0.07775329379595917,
+              "relative_derivative_C_norm_change": 0.0012881964475092095,
+              "absolute_parameter_step": 0.005,
+              "step_times_derivative_difference_C_norm": 0.0003887664689797959
+            },
+            {
+              "parameter": "a1",
+              "default_derivative_C_norm": 10.134062519853643,
+              "derivative_difference_C_norm": 0.017006493094129438,
+              "relative_derivative_C_norm_change": 0.0016781515863763437,
+              "absolute_parameter_step": 0.01,
+              "step_times_derivative_difference_C_norm": 0.0001700649309412944
+            },
+            {
+              "parameter": "eta1",
+              "default_derivative_C_norm": 0.6749739348876083,
+              "derivative_difference_C_norm": 0.0016340527795741504,
+              "relative_derivative_C_norm_change": 0.0024209124161901764,
+              "absolute_parameter_step": 0.03,
+              "step_times_derivative_difference_C_norm": 4.902158338722451e-05
+            },
+            {
+              "parameter": "m1",
+              "default_derivative_C_norm": 42.99959045363831,
+              "derivative_difference_C_norm": 0.11861829179773839,
+              "relative_derivative_C_norm_change": 0.002758591199272731,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.00011861829179773839
+            },
+            {
+              "parameter": "m2",
+              "default_derivative_C_norm": 73.07997966886765,
+              "derivative_difference_C_norm": 0.16263593718145028,
+              "relative_derivative_C_norm_change": 0.002225451319477225,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.0001626359371814503
+            },
+            {
+              "parameter": "m3",
+              "default_derivative_C_norm": 113.05515170272369,
+              "derivative_difference_C_norm": 0.20561259851859598,
+              "relative_derivative_C_norm_change": 0.0018186928717697916,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.000205612598518596
+            },
+            {
+              "parameter": "m4",
+              "default_derivative_C_norm": 107.21377216637572,
+              "derivative_difference_C_norm": 0.1706956759597687,
+              "relative_derivative_C_norm_change": 0.001592105869522816,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.00017069567595976871
+            },
+            {
+              "parameter": "dz1",
+              "default_derivative_C_norm": 162.04500352841723,
+              "derivative_difference_C_norm": 0.3991697675523829,
+              "relative_derivative_C_norm_change": 0.0024633265997762283,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.0003991697675523829
+            },
+            {
+              "parameter": "dz2",
+              "default_derivative_C_norm": 164.04288799785544,
+              "derivative_difference_C_norm": 0.2802936489124576,
+              "relative_derivative_C_norm_change": 0.001708660779710986,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.0002802936489124576
+            },
+            {
+              "parameter": "dz3",
+              "default_derivative_C_norm": 140.6507648126109,
+              "derivative_difference_C_norm": 0.14900798203926044,
+              "relative_derivative_C_norm_change": 0.0010594182138844667,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.00014900798203926045
+            },
+            {
+              "parameter": "dz4",
+              "default_derivative_C_norm": 98.10090713588474,
+              "derivative_difference_C_norm": 0.09282042948878719,
+              "relative_derivative_C_norm_change": 0.0009461729987900796,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 9.28204294887872e-05
+            },
+            {
+              "parameter": "w0",
+              "default_derivative_C_norm": 21.96630340667902,
+              "derivative_difference_C_norm": 0.03525306371571063,
+              "relative_derivative_C_norm_change": 0.0016048701077756974,
+              "absolute_parameter_step": 0.02,
+              "step_times_derivative_difference_C_norm": 0.0007050612743142126
+            },
+            {
+              "parameter": "wa",
+              "default_derivative_C_norm": 3.640368176778465,
+              "derivative_difference_C_norm": 0.005099359198416058,
+              "relative_derivative_C_norm_change": 0.0014007811712409607,
+              "absolute_parameter_step": 0.04,
+              "step_times_derivative_difference_C_norm": 0.00020397436793664233
+            }
+          ],
+          "xi_derivatives_bitwise_unchanged": true,
+          "full_over_selected_four_w0wa_fom": 1.0809771260646395,
+          "full_minus_selected_four_w0wa_fom": 0.013522782000714967,
+          "nonadditive_w0wa_fom_remainder": -0.0006619652308792745,
+          "paper_related_stability": {
+            "fixed_dark_energy": {
+              "status": "resolved",
+              "triangle_over_default_joint_to_xi_omega_m_s8_fom_gain": 1.0073663965897866,
+              "probes": {
+                "two_point": {
+                  "triangle_over_default_sigma_s8": 1.0,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0,
+                    "eta1": 1.0
+                  }
+                },
+                "joint": {
+                  "triangle_over_default_sigma_s8": 0.9974699338239845,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 0.9974565024310069,
+                    "eta1": 0.99867235438553
+                  }
+                }
+              }
+            },
+            "free_dark_energy": {
+              "status": "resolved",
+              "triangle_over_default_joint_to_xi_omega_m_s8_fom_gain": 1.0050148474940532,
+              "probes": {
+                "two_point": {
+                  "triangle_over_default_sigma_s8": 1.0,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0,
+                    "eta1": 1.0
+                  }
+                },
+                "joint": {
+                  "triangle_over_default_sigma_s8": 0.999428568061476,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 0.9991612919697608,
+                    "eta1": 0.9954253898127626
+                  }
+                }
+              }
+            }
+          }
+        },
+        "h2": {
+          "information": {
+            "default": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.19117392871568467,
+              "saved_fisher_reconstruction_relative_max": 0.0,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.138926103835772,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.019218567154718216,
+                    "omega_m_s8_fom": 1011.3383559013084,
+                    "sigma_ia": {
+                      "a1": 1.038511865166578,
+                      "eta1": 9.083664224140328
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015464657817573136,
+                    "omega_m_s8_fom": 2163.178009247661,
+                    "sigma_ia": {
+                      "a1": 0.8991727103821935,
+                      "eta1": 7.93251575468463
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1549637274080062,
+                    "eta1": 1.1451177035199553
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.06711826282463476,
+                        0.02833693328724727
+                      ],
+                      [
+                        0.028336933287247356,
+                        0.012521785163647057
+                      ]
+                    ],
+                    "sigma_s8": 0.1119007826766509,
+                    "omega_m_s8_fom": 163.3893586830978
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.015307045005655566,
+                        0.006828397651822353
+                      ],
+                      [
+                        0.006828397651822486,
+                        0.003289937116581606
+                      ]
+                    ],
+                    "sigma_s8": 0.05735797343509973,
+                    "omega_m_s8_fom": 517.6276733814617
+                  },
+                  "joint_over_two_point_fom": 3.168062336210203,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 1.069015156029885,
+                      "eta1": 19.070867972630012
+                    },
+                    "joint": {
+                      "a1": 0.9524503919276227,
+                      "eta1": 11.498501778154251
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1223840790976547,
+                    "eta1": 1.6585524219218135
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 1.0,
+              "ratio_to_same_step_default_w0wa_fom": 1.0
+            },
+            "full_triangle": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.19149955593865461,
+              "saved_fisher_reconstruction_relative_max": 0.0,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.1560958215831407,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.019218567154718216,
+                    "omega_m_s8_fom": 1011.3383559013084,
+                    "sigma_ia": {
+                      "a1": 1.038511865166578,
+                      "eta1": 9.083664224140328
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015422832314186116,
+                    "omega_m_s8_fom": 2180.5424033655745,
+                    "sigma_ia": {
+                      "a1": 0.8970546792146615,
+                      "eta1": 7.922780477390972
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1576907062964734,
+                    "eta1": 1.1465247901367632
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.06711826282463476,
+                        0.02833693328724727
+                      ],
+                      [
+                        0.028336933287247356,
+                        0.012521785163647057
+                      ]
+                    ],
+                    "sigma_s8": 0.1119007826766509,
+                    "omega_m_s8_fom": 163.3893586830978
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.015358469148101808,
+                        0.006846402597363469
+                      ],
+                      [
+                        0.00684640259736342,
+                        0.0032930234777711347
+                      ]
+                    ],
+                    "sigma_s8": 0.05738487150609588,
+                    "omega_m_s8_fom": 519.6947201224656
+                  },
+                  "joint_over_two_point_fom": 3.180713384954528,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 1.069015156029885,
+                      "eta1": 19.070867972630012
+                    },
+                    "joint": {
+                      "a1": 0.9516451822105533,
+                      "eta1": 11.456769318291006
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.123333755073184,
+                    "eta1": 1.6645938695983793
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 1.0017033035056482,
+              "ratio_to_same_step_default_w0wa_fom": 1.0017033035056482
+            },
+            "selected_four_only": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.1783249931708298,
+              "saved_fisher_reconstruction_relative_max": null,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.1614443252364355,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.019218567154718216,
+                    "omega_m_s8_fom": 1011.3383559013084,
+                    "sigma_ia": {
+                      "a1": 1.038511865166578,
+                      "eta1": 9.083664224140328
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015157208517189408,
+                    "omega_m_s8_fom": 2185.9515502568297,
+                    "sigma_ia": {
+                      "a1": 0.8845605264017867,
+                      "eta1": 7.840677670811144
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1740427411915317,
+                    "eta1": 1.1585305002342474
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.06711826282463476,
+                        0.02833693328724727
+                      ],
+                      [
+                        0.028336933287247356,
+                        0.012521785163647057
+                      ]
+                    ],
+                    "sigma_s8": 0.1119007826766509,
+                    "omega_m_s8_fom": 163.3893586830978
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.01759654857884268,
+                        0.007832902392195498
+                      ],
+                      [
+                        0.007832902392195548,
+                        0.0037276866479845653
+                      ]
+                    ],
+                    "sigma_s8": 0.061054783989336704,
+                    "omega_m_s8_fom": 485.6395350181206
+                  },
+                  "joint_over_two_point_fom": 2.972283745602086,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 1.069015156029885,
+                      "eta1": 19.070867972630012
+                    },
+                    "joint": {
+                      "a1": 0.9444659526963435,
+                      "eta1": 11.542429399730043
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1318726238653365,
+                    "eta1": 1.6522403830406833
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.9327892896736778,
+              "ratio_to_same_step_default_w0wa_fom": 0.9327892896736778
+            },
+            "unselected_complement_only": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.20493869117867453,
+              "saved_fisher_reconstruction_relative_max": null,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.139906552165948,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.019218567154718216,
+                    "omega_m_s8_fom": 1011.3383559013084,
+                    "sigma_ia": {
+                      "a1": 1.038511865166578,
+                      "eta1": 9.083664224140328
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.01570567657650634,
+                    "omega_m_s8_fom": 2164.1695742499473,
+                    "sigma_ia": {
+                      "a1": 0.9099137109890216,
+                      "eta1": 8.006937842141829
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1413300542946845,
+                    "eta1": 1.1344741776727068
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.06711826282463476,
+                        0.02833693328724727
+                      ],
+                      [
+                        0.028336933287247356,
+                        0.012521785163647057
+                      ]
+                    ],
+                    "sigma_s8": 0.1119007826766509,
+                    "omega_m_s8_fom": 163.3893586830978
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.013360653249597051,
+                        0.0059687687380445475
+                      ],
+                      [
+                        0.00596876873804456,
+                        0.0029103249215932333
+                      ]
+                    ],
+                    "sigma_s8": 0.05394742738623625,
+                    "omega_m_s8_fom": 554.0491981420267
+                  },
+                  "joint_over_two_point_fom": 3.3909748015881136,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 1.069015156029885,
+                      "eta1": 19.070867972630012
+                    },
+                    "joint": {
+                      "a1": 0.9575364429134688,
+                      "eta1": 11.43982386622403
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1164224233358921,
+                    "eta1": 1.6670595802560009
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 1.0720012532852266,
+              "ratio_to_same_step_default_w0wa_fom": 1.0720012532852266
+            }
+          },
+          "derivative_columns": [
+            {
+              "parameter": "omega_m",
+              "default_derivative_C_norm": 490.9661338914161,
+              "derivative_difference_C_norm": 1.2114068791906654,
+              "relative_derivative_C_norm_change": 0.0024673939719406074,
+              "absolute_parameter_step": 0.0015,
+              "step_times_derivative_difference_C_norm": 0.001817110318785998
+            },
+            {
+              "parameter": "sigma8",
+              "default_derivative_C_norm": 324.0939410946178,
+              "derivative_difference_C_norm": 1.0999354547022746,
+              "relative_derivative_C_norm_change": 0.0033938784877843593,
+              "absolute_parameter_step": 0.0025,
+              "step_times_derivative_difference_C_norm": 0.0027498386367556865
+            },
+            {
+              "parameter": "omega_b",
+              "default_derivative_C_norm": 143.59698892738976,
+              "derivative_difference_C_norm": 0.6872214954832436,
+              "relative_derivative_C_norm_change": 0.0047857653605169895,
+              "absolute_parameter_step": 0.00025,
+              "step_times_derivative_difference_C_norm": 0.0001718053738708109
+            },
+            {
+              "parameter": "h",
+              "default_derivative_C_norm": 30.91723069581775,
+              "derivative_difference_C_norm": 0.06070727859613684,
+              "relative_derivative_C_norm_change": 0.0019635419224125032,
+              "absolute_parameter_step": 0.0025,
+              "step_times_derivative_difference_C_norm": 0.0001517681964903421
+            },
+            {
+              "parameter": "ns",
+              "default_derivative_C_norm": 60.364824279945886,
+              "derivative_difference_C_norm": 0.07828255102935078,
+              "relative_derivative_C_norm_change": 0.0012968239693088518,
+              "absolute_parameter_step": 0.0025,
+              "step_times_derivative_difference_C_norm": 0.00019570637757337694
+            },
+            {
+              "parameter": "a1",
+              "default_derivative_C_norm": 10.134062519849067,
+              "derivative_difference_C_norm": 0.017006493092605122,
+              "relative_derivative_C_norm_change": 0.0016781515862266865,
+              "absolute_parameter_step": 0.005,
+              "step_times_derivative_difference_C_norm": 8.503246546302561e-05
+            },
+            {
+              "parameter": "eta1",
+              "default_derivative_C_norm": 0.6749739323809945,
+              "derivative_difference_C_norm": 0.001634052779382096,
+              "relative_derivative_C_norm_change": 0.00242091242489605,
+              "absolute_parameter_step": 0.015,
+              "step_times_derivative_difference_C_norm": 2.451079169073144e-05
+            },
+            {
+              "parameter": "m1",
+              "default_derivative_C_norm": 42.99959045363676,
+              "derivative_difference_C_norm": 0.11861829179666933,
+              "relative_derivative_C_norm_change": 0.0027585911992479683,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 5.9309145898334664e-05
+            },
+            {
+              "parameter": "m2",
+              "default_derivative_C_norm": 73.07997966886329,
+              "derivative_difference_C_norm": 0.1626359371817466,
+              "relative_derivative_C_norm_change": 0.0022254513194814125,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 8.13179685908733e-05
+            },
+            {
+              "parameter": "m3",
+              "default_derivative_C_norm": 113.05515170271762,
+              "derivative_difference_C_norm": 0.20561259851829913,
+              "relative_derivative_C_norm_change": 0.0018186928717672634,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 0.00010280629925914957
+            },
+            {
+              "parameter": "m4",
+              "default_derivative_C_norm": 107.21377216636924,
+              "derivative_difference_C_norm": 0.17069567595899304,
+              "relative_derivative_C_norm_change": 0.0015921058695156775,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 8.534783797949652e-05
+            },
+            {
+              "parameter": "dz1",
+              "default_derivative_C_norm": 162.02071653733069,
+              "derivative_difference_C_norm": 0.3992147465174054,
+              "relative_derivative_C_norm_change": 0.0024639734661673564,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 0.0001996073732587027
+            },
+            {
+              "parameter": "dz2",
+              "default_derivative_C_norm": 163.99990510781774,
+              "derivative_difference_C_norm": 0.28030644975781016,
+              "relative_derivative_C_norm_change": 0.001709186658208915,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 0.0001401532248789051
+            },
+            {
+              "parameter": "dz3",
+              "default_derivative_C_norm": 140.62546012551357,
+              "derivative_difference_C_norm": 0.14906131974721054,
+              "relative_derivative_C_norm_change": 0.0010599881388062137,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 7.453065987360527e-05
+            },
+            {
+              "parameter": "dz4",
+              "default_derivative_C_norm": 98.04498973624656,
+              "derivative_difference_C_norm": 0.09281886800748385,
+              "relative_derivative_C_norm_change": 0.0009466966976811192,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 4.6409434003741923e-05
+            },
+            {
+              "parameter": "w0",
+              "default_derivative_C_norm": 21.96758928280637,
+              "derivative_difference_C_norm": 0.03538066328263991,
+              "relative_derivative_C_norm_change": 0.0016105847039998926,
+              "absolute_parameter_step": 0.01,
+              "step_times_derivative_difference_C_norm": 0.0003538066328263991
+            },
+            {
+              "parameter": "wa",
+              "default_derivative_C_norm": 3.638578371628389,
+              "derivative_difference_C_norm": 0.005045361448247291,
+              "relative_derivative_C_norm_change": 0.0013866298682991727,
+              "absolute_parameter_step": 0.02,
+              "step_times_derivative_difference_C_norm": 0.00010090722896494581
+            }
+          ],
+          "xi_derivatives_bitwise_unchanged": true,
+          "full_over_selected_four_w0wa_fom": 1.073879508046323,
+          "full_minus_selected_four_w0wa_fom": 0.013174562767824805,
+          "nonadditive_w0wa_fom_remainder": -0.0005901996951650501,
+          "paper_related_stability": {
+            "fixed_dark_energy": {
+              "status": "resolved",
+              "triangle_over_default_joint_to_xi_omega_m_s8_fom_gain": 1.008027260837379,
+              "probes": {
+                "two_point": {
+                  "triangle_over_default_sigma_s8": 1.0,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0,
+                    "eta1": 1.0
+                  }
+                },
+                "joint": {
+                  "triangle_over_default_sigma_s8": 0.9972954135888159,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 0.9976444668047902,
+                    "eta1": 0.9987727377297789
+                  }
+                }
+              }
+            },
+            "free_dark_energy": {
+              "status": "resolved",
+              "triangle_over_default_joint_to_xi_omega_m_s8_fom_gain": 1.0039933080229282,
+              "probes": {
+                "two_point": {
+                  "triangle_over_default_sigma_s8": 1.0,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0,
+                    "eta1": 1.0
+                  }
+                },
+                "joint": {
+                  "triangle_over_default_sigma_s8": 1.0004689508604516,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 0.9991545914371038,
+                    "eta1": 0.996370617610154
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "selected_screen_h2_fom_ratio": 0.9327892896736778,
+      "interpretation": "Full, selected-only and complement-only substitutions are coherent matrix comparisons, not additive error contributions. The mixed-grid substitutions are diagnostics, not completed refined forecasts.",
+      "full_selected_h2_minus_screen_ratio": 0.0
+    },
+    "tatt": {
+      "selected_stencil_reproducibility": {
+        "columns": [
+          {
+            "parameter": "w0",
+            "stencils_bitwise_equal": true,
+            "mismatched_stencil_values": 0,
+            "maximum_absolute_stencil_difference": 0.0,
+            "derivative_bitwise_equal": true,
+            "center_bitwise_equal": true
+          },
+          {
+            "parameter": "wa",
+            "stencils_bitwise_equal": true,
+            "mismatched_stencil_values": 0,
+            "maximum_absolute_stencil_difference": 0.0,
+            "derivative_bitwise_equal": true,
+            "center_bitwise_equal": true
+          },
+          {
+            "parameter": "h",
+            "stencils_bitwise_equal": true,
+            "mismatched_stencil_values": 0,
+            "maximum_absolute_stencil_difference": 0.0,
+            "derivative_bitwise_equal": true,
+            "center_bitwise_equal": true
+          },
+          {
+            "parameter": "omega_m",
+            "stencils_bitwise_equal": true,
+            "mismatched_stencil_values": 0,
+            "maximum_absolute_stencil_difference": 0.0,
+            "derivative_bitwise_equal": true,
+            "center_bitwise_equal": true
+          }
+        ],
+        "all_bitwise_equal": true,
+        "interpretation": "Bitwise agreement isolates full-versus-selected substitution differences from any change in these four evaluated stencils. It does not validate the omitted derivatives or the physical model."
+      },
+      "established_full_checks": {
+        "labels": [
+          "Default settings",
+          "Triangle tables \u00d71.5"
+        ],
+        "ratios": [
+          [
+            0.9462411073445952,
+            0.9461134873216799
+          ],
+          [
+            1.0,
+            0.9994452197889533
+          ]
+        ],
+        "pending": [
+          "chi_2",
+          "core_2pt_1p5",
+          "xi_ell_2"
+        ],
+        "rank_failures": []
+      },
+      "physical_prediction_identity": {
+        "format": "des3pcf-prediction-identity-v1",
+        "input_files": {
+          "physical_tables": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+            "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+          },
+          "source_curves": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+            "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+          },
+          "joint_covariance": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+            "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+          },
+          "two_point_rows": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+            "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+          },
+          "aperture_rows": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+            "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+          }
+        },
+        "implementation": {
+          "three_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+            "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+          },
+          "two_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+            "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+          },
+          "python_implementation_sha256": {
+            "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+            "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+            "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+            "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+            "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+            "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+            "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+            "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+            "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+            "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+            "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+            "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+            "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+            "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+            "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+            "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+            "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+            "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+            "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+            "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+            "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+            "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+          },
+          "camb_implementation": {
+            "version": "1.6.7",
+            "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+            "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+            "python_sha256": {
+              "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+              "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+              "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+              "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+              "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+              "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+              "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+              "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+              "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+              "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+              "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+              "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+              "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+              "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+              "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+              "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+              "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+              "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+              "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+              "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+              "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+              "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+              "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+              "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+              "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+              "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+            }
+          }
+        }
+      },
+      "parameter_names": [
+        "omega_m",
+        "sigma8",
+        "omega_b",
+        "h",
+        "ns",
+        "a1",
+        "eta1",
+        "a2",
+        "eta2",
+        "bta",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "dz1",
+        "dz2",
+        "dz3",
+        "dz4",
+        "w0",
+        "wa"
+      ],
+      "selected_parameters": [
+        "w0",
+        "wa",
+        "h",
+        "omega_m"
+      ],
+      "unselected_parameters": [
+        "sigma8",
+        "omega_b",
+        "ns",
+        "a1",
+        "eta1",
+        "a2",
+        "eta2",
+        "bta",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "dz1",
+        "dz2",
+        "dz3",
+        "dz4"
+      ],
+      "fiducial_distance": {
+        "chi2_joint": 0.018970809648858084,
+        "chi2_two_point": 0.0,
+        "chi2_conditional_three_point": 0.018970809648858097
+      },
+      "fixed_default_h2_w0wa_fom_denominator": 0.14404734990921134,
+      "steps": {
+        "h": {
+          "information": {
+            "default": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.1363035238881465,
+              "saved_fisher_reconstruction_relative_max": 0.0,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "a2",
+                    "eta2",
+                    "bta",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.869104450035708,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.021652866769818646,
+                    "omega_m_s8_fom": 721.3672410409479,
+                    "sigma_ia": {
+                      "a1": 0.9723029255143262,
+                      "eta1": 7.065639740235266,
+                      "a2": 0.6461742819856611,
+                      "eta2": 4.469756907735515,
+                      "bta": 3.343476895316646
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.01549196342817508,
+                    "omega_m_s8_fom": 2069.6779613805647,
+                    "sigma_ia": {
+                      "a1": 0.8556580169455259,
+                      "eta1": 5.391292005097536,
+                      "a2": 0.5606834614124875,
+                      "eta2": 3.9809215102906617,
+                      "bta": 2.344840064021906
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1363218789034337,
+                    "eta1": 1.3105652102602887,
+                    "a2": 1.1524760875910323,
+                    "eta2": 1.1227945329193796,
+                    "bta": 1.4258869705517836
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.0901176710626241,
+                        0.03708910492195368
+                      ],
+                      [
+                        0.03708910492195288,
+                        0.016170197277980008
+                      ]
+                    ],
+                    "sigma_s8": 0.1271620905693989,
+                    "omega_m_s8_fom": 110.68910003077397
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.02878696030501373,
+                        0.013872433485872516
+                      ],
+                      [
+                        0.013872433485872509,
+                        0.00695734292494621
+                      ]
+                    ],
+                    "sigma_s8": 0.08341068831358611,
+                    "omega_m_s8_fom": 357.22616368609886
+                  },
+                  "joint_over_two_point_fom": 3.2272930540295497,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 0.9827572005167517,
+                      "eta1": 11.501793939883454,
+                      "a2": 1.0085564750507985,
+                      "eta2": 4.93353683305504,
+                      "bta": 3.6708570988018177
+                    },
+                    "joint": {
+                      "a1": 0.8651104465237021,
+                      "eta1": 6.4066708809474795,
+                      "a2": 0.6770885616300638,
+                      "eta2": 4.12873899169187,
+                      "bta": 2.9327076108324563
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1359904443019881,
+                    "eta1": 1.7952840334108842,
+                    "a2": 1.4895488303963351,
+                    "eta2": 1.1949258218992866,
+                    "bta": 1.2516955612086524
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.9462411073445952,
+              "ratio_to_same_step_default_w0wa_fom": 1.0
+            },
+            "full_triangle": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.1362851405620502,
+              "saved_fisher_reconstruction_relative_max": 0.0,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "a2",
+                    "eta2",
+                    "bta",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.89161246567562,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.021652866769818646,
+                    "omega_m_s8_fom": 721.3672410409479,
+                    "sigma_ia": {
+                      "a1": 0.9723029255143262,
+                      "eta1": 7.065639740235266,
+                      "a2": 0.6461742819856611,
+                      "eta2": 4.469756907735515,
+                      "bta": 3.343476895316646
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015471945924461111,
+                    "omega_m_s8_fom": 2085.9145065240346,
+                    "sigma_ia": {
+                      "a1": 0.8560751748526876,
+                      "eta1": 5.385659164727195,
+                      "a2": 0.5607732486468815,
+                      "eta2": 3.981600402305012,
+                      "bta": 2.3451198629716017
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1357681592409672,
+                    "eta1": 1.3119359254129794,
+                    "a2": 1.1522915608846322,
+                    "eta2": 1.122603088232536,
+                    "bta": 1.4257168463363674
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.0901176710626241,
+                        0.03708910492195368
+                      ],
+                      [
+                        0.03708910492195288,
+                        0.016170197277980008
+                      ]
+                    ],
+                    "sigma_s8": 0.1271620905693989,
+                    "omega_m_s8_fom": 110.68910003077397
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.02889752240877958,
+                        0.013911085113671279
+                      ],
+                      [
+                        0.013911085113670731,
+                        0.006965817462943613
+                      ]
+                    ],
+                    "sigma_s8": 0.0834614729257974,
+                    "omega_m_s8_fom": 358.5962605332424
+                  },
+                  "joint_over_two_point_fom": 3.2396709380918707,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 0.9827572005167517,
+                      "eta1": 11.501793939883454,
+                      "a2": 1.0085564750507985,
+                      "eta2": 4.93353683305504,
+                      "bta": 3.6708570988018177
+                    },
+                    "joint": {
+                      "a1": 0.865677374849666,
+                      "eta1": 6.397233622196578,
+                      "a2": 0.6777227763865958,
+                      "eta2": 4.129583982106515,
+                      "bta": 2.9297157349701837
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1352464891292993,
+                    "eta1": 1.7979324531740573,
+                    "a2": 1.4881549066833841,
+                    "eta2": 1.194681317641693,
+                    "bta": 1.2529738141434998
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.9461134873216799,
+              "ratio_to_same_step_default_w0wa_fom": 0.9998651294876911
+            },
+            "selected_four_only": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.12822440678719918,
+              "saved_fisher_reconstruction_relative_max": null,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "a2",
+                    "eta2",
+                    "bta",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.8667665821504373,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.021652866769818646,
+                    "omega_m_s8_fom": 721.3672410409479,
+                    "sigma_ia": {
+                      "a1": 0.9723029255143262,
+                      "eta1": 7.065639740235266,
+                      "a2": 0.6461742819856611,
+                      "eta2": 4.469756907735515,
+                      "bta": 3.343476895316646
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015249446149758372,
+                    "omega_m_s8_fom": 2067.991500074249,
+                    "sigma_ia": {
+                      "a1": 0.8526085384053015,
+                      "eta1": 5.334908469209988,
+                      "a2": 0.5613053916407242,
+                      "eta2": 3.980527424432293,
+                      "bta": 2.3684969322251024
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1403860995022383,
+                    "eta1": 1.324416300863278,
+                    "a2": 1.1511991361723086,
+                    "eta2": 1.122905693426543,
+                    "bta": 1.4116450183347256
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.0901176710626241,
+                        0.03708910492195368
+                      ],
+                      [
+                        0.03708910492195288,
+                        0.016170197277980008
+                      ]
+                    ],
+                    "sigma_s8": 0.1271620905693989,
+                    "omega_m_s8_fom": 110.68910003077397
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.032955771192170316,
+                        0.01570022688207889
+                      ],
+                      [
+                        0.015700226882079452,
+                        0.0077505369935057635
+                      ]
+                    ],
+                    "sigma_s8": 0.08803713417363018,
+                    "omega_m_s8_fom": 334.6784760523379
+                  },
+                  "joint_over_two_point_fom": 3.0235901815019726,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 0.9827572005167517,
+                      "eta1": 11.501793939883454,
+                      "a2": 1.0085564750507985,
+                      "eta2": 4.93353683305504,
+                      "bta": 3.6708570988018177
+                    },
+                    "joint": {
+                      "a1": 0.8650088089611327,
+                      "eta1": 6.47062621163839,
+                      "a2": 0.6981164639228679,
+                      "eta2": 4.138409344083818,
+                      "bta": 2.9239730223868468
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1361239219020598,
+                    "eta1": 1.7775395400209884,
+                    "a2": 1.4446822660269332,
+                    "eta2": 1.1921336008261048,
+                    "bta": 1.2554346673846148
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.8901545697856651,
+              "ratio_to_same_step_default_w0wa_fom": 0.9407270122555509
+            },
+            "unselected_complement_only": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.14519792251808153,
+              "saved_fisher_reconstruction_relative_max": null,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "a2",
+                    "eta2",
+                    "bta",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.899442202724761,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.021652866769818646,
+                    "omega_m_s8_fom": 721.3672410409479,
+                    "sigma_ia": {
+                      "a1": 0.9723029255143262,
+                      "eta1": 7.065639740235266,
+                      "a2": 0.6461742819856611,
+                      "eta2": 4.469756907735515,
+                      "bta": 3.343476895316646
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.01569729239287985,
+                    "omega_m_s8_fom": 2091.5626223372496,
+                    "sigma_ia": {
+                      "a1": 0.8578736846934498,
+                      "eta1": 5.439698537789062,
+                      "a2": 0.5598637878881955,
+                      "eta2": 3.9806738700531996,
+                      "bta": 2.3197806779199497
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1333870508707424,
+                    "eta1": 1.2989028144024797,
+                    "a2": 1.154163380387627,
+                    "eta2": 1.1228643826769407,
+                    "bta": 1.4412900870933203
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.0901176710626241,
+                        0.03708910492195368
+                      ],
+                      [
+                        0.03708910492195288,
+                        0.016170197277980008
+                      ]
+                    ],
+                    "sigma_s8": 0.1271620905693989,
+                    "omega_m_s8_fom": 110.68910003077397
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.02505958747355177,
+                        0.012204231804206222
+                      ],
+                      [
+                        0.01220423180420608,
+                        0.006213942649486008
+                      ]
+                    ],
+                    "sigma_s8": 0.07882856493356966,
+                    "omega_m_s8_fom": 384.17334374790636
+                  },
+                  "joint_over_two_point_fom": 3.470742319172329,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 0.9827572005167517,
+                      "eta1": 11.501793939883454,
+                      "a2": 1.0085564750507985,
+                      "eta2": 4.93353683305504,
+                      "bta": 3.6708570988018177
+                    },
+                    "joint": {
+                      "a1": 0.8647278107819859,
+                      "eta1": 6.36180502602951,
+                      "a2": 0.6574392953577298,
+                      "eta2": 4.118402815247123,
+                      "bta": 2.9375338255551036
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1364931117781794,
+                    "eta1": 1.8079450553456968,
+                    "a2": 1.5340678328362114,
+                    "eta2": 1.197924791326903,
+                    "bta": 1.2496390907458363
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 1.0079874611341018,
+              "ratio_to_same_step_default_w0wa_fom": 1.065254355692476
+            }
+          },
+          "derivative_columns": [
+            {
+              "parameter": "omega_m",
+              "default_derivative_C_norm": 477.46328290482836,
+              "derivative_difference_C_norm": 1.1993265448518697,
+              "relative_derivative_C_norm_change": 0.002511871776936047,
+              "absolute_parameter_step": 0.003,
+              "step_times_derivative_difference_C_norm": 0.0035979796345556093
+            },
+            {
+              "parameter": "sigma8",
+              "default_derivative_C_norm": 319.71533436600913,
+              "derivative_difference_C_norm": 1.0945221722560814,
+              "relative_derivative_C_norm_change": 0.003423427201033391,
+              "absolute_parameter_step": 0.005,
+              "step_times_derivative_difference_C_norm": 0.005472610861280407
+            },
+            {
+              "parameter": "omega_b",
+              "default_derivative_C_norm": 138.3175905649226,
+              "derivative_difference_C_norm": 0.6873140737349325,
+              "relative_derivative_C_norm_change": 0.004969100972101777,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 0.00034365703686746625
+            },
+            {
+              "parameter": "h",
+              "default_derivative_C_norm": 30.161044394856013,
+              "derivative_difference_C_norm": 0.05995697397194726,
+              "relative_derivative_C_norm_change": 0.0019878944902243824,
+              "absolute_parameter_step": 0.005,
+              "step_times_derivative_difference_C_norm": 0.0002997848698597363
+            },
+            {
+              "parameter": "ns",
+              "default_derivative_C_norm": 58.268413561358805,
+              "derivative_difference_C_norm": 0.07711873369753593,
+              "relative_derivative_C_norm_change": 0.0013235083810258029,
+              "absolute_parameter_step": 0.005,
+              "step_times_derivative_difference_C_norm": 0.00038559366848767965
+            },
+            {
+              "parameter": "a1",
+              "default_derivative_C_norm": 16.31342539859378,
+              "derivative_difference_C_norm": 0.01712250053416796,
+              "relative_derivative_C_norm_change": 0.001049595662211072,
+              "absolute_parameter_step": 0.01,
+              "step_times_derivative_difference_C_norm": 0.0001712250053416796
+            },
+            {
+              "parameter": "eta1",
+              "default_derivative_C_norm": 1.1104737923881978,
+              "derivative_difference_C_norm": 0.0016205612160679805,
+              "relative_derivative_C_norm_change": 0.0014593421539312358,
+              "absolute_parameter_step": 0.03,
+              "step_times_derivative_difference_C_norm": 4.8616836482039413e-05
+            },
+            {
+              "parameter": "a2",
+              "default_derivative_C_norm": 5.742336330861521,
+              "derivative_difference_C_norm": 0.00200610742365692,
+              "relative_derivative_C_norm_change": 0.0003493538706319461,
+              "absolute_parameter_step": 0.02,
+              "step_times_derivative_difference_C_norm": 4.01221484731384e-05
+            },
+            {
+              "parameter": "eta2",
+              "default_derivative_C_norm": 0.7666314463303937,
+              "derivative_difference_C_norm": 0.00035541169967555754,
+              "relative_derivative_C_norm_change": 0.00046360177550346197,
+              "absolute_parameter_step": 0.03,
+              "step_times_derivative_difference_C_norm": 1.0662350990266727e-05
+            },
+            {
+              "parameter": "bta",
+              "default_derivative_C_norm": 2.526553524171095,
+              "derivative_difference_C_norm": 0.0002614786206713141,
+              "relative_derivative_C_norm_change": 0.00010349221505493311,
+              "absolute_parameter_step": 0.02,
+              "step_times_derivative_difference_C_norm": 5.229572413426282e-06
+            },
+            {
+              "parameter": "m1",
+              "default_derivative_C_norm": 41.75524021355321,
+              "derivative_difference_C_norm": 0.11744475810981324,
+              "relative_derivative_C_norm_change": 0.002812695065557118,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.00011744475810981324
+            },
+            {
+              "parameter": "m2",
+              "default_derivative_C_norm": 71.98850663272636,
+              "derivative_difference_C_norm": 0.16218324695257122,
+              "relative_derivative_C_norm_change": 0.00225290472797281,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.00016218324695257123
+            },
+            {
+              "parameter": "m3",
+              "default_derivative_C_norm": 112.41723931234588,
+              "derivative_difference_C_norm": 0.20530481112681329,
+              "relative_derivative_C_norm_change": 0.0018262751547952869,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.0002053048111268133
+            },
+            {
+              "parameter": "m4",
+              "default_derivative_C_norm": 106.54390690779098,
+              "derivative_difference_C_norm": 0.17028037449617278,
+              "relative_derivative_C_norm_change": 0.0015982178562641116,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.0001702803744961728
+            },
+            {
+              "parameter": "dz1",
+              "default_derivative_C_norm": 161.38124922343292,
+              "derivative_difference_C_norm": 0.39797819454710337,
+              "relative_derivative_C_norm_change": 0.002466074568527482,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.00039797819454710337
+            },
+            {
+              "parameter": "dz2",
+              "default_derivative_C_norm": 164.51644330997362,
+              "derivative_difference_C_norm": 0.2804467208948192,
+              "relative_derivative_C_norm_change": 0.001704672890152479,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.0002804467208948192
+            },
+            {
+              "parameter": "dz3",
+              "default_derivative_C_norm": 141.17767105587782,
+              "derivative_difference_C_norm": 0.14793581829352473,
+              "relative_derivative_C_norm_change": 0.00104786980254811,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 0.00014793581829352474
+            },
+            {
+              "parameter": "dz4",
+              "default_derivative_C_norm": 97.49384239688729,
+              "derivative_difference_C_norm": 0.09297000019404607,
+              "relative_derivative_C_norm_change": 0.0009535986879620035,
+              "absolute_parameter_step": 0.001,
+              "step_times_derivative_difference_C_norm": 9.297000019404607e-05
+            },
+            {
+              "parameter": "w0",
+              "default_derivative_C_norm": 21.784823622154022,
+              "derivative_difference_C_norm": 0.0353818369190859,
+              "relative_derivative_C_norm_change": 0.0016241507176172143,
+              "absolute_parameter_step": 0.02,
+              "step_times_derivative_difference_C_norm": 0.000707636738381718
+            },
+            {
+              "parameter": "wa",
+              "default_derivative_C_norm": 3.5972432075668013,
+              "derivative_difference_C_norm": 0.005119677135799444,
+              "relative_derivative_C_norm_change": 0.0014232224068225921,
+              "absolute_parameter_step": 0.04,
+              "step_times_derivative_difference_C_norm": 0.00020478708543197777
+            }
+          ],
+          "xi_derivatives_bitwise_unchanged": true,
+          "full_over_selected_four_w0wa_fom": 1.0628642703586737,
+          "full_minus_selected_four_w0wa_fom": 0.008060733774851031,
+          "nonadditive_w0wa_fom_remainder": -0.0008336648550839876,
+          "paper_related_stability": {
+            "fixed_dark_energy": {
+              "status": "resolved",
+              "triangle_over_default_joint_to_xi_omega_m_s8_fom_gain": 1.0078449620890002,
+              "probes": {
+                "two_point": {
+                  "triangle_over_default_sigma_s8": 1.0,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0,
+                    "eta1": 1.0,
+                    "a2": 1.0,
+                    "eta2": 1.0,
+                    "bta": 1.0
+                  }
+                },
+                "joint": {
+                  "triangle_over_default_sigma_s8": 0.9987078781971843,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0004875287777362,
+                    "eta1": 0.9989551965716168,
+                    "a2": 1.0001601389029164,
+                    "eta2": 1.0001705363978153,
+                    "bta": 1.0001193253876837
+                  }
+                }
+              }
+            },
+            "free_dark_energy": {
+              "status": "resolved",
+              "triangle_over_default_joint_to_xi_omega_m_s8_fom_gain": 1.00383537653851,
+              "probes": {
+                "two_point": {
+                  "triangle_over_default_sigma_s8": 1.0,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0,
+                    "eta1": 1.0,
+                    "a2": 1.0,
+                    "eta2": 1.0,
+                    "bta": 1.0
+                  }
+                },
+                "joint": {
+                  "triangle_over_default_sigma_s8": 1.000608850175416,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0006553247949346,
+                    "eta1": 0.998526963702948,
+                    "a2": 1.0009366791768055,
+                    "eta2": 1.0002046606521615,
+                    "bta": 0.9989798247015074
+                  }
+                }
+              }
+            }
+          }
+        },
+        "h2": {
+          "information": {
+            "default": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.14404734990921134,
+              "saved_fisher_reconstruction_relative_max": 0.0,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "a2",
+                    "eta2",
+                    "bta",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.9206176207836356,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.021963609457819173,
+                    "omega_m_s8_fom": 699.302570805735,
+                    "sigma_ia": {
+                      "a1": 0.9724413233768744,
+                      "eta1": 7.066498590335221,
+                      "a2": 0.646649891252282,
+                      "eta2": 4.446597393104851,
+                      "bta": 3.3415343291358206
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.01550683829504266,
+                    "omega_m_s8_fom": 2042.3954105545254,
+                    "sigma_ia": {
+                      "a1": 0.8555670923794118,
+                      "eta1": 5.398272519948479,
+                      "a2": 0.5577573552877454,
+                      "eta2": 3.934029948549361,
+                      "bta": 2.3107025819756317
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1366044019673833,
+                    "eta1": 1.3090296134961825,
+                    "a2": 1.1593749237402298,
+                    "eta2": 1.1302906818857579,
+                    "bta": 1.446111825555168
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.09465719195981047,
+                        0.037011065663851164
+                      ],
+                      [
+                        0.03701106566385025,
+                        0.015379328081885468
+                      ]
+                    ],
+                    "sigma_s8": 0.12401341895893955,
+                    "omega_m_s8_fom": 107.86725303425985
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.02535296818925304,
+                        0.012160501926509098
+                      ],
+                      [
+                        0.01216050192650968,
+                        0.006106418164996771
+                      ]
+                    ],
+                    "sigma_s8": 0.07814357404800967,
+                    "omega_m_s8_fom": 379.6490145286878
+                  },
+                  "joint_over_two_point_fom": 3.5195947226736832,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 0.9855511125370351,
+                      "eta1": 11.64898728119428,
+                      "a2": 1.0197803775390277,
+                      "eta2": 4.853240995309797,
+                      "bta": 3.6730009690635117
+                    },
+                    "joint": {
+                      "a1": 0.8637824429137712,
+                      "eta1": 6.260388827800426,
+                      "a2": 0.6520945467554439,
+                      "eta2": 4.0437464918410235,
+                      "bta": 2.965609366672644
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.140971457132777,
+                    "eta1": 1.860745011470338,
+                    "a2": 1.563853558679548,
+                    "eta2": 1.2001842858107135,
+                    "bta": 1.2385316186077964
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 1.0,
+              "ratio_to_same_step_default_w0wa_fom": 1.0
+            },
+            "full_triangle": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.14396743529002798,
+              "saved_fisher_reconstruction_relative_max": 0.0,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "a2",
+                    "eta2",
+                    "bta",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.9449144580866724,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.021963609457819173,
+                    "omega_m_s8_fom": 699.302570805735,
+                    "sigma_ia": {
+                      "a1": 0.9724413233768744,
+                      "eta1": 7.066498590335221,
+                      "a2": 0.646649891252282,
+                      "eta2": 4.446597393104851,
+                      "bta": 3.3415343291358206
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015484622898578822,
+                    "omega_m_s8_fom": 2059.3862513429876,
+                    "sigma_ia": {
+                      "a1": 0.855997696058585,
+                      "eta1": 5.393307976999609,
+                      "a2": 0.5578843048048151,
+                      "eta2": 3.9343111515000233,
+                      "bta": 2.31158150307577
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1360326410391646,
+                    "eta1": 1.3102345759728775,
+                    "a2": 1.159111101859234,
+                    "eta2": 1.1302098949162955,
+                    "bta": 1.4455619776718254
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.09465719195981047,
+                        0.037011065663851164
+                      ],
+                      [
+                        0.03701106566385025,
+                        0.015379328081885468
+                      ]
+                    ],
+                    "sigma_s8": 0.12401341895893955,
+                    "omega_m_s8_fom": 107.86725303425985
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.025458894265853373,
+                        0.012200047182693938
+                      ],
+                      [
+                        0.012200047182692906,
+                        0.0061167833645480564
+                      ]
+                    ],
+                    "sigma_s8": 0.0782098674372234,
+                    "omega_m_s8_fom": 381.0971827989622
+                  },
+                  "joint_over_two_point_fom": 3.533020189898796,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 0.9855511125370351,
+                      "eta1": 11.64898728119428,
+                      "a2": 1.0197803775390277,
+                      "eta2": 4.853240995309797,
+                      "bta": 3.6730009690635117
+                    },
+                    "joint": {
+                      "a1": 0.8643297031251362,
+                      "eta1": 6.253595309838947,
+                      "a2": 0.6528155148316993,
+                      "eta2": 4.044665875628285,
+                      "bta": 2.963410441047786
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1402490380390742,
+                    "eta1": 1.8627664094071805,
+                    "a2": 1.5621264421111907,
+                    "eta2": 1.199911474654482,
+                    "bta": 1.2394506404468335
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.9994452197889533,
+              "ratio_to_same_step_default_w0wa_fom": 0.9994452197889533
+            },
+            "selected_four_only": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.1364189360679019,
+              "saved_fisher_reconstruction_relative_max": null,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "a2",
+                    "eta2",
+                    "bta",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.9201776387801797,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.021963609457819173,
+                    "omega_m_s8_fom": 699.302570805735,
+                    "sigma_ia": {
+                      "a1": 0.9724413233768744,
+                      "eta1": 7.066498590335221,
+                      "a2": 0.646649891252282,
+                      "eta2": 4.446597393104851,
+                      "bta": 3.3415343291358206
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015259012399307893,
+                    "omega_m_s8_fom": 2042.0877300084005,
+                    "sigma_ia": {
+                      "a1": 0.8527441669021131,
+                      "eta1": 5.344842588144047,
+                      "a2": 0.5583490269706631,
+                      "eta2": 3.933166096121621,
+                      "bta": 2.334224719167969
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.140367018762031,
+                    "eta1": 1.3221153801629553,
+                    "a2": 1.158146356519501,
+                    "eta2": 1.1305389308347567,
+                    "bta": 1.4315392608501316
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.09465719195981047,
+                        0.037011065663851164
+                      ],
+                      [
+                        0.03701106566385025,
+                        0.015379328081885468
+                      ]
+                    ],
+                    "sigma_s8": 0.12401341895893955,
+                    "omega_m_s8_fom": 107.86725303425985
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.028632629506598645,
+                        0.013577681665380105
+                      ],
+                      [
+                        0.013577681665380691,
+                        0.006711056467083246
+                      ]
+                    ],
+                    "sigma_s8": 0.0819210380005237,
+                    "omega_m_s8_fom": 358.01718499049935
+                  },
+                  "joint_over_two_point_fom": 3.3190535117899875,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 0.9855511125370351,
+                      "eta1": 11.64898728119428,
+                      "a2": 1.0197803775390277,
+                      "eta2": 4.853240995309797,
+                      "bta": 3.6730009690635117
+                    },
+                    "joint": {
+                      "a1": 0.8633839502178243,
+                      "eta1": 6.284061810447051,
+                      "a2": 0.6683677111980015,
+                      "eta2": 4.046445814656416,
+                      "bta": 2.958290542130624
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1414980696460584,
+                    "eta1": 1.8537353120601412,
+                    "a2": 1.5257774432447433,
+                    "eta2": 1.1993836610220086,
+                    "bta": 1.2415957515850145
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 0.947042317362191,
+              "ratio_to_same_step_default_w0wa_fom": 0.947042317362191
+            },
+            "unselected_complement_only": {
+              "rank_status": {
+                "two_point": "resolved",
+                "joint": "resolved"
+              },
+              "w0wa_fom": 0.15238516379782818,
+              "saved_fisher_reconstruction_relative_max": null,
+              "fixed_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fixed_parameters": {
+                    "w0": -1.0,
+                    "wa": 0.0
+                  },
+                  "marginalized_parameters": [
+                    "omega_m",
+                    "sigma8",
+                    "omega_b",
+                    "h",
+                    "ns",
+                    "a1",
+                    "eta1",
+                    "a2",
+                    "eta2",
+                    "bta",
+                    "m1",
+                    "m2",
+                    "m3",
+                    "m4",
+                    "dz1",
+                    "dz2",
+                    "dz3",
+                    "dz4"
+                  ],
+                  "fiducial_s8": 0.772,
+                  "joint_over_two_point_fom": 2.951809687404101,
+                  "interpretation": "Dark energy fixed at the saved fiducial; every other varied parameter marginalized; saved Gaussian prior counted once.",
+                  "scope": "Local demonstration with unchanged inputs and estimator; not a published posterior reproduction.",
+                  "two_point": {
+                    "sigma_s8": 0.021963609457819173,
+                    "omega_m_s8_fom": 699.302570805735,
+                    "sigma_ia": {
+                      "a1": 0.9724413233768744,
+                      "eta1": 7.066498590335221,
+                      "a2": 0.646649891252282,
+                      "eta2": 4.446597393104851,
+                      "bta": 3.3415343291358206
+                    }
+                  },
+                  "joint": {
+                    "sigma_s8": 0.015713610756473085,
+                    "omega_m_s8_fom": 2064.2081029309606,
+                    "sigma_ia": {
+                      "a1": 0.8575687007410392,
+                      "eta1": 5.444586052172326,
+                      "a2": 0.5570257174700267,
+                      "eta2": 3.9344605645861064,
+                      "bta": 2.286529421480709
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.1339515102831668,
+                    "eta1": 1.2978945548148275,
+                    "a2": 1.1608977305200956,
+                    "eta2": 1.1301669746364886,
+                    "bta": 1.4614001017191864
+                  }
+                }
+              },
+              "free_dark_energy": {
+                "status": "resolved",
+                "summary": {
+                  "fiducial_s8": 0.772,
+                  "two_point": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.09465719195981047,
+                        0.037011065663851164
+                      ],
+                      [
+                        0.03701106566385025,
+                        0.015379328081885468
+                      ]
+                    ],
+                    "sigma_s8": 0.12401341895893955,
+                    "omega_m_s8_fom": 107.86725303425985
+                  },
+                  "joint": {
+                    "omega_m_s8_covariance": [
+                      [
+                        0.022372505175182824,
+                        0.010846540420846323
+                      ],
+                      [
+                        0.010846540420846214,
+                        0.005530161135509191
+                      ]
+                    ],
+                    "sigma_s8": 0.0743650531870259,
+                    "omega_m_s8_fom": 405.68303432865537
+                  },
+                  "joint_over_two_point_fom": 3.7609471170996254,
+                  "sigma_ia": {
+                    "two_point": {
+                      "a1": 0.9855511125370351,
+                      "eta1": 11.64898728119428,
+                      "a2": 1.0197803775390277,
+                      "eta2": 4.853240995309797,
+                      "bta": 3.6730009690635117
+                    },
+                    "joint": {
+                      "a1": 0.863643385591707,
+                      "eta1": 6.24883670543131,
+                      "a2": 0.6368379044111109,
+                      "eta2": 4.040809032604729,
+                      "bta": 2.969382781793164
+                    }
+                  },
+                  "ia_gain_two_point_over_joint": {
+                    "a1": 1.141155167722156,
+                    "eta1": 1.8641849403856745,
+                    "a2": 1.6013185937511474,
+                    "eta2": 1.201056757730857,
+                    "bta": 1.2369577245428236
+                  }
+                }
+              },
+              "ratio_to_fixed_default_h2_w0wa_fom": 1.057882452498237,
+              "ratio_to_same_step_default_w0wa_fom": 1.057882452498237
+            }
+          },
+          "derivative_columns": [
+            {
+              "parameter": "omega_m",
+              "default_derivative_C_norm": 479.3829839197973,
+              "derivative_difference_C_norm": 1.203353547111766,
+              "relative_derivative_C_norm_change": 0.0025102133106023887,
+              "absolute_parameter_step": 0.0015,
+              "step_times_derivative_difference_C_norm": 0.0018050303206676491
+            },
+            {
+              "parameter": "sigma8",
+              "default_derivative_C_norm": 319.7191933367825,
+              "derivative_difference_C_norm": 1.0948224152775192,
+              "relative_derivative_C_norm_change": 0.0034243249642015284,
+              "absolute_parameter_step": 0.0025,
+              "step_times_derivative_difference_C_norm": 0.0027370560381937982
+            },
+            {
+              "parameter": "omega_b",
+              "default_derivative_C_norm": 138.35974167766335,
+              "derivative_difference_C_norm": 0.6856092845385505,
+              "relative_derivative_C_norm_change": 0.0049552657169295265,
+              "absolute_parameter_step": 0.00025,
+              "step_times_derivative_difference_C_norm": 0.00017140232113463762
+            },
+            {
+              "parameter": "h",
+              "default_derivative_C_norm": 29.87444981163496,
+              "derivative_difference_C_norm": 0.06045806767142522,
+              "relative_derivative_C_norm_change": 0.0020237382797884734,
+              "absolute_parameter_step": 0.0025,
+              "step_times_derivative_difference_C_norm": 0.00015114516917856305
+            },
+            {
+              "parameter": "ns",
+              "default_derivative_C_norm": 58.27578252474761,
+              "derivative_difference_C_norm": 0.0776410960068362,
+              "relative_derivative_C_norm_change": 0.001332304649429029,
+              "absolute_parameter_step": 0.0025,
+              "step_times_derivative_difference_C_norm": 0.00019410274001709053
+            },
+            {
+              "parameter": "a1",
+              "default_derivative_C_norm": 16.313425398599353,
+              "derivative_difference_C_norm": 0.017122500530707865,
+              "relative_derivative_C_norm_change": 0.0010495956619986124,
+              "absolute_parameter_step": 0.005,
+              "step_times_derivative_difference_C_norm": 8.561250265353932e-05
+            },
+            {
+              "parameter": "eta1",
+              "default_derivative_C_norm": 1.1104737893037633,
+              "derivative_difference_C_norm": 0.0016205612194941231,
+              "relative_derivative_C_norm_change": 0.0014593421610699796,
+              "absolute_parameter_step": 0.015,
+              "step_times_derivative_difference_C_norm": 2.4308418292411845e-05
+            },
+            {
+              "parameter": "a2",
+              "default_derivative_C_norm": 5.742336330857216,
+              "derivative_difference_C_norm": 0.0020061074231451956,
+              "relative_derivative_C_norm_change": 0.0003493538705430937,
+              "absolute_parameter_step": 0.01,
+              "step_times_derivative_difference_C_norm": 2.0061074231451955e-05
+            },
+            {
+              "parameter": "eta2",
+              "default_derivative_C_norm": 0.7666314469992518,
+              "derivative_difference_C_norm": 0.0003554116998044157,
+              "relative_derivative_C_norm_change": 0.0004636017752670699,
+              "absolute_parameter_step": 0.015,
+              "step_times_derivative_difference_C_norm": 5.331175497066236e-06
+            },
+            {
+              "parameter": "bta",
+              "default_derivative_C_norm": 2.526553524178206,
+              "derivative_difference_C_norm": 0.00026147861504190043,
+              "relative_derivative_C_norm_change": 0.00010349221282654192,
+              "absolute_parameter_step": 0.01,
+              "step_times_derivative_difference_C_norm": 2.614786150419004e-06
+            },
+            {
+              "parameter": "m1",
+              "default_derivative_C_norm": 41.75524021355181,
+              "derivative_difference_C_norm": 0.11744475811018347,
+              "relative_derivative_C_norm_change": 0.0028126950655660786,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 5.8722379055091736e-05
+            },
+            {
+              "parameter": "m2",
+              "default_derivative_C_norm": 71.98850663272167,
+              "derivative_difference_C_norm": 0.16218324695214872,
+              "relative_derivative_C_norm_change": 0.002252904727967088,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 8.109162347607436e-05
+            },
+            {
+              "parameter": "m3",
+              "default_derivative_C_norm": 112.41723931234185,
+              "derivative_difference_C_norm": 0.20530481112516114,
+              "relative_derivative_C_norm_change": 0.0018262751547806558,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 0.00010265240556258057
+            },
+            {
+              "parameter": "m4",
+              "default_derivative_C_norm": 106.54390690778582,
+              "derivative_difference_C_norm": 0.17028037449314104,
+              "relative_derivative_C_norm_change": 0.0015982178562357337,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 8.514018724657052e-05
+            },
+            {
+              "parameter": "dz1",
+              "default_derivative_C_norm": 161.35073865222088,
+              "derivative_difference_C_norm": 0.39802483935736827,
+              "relative_derivative_C_norm_change": 0.0024668299797206395,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 0.00019901241967868412
+            },
+            {
+              "parameter": "dz2",
+              "default_derivative_C_norm": 164.47283753150487,
+              "derivative_difference_C_norm": 0.2804593603812595,
+              "relative_derivative_C_norm_change": 0.001705201689169723,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 0.00014022968019062975
+            },
+            {
+              "parameter": "dz3",
+              "default_derivative_C_norm": 141.16119942112456,
+              "derivative_difference_C_norm": 0.1479868221334232,
+              "relative_derivative_C_norm_change": 0.001048353391302208,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 7.39934110667116e-05
+            },
+            {
+              "parameter": "dz4",
+              "default_derivative_C_norm": 97.44107084808873,
+              "derivative_difference_C_norm": 0.09296708076581862,
+              "relative_derivative_C_norm_change": 0.0009540851712390858,
+              "absolute_parameter_step": 0.0005,
+              "step_times_derivative_difference_C_norm": 4.6483540382909313e-05
+            },
+            {
+              "parameter": "w0",
+              "default_derivative_C_norm": 21.786067347087968,
+              "derivative_difference_C_norm": 0.035512017866030345,
+              "relative_derivative_C_norm_change": 0.0016300334199956953,
+              "absolute_parameter_step": 0.01,
+              "step_times_derivative_difference_C_norm": 0.00035512017866030346
+            },
+            {
+              "parameter": "wa",
+              "default_derivative_C_norm": 3.59547590890123,
+              "derivative_difference_C_norm": 0.005064875344907636,
+              "relative_derivative_C_norm_change": 0.0014086800949962288,
+              "absolute_parameter_step": 0.02,
+              "step_times_derivative_difference_C_norm": 0.00010129750689815273
+            }
+          ],
+          "xi_derivatives_bitwise_unchanged": true,
+          "full_over_selected_four_w0wa_fom": 1.055333221616454,
+          "full_minus_selected_four_w0wa_fom": 0.007548499222126082,
+          "nonadditive_w0wa_fom_remainder": -0.0007893146664907646,
+          "paper_related_stability": {
+            "fixed_dark_energy": {
+              "status": "resolved",
+              "triangle_over_default_joint_to_xi_omega_m_s8_fom_gain": 1.0083190750922464,
+              "probes": {
+                "two_point": {
+                  "triangle_over_default_sigma_s8": 1.0,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0,
+                    "eta1": 1.0,
+                    "a2": 1.0,
+                    "eta2": 1.0,
+                    "bta": 1.0
+                  }
+                },
+                "joint": {
+                  "triangle_over_default_sigma_s8": 0.9985673806587033,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0005032962148832,
+                    "eta1": 0.9990803459939223,
+                    "a2": 1.0002276070693934,
+                    "eta2": 1.0000714796161545,
+                    "bta": 1.0003803696360554
+                  }
+                }
+              }
+            },
+            "free_dark_energy": {
+              "status": "resolved",
+              "triangle_over_default_joint_to_xi_omega_m_s8_fom_gain": 1.003814492372836,
+              "probes": {
+                "two_point": {
+                  "triangle_over_default_sigma_s8": 1.0,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0,
+                    "eta1": 1.0,
+                    "a2": 1.0,
+                    "eta2": 1.0,
+                    "bta": 1.0
+                  }
+                },
+                "joint": {
+                  "triangle_over_default_sigma_s8": 1.0008483536877004,
+                  "triangle_over_default_sigma_ia": {
+                    "a1": 1.0006335625548477,
+                    "eta1": 0.9989148408911422,
+                    "a2": 1.00110561893186,
+                    "eta2": 1.0002273594027509,
+                    "bta": 0.9992585248584762
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "selected_screen_h2_fom_ratio": 0.947042317362191,
+      "interpretation": "Full, selected-only and complement-only substitutions are coherent matrix comparisons, not additive error contributions. The mixed-grid substitutions are diagnostics, not completed refined forecasts.",
+      "full_selected_h2_minus_screen_ratio": 0.0
+    }
+  }
+}

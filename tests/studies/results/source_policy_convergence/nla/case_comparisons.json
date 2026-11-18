@@ -1,0 +1,62 @@
+{
+  "comparisons": [
+    {
+      "case": "linear1201",
+      "center_mean_joint_norm2": 0.00522078687275319,
+      "derivative_joint_norm2": [
+        132.98209675408876,
+        1776.1437302936008,
+        836.9094421738071
+      ],
+      "difference": "case minus reference",
+      "reference": "pchip1201"
+    },
+    {
+      "case": "pchip2401",
+      "center_mean_joint_norm2": 2.545476790356022e-06,
+      "derivative_joint_norm2": [
+        0.9756206642485149,
+        2.120759825617757,
+        1.4453412495109763
+      ],
+      "difference": "case minus reference",
+      "reference": "pchip1201"
+    },
+    {
+      "case": "pchip4801",
+      "center_mean_joint_norm2": 9.633505904379596e-06,
+      "derivative_joint_norm2": [
+        1.0118364143129395,
+        3.4261695300865043,
+        3.6780956519877455
+      ],
+      "difference": "case minus reference",
+      "reference": "pchip1201"
+    },
+    {
+      "case": "pchip1201_kernel401",
+      "center_mean_joint_norm2": 6.497277766848416e-06,
+      "derivative_joint_norm2": [
+        0.7251710235763523,
+        0.7519865843940929,
+        0.7508803954054417
+      ],
+      "difference": "case minus reference",
+      "reference": "pchip1201"
+    },
+    {
+      "case": "pchip1201_chi2",
+      "center_mean_joint_norm2": 0.013562846884207641,
+      "derivative_joint_norm2": [
+        2.1670782546982625,
+        2.1492236847931636,
+        2.1465437234266287
+      ],
+      "difference": "case minus reference",
+      "reference": "pchip1201"
+    }
+  ],
+  "metric": "full joint covariance inverse",
+  "reference": "pchip1201",
+  "reference_is_truth": false
+}

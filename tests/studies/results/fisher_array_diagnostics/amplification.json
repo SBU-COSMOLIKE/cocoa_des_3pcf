@@ -1,0 +1,2190 @@
+{
+  "nla": {
+    "input": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_nla_measured_edge_demo_fisher.npz",
+      "sha256": "99a1687cf0945b17cf229b3d321d8ef3eaf54415c34707b43f145118ae517be9"
+    },
+    "candidates": {
+      "chi_2": {
+        "fom_qr": 0.19180697903708147,
+        "fom_inverse": 0.19180697903724456,
+        "qr_inverse_relative_difference": -8.503198145604074e-13,
+        "normalized_fisher_eigenvalue_min": 0.00016130413405888628,
+        "normalized_fisher_eigenvalue_max": 6.004901424404808,
+        "normalized_fisher_condition": 37227.20102271301,
+        "augmented_singular_ratio": 0.00518286393818314,
+        "rank_refusal_eigenvalue_ratio": 4.831690603168681e-13,
+        "weak_normalized_coordinates": {
+          "omega_m": 0.7578189667023755,
+          "sigma8": -0.4527255082345524,
+          "w0": 0.39292116940557537,
+          "wa": -0.1802399255759385,
+          "h": -0.1669880049903135,
+          "a1": 0.06465788825030247,
+          "omega_b": -0.03358472172098498,
+          "ns": 0.021906758059706124
+        },
+        "target_effective_information": [
+          [
+            1.607654516456112,
+            0.3460973089637318
+          ],
+          [
+            0.3460973089637318,
+            0.09739235816935086
+          ]
+        ],
+        "target_information_eigenvalues": [
+          0.021857262510733538,
+          1.6831896121147294
+        ],
+        "weak_target_wa_unit_direction": [
+          -0.21824814496472372,
+          1.0
+        ],
+        "target_sigma": [
+          1.627039271513647,
+          6.61046419454017
+        ],
+        "target_correlation": -0.8746603090486968,
+        "fom_ratio": 1.0033113841706918,
+        "target_generalized_information_ratios": [
+          0.9996367217333716,
+          1.0069995546592219
+        ],
+        "target_generalized_wa_unit_directions": [
+          [
+            -0.21179884127750265,
+            1.0
+          ],
+          [
+            -4.303248475045693,
+            1.0
+          ]
+        ],
+        "changed_column_relative_norms": {
+          "w0": 0.0002658822858176401,
+          "wa": 6.534048082602274e-05,
+          "h": 0.00033679634442202556,
+          "omega_m": 0.000584916603062742
+        },
+        "baseline_weak_displacement": {
+          "omega_m": -0.009247537089885793,
+          "sigma8": 0.008547202666358349,
+          "omega_b": -0.002614315429251255,
+          "h": 0.0005593550283302218,
+          "ns": 0.004671770539062406,
+          "a1": -0.04678084324747792,
+          "eta1": 0.5140802842489299,
+          "m1": 4.119571547285812e-05,
+          "m2": -3.40550913509191e-05,
+          "m3": -8.942359446567489e-05,
+          "m4": 0.00011218681388474771,
+          "dz1": 0.0005610903460518088,
+          "dz2": -0.0004640738265254956,
+          "dz3": -0.00026389066319360645,
+          "dz4": 0.0008264494083669921,
+          "w0": -0.2182962005458092,
+          "wa": 1.0
+        },
+        "baseline_weak_response_norm": 0.151349466604691,
+        "change_on_baseline_weak_displacement_norm": 0.001718036537509224,
+        "weak_displacement_change_relative": 0.011351454194394725,
+        "weak_response_change_cosine": -0.01981486060724841,
+        "partial_replacement_ratios": {
+          "w0wa": 1.0016677532235532,
+          "h": 1.0007373039592258,
+          "omega_m": 1.001103534666796,
+          "h_omega_m": 1.0017955126163647
+        },
+        "raw_xi_changed_max": 0.0,
+        "projected_target_relative_changes": {
+          "w0": 0.020164986599927995,
+          "wa": 0.013308999344076393
+        },
+        "target_residual_fraction_of_full_columns": {
+          "w0": 0.05751759046383077,
+          "wa": 0.08555231176534282
+        },
+        "column_grid_step_cosine": {
+          "w0": -0.1791192424849615,
+          "wa": -0.47754719656067474,
+          "h": 0.19432113638372203,
+          "omega_m": -0.06830300109038094
+        },
+        "fom_svd": 0.19180697903708147,
+        "input": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/chi_2_noise.npz",
+          "sha256": "bfb5a9dde7839743a5c26d20a3642b6f4a7b77514ac07cc7f27d6e34b5f8151d"
+        },
+        "archived_identity": {
+          "absolute_steps": [
+            0.0015,
+            0.0025,
+            0.00025,
+            0.0025,
+            0.0025,
+            0.005,
+            0.015,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.01,
+            0.02
+          ],
+          "baseline_result_sha256": "99a1687cf0945b17cf229b3d321d8ef3eaf54415c34707b43f145118ae517be9",
+          "configuration_sha256": "1b3f6f37347a58227b1ea78d0cc6e1f0ebed03c76477306388bd2c014d71f089",
+          "dependency_sha256": {
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cosmolike_notebook_utils/fisher.py": "a03e53a5926fa5fdc7cb0c4c30653bed756c078af2d6a7287720e9cc0adad8ed",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941"
+          },
+          "prediction_identity": {
+            "format": "des3pcf-prediction-identity-v1",
+            "implementation": {
+              "camb_implementation": {
+                "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+                "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+                "python_sha256": {
+                  "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+                  "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+                  "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+                  "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+                  "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+                  "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+                  "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+                  "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+                  "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+                  "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+                  "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+                  "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+                  "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+                  "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+                  "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+                  "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+                  "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+                  "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+                  "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+                  "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+                  "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+                  "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+                  "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+                  "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+                  "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+                  "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+                },
+                "version": "1.6.7"
+              },
+              "python_implementation_sha256": {
+                "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+                "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+                "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+                "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+                "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+                "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+                "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+                "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+                "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+                "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+                "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+                "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+                "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+                "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+                "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+                "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+                "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+                "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+                "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+                "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+                "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+                "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+              },
+              "three_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+                "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+              },
+              "two_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+                "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+              }
+            },
+            "input_files": {
+              "aperture_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+                "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+              },
+              "joint_covariance": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+                "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+              },
+              "physical_tables": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+                "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+              },
+              "source_curves": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+                "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+              },
+              "two_point_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+                "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+              }
+            }
+          },
+          "selected_columns": [
+            15,
+            16,
+            3,
+            0
+          ]
+        }
+      },
+      "triangle_1p5": {
+        "fom_qr": 0.17832499317058587,
+        "fom_inverse": 0.1783249931708486,
+        "qr_inverse_relative_difference": -1.4733769759800452e-12,
+        "normalized_fisher_eigenvalue_min": 0.00013890534783850365,
+        "normalized_fisher_eigenvalue_max": 6.005192837088459,
+        "normalized_fisher_condition": 43232.265211777965,
+        "augmented_singular_ratio": 0.0048094565352505714,
+        "rank_refusal_eigenvalue_ratio": 4.831690603168681e-13,
+        "weak_normalized_coordinates": {
+          "omega_m": 0.758504369291511,
+          "sigma8": -0.45340512083800955,
+          "w0": 0.39283830467532244,
+          "wa": -0.17714848658453092,
+          "h": -0.1671019524833387,
+          "a1": 0.05969655109973232,
+          "omega_b": -0.033769165540949636,
+          "ns": 0.021008546154534964
+        },
+        "target_effective_information": [
+          [
+            1.4515182745301043,
+            0.324222671588793
+          ],
+          [
+            0.324222671588793,
+            0.09432891501540933
+          ]
+        ],
+        "target_information_eigenvalues": [
+          0.02085240122313595,
+          1.5249947883223776
+        ],
+        "weak_target_wa_unit_direction": [
+          -0.22662361466647404,
+          1.0
+        ],
+        "target_sigma": [
+          1.722305559690604,
+          6.756146183997065
+        ],
+        "target_correlation": -0.8762130285733626,
+        "fom_ratio": 0.9327892896724079,
+        "target_generalized_information_ratios": [
+          0.8686695120331057,
+          1.0016419902790326
+        ],
+        "target_generalized_wa_unit_directions": [
+          [
+            -0.39617215395594313,
+            1.0
+          ],
+          [
+            -0.1360255552545293,
+            1.0
+          ]
+        ],
+        "changed_column_relative_norms": {
+          "w0": 0.0016105847039999145,
+          "wa": 0.0013866298682990933,
+          "h": 0.0019635419224124954,
+          "omega_m": 0.0024673939719406647
+        },
+        "baseline_weak_displacement": {
+          "omega_m": -0.009247537089885793,
+          "sigma8": 0.008547202666358349,
+          "omega_b": -0.002614315429251255,
+          "h": 0.0005593550283302218,
+          "ns": 0.004671770539062406,
+          "a1": -0.04678084324747792,
+          "eta1": 0.5140802842489299,
+          "m1": 4.119571547285812e-05,
+          "m2": -3.40550913509191e-05,
+          "m3": -8.942359446567489e-05,
+          "m4": 0.00011218681388474771,
+          "dz1": 0.0005610903460518088,
+          "dz2": -0.0004640738265254956,
+          "dz3": -0.00026389066319360645,
+          "dz4": 0.0008264494083669921,
+          "w0": -0.2182962005458092,
+          "wa": 1.0
+        },
+        "baseline_weak_response_norm": 0.151349466604691,
+        "change_on_baseline_weak_displacement_norm": 0.009806126004903909,
+        "weak_displacement_change_relative": 0.06479128222180316,
+        "weak_response_change_cosine": -0.3418056962502031,
+        "partial_replacement_ratios": {
+          "w0wa": 1.0155838371839796,
+          "h": 1.0058811147111681,
+          "omega_m": 0.9126714238992716,
+          "h_omega_m": 0.9187375745968698
+        },
+        "raw_xi_changed_max": 0.0,
+        "projected_target_relative_changes": {
+          "w0": 0.09320848743820025,
+          "wa": 0.05768603789747045
+        },
+        "target_residual_fraction_of_full_columns": {
+          "w0": 0.05751759046383077,
+          "wa": 0.08555231176534282
+        },
+        "column_grid_step_cosine": {
+          "w0": -0.045411218848407306,
+          "wa": 0.025296090608557892,
+          "h": 0.14605037285197095,
+          "omega_m": -0.19558783753125109
+        },
+        "fom_svd": 0.17832499317058648,
+        "input": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/triangle_1p5_noise.npz",
+          "sha256": "4642fd9771a64f80bab49ddfd077133fb64ed24c7a63d1ba66c359f54470b0c1"
+        },
+        "archived_identity": {
+          "absolute_steps": [
+            0.0015,
+            0.0025,
+            0.00025,
+            0.0025,
+            0.0025,
+            0.005,
+            0.015,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.01,
+            0.02
+          ],
+          "baseline_result_sha256": "99a1687cf0945b17cf229b3d321d8ef3eaf54415c34707b43f145118ae517be9",
+          "configuration_sha256": "b7f193183af5f939b5607277d0d7b93036136baebf09ea82b545728eb81fc2e2",
+          "dependency_sha256": {
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cosmolike_notebook_utils/fisher.py": "a03e53a5926fa5fdc7cb0c4c30653bed756c078af2d6a7287720e9cc0adad8ed",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941"
+          },
+          "prediction_identity": {
+            "format": "des3pcf-prediction-identity-v1",
+            "implementation": {
+              "camb_implementation": {
+                "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+                "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+                "python_sha256": {
+                  "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+                  "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+                  "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+                  "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+                  "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+                  "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+                  "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+                  "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+                  "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+                  "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+                  "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+                  "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+                  "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+                  "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+                  "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+                  "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+                  "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+                  "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+                  "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+                  "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+                  "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+                  "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+                  "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+                  "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+                  "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+                  "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+                },
+                "version": "1.6.7"
+              },
+              "python_implementation_sha256": {
+                "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+                "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+                "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+                "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+                "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+                "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+                "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+                "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+                "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+                "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+                "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+                "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+                "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+                "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+                "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+                "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+                "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+                "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+                "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+                "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+                "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+                "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+              },
+              "three_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+                "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+              },
+              "two_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+                "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+              }
+            },
+            "input_files": {
+              "aperture_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+                "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+              },
+              "joint_covariance": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+                "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+              },
+              "physical_tables": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+                "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+              },
+              "source_curves": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+                "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+              },
+              "two_point_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+                "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+              }
+            }
+          },
+          "selected_columns": [
+            15,
+            16,
+            3,
+            0
+          ]
+        }
+      },
+      "core_2pt_1p5": {
+        "fom_qr": 0.1911084702727013,
+        "fom_inverse": 0.19110847027270886,
+        "qr_inverse_relative_difference": -3.952393967665557e-14,
+        "normalized_fisher_eigenvalue_min": 0.00016041186841829195,
+        "normalized_fisher_eigenvalue_max": 6.004836714901192,
+        "normalized_fisher_condition": 37433.868042998576,
+        "augmented_singular_ratio": 0.005168537212362176,
+        "rank_refusal_eigenvalue_ratio": 4.831690603168681e-13,
+        "weak_normalized_coordinates": {
+          "omega_m": 0.757730192233031,
+          "sigma8": -0.45266046004500177,
+          "w0": 0.3920481069363303,
+          "wa": -0.17910133421349944,
+          "h": -0.1703211340116293,
+          "a1": 0.06428783623575615,
+          "omega_b": -0.03565765869353794,
+          "ns": 0.023173339857189734
+        },
+        "target_effective_information": [
+          [
+            1.5964706011687149,
+            0.343793025096375
+          ],
+          [
+            0.343793025096375,
+            0.09691133140918912
+          ]
+        ],
+        "target_information_eigenvalues": [
+          0.02184968156482566,
+          1.6715322510130783
+        ],
+        "weak_target_wa_unit_direction": [
+          -0.21833383566557682,
+          1.0
+        ],
+        "target_sigma": [
+          1.6289484616489363,
+          6.611507981129008
+        ],
+        "target_correlation": -0.874035995593215,
+        "fom_ratio": 0.9996575974379883,
+        "target_generalized_information_ratios": [
+          0.9991930631184787,
+          1.0001223477239045
+        ],
+        "target_generalized_wa_unit_directions": [
+          [
+            -0.26455009294859094,
+            1.0
+          ],
+          [
+            0.07588281454446302,
+            1.0
+          ]
+        ],
+        "changed_column_relative_norms": {
+          "w0": 4.436199277983303e-05,
+          "wa": 2.054112837652059e-05,
+          "h": 7.644194745405148e-05,
+          "omega_m": 5.053698986662548e-05
+        },
+        "baseline_weak_displacement": {
+          "omega_m": -0.009247537089885793,
+          "sigma8": 0.008547202666358349,
+          "omega_b": -0.002614315429251255,
+          "h": 0.0005593550283302218,
+          "ns": 0.004671770539062406,
+          "a1": -0.04678084324747792,
+          "eta1": 0.5140802842489299,
+          "m1": 4.119571547285812e-05,
+          "m2": -3.40550913509191e-05,
+          "m3": -8.942359446567489e-05,
+          "m4": 0.00011218681388474771,
+          "dz1": 0.0005610903460518088,
+          "dz2": -0.0004640738265254956,
+          "dz3": -0.00026389066319360645,
+          "dz4": 0.0008264494083669921,
+          "w0": -0.2182962005458092,
+          "wa": 1.0
+        },
+        "baseline_weak_response_norm": 0.151349466604691,
+        "change_on_baseline_weak_displacement_norm": 0.00034233609443241376,
+        "weak_displacement_change_relative": 0.0022618916479339823,
+        "weak_response_change_cosine": -0.15272099424050137,
+        "partial_replacement_ratios": {
+          "w0wa": 1.0000362857846028,
+          "h": 0.9999043740060068,
+          "omega_m": 0.99971706031765,
+          "h_omega_m": 0.9996206723318161
+        },
+        "raw_xi_changed_max": 2.6902546922076076e-09,
+        "projected_target_relative_changes": {
+          "w0": 0.0015399247245669627,
+          "wa": 0.0007627441183643686
+        },
+        "target_residual_fraction_of_full_columns": {
+          "w0": 0.05751759046383077,
+          "wa": 0.08555231176534282
+        },
+        "column_grid_step_cosine": {
+          "w0": 0.2676293838186383,
+          "wa": -0.09761088915229699,
+          "h": 0.27123580587837737,
+          "omega_m": 0.12148818082151114
+        },
+        "fom_svd": 0.1911084702727014,
+        "input": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/core_2pt_1p5_noise.npz",
+          "sha256": "308a8d20d642736876035821c74c1913fc1ad021ce83404c7fe1efd5874be256"
+        },
+        "archived_identity": {
+          "absolute_steps": [
+            0.0015,
+            0.0025,
+            0.00025,
+            0.0025,
+            0.0025,
+            0.005,
+            0.015,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.01,
+            0.02
+          ],
+          "baseline_result_sha256": "99a1687cf0945b17cf229b3d321d8ef3eaf54415c34707b43f145118ae517be9",
+          "configuration_sha256": "d8ddd37dd3f0c8501680b83c622f6e612c24af4a54933145ca93b77d59485952",
+          "dependency_sha256": {
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cosmolike_notebook_utils/fisher.py": "a03e53a5926fa5fdc7cb0c4c30653bed756c078af2d6a7287720e9cc0adad8ed",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941"
+          },
+          "prediction_identity": {
+            "format": "des3pcf-prediction-identity-v1",
+            "implementation": {
+              "camb_implementation": {
+                "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+                "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+                "python_sha256": {
+                  "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+                  "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+                  "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+                  "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+                  "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+                  "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+                  "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+                  "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+                  "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+                  "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+                  "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+                  "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+                  "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+                  "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+                  "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+                  "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+                  "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+                  "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+                  "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+                  "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+                  "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+                  "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+                  "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+                  "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+                  "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+                  "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+                },
+                "version": "1.6.7"
+              },
+              "python_implementation_sha256": {
+                "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+                "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+                "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+                "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+                "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+                "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+                "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+                "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+                "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+                "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+                "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+                "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+                "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+                "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+                "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+                "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+                "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+                "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+                "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+                "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+                "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+                "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+              },
+              "three_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+                "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+              },
+              "two_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+                "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+              }
+            },
+            "input_files": {
+              "aperture_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+                "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+              },
+              "joint_covariance": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+                "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+              },
+              "physical_tables": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+                "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+              },
+              "source_curves": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+                "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+              },
+              "two_point_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+                "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+              }
+            }
+          },
+          "selected_columns": [
+            15,
+            16,
+            3,
+            0
+          ]
+        }
+      },
+      "xi_ell_2": {
+        "fom_qr": 0.19099473208535028,
+        "fom_inverse": 0.19099473208540424,
+        "qr_inverse_relative_difference": -2.8255175976710234e-13,
+        "normalized_fisher_eigenvalue_min": 0.00016033543302624022,
+        "normalized_fisher_eigenvalue_max": 6.004840351276685,
+        "normalized_fisher_condition": 37451.736262775696,
+        "augmented_singular_ratio": 0.005167304110998394,
+        "rank_refusal_eigenvalue_ratio": 4.831690603168681e-13,
+        "weak_normalized_coordinates": {
+          "omega_m": 0.7578537582094703,
+          "sigma8": -0.452701298017149,
+          "w0": 0.39208677227508754,
+          "wa": -0.17911417367377788,
+          "h": -0.1696630708045828,
+          "a1": 0.06436364263406842,
+          "omega_b": -0.03523136390535553,
+          "ns": 0.022880932420740265
+        },
+        "target_effective_information": [
+          [
+            1.5957496681294487,
+            0.34366029324819414
+          ],
+          [
+            0.34366029324819414,
+            0.0968706984103535
+          ]
+        ],
+        "target_information_eigenvalues": [
+          0.02183341669489393,
+          1.6707869498449084
+        ],
+        "weak_target_wa_unit_direction": [
+          -0.2183472550937593,
+          1.0
+        ],
+        "target_sigma": [
+          1.6295767754156871,
+          6.613951295029443
+        ],
+        "target_correlation": -0.8740791473256082,
+        "fom_ratio": 0.999062651316856,
+        "target_generalized_information_ratios": [
+          0.9984134120399184,
+          0.9997123127752611
+        ],
+        "target_generalized_wa_unit_directions": [
+          [
+            -0.26270787319941286,
+            1.0
+          ],
+          [
+            0.08719968117345525,
+            1.0
+          ]
+        ],
+        "changed_column_relative_norms": {
+          "w0": 8.610585848926866e-05,
+          "wa": 0.00017021797241418616,
+          "h": 2.681108882075269e-06,
+          "omega_m": 2.185895630176295e-05
+        },
+        "baseline_weak_displacement": {
+          "omega_m": -0.009247537089885793,
+          "sigma8": 0.008547202666358349,
+          "omega_b": -0.002614315429251255,
+          "h": 0.0005593550283302218,
+          "ns": 0.004671770539062406,
+          "a1": -0.04678084324747792,
+          "eta1": 0.5140802842489299,
+          "m1": 4.119571547285812e-05,
+          "m2": -3.40550913509191e-05,
+          "m3": -8.942359446567489e-05,
+          "m4": 0.00011218681388474771,
+          "dz1": 0.0005610903460518088,
+          "dz2": -0.0004640738265254956,
+          "dz3": -0.00026389066319360645,
+          "dz4": 0.0008264494083669921,
+          "w0": -0.2182962005458092,
+          "wa": 1.0
+        },
+        "baseline_weak_response_norm": 0.151349466604691,
+        "change_on_baseline_weak_displacement_norm": 0.0006094578167156711,
+        "weak_displacement_change_relative": 0.004026825005650738,
+        "weak_response_change_cosine": -0.179209298806761,
+        "partial_replacement_ratios": {
+          "w0wa": 0.9989518159470865,
+          "h": 0.9999975789574407,
+          "omega_m": 1.0001143469586897,
+          "h_omega_m": 1.0001119530552547
+        },
+        "raw_xi_changed_max": 2.8652434741493777e-09,
+        "projected_target_relative_changes": {
+          "w0": 0.0018145350892773881,
+          "wa": 0.0021194142361505857
+        },
+        "target_residual_fraction_of_full_columns": {
+          "w0": 0.05751759046383077,
+          "wa": 0.08555231176534282
+        },
+        "column_grid_step_cosine": {
+          "w0": 0.607189287329277,
+          "wa": -0.08983221234457464,
+          "h": -0.07691155471574479,
+          "omega_m": -0.14852353495246248
+        },
+        "fom_svd": 0.1909947320853502,
+        "input": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/nla_accuracy/xi_ell_2_noise.npz",
+          "sha256": "220f44eefb69e5225157d309c5db6fd59fa28a9d85ae710d275147211f2dc25c"
+        },
+        "archived_identity": {
+          "absolute_steps": [
+            0.0015,
+            0.0025,
+            0.00025,
+            0.0025,
+            0.0025,
+            0.005,
+            0.015,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.01,
+            0.02
+          ],
+          "baseline_result_sha256": "99a1687cf0945b17cf229b3d321d8ef3eaf54415c34707b43f145118ae517be9",
+          "configuration_sha256": "d0cdf6d9f1cbc0d2d34858308a1313963964a2c8f7bbc4f361130b4adfc74909",
+          "dependency_sha256": {
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cosmolike_notebook_utils/fisher.py": "a03e53a5926fa5fdc7cb0c4c30653bed756c078af2d6a7287720e9cc0adad8ed",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941"
+          },
+          "prediction_identity": {
+            "format": "des3pcf-prediction-identity-v1",
+            "implementation": {
+              "camb_implementation": {
+                "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+                "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+                "python_sha256": {
+                  "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+                  "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+                  "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+                  "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+                  "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+                  "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+                  "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+                  "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+                  "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+                  "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+                  "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+                  "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+                  "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+                  "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+                  "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+                  "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+                  "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+                  "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+                  "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+                  "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+                  "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+                  "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+                  "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+                  "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+                  "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+                  "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+                },
+                "version": "1.6.7"
+              },
+              "python_implementation_sha256": {
+                "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+                "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+                "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+                "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+                "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+                "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+                "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+                "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+                "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+                "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+                "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+                "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+                "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+                "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+                "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+                "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+                "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+                "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+                "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+                "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+                "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+                "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+              },
+              "three_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+                "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+              },
+              "two_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+                "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+              }
+            },
+            "input_files": {
+              "aperture_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+                "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+              },
+              "joint_covariance": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+                "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+              },
+              "physical_tables": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+                "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+              },
+              "source_curves": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+                "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+              },
+              "two_point_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+                "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+              }
+            }
+          },
+          "selected_columns": [
+            15,
+            16,
+            3,
+            0
+          ]
+        }
+      }
+    },
+    "h": {
+      "fom_qr": 0.18005865744574526,
+      "fom_inverse": 0.180058657445631,
+      "qr_inverse_relative_difference": 6.346034808757395e-13,
+      "normalized_fisher_eigenvalue_min": 0.00013834278833249348,
+      "normalized_fisher_eigenvalue_max": 6.015448666693445,
+      "normalized_fisher_condition": 43482.199102680344,
+      "augmented_singular_ratio": 0.004795614336413532,
+      "rank_refusal_eigenvalue_ratio": 4.831690603168681e-13,
+      "weak_normalized_coordinates": {
+        "omega_m": 0.7483541232047648,
+        "sigma8": -0.4441058464822459,
+        "w0": 0.40006209519745634,
+        "h": -0.20088780272091653,
+        "wa": -0.18575097449178263,
+        "a1": 0.05695784537486539,
+        "omega_b": -0.05320457288519054,
+        "ns": 0.03754926907019808
+      },
+      "target_effective_information": [
+        [
+          1.5103405864833297,
+          0.3418720377482749
+        ],
+        [
+          0.3418720377482749,
+          0.09885029353739744
+        ]
+      ],
+      "target_information_eigenvalues": [
+        0.020406239648418822,
+        1.5887846403723085
+      ],
+      "weak_target_wa_unit_direction": [
+        -0.22945443097846469,
+        1.0
+      ],
+      "target_sigma": [
+        1.746123567288836,
+        6.825326618778642
+      ],
+      "target_correlation": -0.8847837799015538,
+      "stored_fom": 0.18005865744569724,
+      "rebuilt_stored_fisher_max_relative": 3.65111944536706e-16
+    },
+    "h2": {
+      "fom_qr": 0.1911739287156834,
+      "fom_inverse": 0.1911739287156817,
+      "qr_inverse_relative_difference": 8.881784197001252e-15,
+      "normalized_fisher_eigenvalue_min": 0.000160433211542715,
+      "normalized_fisher_eigenvalue_max": 6.004823479961502,
+      "normalized_fisher_condition": 37428.80555852196,
+      "augmented_singular_ratio": 0.005168886739373842,
+      "rank_refusal_eigenvalue_ratio": 4.831690603168681e-13,
+      "weak_normalized_coordinates": {
+        "omega_m": 0.7578647664687609,
+        "sigma8": -0.45276346594204353,
+        "w0": 0.3918752354621941,
+        "wa": -0.17896128644391684,
+        "h": -0.17002330919067124,
+        "a1": 0.06438216830893789,
+        "omega_b": -0.035443192709486177,
+        "ns": 0.02305144208233318
+      },
+      "target_effective_information": [
+        [
+          1.5964898758390962,
+          0.34373468536863383
+        ],
+        [
+          0.34373468536863383,
+          0.09690071154679504
+        ]
+      ],
+      "target_information_eigenvalues": [
+        0.02186473573501312,
+        1.6715258516508782
+      ],
+      "weak_target_wa_unit_direction": [
+        -0.2182962005458092,
+        1.0
+      ],
+      "target_sigma": [
+        1.6283014808738243,
+        6.609284081435851
+      ],
+      "target_correlation": -0.8739302867213306,
+      "stored_fom": 0.19117392871568467,
+      "rebuilt_stored_fisher_max_relative": 1.2073886234287022e-16
+    },
+    "summary_sha256": "3d9c6bc8edf7cedf6a91b90b44c2ae73490ce2bdde78b0d9a5d7f76dc136d2bd",
+    "single_column_h_into_h2_ratios": {
+      "omega_m": 0.962352455755801,
+      "sigma8": 1.000779268036518,
+      "omega_b": 1.0025984838053275,
+      "h": 0.978760728736242,
+      "ns": 1.0009806489170527,
+      "a1": 1.0000000000021247,
+      "eta1": 0.999999997122988,
+      "m1": 1.0000000000000016,
+      "m2": 1.000000000000002,
+      "m3": 0.999999999999998,
+      "m4": 0.9999999999999991,
+      "dz1": 1.0000015556454298,
+      "dz2": 0.9999491127763821,
+      "dz3": 0.999994599068691,
+      "dz4": 0.9999120783569666,
+      "w0": 0.9976015419419685,
+      "wa": 0.9939405476537422
+    }
+  },
+  "tatt": {
+    "input": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_tatt_measured_edge_demo_fisher.npz",
+      "sha256": "fcaad62d7a4c89f47114e944f0dde4b906055889526123eb51b321577b1142d6"
+    },
+    "candidates": {
+      "chi_2": {
+        "fom_qr": 0.145238167426179,
+        "fom_inverse": 0.14523816742644793,
+        "qr_inverse_relative_difference": -1.851629960469836e-12,
+        "normalized_fisher_eigenvalue_min": 8.523462516908393e-05,
+        "normalized_fisher_eigenvalue_max": 7.278032691911779,
+        "normalized_fisher_condition": 85388.21725881945,
+        "augmented_singular_ratio": 0.0034221656424813333,
+        "rank_refusal_eigenvalue_ratio": 5.684341886080801e-13,
+        "weak_normalized_coordinates": {
+          "omega_m": -0.6870730395949094,
+          "w0": -0.5178343940988616,
+          "sigma8": 0.39563248796199946,
+          "wa": 0.2912675982303429,
+          "h": 0.12513693975523232,
+          "a1": -0.035649799868306256,
+          "bta": 0.02500334677652771,
+          "a2": 0.0205480606264827
+        },
+        "target_effective_information": [
+          [
+            2.1275292636516525,
+            0.5535262270281478
+          ],
+          [
+            0.5535262270281478,
+            0.1539275698249346
+          ]
+        ],
+        "target_information_eigenvalues": [
+          0.009283678592881912,
+          2.2721731548837054
+        ],
+        "weak_target_wa_unit_direction": [
+          -0.2613135280122821,
+          1.0
+        ],
+        "target_sigma": [
+          2.701328782353308,
+          10.042850800477261
+        ],
+        "target_correlation": -0.9672577668229553,
+        "fom_ratio": 1.0082668477959713,
+        "target_generalized_information_ratios": [
+          0.9997620640162972,
+          1.0168439801371103
+        ],
+        "target_generalized_wa_unit_directions": [
+          [
+            -0.1960901893781521,
+            1.0
+          ],
+          [
+            -0.3328954789196398,
+            1.0
+          ]
+        ],
+        "changed_column_relative_norms": {
+          "w0": 0.0002683652378989064,
+          "wa": 6.65800950089976e-05,
+          "h": 0.00035167074039973024,
+          "omega_m": 0.0005982462977474726
+        },
+        "baseline_weak_displacement": {
+          "omega_m": -0.012460310697757082,
+          "sigma8": 0.010452287629098158,
+          "omega_b": -0.00018145916027893194,
+          "h": 0.027706170844337342,
+          "ns": 0.0002063931278265871,
+          "a1": -0.0018990303259085234,
+          "eta1": -0.0033846531603554018,
+          "a2": 0.027802982418163882,
+          "eta2": -0.014015408810587448,
+          "bta": 0.18046556984680076,
+          "m1": 2.5450300946959412e-05,
+          "m2": -1.2016250113763422e-05,
+          "m3": -9.969604768744868e-05,
+          "m4": 0.00010528496883532016,
+          "dz1": 0.0003357282669901569,
+          "dz2": -0.0001620434528615152,
+          "dz3": -0.00028423085766873866,
+          "dz4": 0.0006617655531527188,
+          "w0": -0.26189429150264265,
+          "wa": 1.0
+        },
+        "baseline_weak_response_norm": 0.09920293289328665,
+        "change_on_baseline_weak_displacement_norm": 0.002299677216478133,
+        "weak_displacement_change_relative": 0.023181544631870044,
+        "weak_response_change_cosine": 0.16544862238700161,
+        "partial_replacement_ratios": {
+          "w0wa": 0.9994416068795543,
+          "h": 0.9995921924395356,
+          "omega_m": 1.0096345392258617,
+          "h_omega_m": 1.0091865439343122
+        },
+        "raw_xi_changed_max": 0.0,
+        "projected_target_relative_changes": {
+          "w0": 0.01806638660387382,
+          "wa": 0.012329499996563534
+        },
+        "target_residual_fraction_of_full_columns": {
+          "w0": 0.06665961332723543,
+          "wa": 0.10887307448222366
+        },
+        "column_grid_step_cosine": {
+          "w0": -0.2009738636537212,
+          "wa": -0.4772333507229008,
+          "h": 0.18101889695463094,
+          "omega_m": -0.05781810924236222
+        },
+        "fom_svd": 0.14523816742617923,
+        "input": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/chi_2_noise.npz",
+          "sha256": "53b751226f52d4671999e931f1fb482b53566a775d19bd0b8e778e7c22502e1b"
+        },
+        "archived_identity": {
+          "absolute_steps": [
+            0.0015,
+            0.0025,
+            0.00025,
+            0.0025,
+            0.0025,
+            0.005,
+            0.015,
+            0.01,
+            0.015,
+            0.01,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.01,
+            0.02
+          ],
+          "baseline_result_sha256": "fcaad62d7a4c89f47114e944f0dde4b906055889526123eb51b321577b1142d6",
+          "configuration_sha256": "35fad57dd99b18518bf7e3bbef49cfd130711f82b075f9c7b4bae61f9bd8615d",
+          "dependency_sha256": {
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cosmolike_notebook_utils/fisher.py": "a03e53a5926fa5fdc7cb0c4c30653bed756c078af2d6a7287720e9cc0adad8ed",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941"
+          },
+          "prediction_identity": {
+            "format": "des3pcf-prediction-identity-v1",
+            "implementation": {
+              "camb_implementation": {
+                "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+                "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+                "python_sha256": {
+                  "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+                  "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+                  "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+                  "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+                  "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+                  "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+                  "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+                  "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+                  "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+                  "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+                  "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+                  "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+                  "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+                  "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+                  "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+                  "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+                  "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+                  "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+                  "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+                  "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+                  "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+                  "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+                  "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+                  "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+                  "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+                  "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+                },
+                "version": "1.6.7"
+              },
+              "python_implementation_sha256": {
+                "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+                "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+                "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+                "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+                "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+                "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+                "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+                "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+                "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+                "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+                "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+                "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+                "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+                "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+                "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+                "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+                "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+                "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+                "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+                "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+                "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+                "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+              },
+              "three_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+                "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+              },
+              "two_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+                "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+              }
+            },
+            "input_files": {
+              "aperture_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+                "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+              },
+              "joint_covariance": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+                "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+              },
+              "physical_tables": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+                "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+              },
+              "source_curves": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+                "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+              },
+              "two_point_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+                "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+              }
+            }
+          },
+          "selected_columns": [
+            18,
+            19,
+            3,
+            0
+          ]
+        }
+      },
+      "triangle_1p5": {
+        "fom_qr": 0.13641893606767072,
+        "fom_inverse": 0.13641893606781233,
+        "qr_inverse_relative_difference": -1.0380585280245214e-12,
+        "normalized_fisher_eigenvalue_min": 7.45144946193487e-05,
+        "normalized_fisher_eigenvalue_max": 7.277910878850788,
+        "normalized_fisher_condition": 97671.07615812749,
+        "augmented_singular_ratio": 0.003199757115882345,
+        "rank_refusal_eigenvalue_ratio": 5.684341886080801e-13,
+        "weak_normalized_coordinates": {
+          "omega_m": 0.6908601149865595,
+          "w0": 0.5122468448384816,
+          "sigma8": -0.40069741262896175,
+          "wa": -0.2855218642588329,
+          "h": -0.1250267730767878,
+          "a1": 0.035019967954656624,
+          "bta": -0.02219968817900127,
+          "a2": -0.02069686574635428
+        },
+        "target_effective_information": [
+          [
+            2.027132062886248,
+            0.5359052567544336
+          ],
+          [
+            0.5359052567544336,
+            0.1508557710342085
+          ]
+        ],
+        "target_information_eigenvalues": [
+          0.008578429724625311,
+          2.1694094041958314
+        ],
+        "weak_target_wa_unit_direction": [
+          -0.265489728858507,
+          1.0
+        ],
+        "target_sigma": [
+          2.8471235020312005,
+          10.43677601931321
+        ],
+        "target_correlation": -0.9690942822956166,
+        "fom_ratio": 0.9470423173615303,
+        "target_generalized_information_ratios": [
+          0.896057510017019,
+          1.0009281110276729
+        ],
+        "target_generalized_wa_unit_directions": [
+          [
+            -0.31412476878498824,
+            1.0
+          ],
+          [
+            -0.17335025965684014,
+            1.0
+          ]
+        ],
+        "changed_column_relative_norms": {
+          "w0": 0.0016300334199957443,
+          "wa": 0.0014086800949961928,
+          "h": 0.002023738279788515,
+          "omega_m": 0.0025102133106023623
+        },
+        "baseline_weak_displacement": {
+          "omega_m": -0.012460310697757082,
+          "sigma8": 0.010452287629098158,
+          "omega_b": -0.00018145916027893194,
+          "h": 0.027706170844337342,
+          "ns": 0.0002063931278265871,
+          "a1": -0.0018990303259085234,
+          "eta1": -0.0033846531603554018,
+          "a2": 0.027802982418163882,
+          "eta2": -0.014015408810587448,
+          "bta": 0.18046556984680076,
+          "m1": 2.5450300946959412e-05,
+          "m2": -1.2016250113763422e-05,
+          "m3": -9.969604768744868e-05,
+          "m4": 0.00010528496883532016,
+          "dz1": 0.0003357282669901569,
+          "dz2": -0.0001620434528615152,
+          "dz3": -0.00028423085766873866,
+          "dz4": 0.0006617655531527188,
+          "w0": -0.26189429150264265,
+          "wa": 1.0
+        },
+        "baseline_weak_response_norm": 0.09920293289328665,
+        "change_on_baseline_weak_displacement_norm": 0.01289524440298622,
+        "weak_displacement_change_relative": 0.1299885399240941,
+        "weak_response_change_cosine": -0.279528561820536,
+        "partial_replacement_ratios": {
+          "w0wa": 1.013769114573079,
+          "h": 1.0049902409499871,
+          "omega_m": 0.930969863451847,
+          "h_omega_m": 0.9364152240022003
+        },
+        "raw_xi_changed_max": 0.0,
+        "projected_target_relative_changes": {
+          "w0": 0.06640360371417357,
+          "wa": 0.04265971711751284
+        },
+        "target_residual_fraction_of_full_columns": {
+          "w0": 0.06665961332723543,
+          "wa": 0.10887307448222366
+        },
+        "column_grid_step_cosine": {
+          "w0": -0.0425324918096187,
+          "wa": 0.0352210824766972,
+          "h": 0.1413236164111233,
+          "omega_m": -0.19279475939029825
+        },
+        "fom_svd": 0.136418936067671,
+        "input": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/triangle_1p5_noise.npz",
+          "sha256": "6ba1195e453d8a4b49792d079aeeceb2135b2931d239361481613e229986a734"
+        },
+        "archived_identity": {
+          "absolute_steps": [
+            0.0015,
+            0.0025,
+            0.00025,
+            0.0025,
+            0.0025,
+            0.005,
+            0.015,
+            0.01,
+            0.015,
+            0.01,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.01,
+            0.02
+          ],
+          "baseline_result_sha256": "fcaad62d7a4c89f47114e944f0dde4b906055889526123eb51b321577b1142d6",
+          "configuration_sha256": "26ed7bad3715f5261570883a2621c76f519aa39db7bbf1b360a5766945e241fd",
+          "dependency_sha256": {
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cosmolike_notebook_utils/fisher.py": "a03e53a5926fa5fdc7cb0c4c30653bed756c078af2d6a7287720e9cc0adad8ed",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941"
+          },
+          "prediction_identity": {
+            "format": "des3pcf-prediction-identity-v1",
+            "implementation": {
+              "camb_implementation": {
+                "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+                "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+                "python_sha256": {
+                  "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+                  "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+                  "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+                  "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+                  "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+                  "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+                  "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+                  "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+                  "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+                  "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+                  "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+                  "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+                  "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+                  "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+                  "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+                  "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+                  "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+                  "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+                  "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+                  "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+                  "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+                  "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+                  "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+                  "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+                  "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+                  "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+                },
+                "version": "1.6.7"
+              },
+              "python_implementation_sha256": {
+                "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+                "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+                "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+                "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+                "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+                "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+                "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+                "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+                "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+                "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+                "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+                "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+                "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+                "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+                "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+                "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+                "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+                "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+                "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+                "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+                "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+                "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+              },
+              "three_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+                "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+              },
+              "two_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+                "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+              }
+            },
+            "input_files": {
+              "aperture_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+                "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+              },
+              "joint_covariance": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+                "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+              },
+              "physical_tables": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+                "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+              },
+              "source_curves": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+                "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+              },
+              "two_point_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+                "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+              }
+            }
+          },
+          "selected_columns": [
+            18,
+            19,
+            3,
+            0
+          ]
+        }
+      },
+      "core_2pt_1p5": {
+        "fom_qr": 0.14420461444422078,
+        "fom_inverse": 0.1442046144442186,
+        "qr_inverse_relative_difference": 1.509903313490213e-14,
+        "normalized_fisher_eigenvalue_min": 8.410290837950045e-05,
+        "normalized_fisher_eigenvalue_max": 7.277897669315773,
+        "normalized_fisher_condition": 86535.62414840002,
+        "augmented_singular_ratio": 0.0033994020720302417,
+        "rank_refusal_eigenvalue_ratio": 5.684341886080801e-13,
+        "weak_normalized_coordinates": {
+          "omega_m": -0.6874804733653276,
+          "w0": -0.5171730670302634,
+          "sigma8": 0.3960351183553649,
+          "wa": 0.2905039272662507,
+          "h": 0.12607604185141888,
+          "a1": -0.03549047836297,
+          "bta": 0.02499753603779928,
+          "a2": 0.020545520112244604
+        },
+        "target_effective_information": [
+          [
+            2.1116947491316456,
+            0.5504104515595443
+          ],
+          [
+            0.5504104515595443,
+            0.15331128523481735
+          ]
+        ],
+        "target_information_eigenvalues": [
+          0.009218497080636844,
+          2.2557875372858263
+        ],
+        "weak_target_wa_unit_direction": [
+          -0.26179151893992036,
+          1.0
+        ],
+        "target_sigma": [
+          2.7152380092980883,
+          10.077119583531413
+        ],
+        "target_correlation": -0.9673508993433502,
+        "fom_ratio": 1.0010917558375931,
+        "target_generalized_information_ratios": [
+          0.9995881480579469,
+          1.002597625385106
+        ],
+        "target_generalized_wa_unit_directions": [
+          [
+            -0.1997534452949943,
+            1.0
+          ],
+          [
+            -0.3372282149908792,
+            1.0
+          ]
+        ],
+        "changed_column_relative_norms": {
+          "w0": 4.4856939399103636e-05,
+          "wa": 2.1197603508592246e-05,
+          "h": 8.004397463225208e-05,
+          "omega_m": 5.16430912495067e-05
+        },
+        "baseline_weak_displacement": {
+          "omega_m": -0.012460310697757082,
+          "sigma8": 0.010452287629098158,
+          "omega_b": -0.00018145916027893194,
+          "h": 0.027706170844337342,
+          "ns": 0.0002063931278265871,
+          "a1": -0.0018990303259085234,
+          "eta1": -0.0033846531603554018,
+          "a2": 0.027802982418163882,
+          "eta2": -0.014015408810587448,
+          "bta": 0.18046556984680076,
+          "m1": 2.5450300946959412e-05,
+          "m2": -1.2016250113763422e-05,
+          "m3": -9.969604768744868e-05,
+          "m4": 0.00010528496883532016,
+          "dz1": 0.0003357282669901569,
+          "dz2": -0.0001620434528615152,
+          "dz3": -0.00028423085766873866,
+          "dz4": 0.0006617655531527188,
+          "w0": -0.26189429150264265,
+          "wa": 1.0
+        },
+        "baseline_weak_response_norm": 0.09920293289328665,
+        "change_on_baseline_weak_displacement_norm": 0.00039419833518587033,
+        "weak_displacement_change_relative": 0.003973656057224765,
+        "weak_response_change_cosine": 0.1215950443881026,
+        "partial_replacement_ratios": {
+          "w0wa": 1.00027897505718,
+          "h": 0.9997126070318166,
+          "omega_m": 1.0010998152198307,
+          "h_omega_m": 1.0008117405232668
+        },
+        "raw_xi_changed_max": 2.995055771237232e-09,
+        "projected_target_relative_changes": {
+          "w0": 0.0016045342257783484,
+          "wa": 0.0009709027770338443
+        },
+        "target_residual_fraction_of_full_columns": {
+          "w0": 0.06665961332723543,
+          "wa": 0.10887307448222366
+        },
+        "column_grid_step_cosine": {
+          "w0": 0.2051905017422538,
+          "wa": -0.09490385039387146,
+          "h": 0.2789688549772259,
+          "omega_m": 0.10877350611582713
+        },
+        "fom_svd": 0.1442046144442204,
+        "input": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/core_2pt_1p5_noise.npz",
+          "sha256": "a118c3d3082f7e2d5d610ac2bcc2528c595e03150311996fd37790065564d746"
+        },
+        "archived_identity": {
+          "absolute_steps": [
+            0.0015,
+            0.0025,
+            0.00025,
+            0.0025,
+            0.0025,
+            0.005,
+            0.015,
+            0.01,
+            0.015,
+            0.01,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.01,
+            0.02
+          ],
+          "baseline_result_sha256": "fcaad62d7a4c89f47114e944f0dde4b906055889526123eb51b321577b1142d6",
+          "configuration_sha256": "80a59e44583ca9aff543a107d93f34b1c37ba01c4a2235b8214d8f1745d7ea06",
+          "dependency_sha256": {
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cosmolike_notebook_utils/fisher.py": "a03e53a5926fa5fdc7cb0c4c30653bed756c078af2d6a7287720e9cc0adad8ed",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941"
+          },
+          "prediction_identity": {
+            "format": "des3pcf-prediction-identity-v1",
+            "implementation": {
+              "camb_implementation": {
+                "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+                "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+                "python_sha256": {
+                  "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+                  "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+                  "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+                  "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+                  "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+                  "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+                  "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+                  "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+                  "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+                  "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+                  "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+                  "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+                  "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+                  "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+                  "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+                  "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+                  "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+                  "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+                  "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+                  "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+                  "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+                  "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+                  "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+                  "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+                  "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+                  "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+                },
+                "version": "1.6.7"
+              },
+              "python_implementation_sha256": {
+                "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+                "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+                "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+                "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+                "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+                "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+                "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+                "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+                "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+                "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+                "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+                "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+                "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+                "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+                "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+                "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+                "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+                "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+                "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+                "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+                "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+                "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+              },
+              "three_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+                "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+              },
+              "two_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+                "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+              }
+            },
+            "input_files": {
+              "aperture_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+                "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+              },
+              "joint_covariance": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+                "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+              },
+              "physical_tables": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+                "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+              },
+              "source_curves": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+                "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+              },
+              "two_point_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+                "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+              }
+            }
+          },
+          "selected_columns": [
+            18,
+            19,
+            3,
+            0
+          ]
+        }
+      },
+      "xi_ell_2": {
+        "fom_qr": 0.14392317429653811,
+        "fom_inverse": 0.14392317429657805,
+        "qr_inverse_relative_difference": -2.7755575615628914e-13,
+        "normalized_fisher_eigenvalue_min": 8.385161795961587e-05,
+        "normalized_fisher_eigenvalue_max": 7.2779053450801605,
+        "normalized_fisher_condition": 86795.04966243231,
+        "augmented_singular_ratio": 0.0033943179594734764,
+        "rank_refusal_eigenvalue_ratio": 5.684341886080801e-13,
+        "weak_normalized_coordinates": {
+          "omega_m": -0.6876419639971326,
+          "w0": -0.5172260621488851,
+          "sigma8": 0.3960436327125747,
+          "wa": 0.2904246500769109,
+          "h": 0.12522789254103617,
+          "a1": -0.03550392447001622,
+          "bta": 0.024992299020887374,
+          "a2": 0.02054976967560768
+        },
+        "target_effective_information": [
+          [
+            2.1078132684107422,
+            0.549658442386074
+          ],
+          [
+            0.549658442386074,
+            0.15316265829813835
+          ]
+        ],
+        "target_information_eigenvalues": [
+          0.009198903749523478,
+          2.251777022959357
+        ],
+        "weak_target_wa_unit_direction": [
+          -0.26191493379718944,
+          1.0
+        ],
+        "target_sigma": [
+          2.7192285955717326,
+          10.087541582892511
+        ],
+        "target_correlation": -0.967387314537532,
+        "fom_ratio": 0.9991379528147654,
+        "target_generalized_information_ratios": [
+          0.9987173938755192,
+          0.9995586888509769
+        ],
+        "target_generalized_wa_unit_directions": [
+          [
+            -0.2908438829983177,
+            1.0
+          ],
+          [
+            -0.10573503937847462,
+            1.0
+          ]
+        ],
+        "changed_column_relative_norms": {
+          "w0": 8.752229543846738e-05,
+          "wa": 0.00017219922774158207,
+          "h": 2.7916866040197477e-06,
+          "omega_m": 2.2393818380578464e-05
+        },
+        "baseline_weak_displacement": {
+          "omega_m": -0.012460310697757082,
+          "sigma8": 0.010452287629098158,
+          "omega_b": -0.00018145916027893194,
+          "h": 0.027706170844337342,
+          "ns": 0.0002063931278265871,
+          "a1": -0.0018990303259085234,
+          "eta1": -0.0033846531603554018,
+          "a2": 0.027802982418163882,
+          "eta2": -0.014015408810587448,
+          "bta": 0.18046556984680076,
+          "m1": 2.5450300946959412e-05,
+          "m2": -1.2016250113763422e-05,
+          "m3": -9.969604768744868e-05,
+          "m4": 0.00010528496883532016,
+          "dz1": 0.0003357282669901569,
+          "dz2": -0.0001620434528615152,
+          "dz3": -0.00028423085766873866,
+          "dz4": 0.0006617655531527188,
+          "w0": -0.26189429150264265,
+          "wa": 1.0
+        },
+        "baseline_weak_response_norm": 0.09920293289328665,
+        "change_on_baseline_weak_displacement_norm": 0.0006339126305023029,
+        "weak_displacement_change_relative": 0.006390059366331513,
+        "weak_response_change_cosine": -0.09258921875198244,
+        "partial_replacement_ratios": {
+          "w0wa": 0.9991047483327825,
+          "h": 0.999996520357816,
+          "omega_m": 1.0000405500276166,
+          "h_omega_m": 1.000037104323175
+        },
+        "raw_xi_changed_max": 2.8538979116661707e-09,
+        "projected_target_relative_changes": {
+          "w0": 0.0016027816335870441,
+          "wa": 0.0017213379475592148
+        },
+        "target_residual_fraction_of_full_columns": {
+          "w0": 0.06665961332723543,
+          "wa": 0.10887307448222366
+        },
+        "column_grid_step_cosine": {
+          "w0": 0.5648187143604477,
+          "wa": -0.08585246744839418,
+          "h": -0.0767382911405426,
+          "omega_m": -0.15079989753733997
+        },
+        "fom_svd": 0.14392317429653795,
+        "input": {
+          "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/tatt_accuracy/xi_ell_2_noise.npz",
+          "sha256": "e1349c04127b6fd99afd3f13b8096e1273d383c64acc86929febc4ce6894eb09"
+        },
+        "archived_identity": {
+          "absolute_steps": [
+            0.0015,
+            0.0025,
+            0.00025,
+            0.0025,
+            0.0025,
+            0.005,
+            0.015,
+            0.01,
+            0.015,
+            0.01,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.01,
+            0.02
+          ],
+          "baseline_result_sha256": "fcaad62d7a4c89f47114e944f0dde4b906055889526123eb51b321577b1142d6",
+          "configuration_sha256": "f746103beff038d08df7f029bcbe977f94caa1a9b6469df3dd2339d39116fcbb",
+          "dependency_sha256": {
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/external_modules/code/cosmolike_core/cosmolike_notebook_utils/fisher.py": "a03e53a5926fa5fdc7cb0c4c30653bed756c078af2d6a7287720e9cc0adad8ed",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/configs/des_y3_fisher_accuracy.yaml": "7692bde225b5d6ef1af92a585f951dd148c4d5314a56483d9dfb8eeacad9afe0",
+            "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/scripts/run_fisher_accuracy.py": "07152e8654975839e4725fc1b7938a7b8f6555d0906d638b46a6daab8bd54941"
+          },
+          "prediction_identity": {
+            "format": "des3pcf-prediction-identity-v1",
+            "implementation": {
+              "camb_implementation": {
+                "library_path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/lib/python3.11/site-packages/camb/camblib.so",
+                "library_sha256": "95870be73431b52665681394ca72594df5d812cf5e6f0485bbdfc940f18343ca",
+                "python_sha256": {
+                  "__init__.py": "1f659f0faa743498883ca67ef3eed34ab10093757ecd044f791a760d8713c062",
+                  "_command_line.py": "85a509edfc8cc49ac04b13ef5e9e36588e0d30540ef7936ec4e7d060c1beb2db",
+                  "_compilers.py": "512ad25f4ec392ef307f908868be573b41b8f724bd230402b6509c298797c2ec",
+                  "_config.py": "5fa0a36a7364d591628e06876fa4bc153e341e3e33347e6e9309a7fb1da1d52e",
+                  "_ini.py": "4356d25b84fe289fbabaf9c49db866f5c6bb512f252d5dc0b4ad51d7a7983bea",
+                  "baseconfig.py": "6af3e204c323812789ff0ac379668e21817aa8f5758e8a0de5be48cb20705884",
+                  "bbn.py": "879304e01c5df30eb38707e29ffc7cf7c6595f452a36382abcfbfca5189b78ec",
+                  "bispectrum.py": "5f4c8eb80d94fccad9ab56a8ce9f71801256ce2cfac947d6398a65cc4daa0b3d",
+                  "camb.py": "51db464a9d582fc54b5d34c98f4b252b7b949c19408797ea18f94476959d238c",
+                  "constants.py": "43e40ba181fc88a033e851f0ee86a345777b9bb2437bb09e84261d8acd28090d",
+                  "correlations.py": "ea4d56f2fa606d7d13ac9e8ce3fe7017547b171b47ba2fc7cb9b1723b0d57d64",
+                  "dark_energy.py": "1eee14318eb9de8f74c3194660dc64b286a9cafafbfbb43ab6c5660c51e686d4",
+                  "emission_angle.py": "0ae34832bbd60e5182b00210b13f6e4aed3f63158e23a4ef77d7fb7a6af90c4d",
+                  "inifile.py": "4b37c093ebadbdfaa174682c7b5bda7b24e03636c0966870b8401bb34cfbfbb2",
+                  "initialpower.py": "8d25211d09075e92ce293b1487e060c04f2ad515c697e3b097d2a3ee8c77b8db",
+                  "mathutils.py": "d2929114f234f3334915955227a84b0574a6c0a21fb922ac7f5d932c5ae70c5d",
+                  "model.py": "dbd9209a61cae6ac62ab02b3fb550ca76db799306345be894fddd4dd08029e56",
+                  "nonlinear.py": "d51556ec87421d0654773133b102a864ccd602b33554da0432f1e0421855212b",
+                  "postborn.py": "a05a5d52fcafb48e7ef1954b162bf964e423e1c2d4f48c4d2ac90301ea61b5ee",
+                  "recombination.py": "f42223b2e416a9a409fc5f0f47e0b18abe763d49c1980a8257b3033919a7544a",
+                  "reionization.py": "dbc12e641b2fea6db9c26277cb96ebefe87a98991594c4849d3e52c3ec678fa7",
+                  "results.py": "8c2a80b8ad28e4230d9480e8bab601aa9880553227408da6cfd70f06cdb4d42f",
+                  "sources.py": "09cf44a5b274fb0d0943039d56ab16f0cef0ce63899c856940f68431ab4b03c6",
+                  "symbolic.py": "c648c3570b830208d8cf6a79a8c83100bdb69677c0725b46d3f91023a73791ab",
+                  "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "tests/camb_test.py": "c40622a591df883583ddc56987d33eb6ec0644e8ea6e3292534e86e58809d2b8",
+                  "tests/hmcode_test.py": "9ef8f8665632f4e79a22aee405abd6c731e296fef756411c85cf91db285f0f24"
+                },
+                "version": "1.6.7"
+              },
+              "python_implementation_sha256": {
+                "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+                "python/des3pcf/accuracy.py": "c9441256f7b4f063ad70bb5f21886017afd00b6256e2c6a4a1175e9f549f1541",
+                "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+                "python/des3pcf/core_two_point.py": "eb55abb2db99a0c38ec53ebe0e26faef56bfb76da59b84e003893605c5d03795",
+                "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+                "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+                "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+                "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+                "python/des3pcf/inference.py": "3e220fd4750a9c8265bd8f370606d36f9fb18c9dd929ab42a4f27d8e3da1dcd6",
+                "python/des3pcf/inputs.py": "400bbb80e42bccf28a20292b6d3dd1d6ccc4d71896061da811a2b21022bc510f",
+                "python/des3pcf/likelihood.py": "d4fcd81bef763789247897fa5ed84bac168414db1cebe466810a1ea2e5259bf5",
+                "python/des3pcf/mean.py": "cdc2a43e9dc2bd94f2f53fd37ca7b64330143d734e46749801abfb418f314742",
+                "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+                "python/des3pcf/pipeline.py": "da832e3bb2a7ea03c9d6a677dcb2e945f162269e657fc2450da1e60fc6a51c5f",
+                "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+                "python/des3pcf/provenance.py": "936ad7bf3a8c6a0d6ceec09f085f070a9ece7c25d173e9947febfdc7dd8ba1f9",
+                "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+                "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+                "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+                "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+                "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+                "scripts/run_3pcf.py": "845434901317f8f3a808d875d1e7791570f9990b30d60fb7b1ae93d18ed767df"
+              },
+              "three_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+                "sha256": "9ef7654b3a164689ac867ba06d9ea1575101e26475773be5d97a0e7847218053"
+              },
+              "two_point_extension": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+                "sha256": "4df2daf89c57d543f9c4879c85994f99f9eee08574677b437665f5bbdc8894d8"
+              }
+            },
+            "input_files": {
+              "aperture_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+                "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+              },
+              "joint_covariance": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+                "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+              },
+              "physical_tables": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+                "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+              },
+              "source_curves": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+                "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+              },
+              "two_point_rows": {
+                "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+                "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+              }
+            }
+          },
+          "selected_columns": [
+            18,
+            19,
+            3,
+            0
+          ]
+        }
+      }
+    },
+    "h": {
+      "fom_qr": 0.1363035238879612,
+      "fom_inverse": 0.13630352388801378,
+      "qr_inverse_relative_difference": -3.859135233597044e-13,
+      "normalized_fisher_eigenvalue_min": 7.421073089065306e-05,
+      "normalized_fisher_eigenvalue_max": 7.2873744747157465,
+      "normalized_fisher_condition": 98198.39243267177,
+      "augmented_singular_ratio": 0.003191154351596856,
+      "rank_refusal_eigenvalue_ratio": 5.684341886080801e-13,
+      "weak_normalized_coordinates": {
+        "omega_m": -0.6875960230272632,
+        "w0": -0.5125170358798206,
+        "sigma8": 0.39707664024493194,
+        "wa": 0.2859569058791124,
+        "h": 0.14751712282030183,
+        "a1": -0.03362418853517661,
+        "omega_b": 0.027007133048096724,
+        "a2": 0.021292387875886346
+      },
+      "target_effective_information": [
+        [
+          2.0335332107418767,
+          0.5378115120626403
+        ],
+        [
+          0.5378115120626403,
+          0.15137194293427852
+        ]
+      ],
+      "target_information_eigenvalues": [
+        0.008536536724324197,
+        2.176368616951831
+      ],
+      "weak_target_wa_unit_direction": [
+        -0.2655863680978958,
+        1.0
+      ],
+      "target_sigma": [
+        2.8544051007776017,
+        10.46209238799966
+      ],
+      "target_correlation": -0.9693525716454205,
+      "stored_fom": 0.1363035238881465,
+      "rebuilt_stored_fisher_max_relative": 2.5532902557308376e-16
+    },
+    "h2": {
+      "fom_qr": 0.14404734990906773,
+      "fom_inverse": 0.14404734990931858,
+      "qr_inverse_relative_difference": -1.7414958364270205e-12,
+      "normalized_fisher_eigenvalue_min": 8.390935983985483e-05,
+      "normalized_fisher_eigenvalue_max": 7.277891237680157,
+      "normalized_fisher_condition": 86735.15387997683,
+      "augmented_singular_ratio": 0.003395489746433123,
+      "rank_refusal_eigenvalue_ratio": 5.684341886080801e-13,
+      "weak_normalized_coordinates": {
+        "omega_m": -0.6876413387983635,
+        "w0": -0.5170613981734403,
+        "sigma8": 0.39611354834589374,
+        "wa": 0.2903417268736984,
+        "h": 0.12580859214951673,
+        "a1": -0.03552054548286959,
+        "bta": 0.025009312627595613,
+        "a2": 0.020545667618328003
+      },
+      "target_effective_information": [
+        [
+          2.1090324595206136,
+          0.5499316327851291
+        ],
+        [
+          0.5499316327851291,
+          0.15323350681240894
+        ]
+      ],
+      "target_information_eigenvalues": [
+        0.009209551469256071,
+        2.2530564148637664
+      ],
+      "weak_target_wa_unit_direction": [
+        -0.26189429150264265,
+        1.0
+      ],
+      "target_sigma": [
+        2.7175127947534135,
+        10.081760103138715
+      ],
+      "target_correlation": -0.9673646192262676,
+      "stored_fom": 0.14404734990921134,
+      "rebuilt_stored_fisher_max_relative": 3.7993226593488954e-16
+    },
+    "summary_sha256": "ac9c424d53612b8c998afe3377b1236ac95b77849f9997df79c39aa99d0aab54",
+    "single_column_h_into_h2_ratios": {
+      "omega_m": 0.9693045006045707,
+      "sigma8": 1.0006748852943512,
+      "omega_b": 1.0006949443015787,
+      "h": 0.981363248889754,
+      "ns": 1.0003622514702009,
+      "a1": 1.0000000000004683,
+      "eta1": 0.9999999999708256,
+      "a2": 1.0000000000008722,
+      "eta2": 0.9999999999631799,
+      "bta": 1.0000000000000666,
+      "m1": 0.9999999999999966,
+      "m2": 0.9999999999999966,
+      "m3": 0.9999999999999982,
+      "m4": 0.9999999999999937,
+      "dz1": 0.9999928058305794,
+      "dz2": 0.9999391302246184,
+      "dz3": 0.9999910705173748,
+      "dz4": 0.9998728033091624,
+      "w0": 0.9986090949981823,
+      "wa": 0.9916409309076883
+    }
+  },
+  "inspection": {
+    "interpretation": "Historical arrays; no new physical prediction or timing.",
+    "script_sha256": "8326fa7c0d3ae3666d6447e96c1f6c2bd91e87c75959637078447c7d5a5d05b9",
+    "array_helper_sha256": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "scope": "Geometry only, independent fixed Gauss-Legendre integration; no physical means or timings",
+  "lmax": 50,
+  "mmax": 100,
+  "psi_radians": [
+    0.0,
+    0.1,
+    0.4,
+    0.7853981633974483,
+    1.1,
+    1.4,
+    1.5707963267948966
+  ],
+  "records": [
+    {
+      "nodes": 512,
+      "maximum_absolute_error": 8.270329029005353e-13,
+      "largest_error_index_M_L_psi": [
+        29,
+        0,
+        5
+      ],
+      "error_scaled_by_4pi2": 2.0948988158260212e-14
+    },
+    {
+      "nodes": 1024,
+      "maximum_absolute_error": 1.46344047990965e-12,
+      "largest_error_index_M_L_psi": [
+        40,
+        0,
+        3
+      ],
+      "error_scaled_by_4pi2": 3.7069380403639146e-14,
+      "max_quadrature_refinement_change": 2.008337940395677e-12
+    }
+  ],
+  "threads": 1,
+  "blas_threads": 1
+}

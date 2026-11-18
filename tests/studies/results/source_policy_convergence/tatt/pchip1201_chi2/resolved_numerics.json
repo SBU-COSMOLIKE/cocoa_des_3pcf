@@ -1,0 +1,41 @@
+{
+  "fft_ell_bounds": [
+    0.006617346802758739,
+    101902.2787370343
+  ],
+  "fft_ell_count": 576,
+  "model": {
+    "fit_nz": 33,
+    "kernel_nz": 201,
+    "table_boost": 8
+  },
+  "projection": {
+    "ell_max": 300000,
+    "ell_min": 0.001,
+    "epmu": 0.0001,
+    "lmax": 20,
+    "multipole_boost": 2,
+    "nell": 64,
+    "nmu_linear": 32,
+    "nmu_log": 32,
+    "np": 32,
+    "npsi": 80,
+    "npsi_linear": 32,
+    "npsi_log": 32,
+    "npu_linear": 24,
+    "npu_log": 24,
+    "nr": 32,
+    "nshape": 160,
+    "nu": 24,
+    "nv": 24,
+    "prepare_multipoles": 1,
+    "psi_scale": 0.02,
+    "reference_mode": false,
+    "residual_scaling": 1,
+    "shape_stretch": 10.1062201,
+    "signed_baseline": 1,
+    "table_boost": 2
+  },
+  "source_nz": 1201,
+  "xi_ell_count": 4096
+}

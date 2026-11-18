@@ -1,0 +1,49 @@
+{
+  "nla": {
+    "omega_m": {
+      "xi": 0.9591668880258807,
+      "map3": 1.0030050042388348,
+      "all": 0.962352455755801
+    },
+    "h": {
+      "xi": 0.9570220751217163,
+      "map3": 1.0164353333435452,
+      "all": 0.978760728736242
+    },
+    "omega_m_h": {
+      "xi": 0.9197743968728666,
+      "map3": 1.0195043357733091,
+      "all": 0.9449006000521432
+    },
+    "input": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_nla_measured_edge_demo_fisher.npz",
+      "sha256": "99a1687cf0945b17cf229b3d321d8ef3eaf54415c34707b43f145118ae517be9"
+    }
+  },
+  "tatt": {
+    "omega_m": {
+      "xi": 0.9666081453599589,
+      "map3": 1.0024228042672567,
+      "all": 0.9693045006045707
+    },
+    "h": {
+      "xi": 0.9683854052570408,
+      "map3": 1.0102338056465716,
+      "all": 0.981363248889754
+    },
+    "omega_m_h": {
+      "xi": 0.9365710178590868,
+      "map3": 1.0127939406276836,
+      "all": 0.9533693973956194
+    },
+    "input": {
+      "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_tatt_measured_edge_demo_fisher.npz",
+      "sha256": "fcaad62d7a4c89f47114e944f0dde4b906055889526123eb51b321577b1142d6"
+    }
+  },
+  "inspection": {
+    "interpretation": "Historical array substitutions, not newly evaluated forecasts.",
+    "script_sha256": "a52b02f410926f663d44c38852d087332007888fd79b24ec5d55efeee0e19fc3",
+    "helper_sha256": "8326fa7c0d3ae3666d6447e96c1f6c2bd91e87c75959637078447c7d5a5d05b9"
+  }
+}

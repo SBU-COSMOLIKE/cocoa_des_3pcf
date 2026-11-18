@@ -1,0 +1,164 @@
+{
+  "point": {
+    "id": "column_001_plus",
+    "column": 1,
+    "parameter": "sigma8",
+    "quarter_step_unit": 1,
+    "parameters": {
+      "a1": -0.33,
+      "eta1": 2.81,
+      "a2": 0.65,
+      "eta2": 1.69,
+      "bta": 0.91,
+      "ct": 0,
+      "zpivot": 0.62,
+      "c1rho": 0.0134,
+      "power_mode": 2,
+      "ct_mode": 0,
+      "fb": 0,
+      "suppress_only": 1,
+      "omega_m": 0.289,
+      "omega_b": 0.0463,
+      "h": 0.722,
+      "ns": 0.959,
+      "sigma8": 0.7878048373195137,
+      "w0": -1,
+      "wa": 0,
+      "mnu": 0.06,
+      "num_massive_neutrinos": 3,
+      "nnu": 3.046,
+      "m1": 0,
+      "m2": 0,
+      "m3": 0,
+      "m4": 0,
+      "dz1": 0,
+      "dz2": 0,
+      "dz3": 0,
+      "dz4": 0
+    },
+    "parameter_key": [
+      [
+        "a1",
+        "-0x1.51eb851eb851fp-2"
+      ],
+      [
+        "a2",
+        "0x1.4cccccccccccdp-1"
+      ],
+      [
+        "bta",
+        "0x1.d1eb851eb851fp-1"
+      ],
+      [
+        "c1rho",
+        "0x1.b71758e219653p-7"
+      ],
+      [
+        "ct",
+        "0x0.0p+0"
+      ],
+      [
+        "ct_mode",
+        "0x0.0p+0"
+      ],
+      [
+        "dz1",
+        "0x0.0p+0"
+      ],
+      [
+        "dz2",
+        "0x0.0p+0"
+      ],
+      [
+        "dz3",
+        "0x0.0p+0"
+      ],
+      [
+        "dz4",
+        "0x0.0p+0"
+      ],
+      [
+        "eta1",
+        "0x1.67ae147ae147bp+1"
+      ],
+      [
+        "eta2",
+        "0x1.b0a3d70a3d70ap+0"
+      ],
+      [
+        "fb",
+        "0x0.0p+0"
+      ],
+      [
+        "h",
+        "0x1.71a9fbe76c8b4p-1"
+      ],
+      [
+        "m1",
+        "0x0.0p+0"
+      ],
+      [
+        "m2",
+        "0x0.0p+0"
+      ],
+      [
+        "m3",
+        "0x0.0p+0"
+      ],
+      [
+        "m4",
+        "0x0.0p+0"
+      ],
+      [
+        "mnu",
+        "0x1.eb851eb851eb8p-5"
+      ],
+      [
+        "nnu",
+        "0x1.85e353f7ced91p+1"
+      ],
+      [
+        "ns",
+        "0x1.eb020c49ba5e3p-1"
+      ],
+      [
+        "num_massive_neutrinos",
+        "0x1.8000000000000p+1"
+      ],
+      [
+        "omega_b",
+        "0x1.7b4a2339c0ebfp-5"
+      ],
+      [
+        "omega_m",
+        "0x1.27ef9db22d0e5p-2"
+      ],
+      [
+        "power_mode",
+        "0x1.0000000000000p+1"
+      ],
+      [
+        "sigma8",
+        "0x1.935b27d7d5f88p-1"
+      ],
+      [
+        "suppress_only",
+        "0x1.0000000000000p+0"
+      ],
+      [
+        "w0",
+        "-0x1.0000000000000p+0"
+      ],
+      [
+        "wa",
+        "0x0.0p+0"
+      ],
+      [
+        "zpivot",
+        "0x1.3d70a3d70a3d7p-1"
+      ]
+    ],
+    "origin": "prediction"
+  },
+  "archive_sha256": "04070b3ced36964589856652de4beddea9b78c01701e7c1d0a414bd0cbfe1847"
+}
