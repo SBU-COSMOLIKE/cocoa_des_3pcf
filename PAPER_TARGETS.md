@@ -146,6 +146,10 @@ into a scalar E-mode transform would not produce their correct spin phases.
 The present joint forecast therefore combines two-point TATT E/B spectra
 with this stated three-point E-mode model. A finite-triangle estimator
 also needs an explicit E/B leakage check after its cuts and bin averages.
+The [finite-window E/B study](tests/studies/finite_window_eb.md) explains
+why single-B bispectra are the retained-order question and specifies an
+ideal-aperture null test followed by the identical finite-SAS contraction.
+No nonzero leakage correction has been measured for the present weights.
 
 Table 1 sets
 $`(\Omega_m,S_8,h,n_s,\Omega_b)=(0.289,0.772,0.722,0.959,0.0463)`$

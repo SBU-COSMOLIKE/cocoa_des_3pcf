@@ -16,6 +16,12 @@ separates source-model choices from source, kernel and radial resolution.
 The [Fisher accuracy record](tests/studies/fisher_accuracy_validation.md)
 reports the corrected full bases and selected derivative checks, including
 coherent changes that the fourth-difference noise estimate misses.
+The [finite-window E/B study](tests/studies/finite_window_eb.md) identifies
+a separate physical test: numerical refinement of the E-only mean cannot
+measure leakage from omitted single-B bispectra after triangle cuts.
+The [angular-order protocol](tests/studies/angular_order_validation.md)
+separates retained Legendre and Fourier orders from angular sampling and
+coupling interpolation, with explicit memory estimates and a preflight command.
 
 ## Contents <a name="contents"></a>
 
