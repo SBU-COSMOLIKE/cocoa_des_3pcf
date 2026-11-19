@@ -1,0 +1,3269 @@
+{
+  "date": "2026-11-19",
+  "scope": "uniform analytic background; raw Jacobian and matched IA projections; not a DES error bound",
+  "data_covariance_mask": "none used",
+  "python": "3.11.12 | packaged by conda-forge | (main, Apr 10 2025, 22:18:52) [Clang 18.1.8 ]",
+  "platform": "macOS-13.7.5-arm64-arm-64bit",
+  "native_sources_modified": false,
+  "installed_binaries_modified": false,
+  "openmp_threads": 1,
+  "blas_threads": 1,
+  "execution": [
+    {
+      "mode": "strict",
+      "returncode": 0,
+      "seconds": 1.7917988300323486,
+      "command": [
+        "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-ra",
+        "-p",
+        "no:cacheprovider",
+        "--durations=10",
+        "--basetemp",
+        "/private/tmp/bridge_background_analytic_20261119/final_strict",
+        "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/tests/test_bridge_background_analytic.py"
+      ],
+      "binary_sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939",
+      "log": "/private/tmp/bridge_background_analytic_20261119/final_strict.log",
+      "log_sha256": "eb3d172c5004d4df4db534f8b8073e635c44b6e1147acda8fd69b64ddba12c88"
+    },
+    {
+      "mode": "debug",
+      "returncode": 0,
+      "seconds": 9.433874130249023,
+      "command": [
+        "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/.local/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-ra",
+        "-p",
+        "no:cacheprovider",
+        "--durations=10",
+        "--basetemp",
+        "/private/tmp/bridge_background_analytic_20261119/final_debug",
+        "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/tests/test_bridge_background_analytic.py"
+      ],
+      "binary_sha256": "73bf5b30140f4d1dbf297c710ccf6176907696a757481d0cf1ed22e0be4b68f9",
+      "log": "/private/tmp/bridge_background_analytic_20261119/final_debug.log",
+      "log_sha256": "87dca40344d099c9bdc03ad7ccbf4083c053455e68a39a3919d64ebff8ca10ab"
+    }
+  ],
+  "initial_harness_attempt": {
+    "result": "2 raw-observation failures and 3 IA passes; refresh returned NULL on a cache hit after model construction",
+    "correction": "Observe the first public refresh after input installation, copy immediately, then reset before any Python owner factory call",
+    "native_changes": "none",
+    "log": "/private/tmp/bridge_background_analytic_20261119/attempt1.log",
+    "log_sha256": "1e90a5c5bc452fc1a980f3ff2aeb07dcf078fa50ef04d60a2592b72a71dc9334"
+  },
+  "bounds": {
+    "analytic_stencil": {
+      "interior_error_ratio_after_halving_spacing": 0.3,
+      "observer_error_ratio_after_halving_spacing": 0.55,
+      "upper_error_ratio_after_halving_spacing": 0.3,
+      "interior_at_321_nodes": 5e-06,
+      "upper_at_321_nodes": 1e-05
+    },
+    "measured_ia_allowances": {
+      "relative_error_at_321_nodes": 5e-06,
+      "production_like_coarse_relative_error": 0.00012,
+      "production_like_fine_relative_error": 7e-06,
+      "description": "about three to five times the initial measured maxima; regression allowances for these fixed toy inputs"
+    },
+    "ia_refinement_rates": {
+      "single_halving_error_ratio": 0.4,
+      "two_halvings_error_ratio": 0.12,
+      "description": "finite-grid allowances around asymptotic second-order convergence"
+    }
+  },
+  "modes": {
+    "strict": {
+      "jacobian": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": [
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_curved_distance_derivativ0/jacobian_inputs_41.npz",
+              "sha256": "260bc3c55b3f5dfa4048de7f8bb92f11b14e2d7adf5fa72e5c8071e88878fa38",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 41,
+            "interior_maximum": 0.000295806192612047,
+            "observer": 0.01750000000000007,
+            "upper_endpoint": 0.0005573706031092307
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_curved_distance_derivativ0/jacobian_inputs_81.npz",
+              "sha256": "4e8519809cdd20ce7d77b8d8ed9bb0416483a0ffdc8771697a4db0d831b18d2a",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 81,
+            "interior_maximum": 7.524003875636343e-05,
+            "observer": 0.008750000000000258,
+            "upper_endpoint": 0.00013581564922193756
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_curved_distance_derivativ0/jacobian_inputs_161.npz",
+              "sha256": "d6c5577b707f7bc34698ce7fe61bf54920ae956d38b28cc3daff6c1f5f222b4f",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 161,
+            "interior_maximum": 1.8974237245172887e-05,
+            "observer": 0.00437500000000024,
+            "upper_endpoint": 3.3529401405330006e-05
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_curved_distance_derivativ0/jacobian_inputs_321.npz",
+              "sha256": "119c8d7d61ed978b1ae6d0107a63554f74ff313297921e1b8971e2da7c21003a",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 321,
+            "interior_maximum": 4.764289684544565e-06,
+            "observer": 0.002187500000000231,
+            "upper_endpoint": 8.330265335088072e-06
+          }
+        ]
+      },
+      "ia_refinement": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": [
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_ia_projection_refines_wit0/ia_inputs_41.npz",
+              "sha256": "260bc3c55b3f5dfa4048de7f8bb92f11b14e2d7adf5fa72e5c8071e88878fa38",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 41,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.1320962890015283e-09,
+                  4.6451897471128584e-10,
+                  3.9604609690486233e-11
+                ],
+                "analytic_jacobian": [
+                  1.1320962890015283e-09,
+                  4.6451897471128584e-10,
+                  3.9604609690486233e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 2.3913892132442627e-05,
+                "bridge": [
+                  3.5859040610354842e-12,
+                  6.514362155103638e-12,
+                  1.4609452284890795e-12
+                ],
+                "analytic_jacobian": [
+                  3.586059847076856e-12,
+                  6.5144578100910025e-12,
+                  1.4609290520656499e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 5.9805248466473545e-05,
+                "bridge": [
+                  -1.6543267981303692e-17,
+                  -5.033120419326629e-18
+                ],
+                "analytic_jacobian": [
+                  -1.6544257414729073e-17,
+                  -5.033424702235763e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 8.638272021314824e-05,
+                "bridge": [
+                  -7.536971732901236e-20,
+                  -7.615746995095534e-20
+                ],
+                "analytic_jacobian": [
+                  -7.537629624749535e-20,
+                  -7.616012168593173e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 6.137546311010017e-05,
+                "bridge": [
+                  -1.2275721012873806e-19,
+                  1.7700382560991858e-22
+                ],
+                "analytic_jacobian": [
+                  -1.2276474487180816e-19,
+                  1.7710690670125757e-22
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_ia_projection_refines_wit0/ia_inputs_81.npz",
+              "sha256": "4e8519809cdd20ce7d77b8d8ed9bb0416483a0ffdc8771697a4db0d831b18d2a",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 81,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.1320925612061565e-09,
+                  4.6451774395616166e-10,
+                  3.960451539846987e-11
+                ],
+                "analytic_jacobian": [
+                  1.1320925612061565e-09,
+                  4.6451774395616166e-10,
+                  3.960451539846987e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 5.926941573522021e-06,
+                "bridge": [
+                  3.586027359323999e-12,
+                  6.514443484273017e-12,
+                  1.4609349466360107e-12
+                ],
+                "analytic_jacobian": [
+                  3.586065970190144e-12,
+                  6.514467143927965e-12,
+                  1.4609308470523936e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 1.930096612423752e-05,
+                "bridge": [
+                  -1.6543837904538407e-17,
+                  -5.0333244456998485e-18
+                ],
+                "analytic_jacobian": [
+                  -1.6544157222756517e-17,
+                  -5.033404949763946e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 2.153093523683838e-05,
+                "bridge": [
+                  -7.537457315267037e-20,
+                  -7.615938734170329e-20
+                ],
+                "analytic_jacobian": [
+                  -7.537621294967842e-20,
+                  -7.616004553476458e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 1.532184653699513e-05,
+                "bridge": [
+                  -1.2276316915609758e-19,
+                  1.7707098914048457e-22
+                ],
+                "analytic_jacobian": [
+                  -1.2276505014335599e-19,
+                  1.7709671154825802e-22
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_ia_projection_refines_wit0/ia_inputs_161.npz",
+              "sha256": "d6c5577b707f7bc34698ce7fe61bf54920ae956d38b28cc3daff6c1f5f222b4f",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 161,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.13209098081323e-09,
+                  4.645173336632798e-10,
+                  3.960448840147595e-11
+                ],
+                "analytic_jacobian": [
+                  1.13209098081323e-09,
+                  4.645173336632798e-10,
+                  3.960448840147595e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 1.4806460020644356e-06,
+                "bridge": [
+                  3.586058061942719e-12,
+                  6.5144641824942964e-12,
+                  1.460932392844147e-12
+                ],
+                "analytic_jacobian": [
+                  3.5860677075668016e-12,
+                  6.5144700822185676e-12,
+                  1.4609313645965295e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 5.085496305072643e-06,
+                "bridge": [
+                  -1.654403067809349e-17,
+                  -5.033378711085464e-18
+                ],
+                "analytic_jacobian": [
+                  -1.6544114813128242e-17,
+                  -5.033398933904692e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 5.379055310771266e-06,
+                "bridge": [
+                  -7.537581086182792e-20,
+                  -7.615989943929222e-20
+                ],
+                "analytic_jacobian": [
+                  -7.537622053102314e-20,
+                  -7.616006371952193e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 3.829746088203231e-06,
+                "bridge": [
+                  -1.227646887045128e-19,
+                  1.7708799619509185e-22
+                ],
+                "analytic_jacobian": [
+                  -1.2276515886389973e-19,
+                  1.7709442708721099e-22
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_ia_projection_refines_wit0/ia_inputs_321.npz",
+              "sha256": "119c8d7d61ed978b1ae6d0107a63554f74ff313297921e1b8971e2da7c21003a",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 321,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.1320908468173221e-09,
+                  4.6451725831753925e-10,
+                  3.960448225131222e-11
+                ],
+                "analytic_jacobian": [
+                  1.1320908468173221e-09,
+                  4.6451725831753925e-10,
+                  3.960448225131222e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 3.7016114983231544e-07,
+                "bridge": [
+                  3.5860656684164584e-12,
+                  6.5144691926460996e-12,
+                  1.460931736639137e-12
+                ],
+                "analytic_jacobian": [
+                  3.586068079820411e-12,
+                  6.51447066728145e-12,
+                  1.4609314795137077e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 1.2271697943592788e-06,
+                "bridge": [
+                  -1.6544088693179175e-17,
+                  -5.03339226815351e-18
+                ],
+                "analytic_jacobian": [
+                  -1.654410899561001e-17,
+                  -5.0333972602850975e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 1.3446845174341544e-06,
+                "bridge": [
+                  -7.537610998588008e-20,
+                  -7.616001845491088e-20
+                ],
+                "analytic_jacobian": [
+                  -7.537621239713297e-20,
+                  -7.616005951998087e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 9.574002790894147e-07,
+                "bridge": [
+                  -1.22765061374825e-19,
+                  1.7709204628006933e-22
+                ],
+                "analytic_jacobian": [
+                  -1.2276517891024155e-19,
+                  1.7709365404179855e-22
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "linear": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": {
+          "inputs": {
+            "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_linear_distance_has_exact0/linear_inputs.npz",
+            "sha256": "3dd00ea661ba4bc5ab155819663884f6ed7028119177a3d5df1a781b01406cc5",
+            "physical_fields": [
+              "chi",
+              "dz_dchi",
+              "fit_nz",
+              "growth",
+              "k",
+              "kernel_nz",
+              "los_z",
+              "ns",
+              "omega_de",
+              "omega_m",
+              "p_linear0",
+              "p_nonlinear",
+              "sigma8",
+              "source_readers",
+              "source_z",
+              "sources",
+              "table_boost",
+              "w0",
+              "wa",
+              "z"
+            ],
+            "query_fields": [
+              "ell",
+              "nla_amplitudes",
+              "pair",
+              "placement_amplitude",
+              "placement_masks",
+              "placement_operator",
+              "sides",
+              "tatt_a1",
+              "tatt_a2",
+              "tatt_bta",
+              "tatt_ct",
+              "tatt_power_mode",
+              "triplet"
+            ],
+            "bridge_scalars": {
+              "omega_matter": 0.3,
+              "omega_baryon": 0.05,
+              "hubble": 70.0,
+              "omega_nu_h2": 0.0
+            }
+          },
+          "observables": {
+            "gg": {
+              "relative_error": 0.0,
+              "bridge": [
+                1.5212109358918737e-09,
+                8.758885257228831e-10,
+                1.067788008090182e-10
+              ],
+              "analytic_jacobian": [
+                1.5212109358918737e-09,
+                8.758885257228831e-10,
+                1.067788008090182e-10
+              ]
+            },
+            "ii": {
+              "relative_error": 0.0,
+              "bridge": [
+                1.2634739448774913e-12,
+                2.321052086264764e-12,
+                7.32448089560756e-13
+              ],
+              "analytic_jacobian": [
+                1.2634739448774913e-12,
+                2.321052086264764e-12,
+                7.32448089560756e-13
+              ]
+            },
+            "ggi": {
+              "relative_error": 1.8006524782141024e-16,
+              "bridge": [
+                -1.711317396500526e-17,
+                -6.254685634136503e-18
+              ],
+              "analytic_jacobian": [
+                -1.7113173965005258e-17,
+                -6.254685634136502e-18
+              ]
+            },
+            "iii": {
+              "relative_error": 1.2367907371923245e-15,
+              "bridge": [
+                -1.459874551584927e-20,
+                -1.3430616263368838e-20
+              ],
+              "analytic_jacobian": [
+                -1.459874551584925e-20,
+                -1.3430616263368827e-20
+              ]
+            },
+            "quadratic_tatt": {
+              "relative_error": 3.5334330282067663e-16,
+              "bridge": [
+                -1.3626478335749403e-19,
+                -3.0595260232265932e-21
+              ],
+              "analytic_jacobian": [
+                -1.3626478335749398e-19,
+                -3.0595260232265887e-21
+              ]
+            }
+          }
+        }
+      },
+      "des_y3_tatt_fisher": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": [
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_production_like_backgroun0/production_inputs_101.npz",
+              "sha256": "cb551662866845622236739efb5b0676a6202bd612747c07a1be80d15bbdfac3",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_tatt_fisher.yaml",
+            "background_count": 101,
+            "background_upper": 3,
+            "source_count": 101,
+            "kernel_count": 201,
+            "los_count": 65,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.5376158985632008e-09,
+                  8.502748720619485e-10,
+                  9.366770067320596e-11
+                ],
+                "analytic_jacobian": [
+                  1.5376158985632008e-09,
+                  8.502748720619485e-10,
+                  9.366770067320596e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 5.6237269932094035e-06,
+                "bridge": [
+                  1.2225404387798843e-12,
+                  3.011482020150986e-12,
+                  1.1651838844788827e-12
+                ],
+                "analytic_jacobian": [
+                  1.2225573746262926e-12,
+                  3.0114986784977375e-12,
+                  1.165178125128609e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 3.931362155691342e-05,
+                "bridge": [
+                  -8.754227533869073e-18,
+                  -3.711383675580859e-18
+                ],
+                "analytic_jacobian": [
+                  -8.754571707788086e-18,
+                  -3.7114990291672464e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 1.9393070806508133e-05,
+                "bridge": [
+                  -8.783978284782403e-21,
+                  -1.5344972003333953e-20
+                ],
+                "analytic_jacobian": [
+                  -8.784275875266448e-21,
+                  -1.534519659183027e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 2.9740764502459863e-05,
+                "bridge": [
+                  -8.658591243811504e-20,
+                  -3.393159141187606e-21
+                ],
+                "analytic_jacobian": [
+                  -8.658848764593474e-20,
+                  -3.3931779501668544e-21
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_production_like_backgroun0/production_inputs_201.npz",
+              "sha256": "be9dd9486709b32ca2c8ee6f8cde07941d49686d9b23abf31ae8e84556106644",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_tatt_fisher.yaml",
+            "background_count": 201,
+            "background_upper": 3,
+            "source_count": 101,
+            "kernel_count": 201,
+            "los_count": 65,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.5376141656821995e-09,
+                  8.502741473691032e-10,
+                  9.366763379987081e-11
+                ],
+                "analytic_jacobian": [
+                  1.5376141656821995e-09,
+                  8.502741473691032e-10,
+                  9.366763379987081e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 1.3956862400466077e-06,
+                "bridge": [
+                  1.2225533850260444e-12,
+                  3.011495179506169e-12,
+                  1.1651799535231808e-12
+                ],
+                "analytic_jacobian": [
+                  1.2225575881342232e-12,
+                  3.0114993314487807e-12,
+                  1.1651785093743212e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 8.549548089594156e-06,
+                "bridge": [
+                  -8.754475773615204e-18,
+                  -3.711465207541183e-18
+                ],
+                "analytic_jacobian": [
+                  -8.754550621066742e-18,
+                  -3.7114919193192585e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 4.841685604406203e-06,
+                "bridge": [
+                  -8.784193424239949e-21,
+                  -1.5345131175421718e-20
+                ],
+                "analytic_jacobian": [
+                  -8.784267720812027e-21,
+                  -1.5345187223885698e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 7.4349112258516325e-06,
+                "bridge": [
+                  -8.658790705041914e-20,
+                  -3.393176829340855e-21
+                ],
+                "analytic_jacobian": [
+                  -8.658855082860772e-20,
+                  -3.393181531425802e-21
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_production_like_backgroun0/production_inputs_401.npz",
+              "sha256": "2c0fee67bc905f2ac1b5624c423aff13226f8430b513cda52912f69675a4273d",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_tatt_fisher.yaml",
+            "background_count": 401,
+            "background_upper": 3,
+            "source_count": 101,
+            "kernel_count": 201,
+            "los_count": 65,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.5376134675907988e-09,
+                  8.502739189712296e-10,
+                  9.366761624677957e-11
+                ],
+                "analytic_jacobian": [
+                  1.5376134675907988e-09,
+                  8.502739189712296e-10,
+                  9.366761624677957e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 3.4886453540669546e-07,
+                "bridge": [
+                  1.2225566622347744e-12,
+                  3.0114985478995673e-12,
+                  1.1651789554042988e-12
+                ],
+                "analytic_jacobian": [
+                  1.2225577128401791e-12,
+                  3.0114995882321126e-12,
+                  1.1651785953002406e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 2.127218692785246e-06,
+                "bridge": [
+                  -8.754525360552218e-18,
+                  -3.711484049953073e-18
+                ],
+                "analytic_jacobian": [
+                  -8.754543983381826e-18,
+                  -3.711490584268406e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 1.2109619992913017e-06,
+                "bridge": [
+                  -8.784248571094851e-21,
+                  -1.5345172123449566e-20
+                ],
+                "analytic_jacobian": [
+                  -8.784267153532155e-21,
+                  -1.5345186153304654e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 1.8587103895923117e-06,
+                "bridge": [
+                  -8.658841095482284e-20,
+                  -3.393181053360485e-21
+                ],
+                "analytic_jacobian": [
+                  -8.658857189790105e-20,
+                  -3.393182228871588e-21
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "des_y3_bacco_fisher": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_strict/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": [
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_production_like_backgroun1/production_inputs_125.npz",
+              "sha256": "c6929549475c0de5458d6538e9e6e5c8d97848f6b7835e5ac8525886e8e6a345",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_bacco_fisher.yaml",
+            "background_count": 125,
+            "background_upper": 3.1,
+            "source_count": 9601,
+            "kernel_count": 401,
+            "los_count": 129,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.5716116414223025e-09,
+                  8.874507674490229e-10,
+                  9.986539914270715e-11
+                ],
+                "analytic_jacobian": [
+                  1.5716116414223025e-09,
+                  8.874507674490229e-10,
+                  9.986539914270715e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 3.7724980121102107e-06,
+                "bridge": [
+                  1.127550188263226e-12,
+                  2.8334415312037514e-12,
+                  1.144719651478105e-12
+                ],
+                "analytic_jacobian": [
+                  1.1275606913429386e-12,
+                  2.8334522203966202e-12,
+                  1.1447156520743706e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 2.6427446273220075e-05,
+                "bridge": [
+                  -8.244223739500207e-18,
+                  -3.5924679960283875e-18
+                ],
+                "analytic_jacobian": [
+                  -8.244441619038147e-18,
+                  -3.592540533610113e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 1.2853679472107523e-05,
+                "bridge": [
+                  -7.406127482859472e-21,
+                  -1.3466649131749404e-20
+                ],
+                "analytic_jacobian": [
+                  -7.40630058060712e-21,
+                  -1.3466785757560237e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 2.108224443815327e-05,
+                "bridge": [
+                  -8.341688026320891e-20,
+                  -3.661823077762357e-21
+                ],
+                "analytic_jacobian": [
+                  -8.341863891534522e-20,
+                  -3.661840485455824e-21
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_production_like_backgroun1/production_inputs_249.npz",
+              "sha256": "aebbc5205a38e28431c95c5fff651ec1a2089e058a0c8f3294af2c1a4bcbfda6",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_bacco_fisher.yaml",
+            "background_count": 249,
+            "background_upper": 3.1,
+            "source_count": 9601,
+            "kernel_count": 401,
+            "los_count": 129,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.571610415083429e-09,
+                  8.874502448020081e-10,
+                  9.986535019774848e-11
+                ],
+                "analytic_jacobian": [
+                  1.571610415083429e-09,
+                  8.874502448020081e-10,
+                  9.986535019774848e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 9.424845937784821e-07,
+                "bridge": [
+                  1.1275583866595538e-12,
+                  2.8334502337036933e-12,
+                  1.1447168777609013e-12
+                ],
+                "analytic_jacobian": [
+                  1.1275610107132372e-12,
+                  2.8334529041894027e-12,
+                  1.1447158772444104e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 6.145959791120982e-06,
+                "bridge": [
+                  -8.244378446749992e-18,
+                  -3.592518944548521e-18
+                ],
+                "analytic_jacobian": [
+                  -8.244429116679844e-18,
+                  -3.59253657755986e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 3.2126617897263718e-06,
+                "bridge": [
+                  -7.406255809502017e-21,
+                  -1.3466748964200247e-20
+                ],
+                "analytic_jacobian": [
+                  -7.406299073721537e-21,
+                  -1.346678310755495e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 5.2691135836680396e-06,
+                "bridge": [
+                  -8.341824128125689e-20,
+                  -3.661838589319605e-21
+                ],
+                "analytic_jacobian": [
+                  -8.341868082376115e-20,
+                  -3.661842942059716e-21
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_strict/test_production_like_backgroun1/production_inputs_497.npz",
+              "sha256": "387269489facc5c9aa68718a2077cfb5019e28d496afcf8f5abc03b4f741a7fd",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_bacco_fisher.yaml",
+            "background_count": 497,
+            "background_upper": 3.1,
+            "source_count": 9601,
+            "kernel_count": 401,
+            "los_count": 129,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.571610109208939e-09,
+                  8.87450114388184e-10,
+                  9.986533795908907e-11
+                ],
+                "analytic_jacobian": [
+                  1.571610109208939e-09,
+                  8.87450114388184e-10,
+                  9.986533795908907e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 2.3566995099842732e-07,
+                "bridge": [
+                  1.1275604343519844e-12,
+                  2.8334524077295577e-12,
+                  1.1447161837152927e-12
+                ],
+                "analytic_jacobian": [
+                  1.1275610906745123e-12,
+                  2.833453075489305e-12,
+                  1.1447159336399432e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 1.602255146296961e-06,
+                "bridge": [
+                  -8.244412791318106e-18,
+                  -3.5925311053557614e-18
+                ],
+                "analytic_jacobian": [
+                  -8.244426000992095e-18,
+                  -3.5925355901958e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 8.032460330713005e-07,
+                "bridge": [
+                  -7.406287878280288e-21,
+                  -1.3466773906020181e-20
+                ],
+                "analytic_jacobian": [
+                  -7.406298695419863e-21,
+                  -1.3466782442844613e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 1.3175332208824411e-06,
+                "bridge": [
+                  -8.341858141222723e-20,
+                  -3.66184247193291e-21
+                ],
+                "analytic_jacobian": [
+                  -8.341869131912428e-20,
+                  -3.66184355954371e-21
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "debug": {
+      "jacobian": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "73bf5b30140f4d1dbf297c710ccf6176907696a757481d0cf1ed22e0be4b68f9",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": [
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_curved_distance_derivativ0/jacobian_inputs_41.npz",
+              "sha256": "260bc3c55b3f5dfa4048de7f8bb92f11b14e2d7adf5fa72e5c8071e88878fa38",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 41,
+            "interior_maximum": 0.000295806192612047,
+            "observer": 0.01750000000000007,
+            "upper_endpoint": 0.0005573706031092307
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_curved_distance_derivativ0/jacobian_inputs_81.npz",
+              "sha256": "4e8519809cdd20ce7d77b8d8ed9bb0416483a0ffdc8771697a4db0d831b18d2a",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 81,
+            "interior_maximum": 7.524003875636343e-05,
+            "observer": 0.008750000000000258,
+            "upper_endpoint": 0.00013581564922193756
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_curved_distance_derivativ0/jacobian_inputs_161.npz",
+              "sha256": "d6c5577b707f7bc34698ce7fe61bf54920ae956d38b28cc3daff6c1f5f222b4f",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 161,
+            "interior_maximum": 1.8974237245172887e-05,
+            "observer": 0.00437500000000024,
+            "upper_endpoint": 3.3529401405330006e-05
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_curved_distance_derivativ0/jacobian_inputs_321.npz",
+              "sha256": "119c8d7d61ed978b1ae6d0107a63554f74ff313297921e1b8971e2da7c21003a",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 321,
+            "interior_maximum": 4.764289684544565e-06,
+            "observer": 0.002187500000000231,
+            "upper_endpoint": 8.330265335088072e-06
+          }
+        ]
+      },
+      "ia_refinement": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "73bf5b30140f4d1dbf297c710ccf6176907696a757481d0cf1ed22e0be4b68f9",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": [
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_ia_projection_refines_wit0/ia_inputs_41.npz",
+              "sha256": "260bc3c55b3f5dfa4048de7f8bb92f11b14e2d7adf5fa72e5c8071e88878fa38",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 41,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.1320962890015283e-09,
+                  4.6451897471128584e-10,
+                  3.9604609690486233e-11
+                ],
+                "analytic_jacobian": [
+                  1.1320962890015283e-09,
+                  4.6451897471128584e-10,
+                  3.9604609690486233e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 2.3913892132442627e-05,
+                "bridge": [
+                  3.5859040610354842e-12,
+                  6.514362155103638e-12,
+                  1.4609452284890795e-12
+                ],
+                "analytic_jacobian": [
+                  3.586059847076856e-12,
+                  6.5144578100910025e-12,
+                  1.4609290520656499e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 5.9805248466473545e-05,
+                "bridge": [
+                  -1.6543267981303692e-17,
+                  -5.033120419326629e-18
+                ],
+                "analytic_jacobian": [
+                  -1.6544257414729073e-17,
+                  -5.033424702235763e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 8.638272021314824e-05,
+                "bridge": [
+                  -7.536971732901236e-20,
+                  -7.615746995095534e-20
+                ],
+                "analytic_jacobian": [
+                  -7.537629624749535e-20,
+                  -7.616012168593173e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 6.137546311010017e-05,
+                "bridge": [
+                  -1.2275721012873806e-19,
+                  1.7700382560991858e-22
+                ],
+                "analytic_jacobian": [
+                  -1.2276474487180816e-19,
+                  1.7710690670125757e-22
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_ia_projection_refines_wit0/ia_inputs_81.npz",
+              "sha256": "4e8519809cdd20ce7d77b8d8ed9bb0416483a0ffdc8771697a4db0d831b18d2a",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 81,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.1320925612061565e-09,
+                  4.6451774395616166e-10,
+                  3.960451539846987e-11
+                ],
+                "analytic_jacobian": [
+                  1.1320925612061565e-09,
+                  4.6451774395616166e-10,
+                  3.960451539846987e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 5.926941573522021e-06,
+                "bridge": [
+                  3.586027359323999e-12,
+                  6.514443484273017e-12,
+                  1.4609349466360107e-12
+                ],
+                "analytic_jacobian": [
+                  3.586065970190144e-12,
+                  6.514467143927965e-12,
+                  1.4609308470523936e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 1.930096612423752e-05,
+                "bridge": [
+                  -1.6543837904538407e-17,
+                  -5.0333244456998485e-18
+                ],
+                "analytic_jacobian": [
+                  -1.6544157222756517e-17,
+                  -5.033404949763946e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 2.153093523683838e-05,
+                "bridge": [
+                  -7.537457315267037e-20,
+                  -7.615938734170329e-20
+                ],
+                "analytic_jacobian": [
+                  -7.537621294967842e-20,
+                  -7.616004553476458e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 1.532184653699513e-05,
+                "bridge": [
+                  -1.2276316915609758e-19,
+                  1.7707098914048457e-22
+                ],
+                "analytic_jacobian": [
+                  -1.2276505014335599e-19,
+                  1.7709671154825802e-22
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_ia_projection_refines_wit0/ia_inputs_161.npz",
+              "sha256": "d6c5577b707f7bc34698ce7fe61bf54920ae956d38b28cc3daff6c1f5f222b4f",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 161,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.13209098081323e-09,
+                  4.645173336632798e-10,
+                  3.960448840147595e-11
+                ],
+                "analytic_jacobian": [
+                  1.13209098081323e-09,
+                  4.645173336632798e-10,
+                  3.960448840147595e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 1.4806460020644356e-06,
+                "bridge": [
+                  3.586058061942719e-12,
+                  6.5144641824942964e-12,
+                  1.460932392844147e-12
+                ],
+                "analytic_jacobian": [
+                  3.5860677075668016e-12,
+                  6.5144700822185676e-12,
+                  1.4609313645965295e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 5.085496305072643e-06,
+                "bridge": [
+                  -1.654403067809349e-17,
+                  -5.033378711085464e-18
+                ],
+                "analytic_jacobian": [
+                  -1.6544114813128242e-17,
+                  -5.033398933904692e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 5.379055310771266e-06,
+                "bridge": [
+                  -7.537581086182792e-20,
+                  -7.615989943929222e-20
+                ],
+                "analytic_jacobian": [
+                  -7.537622053102314e-20,
+                  -7.616006371952193e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 3.829746088203231e-06,
+                "bridge": [
+                  -1.227646887045128e-19,
+                  1.7708799619509185e-22
+                ],
+                "analytic_jacobian": [
+                  -1.2276515886389973e-19,
+                  1.7709442708721099e-22
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_ia_projection_refines_wit0/ia_inputs_321.npz",
+              "sha256": "119c8d7d61ed978b1ae6d0107a63554f74ff313297921e1b8971e2da7c21003a",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "background_count": 321,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.1320908468173221e-09,
+                  4.6451725831753925e-10,
+                  3.960448225131222e-11
+                ],
+                "analytic_jacobian": [
+                  1.1320908468173221e-09,
+                  4.6451725831753925e-10,
+                  3.960448225131222e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 3.7016114983231544e-07,
+                "bridge": [
+                  3.5860656684164584e-12,
+                  6.5144691926460996e-12,
+                  1.460931736639137e-12
+                ],
+                "analytic_jacobian": [
+                  3.586068079820411e-12,
+                  6.51447066728145e-12,
+                  1.4609314795137077e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 1.2271697943592788e-06,
+                "bridge": [
+                  -1.6544088693179175e-17,
+                  -5.03339226815351e-18
+                ],
+                "analytic_jacobian": [
+                  -1.654410899561001e-17,
+                  -5.0333972602850975e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 1.3446845174341544e-06,
+                "bridge": [
+                  -7.537610998588008e-20,
+                  -7.616001845491088e-20
+                ],
+                "analytic_jacobian": [
+                  -7.537621239713297e-20,
+                  -7.616005951998087e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 9.574002790894147e-07,
+                "bridge": [
+                  -1.22765061374825e-19,
+                  1.7709204628006933e-22
+                ],
+                "analytic_jacobian": [
+                  -1.2276517891024155e-19,
+                  1.7709365404179855e-22
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "linear": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "73bf5b30140f4d1dbf297c710ccf6176907696a757481d0cf1ed22e0be4b68f9",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": {
+          "inputs": {
+            "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_linear_distance_has_exact0/linear_inputs.npz",
+            "sha256": "3dd00ea661ba4bc5ab155819663884f6ed7028119177a3d5df1a781b01406cc5",
+            "physical_fields": [
+              "chi",
+              "dz_dchi",
+              "fit_nz",
+              "growth",
+              "k",
+              "kernel_nz",
+              "los_z",
+              "ns",
+              "omega_de",
+              "omega_m",
+              "p_linear0",
+              "p_nonlinear",
+              "sigma8",
+              "source_readers",
+              "source_z",
+              "sources",
+              "table_boost",
+              "w0",
+              "wa",
+              "z"
+            ],
+            "query_fields": [
+              "ell",
+              "nla_amplitudes",
+              "pair",
+              "placement_amplitude",
+              "placement_masks",
+              "placement_operator",
+              "sides",
+              "tatt_a1",
+              "tatt_a2",
+              "tatt_bta",
+              "tatt_ct",
+              "tatt_power_mode",
+              "triplet"
+            ],
+            "bridge_scalars": {
+              "omega_matter": 0.3,
+              "omega_baryon": 0.05,
+              "hubble": 70.0,
+              "omega_nu_h2": 0.0
+            }
+          },
+          "observables": {
+            "gg": {
+              "relative_error": 0.0,
+              "bridge": [
+                1.5212109358918737e-09,
+                8.758885257228831e-10,
+                1.067788008090182e-10
+              ],
+              "analytic_jacobian": [
+                1.5212109358918737e-09,
+                8.758885257228831e-10,
+                1.067788008090182e-10
+              ]
+            },
+            "ii": {
+              "relative_error": 0.0,
+              "bridge": [
+                1.2634739448774913e-12,
+                2.321052086264764e-12,
+                7.32448089560756e-13
+              ],
+              "analytic_jacobian": [
+                1.2634739448774913e-12,
+                2.321052086264764e-12,
+                7.32448089560756e-13
+              ]
+            },
+            "ggi": {
+              "relative_error": 1.8006524782141024e-16,
+              "bridge": [
+                -1.711317396500526e-17,
+                -6.254685634136503e-18
+              ],
+              "analytic_jacobian": [
+                -1.7113173965005258e-17,
+                -6.254685634136502e-18
+              ]
+            },
+            "iii": {
+              "relative_error": 1.2367907371923245e-15,
+              "bridge": [
+                -1.459874551584927e-20,
+                -1.3430616263368838e-20
+              ],
+              "analytic_jacobian": [
+                -1.459874551584925e-20,
+                -1.3430616263368827e-20
+              ]
+            },
+            "quadratic_tatt": {
+              "relative_error": 3.5334330282067663e-16,
+              "bridge": [
+                -1.3626478335749403e-19,
+                -3.0595260232265932e-21
+              ],
+              "analytic_jacobian": [
+                -1.3626478335749398e-19,
+                -3.0595260232265887e-21
+              ]
+            }
+          }
+        }
+      },
+      "des_y3_tatt_fisher": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "73bf5b30140f4d1dbf297c710ccf6176907696a757481d0cf1ed22e0be4b68f9",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": [
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_production_like_backgroun0/production_inputs_101.npz",
+              "sha256": "cb551662866845622236739efb5b0676a6202bd612747c07a1be80d15bbdfac3",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_tatt_fisher.yaml",
+            "background_count": 101,
+            "background_upper": 3,
+            "source_count": 101,
+            "kernel_count": 201,
+            "los_count": 65,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.5376158985632008e-09,
+                  8.502748720619485e-10,
+                  9.366770067320596e-11
+                ],
+                "analytic_jacobian": [
+                  1.5376158985632008e-09,
+                  8.502748720619485e-10,
+                  9.366770067320596e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 5.6237269932094035e-06,
+                "bridge": [
+                  1.2225404387798843e-12,
+                  3.011482020150986e-12,
+                  1.1651838844788827e-12
+                ],
+                "analytic_jacobian": [
+                  1.2225573746262926e-12,
+                  3.0114986784977375e-12,
+                  1.165178125128609e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 3.931362155691342e-05,
+                "bridge": [
+                  -8.754227533869073e-18,
+                  -3.711383675580859e-18
+                ],
+                "analytic_jacobian": [
+                  -8.754571707788086e-18,
+                  -3.7114990291672464e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 1.9393070806508133e-05,
+                "bridge": [
+                  -8.783978284782403e-21,
+                  -1.5344972003333953e-20
+                ],
+                "analytic_jacobian": [
+                  -8.784275875266448e-21,
+                  -1.534519659183027e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 2.9740764502459863e-05,
+                "bridge": [
+                  -8.658591243811504e-20,
+                  -3.393159141187606e-21
+                ],
+                "analytic_jacobian": [
+                  -8.658848764593474e-20,
+                  -3.3931779501668544e-21
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_production_like_backgroun0/production_inputs_201.npz",
+              "sha256": "be9dd9486709b32ca2c8ee6f8cde07941d49686d9b23abf31ae8e84556106644",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_tatt_fisher.yaml",
+            "background_count": 201,
+            "background_upper": 3,
+            "source_count": 101,
+            "kernel_count": 201,
+            "los_count": 65,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.5376141656821995e-09,
+                  8.502741473691032e-10,
+                  9.366763379987081e-11
+                ],
+                "analytic_jacobian": [
+                  1.5376141656821995e-09,
+                  8.502741473691032e-10,
+                  9.366763379987081e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 1.3956862400466077e-06,
+                "bridge": [
+                  1.2225533850260444e-12,
+                  3.011495179506169e-12,
+                  1.1651799535231808e-12
+                ],
+                "analytic_jacobian": [
+                  1.2225575881342232e-12,
+                  3.0114993314487807e-12,
+                  1.1651785093743212e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 8.549548089594156e-06,
+                "bridge": [
+                  -8.754475773615204e-18,
+                  -3.711465207541183e-18
+                ],
+                "analytic_jacobian": [
+                  -8.754550621066742e-18,
+                  -3.7114919193192585e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 4.841685604406203e-06,
+                "bridge": [
+                  -8.784193424239949e-21,
+                  -1.5345131175421718e-20
+                ],
+                "analytic_jacobian": [
+                  -8.784267720812027e-21,
+                  -1.5345187223885698e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 7.4349112258516325e-06,
+                "bridge": [
+                  -8.658790705041914e-20,
+                  -3.393176829340855e-21
+                ],
+                "analytic_jacobian": [
+                  -8.658855082860772e-20,
+                  -3.393181531425802e-21
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_production_like_backgroun0/production_inputs_401.npz",
+              "sha256": "2c0fee67bc905f2ac1b5624c423aff13226f8430b513cda52912f69675a4273d",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_tatt_fisher.yaml",
+            "background_count": 401,
+            "background_upper": 3,
+            "source_count": 101,
+            "kernel_count": 201,
+            "los_count": 65,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.5376134675907988e-09,
+                  8.502739189712296e-10,
+                  9.366761624677957e-11
+                ],
+                "analytic_jacobian": [
+                  1.5376134675907988e-09,
+                  8.502739189712296e-10,
+                  9.366761624677957e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 3.4886453540669546e-07,
+                "bridge": [
+                  1.2225566622347744e-12,
+                  3.0114985478995673e-12,
+                  1.1651789554042988e-12
+                ],
+                "analytic_jacobian": [
+                  1.2225577128401791e-12,
+                  3.0114995882321126e-12,
+                  1.1651785953002406e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 2.127218692785246e-06,
+                "bridge": [
+                  -8.754525360552218e-18,
+                  -3.711484049953073e-18
+                ],
+                "analytic_jacobian": [
+                  -8.754543983381826e-18,
+                  -3.711490584268406e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 1.2109619992913017e-06,
+                "bridge": [
+                  -8.784248571094851e-21,
+                  -1.5345172123449566e-20
+                ],
+                "analytic_jacobian": [
+                  -8.784267153532155e-21,
+                  -1.5345186153304654e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 1.8587103895923117e-06,
+                "bridge": [
+                  -8.658841095482284e-20,
+                  -3.393181053360485e-21
+                ],
+                "analytic_jacobian": [
+                  -8.658857189790105e-20,
+                  -3.393182228871588e-21
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "des_y3_bacco_fisher": {
+        "scope": "analytic toy geometry; no bound on DES survey IA errors",
+        "metric": "raw observables; no survey data, covariance or mask is used",
+        "identity": {
+          "extension": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+          "extension_sha256": "73bf5b30140f4d1dbf297c710ccf6176907696a757481d0cf1ed22e0be4b68f9",
+          "physics_header_sha256": "f2841f9fc78e2fdbeeeaf12501f68393df6731524bf4a59ba4d5ce16a8d84f72",
+          "bridge_header_sha256": "cd5a31fde4256d61f288d564a7dffe2ef143828846a5f4c848017dfde3eb4d4d",
+          "test_source_sha256": "78409844d0c5e64de3fbc6b7ffdc28704da6a2262a81af9f4638555f34bd4b77",
+          "observer_source_sha256": "2f4341bb1b11dc8467d5119e7ff1a52bd8bd53bcbc8757ce293f6347b9449718",
+          "compiler_command": [
+            "/opt/homebrew/opt/llvm@22/bin/clang",
+            "-std=c99",
+            "-O0",
+            "-fPIC",
+            "-dynamiclib",
+            "-I",
+            "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/external_modules/code/cosmolike_core",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.c",
+            "-o",
+            "/private/tmp/bridge_background_analytic_20261119/final_debug/bridge_background_observer0/observer.so"
+          ]
+        },
+        "measurements": [
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_production_like_backgroun1/production_inputs_125.npz",
+              "sha256": "c6929549475c0de5458d6538e9e6e5c8d97848f6b7835e5ac8525886e8e6a345",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_bacco_fisher.yaml",
+            "background_count": 125,
+            "background_upper": 3.1,
+            "source_count": 9601,
+            "kernel_count": 401,
+            "los_count": 129,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.5716116414223025e-09,
+                  8.874507674490229e-10,
+                  9.986539914270715e-11
+                ],
+                "analytic_jacobian": [
+                  1.5716116414223025e-09,
+                  8.874507674490229e-10,
+                  9.986539914270715e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 3.7724980121102107e-06,
+                "bridge": [
+                  1.127550188263226e-12,
+                  2.8334415312037514e-12,
+                  1.144719651478105e-12
+                ],
+                "analytic_jacobian": [
+                  1.1275606913429386e-12,
+                  2.8334522203966202e-12,
+                  1.1447156520743706e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 2.6427446273220075e-05,
+                "bridge": [
+                  -8.244223739500207e-18,
+                  -3.5924679960283875e-18
+                ],
+                "analytic_jacobian": [
+                  -8.244441619038147e-18,
+                  -3.592540533610113e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 1.2853679472107523e-05,
+                "bridge": [
+                  -7.406127482859472e-21,
+                  -1.3466649131749404e-20
+                ],
+                "analytic_jacobian": [
+                  -7.40630058060712e-21,
+                  -1.3466785757560237e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 2.108224443815327e-05,
+                "bridge": [
+                  -8.341688026320891e-20,
+                  -3.661823077762357e-21
+                ],
+                "analytic_jacobian": [
+                  -8.341863891534522e-20,
+                  -3.661840485455824e-21
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_production_like_backgroun1/production_inputs_249.npz",
+              "sha256": "aebbc5205a38e28431c95c5fff651ec1a2089e058a0c8f3294af2c1a4bcbfda6",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_bacco_fisher.yaml",
+            "background_count": 249,
+            "background_upper": 3.1,
+            "source_count": 9601,
+            "kernel_count": 401,
+            "los_count": 129,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.571610415083429e-09,
+                  8.874502448020081e-10,
+                  9.986535019774848e-11
+                ],
+                "analytic_jacobian": [
+                  1.571610415083429e-09,
+                  8.874502448020081e-10,
+                  9.986535019774848e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 9.424845937784821e-07,
+                "bridge": [
+                  1.1275583866595538e-12,
+                  2.8334502337036933e-12,
+                  1.1447168777609013e-12
+                ],
+                "analytic_jacobian": [
+                  1.1275610107132372e-12,
+                  2.8334529041894027e-12,
+                  1.1447158772444104e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 6.145959791120982e-06,
+                "bridge": [
+                  -8.244378446749992e-18,
+                  -3.592518944548521e-18
+                ],
+                "analytic_jacobian": [
+                  -8.244429116679844e-18,
+                  -3.59253657755986e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 3.2126617897263718e-06,
+                "bridge": [
+                  -7.406255809502017e-21,
+                  -1.3466748964200247e-20
+                ],
+                "analytic_jacobian": [
+                  -7.406299073721537e-21,
+                  -1.346678310755495e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 5.2691135836680396e-06,
+                "bridge": [
+                  -8.341824128125689e-20,
+                  -3.661838589319605e-21
+                ],
+                "analytic_jacobian": [
+                  -8.341868082376115e-20,
+                  -3.661842942059716e-21
+                ]
+              }
+            }
+          },
+          {
+            "inputs": {
+              "file": "/private/tmp/bridge_background_analytic_20261119/final_debug/test_production_like_backgroun1/production_inputs_497.npz",
+              "sha256": "387269489facc5c9aa68718a2077cfb5019e28d496afcf8f5abc03b4f741a7fd",
+              "physical_fields": [
+                "chi",
+                "dz_dchi",
+                "fit_nz",
+                "growth",
+                "k",
+                "kernel_nz",
+                "los_z",
+                "ns",
+                "omega_de",
+                "omega_m",
+                "p_linear0",
+                "p_nonlinear",
+                "sigma8",
+                "source_readers",
+                "source_z",
+                "sources",
+                "table_boost",
+                "w0",
+                "wa",
+                "z"
+              ],
+              "query_fields": [
+                "ell",
+                "nla_amplitudes",
+                "pair",
+                "placement_amplitude",
+                "placement_masks",
+                "placement_operator",
+                "sides",
+                "tatt_a1",
+                "tatt_a2",
+                "tatt_bta",
+                "tatt_ct",
+                "tatt_power_mode",
+                "triplet"
+              ],
+              "bridge_scalars": {
+                "omega_matter": 0.3,
+                "omega_baryon": 0.05,
+                "hubble": 70.0,
+                "omega_nu_h2": 0.0
+              }
+            },
+            "configuration": "des_y3_bacco_fisher.yaml",
+            "background_count": 497,
+            "background_upper": 3.1,
+            "source_count": 9601,
+            "kernel_count": 401,
+            "los_count": 129,
+            "observables": {
+              "gg": {
+                "relative_error": 0.0,
+                "bridge": [
+                  1.571610109208939e-09,
+                  8.87450114388184e-10,
+                  9.986533795908907e-11
+                ],
+                "analytic_jacobian": [
+                  1.571610109208939e-09,
+                  8.87450114388184e-10,
+                  9.986533795908907e-11
+                ]
+              },
+              "ii": {
+                "relative_error": 2.3566995099842732e-07,
+                "bridge": [
+                  1.1275604343519844e-12,
+                  2.8334524077295577e-12,
+                  1.1447161837152927e-12
+                ],
+                "analytic_jacobian": [
+                  1.1275610906745123e-12,
+                  2.833453075489305e-12,
+                  1.1447159336399432e-12
+                ]
+              },
+              "ggi": {
+                "relative_error": 1.602255146296961e-06,
+                "bridge": [
+                  -8.244412791318106e-18,
+                  -3.5925311053557614e-18
+                ],
+                "analytic_jacobian": [
+                  -8.244426000992095e-18,
+                  -3.5925355901958e-18
+                ]
+              },
+              "iii": {
+                "relative_error": 8.032460330713005e-07,
+                "bridge": [
+                  -7.406287878280288e-21,
+                  -1.3466773906020181e-20
+                ],
+                "analytic_jacobian": [
+                  -7.406298695419863e-21,
+                  -1.3466782442844613e-20
+                ]
+              },
+              "quadratic_tatt": {
+                "relative_error": 1.3175332208824411e-06,
+                "bridge": [
+                  -8.341858141222723e-20,
+                  -3.66184247193291e-21
+                ],
+                "analytic_jacobian": [
+                  -8.341869131912428e-20,
+                  -3.66184355954371e-21
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "strict_debug_comparison": "All15 paired input archives have identical SHA256; all saved numerical measurements agree exactly"
+}

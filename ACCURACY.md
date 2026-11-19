@@ -126,6 +126,16 @@ the other two. `source_boost` multiplies the independent source intervals
 and leaves the original measured samples unchanged; the resolver refuses
 it when the configuration declares no independent source grid.
 
+The `core.model_from_core()` route derives $`dz/d\chi`$ numerically from
+the stored distances. Its background node spacing therefore controls an
+additional approximation. Increasing a dense-reader boost alone cannot
+repair a derivative estimated from coarse distance samples. The
+[independent bridge study](tests/studies/bridge_background_analytic.md)
+checks the absolute units, endpoint/interior errors and their effect on
+controlled IA projections. The direct CAMB preparation route instead
+supplies this Jacobian from CAMB's Hubble rate; the bridge study's errors
+do not apply automatically to that route or bound a survey forecast.
+
 The source reconstruction is also a physical input choice.
 `linear_midpoint` joins the input midpoint samples by straight lines.
 `pchip_midpoint` uses a shape-preserving cubic through those same samples.
