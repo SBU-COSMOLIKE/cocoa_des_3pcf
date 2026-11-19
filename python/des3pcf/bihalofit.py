@@ -39,6 +39,7 @@ from scipy.interpolate import CubicSpline
 from scipy.special import exp1, exprel, gammaincc, gammaln, zeta
 
 from .ownership import PreparedGeometry
+from .inputs import uniform_segments
 
 
 # Retain the C literal for 1/(2 pi^2) while comparing numerical conventions.
@@ -109,18 +110,26 @@ def input_hashes(arrays, settings):
 class _Curve:
     """Prepare a cubic once, then use arithmetic cells on a dense uniform grid.
 
-    Not-a-knot boundaries reproduce the input power/growth convention;
-    natural boundaries reproduce the fit-anchor convention. Cubic evaluation
-    happens while preparing dense samples. Production read() only finds a
-    cell by subtraction/division and linearly interpolates it. Reference
-    mode retains the original cubic explicitly for comparison with fastnc.
+    Production uses natural boundaries on each declared uniform piece.
+    Cubic evaluation prepares dense samples once; repeated read() calls
+    select a piece and find a cell by index arithmetic. Reference mode
+    retains the original not-a-knot cubic for comparisons with fastnc.
     """
 
     def __init__(self, x, y, natural=False):
         self.x = np.array(x, dtype=np.float64, copy=True)
         self.y = np.array(y, dtype=np.float64, copy=True)
         boundary = "natural" if natural else "not-a-knot"
-        self.cubic = CubicSpline(x=self.x, y=self.y, bc_type=boundary)
+        self.pieces = [(0, self.x.size - 1)]
+        if natural:
+            self.pieces = uniform_segments(coordinates=self.x, name="BiHalofit curve")
+        self.cubics = []
+        for first, last in self.pieces:
+            curve = CubicSpline(
+                x=self.x[first:last + 1], y=self.y[first:last + 1],
+                bc_type=boundary,
+            )
+            self.cubics.append(curve)
         self.low_slope = (self.y[1] - self.y[0]) / (self.x[1] - self.x[0])
         self.high_slope = (self.y[-1] - self.y[-2]) / (
             self.x[-1] - self.x[-2])
@@ -129,31 +138,53 @@ class _Curve:
     def shift(self, offset):
         """Add a constant without refitting second derivatives or end slopes."""
         self.y += offset
-        self.cubic.c[-1, :] += offset
+        for cubic in self.cubics:
+            cubic.c[-1, :] += offset
 
     def prepare_uniform(self, boost):
         """Refine original intervals before any repeated triangle evaluation."""
         count = (self.x.size - 1) * boost + 1
         if count > np.iinfo(np.int32).max:
             raise ValueError("Dense BiHalofit reader exceeds the C range.")
-        axis = np.linspace(start=self.x[0], stop=self.x[-1], num=count)
-        self.y = self.cubic(x=axis)
+        axis = np.empty(shape=count)
+        values = np.empty(shape=count)
+        pieces = []
+        inverse = []
+        for segment, (first, last) in enumerate(self.pieces):
+            lower = first * boost
+            upper = last * boost
+            nodes = np.linspace(start=self.x[first], stop=self.x[last],
+                                num=upper - lower + 1)
+            axis[lower:upper + 1] = nodes
+            values[lower:upper + 1] = self.cubics[segment](x=nodes)
+            pieces.append((lower, upper))
+            inverse.append((upper - lower) / (nodes[-1] - nodes[0]))
+        self.y = values
         self.x = axis
-        self.inverse_spacing = (count - 1) / (axis[-1] - axis[0])
-        self.cubic = None
+        self.pieces = pieces
+        self.inverse_spacing = inverse
+        self.cubics = None
 
     def read(self, coordinates, endpoint_power=False):
         """Read y; endpoint_power extends log P with its original slope."""
         query = np.asarray(coordinates, dtype=np.float64)
-        if self.inverse_spacing is None:
-            values = self.cubic(x=query)
-        else:
-            position = (query - self.x[0]) * self.inverse_spacing
-            index = np.floor(np.clip(position, 0, self.x.size - 2))
-            index = index.astype(np.intp)
-            fraction = position - index
-            values = self.y[index] + fraction * (
-                self.y[index + 1] - self.y[index])
+        # At most ten uniform pieces need inspection, independent of the
+        # number of samples. Queries beyond the ends use the edge piece.
+        values = np.empty_like(query)
+        for segment, (first, last) in enumerate(self.pieces):
+            if self.inverse_spacing is None:
+                candidate = self.cubics[segment](x=query)
+            else:
+                position = (query - self.x[first]) * self.inverse_spacing[segment]
+                local = np.floor(np.clip(position, 0, last - first - 1))
+                index = first + local.astype(np.intp)
+                fraction = position - local
+                candidate = self.y[index] + fraction * (
+                    self.y[index + 1] - self.y[index])
+            if segment == 0:
+                values = candidate
+            else:
+                values = np.where(query >= self.x[first], candidate, values)
         if endpoint_power:
             below = self.y[0] + self.low_slope * (query - self.x[0])
             above = self.y[-1] + self.high_slope * (query - self.x[-1])
@@ -391,9 +422,12 @@ class BiHalofit(PreparedGeometry):
         self.slope_nodes = _integer(
             value=slope_nodes, name="slope_nodes", minimum=4)
         self.radius_rtol = float(radius_rtol)
-        self._linear = _Curve(x=np.log(self.k), y=np.log(self.p_linear0))
-        self._growth = _Curve(x=self.z, y=self.growth)
-        omega = _Curve(x=self.omega_m_redshift, y=self.omega_m_z)
+        logk = np.log(self.k)
+        uniform_segments(coordinates=logk, name="BiHalofit log k", maximum=1)
+        natural = not self.source_readers
+        self._linear = _Curve(x=logk, y=np.log(self.p_linear0), natural=natural)
+        self._growth = _Curve(x=self.z, y=self.growth, natural=natural)
+        omega = _Curve(x=self.omega_m_redshift, y=self.omega_m_z, natural=natural)
         if np.array_equal(self.omega_m_redshift, self.z):
             self.background_omega_m_z = self.omega_m_z.copy()
         else:

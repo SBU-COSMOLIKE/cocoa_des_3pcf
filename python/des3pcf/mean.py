@@ -90,7 +90,7 @@ def aligned_fft_grid(theta_lower, dlnt, ell_min, ell_max, minimum_size):
 def physics_model(
     compiled, tables, kernel_nz=101, source_readers=False, table_boost=8, fit_nz=33,
     accuracy=None, adapter="production", feedback=None, pixel_window=None,
-    baseline=None,
+    baseline=None, variance=None,
 ):
     """Construct the owned C model after validating its physical input arrays.
 
@@ -111,6 +111,9 @@ def physics_model(
       baseline = optional immutable BaselineBispectrum prepared in Python.
           None retains the existing internal BiHalofit calculation. A supplied
           baseline also needs tables['omega_m_z'] from its background provider.
+      variance = optional copied core fit arrays z/rnl/neff/sigma8, prepared
+          from the same supplied linear power. This route trusts that power's
+          amplitude and does not renormalize it with the separate sigma8 scalar.
     Returns:
       production.PhysicsModel, owning copies of its prepared physical state.
     Raises:
@@ -143,6 +146,8 @@ def physics_model(
     if "source_z" in checked:
         arguments["source_z"] = checked["source_z"]
     arguments["los_z"] = controls.los_nodes(baseline=checked["los_z"])
+    if variance is not None:
+        arguments["variance"] = dict(variance)
     if feedback is not None:
         arguments["feedback"] = dict(feedback.native)
         arguments["feedback"]["boost"] = controls.count(

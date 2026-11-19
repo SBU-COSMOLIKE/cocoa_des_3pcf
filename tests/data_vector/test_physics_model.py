@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from scipy.integrate import simpson
+from scipy.interpolate import CubicSpline
 from scipy.special import eval_legendre
 
 
@@ -380,12 +381,13 @@ def test_full_aperture_measure_ordering_and_layout(compiled, physical_model):
     np.testing.assert_array_equal(actual, parallel)
 
 
-def test_uniform_production_reader_refinement(compiled, physical_model):
-    """Dense linear readers converge to the retained source cubic reader.
+def test_uniform_production_reader_refinement(compiled):
+    """Dense linear readers converge to independent natural-cubic values.
 
-    The reference fixture tolerances above remain unchanged. This separate
-    test varies the production table resolution and measures its own error
-    on wavenumbers and redshifts between the supplied physical nodes.
+    Production uses the shared natural spline; the upstream comparison
+    uses different endpoint conditions. Dense refinement removes lookup
+    error within the chosen interpolant, not differences between boundary
+    conditions. The separate fastnc checks retain their pinned tolerances.
     """
     inputs = physical_inputs()
     inputs["source_readers"] = False
@@ -395,7 +397,17 @@ def test_uniform_production_reader_refinement(compiled, physical_model):
     fine = compiled.PhysicsModel(**inputs)
     wave = np.geomspace(start=0.0023, stop=18.7, num=31)
     redshift = np.linspace(start=0.023, stop=1.91, num=wave.size)
-    reference = physical_model.power(k=wave, z=redshift, mode=0)
+    log_power = CubicSpline(
+        x=np.log(inputs["k"]), y=np.log(inputs["p_linear0"]),
+        bc_type="natural",
+    )
+    growth = CubicSpline(x=inputs["z"], y=inputs["growth"], bc_type="natural")
+    # This query is exactly at the first input node, so it measures only
+    # the model's common amplitude normalization, with no lookup error.
+    amplitude = fine.power(
+        k=inputs["k"][:1], z=np.zeros(1), mode=0,
+    )[0] / inputs["p_linear0"][0]
+    reference = amplitude * np.exp(log_power(np.log(wave))) * growth(redshift)**2
     coarse_value = coarse.power(k=wave, z=redshift, mode=0)
     fine_value = fine.power(k=wave, z=redshift, mode=0)
     coarse_error = np.max(np.abs(coarse_value / reference - 1.0))

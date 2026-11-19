@@ -73,6 +73,19 @@ three-halo pieces. These names describe the terms in the fitting formula;
 they do not imply that the implementation performs a separate halo-mass
 integral for each queried triangle.
 
+The producer uses the same input-grid convention as the Cocoa likelihoods:
+`log10k = np.linspace(...)`, followed by `k = 10.0**log10k`, and redshift
+segments constructed with `np.linspace`. Production power and growth
+preparation uses a natural cubic within each uniform segment, followed by
+dense linear interpolation with arithmetic cell indices. Refinement keeps
+every segment endpoint, including a join between fine low-redshift sampling
+and coarser high-redshift sampling. Each join needs a coarse-grid refinement
+check because natural end conditions need not match the physical curvature.
+The explicit `source_readers=True` comparison retains fastnc's original
+not-a-knot preparation. Python and C must select the same convention when
+comparing their fitted equations; changing a dense sampling factor cannot
+remove a discrepancy between different cubic boundary conditions.
+
 The old C normalization is deliberately retained. First, a top-hat integral
 over $`10^{-3}\leq k\leq100\ h/\mathrm{Mpc}`$ rescales the input power to the
 supplied `sigma8`. The later fit variances use a lower limit of

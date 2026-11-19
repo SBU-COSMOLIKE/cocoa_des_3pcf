@@ -70,7 +70,8 @@ class BiHalofitTheory(Theory):
         if self._background_z[-1] < self._producer.z[-1]:
             raise ValueError("Background must cover all baseline redshifts.")
         if self.power_k is None:
-            self._power_k = np.geomspace(start=1.0e-5, stop=1.0e3, num=256)
+            log10k = np.linspace(start=-5.0, stop=3.0, num=256)
+            self._power_k = 10.0**log10k
         else:
             self._power_k = _axis(values=self.power_k, name="power_k")
         if self._power_k[0] <= 0.0:

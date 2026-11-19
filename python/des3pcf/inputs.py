@@ -55,6 +55,38 @@ def _source_edge_arrays(native_z, native_low, native_high):
     return low, high
 
 
+def uniform_segments(coordinates, name, maximum=10):
+    """Return inclusive endpoints of the declared uniform coordinate pieces.
+
+    Cocoa's grid detector compares each interval with the first spacing
+    in its current piece, allowing relative rounding error 1e-9. Adjacent
+    pieces share their endpoint: [(0, 20), (20, 44)] describes 45 nodes.
+    This check runs before constructing native models, where an invalid
+    grid would otherwise terminate the process. It changes no samples.
+    """
+    axis = np.asarray(coordinates, dtype=np.float64)
+    if (axis.ndim != 1 or axis.size < 2
+            or not np.all(np.isfinite(axis)) or np.any(np.diff(axis) <= 0.0)):
+        raise ValueError(f"{name} requires at least two finite increasing nodes.")
+    pieces = []
+    begin = 0
+    spacing = axis[1] - axis[0]
+    for index in range(1, axis.size):
+        following = spacing
+        if index < axis.size - 1:
+            following = axis[index + 1] - axis[index]
+        if index == axis.size - 1 or abs(following - spacing) > 1.0e-9 * spacing:
+            pieces.append((begin, index))
+            if len(pieces) > maximum:
+                raise ValueError(
+                    f"{name} has more than {maximum} uniform pieces; "
+                    "construct each coordinate segment with np.linspace."
+                )
+            begin = index
+            spacing = following
+    return pieces
+
+
 def validate_tables(tables):
     """Copy and check the unit-specific arrays needed by PhysicsModel.
 
@@ -91,6 +123,9 @@ def validate_tables(tables):
         raise ValueError(
             "k must be positive and the physical redshift grid must start at 0."
         )
+    log10k = np.log10(k)
+    uniform_segments(coordinates=log10k, name="log10(k)", maximum=1)
+    uniform_segments(coordinates=z, name="background z")
     if result["los_z"][0] <= 0.0 or result["los_z"][-1] > z[-1]:
         raise ValueError("LOS nodes must lie within 0<z<=the physical table maximum.")
     for name in ("chi", "dz_dchi", "growth"):
@@ -111,6 +146,7 @@ def validate_tables(tables):
             or np.any(np.diff(source_z) <= 0.0) or source_z[0] < 0.0
             or source_z[-1] > z[-1]):
         raise ValueError("source_z requires increasing nodes within the background.")
+    uniform_segments(coordinates=source_z, name="source z")
     source = result["sources"]
     if source.ndim != 2 or source.shape[1] != source_z.size:
         raise ValueError("sources must have shape [nbin,nsource] on source_z (or z).")

@@ -217,9 +217,20 @@ def physical_inputs(specification):
     }
     variant = specification["variant"]
     if variant == "k":
-        inputs["k"] = k * np.exp(0.03 * np.sin(np.arange(k.size)))
+        # Cocoa changes the bounds or count of a uniform log-k grid.
+        # Move both endpoints at fixed count to test coordinate invalidation.
+        log10k = np.linspace(
+            start=np.log10(k[0] * 1.03),
+            stop=np.log10(k[-1] * 1.07), num=k.size,
+        )
+        inputs["k"] = 10.0**log10k
     elif variant == "z":
-        inputs["z"] = z + 0.025 * np.sin(np.pi * z / 2.0)
+        # Vary the spacing on two uniform pieces while preserving zero,
+        # the upper endpoint and the total count, as Cocoa producers do.
+        split = z.size // 2
+        low_z = np.linspace(start=0.0, stop=0.8, num=split + 1)
+        high_z = np.linspace(start=0.8, stop=z[-1], num=z.size - split)
+        inputs["z"] = np.concatenate((low_z, high_z[1:]))
     elif variant == "linear":
         inputs["p_linear0"] *= 1.0 + 0.12 * np.tanh(np.log(k / 0.2))
     elif variant == "nonlinear":

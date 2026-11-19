@@ -61,10 +61,17 @@ def test_supplied_full_mean_in_fixed_joint_covariance(compiled, tmp_path):
     internal = compiled.PhysicsModel(**native)
     internal_mean, unused_terms = compiled.production.physical_covariance(
         model=internal, inputs=covariance_input)
-    np.testing.assert_allclose(internal_mean, data, rtol=1.0e-12, atol=0.0)
+    # The archived vector used not-a-knot background/power preparation.
+    # Natural cubic preparation changes those values, so measure its
+    # displacement with the frozen full covariance. Keep the original
+    # vector and the adopted 0.01 mean-error budget as independent inputs.
+    interpolation_residual = np.linalg.solve(a=cholesky, b=internal_mean - data)
+    interpolation_error = float(interpolation_residual @ interpolation_residual)
+    assert interpolation_error <= 0.01
     report = {
         "row_order": ["Map3", "xi+", "xi-", "Map2"],
         "scope": "controlled integration fixture, not survey data",
+        "interpolation_delta_chi2": interpolation_error,
         "inputs_npz_sha256": hashlib.sha256(
             input_path.read_bytes()).hexdigest(),
         "measurement_npz_sha256": hashlib.sha256(

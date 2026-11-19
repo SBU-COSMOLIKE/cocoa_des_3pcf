@@ -45,7 +45,7 @@ CXXFLAGS += -std=c++23 $(COMMON) $(PYBIND_FLAGS)
 LDFLAGS += -L$(ROOTDIR)/.local/lib -L$(CONDA_PREFIX)/lib
 LDFLAGS += -Wl,-rpath,$(ROOTDIR)/.local/lib
 LDFLAGS += -Wl,-rpath,$(CONDA_PREFIX)/lib
-LDLIBS += -lgsl -lgslcblas -larmadillo -lopenblas -lfftw3
+LDLIBS += -lgsl -lgslcblas -larmadillo -lopenblas -lfftw3 -lhdf5
 LDLIBS += $(ROOTDIR)/.local/lib/libspdlog.a -lm
 
 ifeq ($(SYSTEM),Darwin)
@@ -67,6 +67,7 @@ OBJECTS += $(BUILD)/transform_3pcf.o
 OBJECTS += $(BUILD)/transform_wrapper.o $(BUILD)/transform_interface.o
 OBJECTS += $(BUILD)/covariance_physics_3pcf.o
 OBJECTS += $(BUILD)/covariance_wrapper.o $(BUILD)/covariance_interface.o
+OBJECTS += $(BUILD)/halo_profile.o $(BUILD)/cosmo3D.o $(BUILD)/baryons.o
 OBJECTS += $(BUILD)/interface.o
 
 .PHONY: all clean FORCE
@@ -87,6 +88,18 @@ $(BUILD)/%.o: $(SOURCE)/%.cpp | $(BUILD)
 
 $(BUILD)/interface.o: interface.cpp | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+# The shared NFW and variance readers resolve inside this extension.
+# cosmo3D also references the baryon reader, whose file input uses HDF5.
+# These dependencies must not come from another project's loaded module.
+$(BUILD)/halo_profile.o: $(CORE)/cosmolike/halo_profile.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/cosmo3D.o: $(CORE)/cosmolike/cosmo3D.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/baryons.o: $(CORE)/cosmolike/baryons.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
 $(TARGET): $(OBJECTS) FORCE
 	$(CXX) $(COMMON) $(SOFLAGS) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $@

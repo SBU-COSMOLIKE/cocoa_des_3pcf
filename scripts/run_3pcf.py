@@ -143,7 +143,13 @@ def grid_values(settings):
         if logarithmic:
             if lower <= 0:
                 raise ValueError("Logarithmic grid lower bound must be >0.")
-            values = np.geomspace(start=lower, stop=upper, num=int(count))
+            # Cocoa supplies power on uniformly spaced log10(k) nodes.
+            # Keep the coordinate explicit, as in the other projects;
+            # the same construction also serves other positive log grids.
+            log10_values = np.linspace(
+                start=np.log10(lower), stop=np.log10(upper), num=int(count),
+            )
+            values = 10.0**log10_values
             if include_zero:
                 values = np.concatenate((np.zeros(1), values))
         else:

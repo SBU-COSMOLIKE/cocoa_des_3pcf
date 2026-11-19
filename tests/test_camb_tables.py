@@ -37,16 +37,8 @@ def prepared_and_fresh():
         "num_massive_neutrinos": 1,
         "nnu": 3.046,
     }
-    k = np.array([
-        0.001,
-        0.03,
-        0.2,
-        1.0,
-        5.0,
-        50.0,
-        100.0,
-        1000.0,
-    ])
+    log10k = np.linspace(start=-3.0, stop=3.0, num=8)
+    k = 10.0**log10k
     z = np.array([0.0, 0.4, 0.9, 1.7])
     sources = np.array([[0.0, 0.7, 1.0, 0.2]])
     los_z = np.array([0.1, 0.35, 0.8, 1.5])
