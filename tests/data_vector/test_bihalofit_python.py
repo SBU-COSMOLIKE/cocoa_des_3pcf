@@ -462,6 +462,8 @@ class ArrayPower:
     def P(self, z, k):
         wave = np.asarray(k) / self.little_h
         power_h = 2.0e4 * wave / (1.0 + (wave / 0.15)**2)**1.8
+        if np.ndim(z) == 1:
+            return power_h[None, :] / (1.0 + np.asarray(z)[:, None])**2 / self.little_h**3
         return power_h / self.little_h**3
 
 
@@ -499,7 +501,12 @@ class ArrayProvider:
         return ArrayPower(little_h=self.little_h)
 
 
-def test_actual_theory_base_and_provider_contract():
+@pytest.mark.parametrize("variance_source,variance_growth", [
+    ("local", "factorized"),
+    ("shared", "factorized"),
+    ("shared", "evolving"),
+])
+def test_actual_theory_base_and_provider_contract(variance_source, variance_growth):
     """Exercise Cobaya's real Theory state management with explicit arrays."""
     background = np.linspace(start=0.0, stop=2.0, num=5)
     theory = BiHalofitTheory(info={
@@ -510,6 +517,8 @@ def test_actual_theory_base_and_provider_contract():
         "background_z": background.tolist(),
         "power_k": np.geomspace(start=1.0e-5, stop=1.0e3, num=96).tolist(),
         "stop_at_error": True,
+        "variance_source": variance_source,
+        "variance_growth": variance_growth,
     })
     provider = ArrayProvider()
     theory.initialize_with_provider(provider=provider)
@@ -533,6 +542,12 @@ def test_actual_theory_base_and_provider_contract():
                                           dependency_params=[provider.sigma8])
     changed = theory.get_bihalofit_baseline()
     assert changed is not baseline
+    if variance_source == "shared":
+        # This explicit provider changes only its sigma8 scalar. Its P and
+        # normalized growth stay fixed, so shared smoothing keeps B fixed.
+        np.testing.assert_array_equal(changed.native["log_bispectrum"],
+                                      baseline.native["log_bispectrum"])
+        assert theory.current_state["bihalofit_variance_record"]["growth_mode"] == variance_growth
     assert provider.pk_requests[0]["extrap_kmax"] > 700.0
     assert provider.pk_requests[0]["var_pair"] == ("delta_tot", "delta_tot")
     # Check the raw input hash as well: sigma8 renormalization could hide a
@@ -555,7 +570,19 @@ def test_actual_theory_base_and_provider_contract():
         "ns": provider.ns,
         "sigma8": provider.sigma8,
     }
-    expected_owner = theory._producer.prepare(tables=table)
+    variance = None
+    if variance_source == "shared":
+        table["omega_m"] = float(table["omega_m_z"][0])
+        table["p_linear"] = table["growth"][:, None]**2 * table["p_linear0"][None, :]
+        snapshot, unused = theory._variance_engine.prepare(
+            tables=table, parameters={"omega_b": 0.05, "h": provider.little_h},
+            metadata={"omega_nu_h2": 0.01 * provider.little_h**2},
+            z=theory._fit_z, growth_mode=variance_growth,
+        )
+        variance = {}
+        for name in ("z", "rnl", "neff", "sigma8"):
+            variance[name] = snapshot[name]
+    expected_owner = theory._producer.prepare(tables=table, variance=variance)
     np.testing.assert_allclose(changed.native["log_bispectrum"],
                                expected_owner.native["log_bispectrum"],
                                rtol=2.0e-14, atol=2.0e-14)

@@ -601,6 +601,45 @@ class PhysicalProvider:
             self._active_variance = variance
         return self.model, self.model_tables, self.model_metadata
 
+    def covariance_model(self, parameters, inputs):
+        """Return one model with halo variances from the same physical inputs.
+
+        The shared route smooths total-matter power at the covariance's
+        exact mass and LOS nodes. It preserves the existing M200m density
+        convention and leaves Sheth-Tormen and Duffy coefficients with the
+        caller. The returned input mapping owns its variance arrays; it
+        remains usable with this model after another provider evaluation.
+        The local reference route retains its declared k quadrature.
+        """
+        model, tables, metadata = self.get(parameters=parameters)
+        prepared = dict(inputs)
+        record = dict(metadata)
+        if self.variance_source == "local":
+            return model, prepared, record
+        cosmology = dict(self.reference)
+        for name in COSMOLOGY_NAMES:
+            if name in parameters:
+                cosmology[name] = parameters[name]
+        # This is the covariance's existing critical-density constant in
+        # (Msun/h)/(Mpc/h)^3. The shared reader converts query masses to
+        # preserve these radii when its own density constant differs.
+        density = 2.77536627e11 * tables["omega_m"]
+        radial = model.radial()
+        snapshot, variance_record = self._variance_engine.prepare(
+            tables=self.cosmology_tables, parameters=cosmology,
+            metadata=self.cosmology_metadata, z=radial["z"],
+            mass=prepared["mass"], reference_rho=density,
+            include_fit=False, accuracy=self.accuracy,
+            growth_mode=self.variance_growth,
+        )
+        prepared["halo_z"] = snapshot["z"]
+        prepared["halo_mass"] = snapshot["mass"]
+        prepared["halo_sigma2"] = snapshot["halo_sigma2"]
+        prepared["halo_dlnsigma_dlnm"] = snapshot["halo_dlnsigma_dlnm"]
+        prepared["halo_reference_rho"] = snapshot["reference_rho"]
+        record["halo_variance"] = variance_record
+        return model, prepared, record
+
 
 class JointPrediction(PreparedGeometry):
     """Evaluate all selected xi± and Map3 rows in their original order.

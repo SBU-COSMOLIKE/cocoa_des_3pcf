@@ -49,9 +49,21 @@ class BiHalofitTheory(Theory):
     slope_nodes = 2000
     radius_rtol = 1.0e-5
     kmax_boltzmann = 5.0
+    variance_source = "local"
+    variance_growth = "factorized"
+    variance_accuracy = None
 
     def initialize(self):
         """Own explicit geometry before asking the provider for any products."""
+        if self.variance_source not in ("local", "shared"):
+            raise ValueError("variance_source must be local or shared.")
+        if self.variance_growth not in ("factorized", "evolving"):
+            raise ValueError("variance_growth must be factorized or evolving.")
+        if self.variance_source == "local" and self.variance_growth != "factorized":
+            raise ValueError("Evolving variance requires the shared engine.")
+        if self.variance_source == "local" and self.variance_accuracy is not None:
+            raise ValueError("variance_accuracy requires the shared engine.")
+        self._variance_engine = None
         names = ("baseline_z", "baseline_logk", "baseline_logu", "baseline_v")
         for name in names:
             if getattr(self, name) is None:
@@ -86,6 +98,7 @@ class BiHalofitTheory(Theory):
         # background nodes. This avoids inserting an extra interpolation of
         # the provider's density fractions before fitting coefficients.
         self._omega_z = np.unique(np.concatenate((self._background_z, fit_z)))
+        self._fit_z = fit_z
 
     def get_requirements(self):
         """Declare the cosmology dependencies for Cobaya cache validation."""
@@ -151,12 +164,44 @@ class BiHalofitTheory(Theory):
             "ns": float(self.provider.get_param("ns")),
             "sigma8": float(sigma[0]),
         }
+        variance = None
+        variance_record = None
+        if self.variance_source == "shared":
+            from .variance import SharedVariance
+
+            if self._variance_engine is None:
+                # The project setup places its compiled interface on the
+                # import path, as it does for the likelihood. This optional
+                # dependency belongs only to the shared-smoothing route.
+                import cosmolike_des_3pcf_interface as compiled
+
+                self._variance_engine = SharedVariance(compiled=compiled)
+            tables["omega_m"] = float(tables["omega_m_z"][0])
+            if self.variance_growth == "evolving":
+                tables["p_linear"] = np.asarray(
+                    interpolator.P(z=self._background_z, k=physical_k),
+                    dtype=np.float64,
+                ) * little_h**3
+            parameters = {
+                "omega_b": float(omega_b[0]),
+                "h": little_h,
+            }
+            metadata = {"omega_nu_h2": float(omega_nu[0]) * little_h**2}
+            snapshot, variance_record = self._variance_engine.prepare(
+                tables=tables, parameters=parameters, metadata=metadata,
+                z=self._fit_z, accuracy=self.variance_accuracy,
+                growth_mode=self.variance_growth,
+            )
+            variance = {}
+            for name in ("z", "rnl", "neff", "sigma8"):
+                variance[name] = snapshot[name]
         baseline = self._producer.prepare(
             tables=tables, fit_nz=self.fit_nz, table_boost=self.table_boost,
             source_readers=self.source_readers,
             variance_nodes=self.variance_nodes, slope_nodes=self.slope_nodes,
-            radius_rtol=self.radius_rtol)
+            radius_rtol=self.radius_rtol, variance=variance)
         state["bihalofit_baseline"] = baseline
+        state["bihalofit_variance_record"] = variance_record
         state["bihalofit_background"] = {
             "z": baseline.background_z,
             "omega_m_z": baseline.background_omega_m_z,

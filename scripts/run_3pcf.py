@@ -469,6 +469,13 @@ def load_configuration(path, command):
                     "single_fluid_effective_growth approximation; "
                     "the P_cb halo treatment is not supplied here."
                 )
+            if (neutrino_model == "single_fluid_effective_growth"
+                    and physics.get("variance_growth", "factorized") != "factorized"):
+                raise ValueError(
+                    "single_fluid_effective_growth requires factorized variance "
+                    "growth; evolving halo variances need a separately declared "
+                    "and validated neutrino prescription."
+                )
             if estimator != "full_filter":
                 raise ValueError(
                     "Analytic full-filter covariance requires a full_filter "
@@ -1005,7 +1012,15 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
         pair_weight=settings["pair_weight"],
         accuracy=config["accuracy"],
     )
-    model, _, _ = provider.get(parameters=config["parameters"])
+    model, inputs, physical_record = provider.covariance_model(
+        parameters=config["parameters"], inputs=inputs,
+    )
+    for name in ("variance", "halo_variance"):
+        if name in physical_record:
+            copied = dict(physical_record[name])
+            copied["sampling"] = dict(copied["sampling"])
+            copied["input_sha256"] = dict(copied["input_sha256"])
+            metadata[name] = copied
     if provider._active_baseline is not None:
         metadata["baseline_bispectrum"] = provider._active_baseline.record()
     if provider._active_feedback is not None:

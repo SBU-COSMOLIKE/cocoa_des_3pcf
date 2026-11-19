@@ -10,6 +10,7 @@
 8. [Changing settings in a notebook](#notebook)
 9. [What remains fixed](#fixed)
 10. [Executed numerical studies](#studies)
+11. [Shared smoothing controls](#shared-smoothing)
 
 ## What a refinement comparison tests <a name="principle"></a>
 
@@ -418,7 +419,7 @@ address accuracy relative to the physical model.
 | [Fiducial angular-order study](tests/studies/angular_order_results.md) | Legendre and Fourier truncation orders separated from angular sampling and coupling interpolation; ten NLA/TATT fiducial mean comparisons and their distinction from derivative convergence |
 | [BACCO response study](tests/studies/bacco_validation.md) | Direct emulator values, native interpolation, response-grid refinement and finite-difference steps, separated from neutrino and continuation choices |
 
-## Shared smoothing controls
+## Shared smoothing controls <a name="shared-smoothing"></a>
 
 `physics.variance_source: shared` asks the ordinary CosmoLike smoothing
 engine for the fit's nonlinear radius, effective index and sigma8(z).
@@ -451,3 +452,18 @@ Changing a source distribution does not change its matter smoothing inputs.
 The component tests check those ownership rules and compare the C and Python
 fits using the same shared arrays. Full joint mean, derivative and Fisher
 checks are still required before adopting the shared route as the default.
+
+For analytic covariance, the shared route supplies halo variances and
+logarithmic mass slopes at the exact requested mass and line-of-sight
+nodes. It preserves the existing M200m density convention, Sheth-Tormen
+mass function and Duffy concentration parameters. Shared smoothing does
+not replace these physical prescriptions. The saved metadata includes
+separate fit and halo variance records. A declared
+`single_fluid_effective_growth` neutrino approximation requires factorized
+growth; an evolving halo prescription needs its own physical validation.
+
+The optional Cobaya `BiHalofitTheory` uses the same `variance_source` and
+`variance_growth` selectors. Its `variance_accuracy` mapping supplies the
+shared smoothing controls. The project setup must make the compiled 3PCF
+interface importable when this route is selected. The local Python
+reference does not require that compiled dependency.

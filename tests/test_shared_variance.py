@@ -145,3 +145,30 @@ def test_integration_boost_does_not_refine_analytic_smoothing(compiled):
     original = Accuracy().variance_settings(baseline=engine.baseline)
     refined = Accuracy(integration_accuracy_boost=2.0).variance_settings(baseline=engine.baseline)
     assert original == refined
+
+
+@pytest.mark.parametrize("adapter_name", ["production", "notebook"])
+def test_covariance_preparation_uses_matching_shared_tables(compiled, adapter_name):
+    """The covariance consumes the recorded mass, density and redshift axes."""
+    from covariance.test_physical_covariance import covariance_arguments
+
+    tables, parameters = toy_tables()
+    provider = PhysicalProvider(
+        compiled=compiled, reference_tables=tables, reference_metadata={},
+        reference_parameters=parameters, cosmology_mode="fixed_tables",
+        variance_source="shared",
+    )
+    inputs = covariance_arguments()
+    model, prepared, record = provider.covariance_model(parameters=parameters, inputs=inputs)
+    assert "halo_sigma2" not in inputs
+    assert record["halo_variance"]["reference_rho"] == 2.77536627e11 * tables["omega_m"]
+    np.testing.assert_array_equal(prepared["halo_mass"], inputs["mass"])
+    np.testing.assert_array_equal(prepared["halo_z"], model.radial()["z"])
+    adapter = getattr(compiled, adapter_name)
+    values = adapter.halo_tables(model=model, inputs=prepared, z=prepared["halo_z"],
+                                 k_profile=np.array([0.0, 0.1]))
+    np.testing.assert_array_equal(values[0], prepared["halo_sigma2"])
+    saved = prepared["halo_sigma2"].copy()
+    provider.accuracy = Accuracy(variance_mass_boost=2.0)
+    provider.covariance_model(parameters=parameters, inputs=inputs)
+    np.testing.assert_array_equal(prepared["halo_sigma2"], saved)

@@ -152,13 +152,16 @@ def test_pchip_requires_declared_source_count_and_padding(toy_configuration, pad
 
 
 @pytest.mark.parametrize("bispectrum_source", ["internal", "supplied"])
-def test_evaluate_and_fixed_covariance_fisher(toy_configuration, bispectrum_source):
+@pytest.mark.parametrize("variance_source", ["local", "shared"])
+def test_evaluate_and_fixed_covariance_fisher(toy_configuration, bispectrum_source,
+                                            variance_source):
     """Keep all rows and check calibration derivatives against their algebra."""
     path, config, rows = toy_configuration
+    config["physics"]["variance_source"] = variance_source
     if bispectrum_source == "supplied":
         config["physics"]["bispectrum_source"] = "supplied"
         config["physics"]["bispectrum_table"] = supplied_grid()
-        path.write_text(json.dumps(config), encoding="utf-8")
+    path.write_text(json.dumps(config), encoding="utf-8")
     result = run_driver(command="evaluate", config=path)
     assert result.returncode == 0, result.stderr
     result = run_driver(command="fisher", config=path)
@@ -309,15 +312,24 @@ def test_analytic_covariance_requires_declared_physical_limits(
     result = run_driver(command="covariance", config=path, validate=True)
     assert result.returncode == 2
     assert "single_fluid_effective_growth" in result.stderr
+    config["covariance"]["neutrino_model"] = "single_fluid_effective_growth"
+    config["physics"]["variance_source"] = "shared"
+    config["physics"]["variance_growth"] = "evolving"
+    path.write_text(json.dumps(config), encoding="utf-8")
+    result = run_driver(command="covariance", config=path, validate=True)
+    assert result.returncode == 2
+    assert "requires factorized variance" in result.stderr
 
 
 @pytest.mark.parametrize("save_components", [False, True])
 @pytest.mark.parametrize("bispectrum_source", ["internal", "supplied"])
+@pytest.mark.parametrize("variance_source", ["local", "shared"])
 def test_covariance_command_preserves_each_term(
-    toy_configuration, save_components, bispectrum_source,
+    toy_configuration, save_components, bispectrum_source, variance_source,
 ):
     """The saved diagnostic choice leaves the same final physical covariance."""
     path, config, rows = toy_configuration
+    config["physics"]["variance_source"] = variance_source
     if bispectrum_source == "supplied":
         config["physics"]["bispectrum_source"] = "supplied"
         config["physics"]["bispectrum_table"] = supplied_grid()
@@ -374,6 +386,9 @@ def test_covariance_command_preserves_each_term(
         np.testing.assert_array_equal(archive["row_labels"], rows.labels)
         metadata = json.loads(str(archive["metadata_json"].item()))
         assert metadata["covariance_components_saved"] is save_components
+        if variance_source == "shared":
+            assert metadata["halo_variance"]["matter_field"] == "total"
+            assert metadata["variance"]["growth_mode"] == "factorized"
         input_files = metadata["prediction_identity"]["input_files"]
         assert "physical_tables" in input_files
         assert "joint_covariance" not in input_files

@@ -454,3 +454,32 @@ complete background does not remove that approximation. Baryonic feedback
 remains a separately supplied response. Matching the measurement, finite
 triangle cuts, IA prescription and covariance assumptions of Rafael's
 analyses remains necessary for reproducing their inferences.
+
+## Shared variance inputs
+
+Both the direct project producer and the optional Cobaya theory block can
+consume Gaussian and top-hat variances from the ordinary CosmoLike FFTLog
+engine. Select `variance_source: shared` in the theory block, or
+`physics.variance_source: shared` in the CLI configuration. The default
+remains `local` until full joint mean and Fisher acceptance is established.
+The shared route supplies owned z/rnl/neff/sigma8 arrays to the fit and
+retains the amplitude of the supplied power spectrum. A separate sigma8
+scalar no longer renormalizes that power.
+
+The default `variance_growth: factorized` uses P(k,0)D(z)^2. The optional
+`evolving` choice uses the supplied full P(k,z). Those prescriptions can
+differ with massive neutrinos; neither changes the existing growth choice
+on the perturbative tree and IA power legs. For the Cobaya adapter, D is
+still the provider's sigma8(z)/sigma8(0), and Omega_m(z) remains the sum of
+its baryon, cold-dark-matter and massive-neutrino fractions. All h-unit
+conversions occur at the Python boundary.
+
+The theory's `variance_accuracy` mapping accepts the shared controls
+described in [Accuracy](ACCURACY.md#shared-smoothing). Table counts derive
+from an unchanged baseline. The cached bispectrum includes every supplied
+variance array in its input identity, and old outputs retain their own
+copies after replacement. The physical-model and CLI tests compare C and
+Python equations with identical anchors, exercise both covariance adapters,
+and check unchanged power when only the redundant sigma8 scalar changes.
+These tests establish the interface contract; they do not establish survey
+forecast convergence or a new neutrino halo prescription.
