@@ -15,6 +15,7 @@ the error from the other input conversions. These toy errors do not bound
 the errors of a DES prediction with a measured source distribution.
 """
 
+from test_supplied_baseline import baseline_input
 import ctypes
 import hashlib
 import json
@@ -272,6 +273,28 @@ def bridge_parameters(*, inputs):
     }
 
 
+def background_baseline(compiled, inputs):
+    """Supply a physical B so the Jacobian test retains its radial weights.
+
+    A constant B overweights the observer endpoint and defines a different
+    accuracy experiment. Use the Python fit with shared variance, as the
+    former internal bridge did, and compare identical B in both projectors.
+    """
+    from des3pcf.bihalofit import BiHalofitProducer, bispectrum_axes
+
+    snapshot = compiled.core.variance_snapshot(
+        z=np.linspace(start=0.0, stop=inputs["z"][-1], num=33),
+    )
+    fit = {name: snapshot[name] for name in ("z", "rnl", "neff", "sigma8")}
+    tables = dict(inputs)
+    tables["omega_m_z"] = np.full(inputs["z"].shape, 0.3)
+    producer = BiHalofitProducer(**bispectrum_axes(
+        zmax=inputs["z"][-1], counts=(9, 65, 33, 17),
+    ))
+    return dict(producer.prepare(tables=tables, variance=fit,
+                                 source_readers=True).native)
+
+
 def install_background(*, compiled, inputs, construct_model=True):
     """Build the bridge model using public setters and ordinary h units.
 
@@ -309,6 +332,10 @@ def install_background(*, compiled, inputs, construct_model=True):
         table_boost=inputs["table_boost"], fit_nz=inputs["fit_nz"],
     )
     core.set_scalars(ns=0.965, sigma8=0.8, w0=-1.0, wa=0.0)
+    core.set_baseline_bispectrum(
+        baseline=background_baseline(compiled=compiled, inputs=inputs),
+        omega_m_z=np.full(inputs["z"].shape, 0.3), sigma8=0.8,
+    )
     if construct_model:
         return core.model_from_core()
     return None
@@ -427,7 +454,10 @@ def compare_ia(*, compiled, inputs, query):
     fit = {}
     for name in ("z", "rnl", "neff", "sigma8"):
         fit[name] = snapshot[name]
-    direct = compiled.production.PhysicsModel(**inputs, variance=fit)
+    direct = compiled.production.PhysicsModel(
+        **inputs, baseline=background_baseline(compiled=compiled, inputs=inputs),
+        omega_m_z=np.full(inputs["z"].shape, 0.3),
+    )
     actual = ia_observables(model=bridged, query=query)
     reference = ia_observables(model=direct, query=query)
     result = {}

@@ -9,6 +9,8 @@ Its interpolators return h units directly, independently checking the
 production helper's physical-unit queries and explicit powers of h.
 """
 
+from test_pipeline import compact_bispectrum_grid
+
 import numpy as np
 import pytest
 
@@ -140,6 +142,7 @@ def test_real_camb_accuracy_rebuild_and_restore(
 
     parameters, tables, metadata, unused = prepared_and_fresh
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables,
         reference_metadata=metadata, reference_parameters=parameters,
         cosmology_mode="camb", kernel_nz=21, extrap_kmax=800.0,

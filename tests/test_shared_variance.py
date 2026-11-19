@@ -5,6 +5,8 @@ state ownership, physical input selection and numerical control wiring.
 Full joint means and Fisher derivatives require separate survey checks.
 """
 
+from test_pipeline import compact_bispectrum_grid
+
 import json
 from pathlib import Path
 
@@ -13,7 +15,9 @@ import pytest
 
 from des3pcf.accuracy import Accuracy
 from des3pcf.pipeline import PhysicalProvider
-from des3pcf.variance import SharedVariance, ReferenceVariance, reference_physics_model
+from des3pcf.variance import (
+    SharedVariance, ReferenceVariance, reference_physics_model, reference_bihalofit,
+)
 from test_pipeline import toy_tables
 
 
@@ -39,7 +43,9 @@ def test_python_reference_can_supply_the_native_fit(
     # Python fit preparation with itself and lose the independent check.
     archive = json.loads(Path(__file__).with_name(
         "reference_legacy_variance.json").read_text())
-    assert input_hashes(arrays=tables, settings={}) == archive["input_sha256"]
+    legacy_inputs = dict(tables)
+    legacy_inputs.pop("omega_m_z", None)
+    assert input_hashes(arrays=legacy_inputs, settings={}) == archive["input_sha256"]
     reference = None
     for case in archive["cases"]:
         if (case["fit_nz"] == fit_nz and case["table_boost"] == table_boost
@@ -53,17 +59,18 @@ def test_python_reference_can_supply_the_native_fit(
     )
     normalized = dict(tables)
     normalized["p_linear0"] = tables["p_linear0"] * multiplier
-    candidate = reference_physics_model(
-        factory=compiled.production.PhysicsModel, **normalized,
-        fit_nz=fit_nz, table_boost=table_boost,
-        variance=fit, source_readers=source_readers,
-    )
+    normalized.pop("omega_m_z", None)
+    normalized.update(fit_nz=fit_nz, table_boost=table_boost,
+                      variance=fit, source_readers=source_readers)
+    candidate = reference_bihalofit(inputs=normalized)
     sides = np.array([[0.03, 0.04, 0.05], [0.1, 0.2, 0.25], [0.5, 0.7, 1.0]])
     redshift = np.array([0.0, 0.4, 1.8])
     for component in range(4):
         expected = np.asarray(reference[component])
-        actual = candidate.matter(sides=sides, redshifts=redshift,
-                                   component=component)
+        actual = candidate.evaluate(
+            k1=sides[:, 0], k2=sides[:, 1], k3=sides[:, 2], z=redshift,
+            component=component,
+        )
         np.testing.assert_allclose(actual, expected, rtol=2.0e-11, atol=0.0)
     assert record["power_normalization"] == multiplier
 
@@ -101,10 +108,13 @@ def test_native_model_preserves_supplied_power_amplitude(compiled):
     fit = {}
     for name in ("z", "rnl", "neff", "sigma8"):
         fit[name] = snapshot[name]
-    original = compiled.production.PhysicsModel(**tables, variance=fit)
+    from test_supplied_baseline import baseline_input
+
+    baseline = baseline_input()
+    original = compiled.production.PhysicsModel(**tables, baseline=baseline)
     changed = dict(tables)
     changed["sigma8"] = 1.2
-    other = compiled.notebook.PhysicsModel(**changed, variance=fit)
+    other = compiled.notebook.PhysicsModel(**changed, baseline=baseline)
     wave = tables["k"].copy()
     redshift = np.zeros_like(wave)
     actual = original.power(k=wave, z=redshift, mode=0)
@@ -216,6 +226,7 @@ def test_provider_fit_copies_survive_accuracy_and_source_changes(compiled):
     """An old model stays valid while a notebook changes preparation inputs."""
     tables, parameters = toy_tables()
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata={},
         reference_parameters=parameters, cosmology_mode="fixed_tables",
         variance_source="shared",
@@ -252,6 +263,7 @@ def test_covariance_preparation_uses_matching_shared_tables(compiled, adapter_na
 
     tables, parameters = toy_tables()
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata={},
         reference_parameters=parameters, cosmology_mode="fixed_tables",
         variance_source="shared",

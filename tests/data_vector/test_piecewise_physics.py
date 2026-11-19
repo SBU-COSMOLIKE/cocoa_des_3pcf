@@ -6,6 +6,9 @@ from this check. Refining the input redshifts then measures the error of
 the prepared redshift interpolant, including both sides of a grid join.
 """
 
+from test_bihalofit_python import retired_matter
+
+
 from des3pcf.variance import reference_physics_model
 
 import numpy as np
@@ -95,10 +98,9 @@ def test_python_and_native_piecewise_fit(compiled):
     supplied["omega_m_redshift"] = anchors
     supplied["omega_m_z"] = omega
     python = BiHalofit(**supplied, fit_nz=33, table_boost=16)
-    native = reference_physics_model(factory=compiled.production.PhysicsModel, **inputs)
     sides, redshift = query_triangles()
     for component in range(4):
-        expected = native.matter(sides=sides, redshifts=redshift, component=component)
+        expected = retired_matter(case="piecewise", component=component)
         actual = evaluate(model=python, sides=sides, redshift=redshift,
                           component=component)
         np.testing.assert_allclose(actual, expected, rtol=2.0e-11, atol=0.0)

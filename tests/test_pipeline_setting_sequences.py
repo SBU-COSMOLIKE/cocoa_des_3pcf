@@ -11,6 +11,8 @@ or a performance measurement. Each numerical change has a reach check on
 the effective radial count, provider key or evaluated vector.
 """
 
+from test_pipeline import compact_bispectrum_grid
+
 import os
 from pathlib import Path
 import subprocess
@@ -26,7 +28,8 @@ sys.path.insert(0, str(PROJECT / "python"))
 
 from des3pcf.accuracy import Accuracy
 from des3pcf.forecast import ExactMeanCache
-from des3pcf.mean import physics_model, XiEngine
+from theory_inputs import prepared_physics_model as physics_model
+from des3pcf.mean import XiEngine
 from des3pcf.pipeline import PhysicalProvider, JointPrediction
 from des3pcf.survey import forecast_rows
 from test_pipeline import toy_tables
@@ -41,6 +44,7 @@ def make_prediction(compiled):
     """
     tables, parameters = toy_tables()
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata={},
         reference_parameters=parameters, kernel_nz=9, table_boost=2, fit_nz=9,
     )

@@ -76,7 +76,8 @@ def toy_configuration(tmp_path):
         "threads": 1,
         "source": {"path": None, "extension": "nz_source", "nbin": 2},
         "physics": {"tables": "physics.npz",
-                    "cosmology_mode": "fixed_tables", "kernel_nz": 101},
+                    "cosmology_mode": "fixed_tables", "kernel_nz": 101,
+                    "bispectrum_table": supplied_grid()},
         "parameters": {
             "omega_m": 0.3,
             "omega_b": 0.05,
@@ -151,7 +152,7 @@ def test_pchip_requires_declared_source_count_and_padding(toy_configuration, pad
         assert "PCHIP needs" in result.stderr
 
 
-@pytest.mark.parametrize("bispectrum_source", ["internal", "supplied"])
+@pytest.mark.parametrize("bispectrum_source", ["default", "supplied"])
 @pytest.mark.parametrize("variance_source", ["local", "shared"])
 def test_evaluate_and_fixed_covariance_fisher(toy_configuration, bispectrum_source,
                                             variance_source):
@@ -175,14 +176,11 @@ def test_evaluate_and_fixed_covariance_fisher(toy_configuration, bispectrum_sour
         assert metadata["compression"] == "none"
         assert metadata["covariance_is_fixed"] is True
         assert metadata["parameter_rank_status"] == "resolved"
-        if bispectrum_source == "supplied":
-            recorded = metadata["baseline_bispectrum"]
-            assert recorded == mean_metadata["baseline_bispectrum"]
-            assert recorded["native_input_sha256"]
-            assert recorded["input_sha256"]
-            assert recorded["controls"]["fit_nz"] == 33
-        else:
-            assert "baseline_bispectrum" not in metadata
+        recorded = metadata["baseline_bispectrum"]
+        assert recorded == mean_metadata["baseline_bispectrum"]
+        assert recorded["native_input_sha256"]
+        assert recorded["input_sha256"]
+        assert recorded["controls"]["fit_nz"] == 33
         np.testing.assert_array_equal(result_file["mean"], mean)
         assert result_file["derivatives_h2"].shape == (8, 2)
         assert metadata["stencil_offsets"] == [-2.0, -1.0, 0.0, 1.0, 2.0]
@@ -322,7 +320,7 @@ def test_analytic_covariance_requires_declared_physical_limits(
 
 
 @pytest.mark.parametrize("save_components", [False, True])
-@pytest.mark.parametrize("bispectrum_source", ["internal", "supplied"])
+@pytest.mark.parametrize("bispectrum_source", ["default", "supplied"])
 @pytest.mark.parametrize("variance_source", ["local", "shared"])
 def test_covariance_command_preserves_each_term(
     toy_configuration, save_components, bispectrum_source, variance_source,
@@ -487,3 +485,13 @@ def test_joint_cli_saves_conditional_information_and_checks_result_identity(
     path.write_text(json.dumps(config), encoding="utf-8")
     with pytest.raises(ValueError, match="different configuration"):
         workflow.load_result()
+
+
+def test_internal_bispectrum_selector_is_retired(toy_configuration):
+    """An explicit old selector fails before an extension or CAMB is loaded."""
+    path, config, unused = toy_configuration
+    config["physics"]["bispectrum_source"] = "internal"
+    path.write_text(json.dumps(config), encoding="utf-8")
+    result = run_driver(command="evaluate", config=path, validate=True)
+    assert result.returncode == 2
+    assert "bispectrum_source must be supplied" in result.stderr

@@ -57,7 +57,7 @@ doubling its resolution twice.
 | `kernel_boost` | Source-window redshift grid | Sampling |
 | `source_boost` | Independent uniform source-density grid, when the configuration declares one | Sampling |
 | `fit_z_boost` | Matter-fit redshift anchors | Sampling |
-| `bispectrum_boost` | Four coarse axes of the optional supplied absolute bispectrum | Sampling |
+| `bispectrum_boost` | Four coarse axes of the required supplied absolute bispectrum | Sampling |
 | `feedback_table_boost` | Paired response dense interpolation ratio | Sampling |
 | `feedback_z_boost` | BACCO response redshift intervals | Sampling |
 | `feedback_k_boost` | BACCO response log-wavenumber intervals | Sampling |
@@ -450,21 +450,22 @@ address accuracy relative to the physical model.
 engine for the fit's nonlinear radius, effective index and sigma8(z).
 The default `local` retains the reference calculation while the full joint
 mean and Fisher acceptance checks are completed. This selector is separate
-from `bispectrum_source`: either the internal C fit or supplied Python
-bispectrum can consume the same copied variance arrays.
+from the matter prescription: the Python theory producer consumes those
+copied variance arrays and always supplies the complete B table to C.
 
 The project prepares the `local` fit through the independent Python
-`ReferenceVariance` calculation and passes its owned arrays to C. Its
+`ReferenceVariance` calculation and passes its owned arrays to the theory producer. Its
 finite log-k integration, radius solve and scalar sigma8 normalization
 retain the old reference convention. The normalization multiplies only
 the three-point model's linear power; the ordinary two-point calculation
 receives the original supplied spectrum. The saved metadata records the
 multiplier and all inputs. Neither mode can silently normalize the other's
-spectrum. Internal native constructors require explicit fit arrays; the
-local C integral and normalization have been removed. Original-library
-comparisons use `reference_physics_model(factory=..., **inputs)` to prepare
-the independent Python reference before calling the real native adapter.
-An absolute supplied B bypasses the fit and trusts the supplied power.
+spectrum. Native constructors require the complete B table and never fit
+it from smoothing arrays. Original-library equation comparisons use the
+Python BiHalofit implementation against frozen pre-removal C and fastnc
+outputs. Projection comparisons use `reference_physics_model`, which now
+prepares an explicit, small Python B table; its coarse sampling is not a
+survey accuracy result.
 
 `physics.variance_growth: factorized` installs P(k,0)D(z)^2 and retains the
 existing three-point effective-growth approximation. `evolving` instead
@@ -522,16 +523,18 @@ reference does not require that compiled dependency.
 
 ## Background matter fraction in the native model
 
-The internal C fit consumes an exact `omega_m_z` table when supplied. Otherwise
-it derives the pressureless fraction from the supplied expansion history,
-`Omega_m0*(1+z)^3/[H(z)/H0]^2`. It no longer constructs a separate CPL background.
-CAMB preparation saves its exact CDM+baryon+massive-neutrino fraction by default,
-and the model provider forwards it for both internal and supplied bispectra.
-Massive-neutrino reference tables without that field must be regenerated.
+The theory producer and C halo covariance consume the provider's exact
+`omega_m_z`. For pressureless matter the provider may derive it from
+`Omega_m0*(1+z)^3/[H(z)/H0]^2`; massive neutrinos need their actual density
+evolution. CAMB records its CDM+baryon+massive-neutrino fraction by default.
+C never reconstructs another background or recomputes BiHalofit.
 
-The original-library reference adapter explicitly supplies the legacy fraction
-on its original fit anchors. This keeps the frozen variance comparisons focused
-on the smoothing calculation. Their earlier Fisher numbers do not establish
-convergence of the new expansion-derived background route. That route has
-analytic-identity, copied-ownership, stale-state and exact-CAMB component checks;
-full paired survey forecasts remain a separate validation task.
+The required B table has its own interpolation error. Default Python axes
+match the existing supplied example: 49 redshifts, 193 log-k nodes, 97
+log-ratio nodes and 33 shape nodes, with dense-reader boost one. This is
+30,271,857 values before any refinement, about 242 MB per double array.
+Its accuracy and preparation cost must be measured in the actual forecast;
+previous internal-C timings and Fisher results do not certify this route.
+The global and bispectrum boosts refine all four coarse axes. Memory grows
+with their product, so use individual sampling studies before large joint
+boosts. Notebook and survey-refreeze runs remain paused during consolidation.

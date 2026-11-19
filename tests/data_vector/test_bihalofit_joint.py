@@ -60,20 +60,13 @@ def test_supplied_full_mean_in_fixed_joint_covariance(compiled, tmp_path):
     np.testing.assert_array_equal(mask, np.ones(shape=4, dtype=np.int32))
     cholesky = np.linalg.cholesky(a=covariance)
     assert np.any(covariance[0, 1:] != 0.0)
-    internal = reference_physics_model(factory=compiled.PhysicsModel, **native)
-    internal_mean, unused_terms = compiled.production.physical_covariance(
-        model=internal, inputs=covariance_input)
-    # The archived vector used not-a-knot background/power preparation.
-    # Natural cubic preparation changes those values, so measure its
-    # displacement with the frozen full covariance. Keep the original
-    # vector and the adopted 0.01 mean-error budget as independent inputs.
-    interpolation_residual = np.linalg.solve(a=cholesky, b=internal_mean - data)
-    interpolation_error = float(interpolation_residual @ interpolation_residual)
-    assert interpolation_error <= 0.01
+    # The archived full vector is the independent reference. C no longer
+    # contains a second BiHalofit evaluation. Keep its original covariance
+    # and the stronger fine-grid 5e-5 budget below unchanged.
+    two_point_reference = None
     report = {
         "row_order": ["Map3", "xi+", "xi-", "Map2"],
         "scope": "controlled integration fixture, not survey data",
-        "interpolation_delta_chi2": interpolation_error,
         "inputs_npz_sha256": hashlib.sha256(
             input_path.read_bytes()).hexdigest(),
         "measurement_npz_sha256": hashlib.sha256(
@@ -102,7 +95,9 @@ def test_supplied_full_mean_in_fixed_joint_covariance(compiled, tmp_path):
         model = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum, **inputs)
         mean, unused_terms = compiled.production.physical_covariance(
             model=model, inputs=covariance_input)
-        np.testing.assert_array_equal(mean[1:], internal_mean[1:])
+        if two_point_reference is None:
+            two_point_reference = mean[1:].copy()
+        np.testing.assert_array_equal(mean[1:], two_point_reference)
         residual = np.linalg.solve(a=cholesky, b=mean - data)
         error = float(residual @ residual)
         errors.append(error)

@@ -287,7 +287,7 @@ def evaluate(model, grid, case, adapter):
             z=np.asarray([0.1, 0.6, 1.4]),
             mode=mode,
         )
-    for component in range(4):
+    for component in range(2):
         record[f"matter_{component}"] = getattr(model, "matter" + method_suffix)(
             sides=sides, redshifts=redshift, component=component, fb=ia["fb"]
         )

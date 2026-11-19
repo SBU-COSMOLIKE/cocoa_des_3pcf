@@ -291,8 +291,15 @@ def run(configuration, output):
                 sides=sides, redshifts=redshifts,
             )
         physical = config["physics"]
+        from des3pcf.bihalofit import bispectrum_axes, prepare_reference_bispectrum
+
+        model_tables, baseline = prepare_reference_bispectrum(
+            tables=tables, axes=bispectrum_axes(zmax=tables["z"][-1]),
+            fit_nz=physical["fit_nz"], table_boost=physical["table_boost"],
+            source_readers=physical["source_readers"],
+        )
         model = physics_model(
-            compiled=compiled, tables=tables, feedback=pair, accuracy=controls,
+            compiled=compiled, tables=model_tables, baseline=baseline, feedback=pair, accuracy=controls,
             kernel_nz=physical["kernel_nz"], table_boost=physical["table_boost"],
             fit_nz=physical["fit_nz"], source_readers=physical["source_readers"],
         )

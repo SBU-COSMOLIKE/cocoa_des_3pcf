@@ -7,7 +7,7 @@ comes from the original Python files; it checks implementation agreement.
 Separate resolution studies are still required for survey predictions.
 """
 
-from des3pcf.variance import reference_physics_model
+from des3pcf.variance import reference_physics_model, reference_bihalofit
 
 from decimal import Decimal, localcontext
 import json
@@ -78,10 +78,10 @@ def test_pinned_matter_and_all_alignment_components(physical_model):
     record = json.loads(REFERENCE.read_text())
     sides = np.asarray(record["sides"], dtype=np.float64)
     redshift = np.asarray(record["redshifts"], dtype=np.float64)
+    theory = reference_bihalofit(inputs=physical_inputs())
     for component in range(4):
-        actual = physical_model.matter(
-            sides=sides, redshifts=redshift, component=component
-        )
+        actual = theory.evaluate(k1=sides[:, 0], k2=sides[:, 1],
+                                 k3=sides[:, 2], z=redshift, component=component)
         expected = np.asarray(record["matter"][component])
         tolerance = 2.0e-10 if component == 1 else 2.0e-4
         np.testing.assert_allclose(actual, expected, rtol=tolerance, atol=0.0)
@@ -613,8 +613,10 @@ def test_bihalofit_redshift_preparation_refines(compiled):
     predictions = []
     for anchors in (9, 33, 129):
         inputs["fit_nz"] = anchors
-        model = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
-        predictions.append(model.matter(sides=sides, redshifts=redshift))
+        model = reference_bihalofit(inputs=inputs)
+        predictions.append(model.evaluate(
+            k1=sides[:, 0], k2=sides[:, 1], k3=sides[:, 2], z=redshift,
+        ))
     coarse_error = np.max(np.abs(predictions[0] / predictions[2] - 1.0))
     fine_error = np.max(np.abs(predictions[1] / predictions[2] - 1.0))
     assert fine_error < coarse_error / 3.0
@@ -644,7 +646,7 @@ def test_projected_grid_refines_against_direct_ordered_physics(physical_model):
     ])
     scale = np.maximum(np.abs(reference[0]), np.abs(reference.sum(axis=0)))
     errors = []
-    for count, nshape in ((17, 33), (33, 65)):
+    for count, nshape in ((33, 65), (65, 129)):
         settings = compact_grid_settings(reference_mode=0)
         settings.update(ell_min=1.0, ell_max=3000.0, nr=count, nu=count,
                         nv=count, np=count, nshape=nshape, table_boost=4,

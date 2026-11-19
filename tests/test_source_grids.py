@@ -6,6 +6,8 @@ smooth source reconstruction is an explicit model choice; its successful
 preparation does not certify the later IA-kernel interpolation or a forecast.
 """
 
+from test_pipeline import compact_bispectrum_grid
+
 from des3pcf.variance import reference_physics_model
 
 import importlib
@@ -18,7 +20,7 @@ import pytest
 from des3pcf.inputs import load_tables, reconstructed_sources, save_tables
 from des3pcf.inputs import shifted_sources, validate_tables
 from des3pcf.inputs import ARRAY_NAMES, SCALAR_NAMES
-from des3pcf.mean import physics_model
+from theory_inputs import prepared_physics_model as physics_model
 from des3pcf.pipeline import PhysicalProvider
 from des3pcf.accuracy import Accuracy
 from test_pipeline import toy_tables
@@ -192,6 +194,7 @@ def test_provider_reconstructs_originals_for_shift_and_resolution_sequences(comp
     """A/B/A source changes reuse power but refill the source-weighted model."""
     tables, parameters, metadata = source_tables(count=33)
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata=metadata,
         reference_parameters=parameters, kernel_nz=9, fit_nz=5, table_boost=1,
     )
@@ -226,6 +229,7 @@ def test_native_storage_does_not_change_legacy_shift_results(compiled):
     tables["source_native_z"] = tables["z"].copy()
     tables["source_native"] = tables["sources"].copy()
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata={},
         reference_parameters=parameters, kernel_nz=9, fit_nz=5, table_boost=1,
     )
@@ -243,6 +247,7 @@ def test_source_boost_refines_once_and_restores_without_recomputing_power(compil
     """Resolve source counts from one immutable baseline, including global boosts."""
     tables, parameters, metadata = source_tables(count=17)
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata=metadata,
         reference_parameters=parameters, kernel_nz=9, fit_nz=5, table_boost=1,
     )

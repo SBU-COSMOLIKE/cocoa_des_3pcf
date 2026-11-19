@@ -1,7 +1,7 @@
 """Prepare the BiHalofit matter bispectrum outside the C integration code.
 
 The fit is Takahashi et al., arXiv:1911.07886. Its coefficients and numerical
-conventions follow CosmoLike's physics_3pcf.c and Sunao Sugiyama's fastnc
+conventions follow the retired C matter fit and Sunao Sugiyama's fastnc
 TATT branch, revision 7b2336ce37a909bed51f07f32a2a4f096e71b6ce. Rafael Gomes's
 three-point analyses motivated the surrounding projection pipeline. This
 module supplies the dark-matter-only baseline; feedback remains a separate
@@ -45,6 +45,8 @@ from .inputs import uniform_segments
 # Retain the C literal for 1/(2 pi^2) while comparing numerical conventions.
 # It converts dimensional P into Delta^2=k^3 P/(2 pi^2).
 INVERSE_TWO_PI_SQUARED = 0.05066059182116888572
+# Historical source fingerprint of the C equation used for this port.
+# The current C projection library no longer implements that equation.
 C_SOURCE_SHA256 = (
     "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351"
 )
@@ -808,6 +810,56 @@ class BaselineBispectrum(PreparedGeometry):
     def record(self):
         """Return an independent JSON copy of the input and model provenance."""
         return json.loads(self.metadata_json)
+
+
+def prepare_reference_bispectrum(tables, axes, fit_nz=33, table_boost=8,
+                                 source_readers=False):
+    """Prepare a complete B table and its consistently normalized power.
+
+    This explicit theory operation retains the reference finite-integral
+    convention. Shared-variance callers instead pass their snapshot to
+    BiHalofitProducer.prepare. The returned table mapping is a new owner;
+    the input spectrum is never modified. Projection constructors do no fit.
+    """
+    if "omega_m_z" not in tables:
+        raise ValueError(
+            "Theory B requires provider omega_m_z; regenerate the physical "
+            "tables with include_bispectrum_background=True."
+        )
+    from .variance import ReferenceVariance
+
+    fit, multiplier, unused = ReferenceVariance().prepare(
+        tables=tables, fit_nz=fit_nz, table_boost=table_boost,
+        source_readers=source_readers,
+    )
+    prepared = dict(tables)
+    prepared["p_linear0"] = np.asarray(tables["p_linear0"]) * multiplier
+    producer = BiHalofitProducer(**axes)
+    baseline = producer.prepare(
+        tables=prepared, fit_nz=fit_nz, table_boost=table_boost,
+        source_readers=source_readers, variance=fit,
+    )
+    return prepared, baseline
+
+
+def bispectrum_axes(zmax, counts=(49, 193, 97, 33)):
+    """Return the existing supplied-theory example's uniform sampling axes.
+
+    The domain covers log(k_middle)=-18..12 and log(k_small/k_middle)
+    =-24..0, with the remaining triangle coordinate in [0,1]. Counts are
+    starting settings, not a survey accuracy claim. Refine them with the
+    bispectrum accuracy control and check the actual likelihood or forecast.
+    Unit tests may pass smaller explicit counts to exercise ownership only.
+    """
+    if len(counts) != 4:
+        raise ValueError("Bispectrum sampling requires four counts.")
+    bounds = ((0.0, zmax), (-18.0, 12.0), (-24.0, 0.0), (0.0, 1.0))
+    axes = {}
+    for name, endpoints, count in zip(("z", "logk", "logu", "v"), bounds, counts):
+        count = _integer(value=count, name=name + " count", minimum=4)
+        axes[name] = np.linspace(start=endpoints[0], stop=endpoints[1], num=count)
+    axes["boost"] = 1
+    return axes
 
 
 class BiHalofitProducer(PreparedGeometry):

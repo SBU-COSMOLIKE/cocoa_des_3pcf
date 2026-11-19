@@ -6,6 +6,8 @@ the IA split tests the declared fixed-quadratic-IA approximation. Smooth
 test tables are numerical references, not hydro simulations.
 """
 
+from test_pipeline import compact_bispectrum_grid
+
 from des3pcf.variance import reference_physics_model
 
 import numpy as np
@@ -136,9 +138,13 @@ def test_joint_feedback_cache_and_metadata(compiled):
     from des3pcf.survey import forecast_rows
 
     tables = physical_inputs()
+    from des3pcf.variance import reference_matter_fraction
+
+    tables["omega_m_z"] = reference_matter_fraction(tables=tables, redshift=tables["z"])
     parameters = {"omega_m": .3, "omega_b": .05, "h": .7, "ns": .965,
                   "sigma8": .8, "w0": -1., "wa": 0.}
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata={},
         reference_parameters=parameters, feedback=paired_input(),
     )

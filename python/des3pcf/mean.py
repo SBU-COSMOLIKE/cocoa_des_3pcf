@@ -100,7 +100,7 @@ def physics_model(
       kernel_nz = source-window interpolation node count used by fastnc's baseline.
       source_readers = explicit upstream spline readers for reference comparisons.
       table_boost = dense uniform-table refinement for production linear readers.
-      fit_nz = uniform redshift anchors for the prepared matter-fit coefficients.
+      fit_nz = legacy native keyword; fit sampling belongs to the theory producer.
       accuracy = immutable Accuracy controls or their keyword dictionary.
       adapter = production or notebook; both own the resolved input copies.
       feedback = optional immutable FeedbackPair with paired total-matter
@@ -108,14 +108,12 @@ def physics_model(
       pixel_window = optional W(ell) at consecutive integers starting at zero.
           Three-point angular observables use one W per leg. Raw projected
           bispectra and ordinary xi retain their declared unsmoothed convention.
-      baseline = optional immutable BaselineBispectrum prepared in Python.
-          None retains the existing internal BiHalofit calculation. A supplied
-          baseline also needs tables['omega_m_z'] from its background provider.
-      variance = optional copied core fit arrays z/rnl/neff/sigma8, prepared
-          from the same supplied linear power. This route trusts that power's
-          amplitude and does not renormalize it with the separate sigma8 scalar.
-          When absent, the independent Python reference prepares the fit and
-          applies the legacy scalar normalization before constructing C state.
+      baseline = required immutable BaselineBispectrum prepared by the theory.
+          It also needs tables['omega_m_z'] from the same background provider.
+          This factory does not regenerate B when C sampling changes; use the
+          physical provider to refine theory and projection together.
+      variance = retained compatibility keyword; smoothing inputs belong to
+          the theory producer and are not passed into the projection model.
     Returns:
       production.PhysicsModel, owning copies of its prepared physical state.
     Raises:
@@ -142,19 +140,11 @@ def physics_model(
     )
     if adapter not in ("production", "notebook"):
         raise ValueError("Physical adapter must be production or notebook.")
-    if variance is None:
-        # Keep the standalone helper's legacy reference convention in Python.
-        # The native model receives an explicit spectrum and fit arrays; it
-        # need not integrate or renormalize the same power a second time.
-        from .variance import ReferenceVariance
-
-        reference = ReferenceVariance()
-        variance, multiplier, unused_record = reference.prepare(
-            tables=checked, fit_nz=settings["fit_nz"],
-            table_boost=settings["table_boost"], source_readers=source_readers,
+    if baseline is None:
+        raise ValueError(
+            "A theory-supplied baseline bispectrum is required. Prepare it with "
+            "BiHalofitTheory or BiHalofitProducer before constructing the C model."
         )
-        checked = dict(checked)
-        checked["p_linear0"] = checked["p_linear0"] * multiplier
     arguments = {}
     for name in ARRAY_NAMES + SCALAR_NAMES:
         arguments[name] = checked[name]
@@ -163,8 +153,6 @@ def physics_model(
     if "omega_m_z" in checked:
         arguments["omega_m_z"] = checked["omega_m_z"]
     arguments["los_z"] = controls.los_nodes(baseline=checked["los_z"])
-    if variance is not None:
-        arguments["variance"] = dict(variance)
     if feedback is not None:
         arguments["feedback"] = dict(feedback.native)
         arguments["feedback"]["boost"] = controls.count(
@@ -210,9 +198,6 @@ def physics_model(
         return binding.PhysicsModelWithBispectrum(
             **arguments, **settings, source_readers=source_readers,
         )
-    return binding.PhysicsModel(
-        **arguments, **settings, source_readers=source_readers,
-    )
 
 
 class Map3Engine(PreparedGeometry):

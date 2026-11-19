@@ -7,7 +7,7 @@ discarding the two/three-point cross block would change that metric.
 
 The quadratures are deliberately small. This is an integration regression,
 not a DES accuracy or likelihood result. No survey data or mask is loaded:
-the internal-model mean is the synthetic data and every row is retained.
+the archived internal-model mean is the synthetic data and every row is retained.
 All inputs are written before the first calculation and then reloaded.
 
 Example (one command):
@@ -104,9 +104,18 @@ def run(options):
     covariance_input = restored["covariance"]
     query_sides = restored["query"]["sides"]
     query_z = restored["query"]["z"]
-    internal = reference_physics_model(factory=compiled.PhysicsModel, **native)
-    reference_mean, covariance_terms = compiled.production.physical_covariance(
-        model=internal, inputs=covariance_input)
+    # The internal C fit is retired. Retain its committed synthetic
+    # measurement and metric, checking every input before reusing them.
+    archive = Path(__file__).resolve().parents[1] / "data_vector/reference_bihalofit"
+    with np.load(archive / "frozen_inputs.npz", allow_pickle=False) as saved:
+        with np.load(input_path, allow_pickle=False) as current:
+            if set(saved.files) != set(current.files):
+                raise ValueError("The archived reference has a different input schema.")
+            for key in saved.files:
+                np.testing.assert_array_equal(current[key], saved[key])
+    with np.load(archive / "frozen_measurement.npz", allow_pickle=False) as saved:
+        reference_mean = saved["data"].copy()
+        covariance_terms = saved["terms"].copy()
     fixed_covariance = np.sum(covariance_terms, axis=0)
     measurement_path = options.output / "frozen_measurement.npz"
     mask = np.ones(shape=reference_mean.size, dtype=np.int32)

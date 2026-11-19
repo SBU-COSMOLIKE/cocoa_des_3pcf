@@ -319,7 +319,19 @@ def controlled_ia_response(power_mode=2, threads=1):
         raise ValueError("Use threads1..4 and power_mode0,1 or2.")
     compiled = importlib.import_module(name="cosmolike_des_3pcf_interface")
     compiled.set_omp_threads(nthreads=int(threads))
-    model = physics_model(compiled=compiled, tables=controlled_tables())
+    from des3pcf.bihalofit import bispectrum_axes, prepare_reference_bispectrum
+
+    tables = controlled_tables()
+    # The toy provider derives its pressureless fraction from its own H(z).
+    # These arrays teach IA responses; they are not a calibrated cosmology.
+    expansion = 2997.92458 * tables["dz_dchi"]
+    tables["omega_m_z"] = tables["omega_m"] * (1.0 + tables["z"])**3
+    tables["omega_m_z"] /= expansion**2
+    tables, baseline = prepare_reference_bispectrum(
+        tables=tables,
+        axes=bispectrum_axes(zmax=tables["z"][-1], counts=(9, 65, 33, 17)),
+    )
+    model = physics_model(compiled=compiled, tables=tables, baseline=baseline)
     ell = np.geomspace(start=30.0, stop=3000.0, num=12)
     sides = np.ascontiguousarray(np.repeat(ell[:, None], repeats=3, axis=1))
     triplets = np.array([[0, 0, 0], [1, 1, 1]], dtype=np.int32)

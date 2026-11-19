@@ -38,6 +38,7 @@ def toy_tables():
         "sources": sources,
         "los_z": np.array([0.1, 0.4, 0.8, 1.5]),
         "omega_m": 0.3,
+        "omega_m_z": 0.3 * (1.0 + z)**3 / (0.3 * (1.0 + z)**3 + 0.7),
         "omega_de": 0.7,
         "w0": -1.0,
         "wa": 0.0,
@@ -56,6 +57,13 @@ def toy_tables():
     return tables, parameters
 
 
+def compact_bispectrum_grid(zmax=2.0):
+    """Use explicit small theory axes for ownership tests, not DES accuracy."""
+    from des3pcf.bihalofit import bispectrum_axes
+
+    return bispectrum_axes(zmax=zmax, counts=(4, 6, 5, 4))
+
+
 @pytest.mark.parametrize("projection_mode", ("direct", "prepared"))
 def test_joint_physical_mean_preserves_rows_and_calibration(compiled, projection_mode):
     """Keep all xi rows and apply one calibration factor per shear leg.
@@ -68,6 +76,7 @@ def test_joint_physical_mean_preserves_rows_and_calibration(compiled, projection
     """
     tables, parameters = toy_tables()
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata={},
         reference_parameters=parameters, cosmology_mode="fixed_tables",
     )
@@ -174,6 +183,7 @@ def test_provider_rejects_mismatched_physical_provenance(compiled, name):
     recorded[name] += 0.01
     with pytest.raises(ValueError, match="table provenance"):
         PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
             compiled=compiled, reference_tables=tables,
             reference_metadata={"parameters": recorded},
             reference_parameters=parameters,

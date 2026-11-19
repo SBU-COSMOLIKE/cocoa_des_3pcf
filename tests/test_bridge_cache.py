@@ -76,7 +76,7 @@ def install_alignment(*, core, changed=None, linear_only=False):
 
 
 def install_state(*, compiled, supplied=False):
-    """This helper installs a controlled background and optional absolute B.
+    """This helper installs a controlled background and absolute B.
 
     A complete state prevents reuse from an earlier test from hiding a missing
     dependency. The constant supplied bispectrum tests ownership rather than
@@ -84,19 +84,18 @@ def install_state(*, compiled, supplied=False):
 
     Arguments:
         compiled = extension selected by the test session.
-        supplied = use a supplied constant B instead of the internal fit.
+        supplied = use a constant rather than varying analytic B table.
     Returns:
         The core binding after replacing its process-global input state.
     """
     inputs = physical_inputs()
     install_bridge(compiled=compiled, inputs=inputs, install_scalars=True)
     core = compiled.core
-    if supplied:
-        core.set_baseline_bispectrum(
-            baseline=baseline_input(varying=False),
-            omega_m_z=np.full(shape=inputs["z"].shape, fill_value=0.3),
-            sigma8=0.8,
-        )
+    core.set_baseline_bispectrum(
+        baseline=baseline_input(varying=not supplied),
+        omega_m_z=np.full(shape=inputs["z"].shape, fill_value=0.3),
+        sigma8=0.8,
+    )
     install_alignment(core=core)
     return core
 
@@ -300,6 +299,10 @@ def test_physical_scalars_still_rebuild(compiled, changed):
     else:
         settings[changed] += 0.01
         core.set_scalars(**settings)
+    core.set_baseline_bispectrum(
+        baseline=baseline_input(varying=True),
+        omega_m_z=np.full(physical_inputs()["z"].shape, 0.3), sigma8=0.8,
+    )
     assert core.model_from_core() is not first
     assert core.model_generation() == generation + 1
     np.testing.assert_array_equal(
@@ -312,6 +315,10 @@ def test_physical_scalars_still_rebuild(compiled, changed):
         )
     else:
         core.set_scalars(ns=0.965, sigma8=0.8, w0=-1.0, wa=0.0)
+    core.set_baseline_bispectrum(
+        baseline=baseline_input(varying=True),
+        omega_m_z=np.full(physical_inputs()["z"].shape, 0.3), sigma8=0.8,
+    )
     restored = core.model_from_core()
     assert core.model_generation() == generation + 2
     np.testing.assert_array_equal(

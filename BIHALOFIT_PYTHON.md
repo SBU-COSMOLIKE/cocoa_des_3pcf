@@ -1,19 +1,27 @@
 # A supplied BiHalofit matter bispectrum
 
-The optional Python producer evaluates the same dark-matter-only BiHalofit
-fit as the existing C implementation and supplies its positive, full matter
-bispectrum as a table. The C code continues to perform the line-of-sight
-projection, intrinsic-alignment calculation, aperture integration and
-covariance calculation. The default remains the internal C fit. Selecting
-`physics.bispectrum_source: supplied` is an explicit change of the numerical
-route, with its own interpolation error to measure.
+The Python theory producer evaluates the dark-matter-only BiHalofit fit and
+always supplies its positive, full matter bispectrum as a table. C performs
+the line-of-sight projection, intrinsic alignment, aperture integration and
+covariance calculation. The internal C matter fit has been removed.
+`physics.bispectrum_source` therefore accepts only `supplied`. Existing
+configurations without a selector use that value; those without explicit
+axes use the supplied example's uniform sampling, with the background z
+endpoint belonging to their own project.
 
-This division gives a theory provider responsibility for the cosmological
-background. In particular, the new route receives the matter-density
-fraction `omega_m_z`; it does not reconstruct a radiation-free expansion
-history from `omega_m`, `w0` and `wa`. Changing that background treatment and
-changing the interpolation method are two separate scientific changes.
-Their effects must be measured separately.
+The provider owns the background and matter prescription. It supplies the
+matter-density fraction `omega_m_z` from the same cosmology as P, B, growth
+and distances. The C model requires B and this fraction; missing inputs are
+errors. Tree-level F2 and power calculations remain in C because TATT needs
+them. One-/three-halo fit diagnostics are available from Python BiHalofit,
+not from a full-B native projection model.
+
+The required table introduces a separate interpolation error and preparation
+cost. Earlier comparisons below record the retired C fit as a historical
+reference; their dates and numerical results are retained. They do not
+certify current full-forecast accuracy or timing. The regression tests now
+compare the Python equation with frozen pre-removal C outputs, and test C
+projection/state behavior with explicitly supplied tables.
 
 ## Acknowledgements and origin
 
@@ -440,7 +448,7 @@ accuracy.
 The optional [YAML example](configs/des_y3_supplied_bihalofit.yaml) uses the
 49/193/97/33 counts tested here. Its absolute data chi-squared shift is below
 0.2 at this fiducial point. There has been no Fisher-derivative convergence
-test for this new baseline table and no default switch. Parameter-space
+test for this baseline table. At the time of that comparison no default switch was made. Parameter-space
 checks and further refinement are required before interpreting forecasts
 with these particular counts. The fixed NLA covariance and the declared
 source and finite-triangle assumptions also remain part of that forecast.

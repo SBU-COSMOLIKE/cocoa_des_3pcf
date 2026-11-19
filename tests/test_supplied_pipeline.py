@@ -79,13 +79,12 @@ def test_supplied_background_survives_physical_archive(tmp_path):
     np.testing.assert_array_equal(loaded["omega_m_z"], tables["omega_m_z"])
 
 
-def test_omitted_selector_preserves_internal_values(compiled):
-    """An unused density array and an explicit internal selector move no bits."""
+def test_omitted_selector_uses_supplied_theory(compiled):
+    """Default and explicit supplied selectors produce the same owned arrays."""
     arguments = provider_arguments(compiled=compiled)
-    arguments.pop("bispectrum_table")
     arguments.pop("bispectrum_source")
     implicit = PhysicalProvider(**arguments)
-    arguments["bispectrum_source"] = "internal"
+    arguments["bispectrum_source"] = "supplied"
     explicit = PhysicalProvider(**arguments)
     parameters = arguments["reference_parameters"]
     first, _, _ = implicit.get(parameters=parameters)
@@ -96,8 +95,8 @@ def test_omitted_selector_preserves_internal_values(compiled):
         first.matter(sides=sides, redshifts=redshifts),
         second.matter(sides=sides, redshifts=redshifts),
     )
-    assert implicit._active_baseline is None
-    assert explicit._active_baseline is None
+    assert implicit._active_baseline is not None
+    assert explicit._active_baseline is not None
 
 
 def test_missing_density_fraction_is_refused_before_model(compiled):

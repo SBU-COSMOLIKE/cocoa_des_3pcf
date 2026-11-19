@@ -8,6 +8,9 @@ with 80 decimal digits from each route's actual power values and propagate
 the measured power difference through that same physical equation.
 """
 
+from test_bihalofit_python import retired_matter
+
+
 from des3pcf.variance import reference_physics_model
 
 from decimal import Decimal, localcontext
@@ -131,8 +134,8 @@ def test_nonzero_gap_squeezed_conditioning(compiled, tmp_path, source_readers):
         actual = python.evaluate(k1=sides[:, 0], k2=sides[:, 1],
                                  k3=sides[:, 2], z=redshift,
                                  component=component)
-        expected = reference.matter(sides=sides, redshifts=redshift,
-                                    component=component)
+        expected = retired_matter(case=f"squeezed_{int(source_readers)}",
+                                   component=component)
         assert np.all(np.isfinite(actual))
         assert np.all(np.isfinite(expected))
         if component == 0:

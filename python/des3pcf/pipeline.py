@@ -88,8 +88,7 @@ class PhysicalProvider:
       pixel_window = optional scalar W(ell), sampled at integers from zero.
           Owned and fixed for this provider; changing it needs a new provider.
           Only three-point angular observables are smoothed, not ordinary xi.
-      bispectrum_source = 'internal' retains C BiHalofit, the default;
-          'supplied' prepares the baseline matter bispectrum in Python.
+      bispectrum_source = 'supplied'; the Python theory producer always owns B.
       bispectrum_table = explicit uniform z/logk/logu/v axes and an optional
           dense-reader boost, required only for the supplied route. logk is
           the natural logarithm of the middle triangle side in h/Mpc.
@@ -112,7 +111,7 @@ class PhysicalProvider:
         accuracy=None, kmax_boltzmann=5.0, extrap_kmax=None,
         source_nz=None, source_interpolation=None, source_padding=None,
         feedback=None, pixel_window=None,
-        bispectrum_source="internal", bispectrum_table=None,
+        bispectrum_source="supplied", bispectrum_table=None,
         variance_source="local", variance_growth="factorized",
         camb_accuracy_boost=1.0, camb_k_per_logint=0,
     ):
@@ -127,8 +126,8 @@ class PhysicalProvider:
         """
         if cosmology_mode not in ("fixed_tables", "camb"):
             raise ValueError("Cosmology mode must be fixed_tables or camb.")
-        if bispectrum_source not in ("internal", "supplied"):
-            raise ValueError("bispectrum_source must be internal or supplied.")
+        if bispectrum_source != "supplied":
+            raise ValueError("bispectrum_source must be supplied; C BiHalofit is removed.")
         if variance_source not in ("local", "shared"):
             raise ValueError("variance_source must be local or shared.")
         if variance_growth not in ("factorized", "evolving"):
@@ -140,24 +139,19 @@ class PhysicalProvider:
         self._variance_engine = None
         self._reference_variance_engine = None
         self._active_variance = None
-        if bispectrum_source == "internal" and bispectrum_table is not None:
-            raise ValueError(
-                "bispectrum_table requires bispectrum_source='supplied'; "
-                "remove the unused table settings or select that route."
-            )
-        if bispectrum_source == "supplied":
-            from .bihalofit import BiHalofitProducer
+        from .bihalofit import BiHalofitProducer, bispectrum_axes
 
-            if not isinstance(bispectrum_table, dict):
-                raise ValueError("The supplied route requires a bispectrum_table dictionary.")
-            required_axes = {"z", "logk", "logu", "v"}
-            if (not required_axes.issubset(bispectrum_table)
-                    or set(bispectrum_table) - required_axes - {"boost"}):
-                raise ValueError(
-                    "bispectrum_table requires z, logk, logu, v and only optional boost."
-                )
-            # Constructor checks the axes before a cosmology or model changes.
-            BiHalofitProducer(**bispectrum_table)
+        if bispectrum_table is None:
+            bispectrum_table = bispectrum_axes(zmax=reference_tables["z"][-1])
+        if not isinstance(bispectrum_table, dict):
+            raise ValueError("The supplied route requires a bispectrum_table dictionary.")
+        required_axes = {"z", "logk", "logu", "v"}
+        if (not required_axes.issubset(bispectrum_table)
+                or set(bispectrum_table) - required_axes - {"boost"}):
+            raise ValueError(
+                "bispectrum_table requires z, logk, logu, v and only optional boost."
+            )
+        BiHalofitProducer(**bispectrum_table)
         self.bispectrum_source = bispectrum_source
         self.bispectrum_table = immutable_copy(value=bispectrum_table)
         self._baseline_producer = None
@@ -173,7 +167,7 @@ class PhysicalProvider:
 
             self.pixel_window = immutable_copy(value=checked_window(values=pixel_window))
         self.base = immutable_copy(value=validate_tables(tables=reference_tables))
-        if bispectrum_source == "supplied" and "omega_m_z" not in self.base:
+        if "omega_m_z" not in self.base:
             raise ValueError(
                 "The supplied baseline requires provider omega_m_z; regenerate "
                 "the reference tables with include_bispectrum_background=True."
@@ -494,10 +488,8 @@ class PhysicalProvider:
         valid when the provider replaces its latest model.
 
         Returns:
-          an immutable BaselineBispectrum, or None for the internal route.
+          an immutable BaselineBispectrum prepared by the theory producer.
         """
-        if self.bispectrum_source == "internal":
-            return None
         from .bihalofit import BiHalofitProducer
 
         controls = accuracy_settings(value=self.accuracy)

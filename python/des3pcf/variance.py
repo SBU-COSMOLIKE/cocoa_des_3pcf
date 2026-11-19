@@ -38,52 +38,87 @@ def reference_matter_fraction(tables, redshift):
     return total * omega / (omega + vacuum * scale * dark)
 
 
-def reference_physics_model(factory, **inputs):
-    """Construct a native model using the explicit upstream reference convention.
+def reference_bihalofit(inputs):
+    """Return the exact Python matter fit for upstream equation comparisons.
 
-    This adapter is for original-library comparisons and controlled tests.
-    Production providers select their variance engine explicitly. The factory
-    argument is the real production or notebook constructor; no compiled
-    function is replaced. A supplied variance mapping already declares its
-    power amplitude, so that route passes through without normalization.
+    This function does not construct a projection model or interpolate a
+    four-dimensional B table. Tests of the original fit decomposition belong
+    here; native projections receive only its complete bispectrum.
     """
-    prepared = dict(inputs)
-    if inputs.get("variance") is not None:
-        prepared["variance"] = dict(inputs["variance"])
-        if inputs.get("baseline") is None and "omega_m_z" not in inputs:
-            axis = inputs["variance"]["z"]
-            prepared["omega_m_redshift"] = axis
-            prepared["omega_m_z"] = reference_matter_fraction(
-                tables=inputs, redshift=axis,
+    from .bihalofit import BiHalofit, fit_redshifts
+
+    arguments = {}
+    for name in ("k", "p_linear0", "z", "growth", "ns", "sigma8"):
+        arguments[name] = inputs[name]
+    for name in ("fit_nz", "table_boost", "source_readers", "variance"):
+        if name in inputs:
+            arguments[name] = inputs[name]
+    axis = inputs.get("omega_m_redshift", inputs["z"])
+    if "omega_m_z" in inputs:
+        matter = inputs["omega_m_z"]
+    else:
+        axis = fit_redshifts(zmax=inputs["z"][-1],
+                             fit_nz=inputs.get("fit_nz", 33),
+                             source_readers=inputs.get("source_readers", False))
+        matter = reference_matter_fraction(tables=inputs, redshift=axis)
+    return BiHalofit(**arguments, omega_m_redshift=axis, omega_m_z=matter)
+
+
+def reference_physics_model(factory, **inputs):
+    """Construct a comparison projection from an explicit Python theory table.
+
+    This adapter retains the upstream power normalization in Python. Its
+    small B grid tests projection/state machinery, not survey convergence.
+    Equation tests use reference_bihalofit directly and frozen upstream
+    values; no native one-/three-halo decomposition is available.
+    """
+    from .bihalofit import BiHalofitProducer, bispectrum_axes
+
+    if "omega_de" in inputs:
+        if abs(inputs["omega_m"] + inputs["omega_de"] - 1.0) > 1.0e-8:
+            raise ValueError(
+                "flat geometry requires abs(omega_m + omega_de - 1) <= 1e-8"
             )
-        return factory(**prepared)
+    prepared = dict(inputs)
     source_readers = inputs.get("source_readers", False)
-    if inputs.get("baseline") is None:
+    if inputs.get("variance") is not None:
+        fit = dict(inputs["variance"])
+        multiplier = 1.0
+    elif inputs.get("baseline") is None:
         fit, multiplier, unused = ReferenceVariance().prepare(
             tables=inputs, fit_nz=inputs.get("fit_nz", 33),
             table_boost=inputs.get("table_boost", 8),
             source_readers=source_readers,
         )
-        prepared["variance"] = dict(fit)
+    else:
+        from .bihalofit import _Curve, reference_smoothed_variance
+
+        curve = _Curve(x=np.log(inputs["k"]), y=np.log(inputs["p_linear0"]),
+                       natural=not source_readers)
+        value = reference_smoothed_variance(
+            linear=curve, radius=np.asarray(8.0), growth_squared=1.0,
+            window=0, logk_min=np.log(1.0e-3), count=1000, tail=False,
+        )
+        multiplier = inputs["sigma8"]**2 / float(value)
+        fit = None
+    prepared["p_linear0"] = np.asarray(inputs["p_linear0"]) * multiplier
+    if inputs.get("baseline") is None:
         if "omega_m_z" not in inputs:
             prepared["omega_m_redshift"] = fit["z"]
             prepared["omega_m_z"] = reference_matter_fraction(
                 tables=inputs, redshift=fit["z"],
             )
-    else:
-        # A supplied absolute B needs no nonlinear radius or spectral fit.
-        # Retain only the old comparison's power normalization, using the
-        # same independent Python integral as the internal reference.
-        from .bihalofit import _Curve, reference_smoothed_variance
-
-        curve = _Curve(x=np.log(inputs["k"]), y=np.log(inputs["p_linear0"]),
-                       natural=not source_readers)
-        variance = reference_smoothed_variance(
-            linear=curve, radius=np.asarray(8.0), growth_squared=1.0,
-            window=0, logk_min=np.log(1.0e-3), count=1000, tail=False,
+        axes = bispectrum_axes(zmax=inputs["z"][-1], counts=(9, 65, 33, 17))
+        # Extreme squeezed stress tests reach below the example survey domain.
+        axes["logu"] = np.linspace(start=-40.0, stop=0.0, num=33)
+        producer = BiHalofitProducer(**axes)
+        baseline = producer.prepare(
+            tables=prepared, fit_nz=inputs.get("fit_nz", 33),
+            table_boost=inputs.get("table_boost", 8),
+            source_readers=source_readers, variance=fit,
         )
-        multiplier = inputs["sigma8"]**2 / float(variance)
-    prepared["p_linear0"] = np.asarray(inputs["p_linear0"]) * multiplier
+        prepared["baseline"] = dict(baseline.native)
+    prepared.pop("variance", None)
     return factory(**prepared)
 
 
@@ -92,8 +127,8 @@ class ReferenceVariance:
 
     This reference integrates the original finite log-k rules and rescales
     power to the separate sigma8 value. SharedVariance never applies that
-    rescaling. Keeping the reference in Python lets the C model consume
-    explicit fit arrays without invoking its local smoothing calculation.
+    rescaling. These fit arrays feed the Python theory producer; C receives
+    its complete bispectrum and performs no smoothing or BiHalofit fit.
     """
 
     def __init__(self):

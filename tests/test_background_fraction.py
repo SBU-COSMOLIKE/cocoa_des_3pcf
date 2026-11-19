@@ -15,7 +15,7 @@ import pytest
 
 from des3pcf.variance import ReferenceVariance
 from data_vector.test_physics_model import physical_inputs
-from test_supplied_baseline import install_bridge
+from test_supplied_baseline import install_bridge, baseline_input
 
 
 @pytest.mark.parametrize("source_readers", [False, True])
@@ -29,7 +29,12 @@ def test_expansion_history_sets_pressureless_fraction(compiled, source_readers, 
     inputs["dz_dchi"] = (1.0 + redshift) / 2997.92458
     fit, unused, record = ReferenceVariance().prepare(tables=inputs)
     binding = getattr(compiled, adapter)
-    model = binding.PhysicsModel(**inputs, variance=dict(fit))
+    # The provider applies the pressureless identity using its H(z) table.
+    fraction = inputs["omega_m"] * (1.0 + redshift)**3
+    fraction /= (2997.92458 * inputs["dz_dchi"])**2
+    model = binding.PhysicsModel(
+        **inputs, baseline=baseline_input(), omega_m_z=fraction,
+    )
     query = np.linspace(start=0.0, stop=2.0, num=57)
     expected = inputs["omega_m"] * (1.0 + query)
     np.testing.assert_allclose(
@@ -40,7 +45,9 @@ def test_expansion_history_sets_pressureless_fraction(compiled, source_readers, 
     # unused CPL scalars must not introduce a second expansion model.
     inputs["w0"] = -0.7
     inputs["wa"] = 0.4
-    other = binding.PhysicsModel(**inputs, variance=dict(fit))
+    other = binding.PhysicsModel(
+        **inputs, baseline=baseline_input(), omega_m_z=fraction,
+    )
     np.testing.assert_array_equal(
         x=model.background_matter_fraction(redshifts=query),
         y=other.background_matter_fraction(redshifts=query),
@@ -48,7 +55,7 @@ def test_expansion_history_sets_pressureless_fraction(compiled, source_readers, 
 
 
 @pytest.mark.parametrize("adapter", ["production", "notebook"])
-def test_exact_fraction_is_owned_and_changes_only_its_matter_coefficient(
+def test_exact_fraction_is_owned_without_refitting_supplied_b(
     compiled, adapter,
 ):
     """An explicit provider fraction overrides H(z), including on its own axis."""
@@ -58,13 +65,13 @@ def test_exact_fraction_is_owned_and_changes_only_its_matter_coefficient(
     fraction = 0.3 + 0.07 * axis
     binding = getattr(compiled, adapter)
     first = binding.PhysicsModel(
-        **inputs, variance=dict(fit), omega_m_z=fraction,
+        **inputs, baseline=baseline_input(), omega_m_z=fraction,
         omega_m_redshift=axis,
     )
     saved = fraction.copy()
     fraction += 0.2
     second = binding.PhysicsModel(
-        **inputs, variance=dict(fit), omega_m_z=fraction,
+        **inputs, baseline=baseline_input(), omega_m_z=fraction,
         omega_m_redshift=axis,
     )
     np.testing.assert_allclose(
@@ -73,13 +80,15 @@ def test_exact_fraction_is_owned_and_changes_only_its_matter_coefficient(
     )
     sides = np.asarray([[0.03, 0.04, 0.05], [0.1, 0.2, 0.25]])
     query = np.asarray([0.2, 1.0])
-    for component in (1, 2):
+    for component in (0, 1):
         np.testing.assert_array_equal(
             x=first.matter(sides=sides, redshifts=query, component=component),
             y=second.matter(sides=sides, redshifts=query, component=component),
         )
-    assert np.any(first.matter(sides=sides, redshifts=query, component=3)
-                  != second.matter(sides=sides, redshifts=query, component=3))
+    # The background affects covariance's collapse threshold. The supplied
+    # B is an independent owned input and is not refitted after this change.
+    assert np.any(first.background_matter_fraction(redshifts=query)
+                  != second.background_matter_fraction(redshifts=query))
     parameters = {"a1": 0.4, "a2": 0.7, "bta": 0.3}
     np.testing.assert_array_equal(
         x=first.ia(sides=sides, redshifts=query, parameters=parameters),
@@ -93,23 +102,21 @@ def test_bridge_fraction_replacement_clear_and_old_owner(compiled):
     install_bridge(compiled=compiled, inputs=inputs, install_scalars=True)
     core = compiled.core
     first_values = 0.3 + 0.07 * inputs["z"]
-    core.set_matter_fraction(omega_m_z=first_values)
+    core.set_baseline_bispectrum(baseline=baseline_input(), sigma8=0.8, omega_m_z=first_values)
     first = core.model_from_core()
     first_result = first.background_matter_fraction(redshifts=inputs["z"])
-    core.set_matter_fraction(omega_m_z=first_values.copy())
+    core.set_baseline_bispectrum(baseline=baseline_input(), sigma8=0.8, omega_m_z=first_values.copy())
     assert core.model_from_core() is first
-    core.set_matter_fraction(omega_m_z=first_values + 0.2)
+    core.set_baseline_bispectrum(baseline=baseline_input(), sigma8=0.8, omega_m_z=first_values + 0.2)
     second = core.model_from_core()
     assert second is not first
-    core.set_matter_fraction(omega_m_z=first_values)
+    core.set_baseline_bispectrum(baseline=baseline_input(), sigma8=0.8, omega_m_z=first_values)
     restored = core.model_from_core()
     np.testing.assert_array_equal(
         x=restored.background_matter_fraction(redshifts=inputs["z"]),
         y=first_result,
     )
-    core.set_matter_fraction()
-    derived = core.model_from_core()
-    assert derived is not restored
+    core.set_baseline_bispectrum(baseline=None)
     np.testing.assert_array_equal(
         x=first.background_matter_fraction(redshifts=inputs["z"]),
         y=first_result,
@@ -133,7 +140,7 @@ import sys
 import numpy as np
 import cosmolike_des_3pcf_interface as compiled
 from test_physics_model import physical_inputs
-from test_supplied_baseline import install_bridge
+from test_supplied_baseline import install_bridge, baseline_input
 from des3pcf.variance import ReferenceVariance
 inputs = physical_inputs()
 case = sys.argv[1]
@@ -141,7 +148,7 @@ if case in ("stale", "massive"):
     install_bridge(compiled=compiled, inputs=inputs, install_scalars=True)
     core = compiled.core
     if case == "stale":
-        core.set_matter_fraction(omega_m_z=np.full(inputs["z"].size, 0.3))
+        core.set_baseline_bispectrum(baseline=baseline_input(), sigma8=0.8, omega_m_z=np.full(inputs["z"].size, 0.3))
     core.set_cosmological_parameters(
         omega_matter=0.31, omega_baryon=0.05, hubble=70.0,
         omega_nu_h2=0.001 if case == "massive" else 0.0,
@@ -152,10 +159,12 @@ else:
     values = np.full(inputs["z"].size, 0.3)
     if case == "shape":
         values = values[:-1]
-        compiled.production.PhysicsModel(**inputs, variance=dict(fit), omega_m_z=values)
+        compiled.production.PhysicsModel(
+            **inputs, baseline=baseline_input(), omega_m_z=values,
+        )
     else:
         compiled.production.PhysicsModel(
-            **inputs, variance=dict(fit), omega_m_z=values,
+            **inputs, baseline=baseline_input(), omega_m_z=values,
             omega_m_redshift=inputs["z"] + 0.01,
         )
 '''
@@ -164,8 +173,8 @@ else:
         capture_output=True, text=True, check=False, timeout=30,
     )
     expected = {
-        "stale": "supplied Omega_m(z) is stale",
-        "massive": "massive neutrinos require provider Omega_m(z)",
+        "stale": "supplied matter bispectrum is stale",
+        "massive": "theory-supplied matter bispectrum",
         "shape": "Omega_m(z) must match its redshift axis",
         "axis": "Omega_m(z) must cover [0,zmax]",
     }

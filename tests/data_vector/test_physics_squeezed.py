@@ -7,7 +7,7 @@ arithmetic loses for a triangle with one side a billion times shorter.
 All inputs to the reference are the exact binary doubles supplied to C.
 """
 
-from des3pcf.variance import reference_physics_model
+from des3pcf.variance import reference_physics_model, reference_bihalofit
 
 from decimal import Decimal, localcontext
 import json
@@ -231,8 +231,9 @@ def test_squeezed_bihalofit_effective_power_sum(squeezed_model):
     expected = np.asarray(record["high_precision_bh3"], dtype=np.float64)
     ordinary = np.asarray(record["ordinary_source_bh3"], dtype=np.float64)
     assert np.max(np.abs(ordinary / expected - 1.0)) > 0.1
-    actual = squeezed_model.matter(
-        sides=sides, redshifts=redshift, component=3
+    theory = reference_bihalofit(inputs=physical_inputs())
+    actual = theory.evaluate(
+        k1=sides[:, 0], k2=sides[:, 1], k3=sides[:, 2], z=redshift, component=3,
     )
     np.testing.assert_allclose(actual, expected, rtol=2.0e-4, atol=0.0)
 

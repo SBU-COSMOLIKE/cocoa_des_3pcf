@@ -4,6 +4,8 @@ The controlled arrays only supply a schema-valid reference. Provider creation,
 configuration validation and rejected setting changes perform no prediction.
 """
 
+from test_pipeline import compact_bispectrum_grid
+
 from copy import deepcopy
 from pathlib import Path
 
@@ -33,6 +35,7 @@ def make_provider(kmax_boltzmann=5.0, extrap_kmax=1000.0, mode="camb",
         "extrap_kmax": 1000.0,
     }
     return PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=None, reference_tables=tables, reference_metadata=metadata,
         reference_parameters=parameters, cosmology_mode=mode,
         kmax_boltzmann=kmax_boltzmann, extrap_kmax=extrap_kmax,

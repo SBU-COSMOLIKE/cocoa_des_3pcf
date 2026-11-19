@@ -714,6 +714,14 @@ class ThreePointWorkload:
         # Resolve the flat control dictionary before freezing nested config
         # mappings. Accuracy itself is immutable and accepted by both engines.
         self._accuracy = accuracy_settings(value=config["accuracy"])
+        axes = driver.supplied_bispectrum_settings(physics=config["physics"])
+        for name in ("z", "logk", "logu", "v"):
+            original = axes[name]
+            count = self._accuracy.count(
+                baseline=len(original), stage="bispectrum_boost", endpoints=True,
+            )
+            axes[name] = np.linspace(start=original[0], stop=original[-1], num=count)
+        self._bispectrum_axes = immutable_copy(value=axes)
         self._config = immutable_copy(value=config)
         self._digest = digest
         self._compiled = compiled
@@ -753,8 +761,23 @@ class ThreePointWorkload:
                 "Tables were prepared for a different complete physical point."
             )
         settings = self._config["physics"]
+        from .bihalofit import prepare_reference_bispectrum
+
+        resolved = self._accuracy.model_settings(
+            kernel_nz=settings["kernel_nz"],
+            table_boost=settings.get("table_boost", 8),
+            fit_nz=settings.get("fit_nz", 33),
+        )
+        # Theory preparation is part of each recomputation, not a cached
+        # fiducial B reused across the changed physical timing points.
+        tables, baseline = prepare_reference_bispectrum(
+            tables=table_bundle["tables"],
+            axes=self._bispectrum_axes,
+            fit_nz=resolved["fit_nz"], table_boost=resolved["table_boost"],
+            source_readers=settings.get("source_readers", False),
+        )
         model = physics_model(
-            compiled=self._compiled, tables=table_bundle["tables"],
+            compiled=self._compiled, tables=tables, baseline=baseline,
             kernel_nz=settings["kernel_nz"],
             source_readers=settings.get("source_readers", False),
             table_boost=settings.get("table_boost", 8), fit_nz=settings.get("fit_nz", 33),

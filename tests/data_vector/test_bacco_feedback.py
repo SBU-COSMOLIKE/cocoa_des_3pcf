@@ -5,6 +5,8 @@ The small installed-network check verifies actual API ordering and native
 table ownership; its coarse grids are not a survey accuracy certificate.
 """
 
+from test_pipeline import compact_bispectrum_grid
+
 from itertools import permutations, product
 
 import numpy as np
@@ -123,7 +125,7 @@ def test_actual_bacco_native_and_cache_sequences(compiled):
     parameter point must recover the same table without mutating an older
     model still held by a notebook variable.
     """
-    from des3pcf.mean import physics_model
+    from theory_inputs import prepared_physics_model as physics_model
 
     tables, point, metadata = response_inputs()
     producer = BaccoFeedback(BaccoSettings(nz=4, nk=9, nu=5, nv=4, boost=1))
@@ -172,6 +174,7 @@ def test_joint_prediction_rejects_amplitude_and_rebuilds_bcm(compiled):
 
     tables, point, metadata = response_inputs()
     provider = PhysicalProvider(
+        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
         compiled=compiled, reference_tables=tables, reference_metadata=metadata,
         reference_parameters=point,
         feedback=BaccoFeedback(BaccoSettings(nz=4, nk=9, nu=5, nv=4, boost=1)),

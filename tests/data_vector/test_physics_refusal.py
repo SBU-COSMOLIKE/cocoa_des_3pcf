@@ -3,6 +3,7 @@
 from des3pcf.variance import reference_physics_model
 
 import argparse
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -20,7 +21,7 @@ def invalid_physics_input(case):
 
     compiled.set_omp_threads(nthreads=1)
     inputs = physical_inputs()
-    if case == "missing_variance":
+    if case == "missing_baseline":
         compiled.PhysicsModel(**inputs)
     if case == "curved":
         inputs["omega_de"] = 0.65
@@ -28,7 +29,7 @@ def invalid_physics_input(case):
     sides = np.asarray([[10.0, 15.0, 20.0]], dtype=np.float64)
     if case == "underflow":
         sides[0] = [np.nextafter(0.0, 1.0), 1.0e10, 1.0e10]
-        model.matter(sides=sides, redshifts=np.asarray([0.0]))
+        model.matter(sides=sides, redshifts=np.asarray([0.0]), component=1)
     elif case == "fractional":
         model.projected_notebook(
             sides=sides, bins=np.asarray([0.9, 1.1, 0.2])
@@ -51,7 +52,7 @@ def invalid_physics_input(case):
 @pytest.mark.parametrize(
     "case, expected",
     [
-        ("missing_variance", "internal BiHalofit requires supplied variance arrays"),
+        ("missing_baseline", "theory-supplied matter bispectrum is required"),
         (
             "curved",
             "flat geometry requires abs(omega_m + omega_de - 1) <= 1e-8",
@@ -65,6 +66,10 @@ def invalid_physics_input(case):
 )
 def test_invalid_physics_is_refused(case, expected):
     """Require the intended C diagnostic, not an import or loader failure."""
+    if case in ("missing_baseline", "curved"):
+        with pytest.raises(ValueError, match=re.escape(expected)):
+            invalid_physics_input(case=case)
+        return
     result = subprocess.run(
         args=[sys.executable, "-B", str(Path(__file__)), "--case", case],
         capture_output=True,

@@ -536,8 +536,15 @@ def run_worker(job_path):
         tables["los_z"] = np.linspace(
             start=lower, stop=upper, num=settings["counts"]["nlos"],
         )
+        from des3pcf.bihalofit import bispectrum_axes, prepare_reference_bispectrum
+
+        model_tables, baseline = prepare_reference_bispectrum(
+            tables=tables, axes=bispectrum_axes(zmax=tables["z"][-1]),
+            fit_nz=settings["fit_nz"], table_boost=settings["table_boost"],
+            source_readers=settings["source_readers"],
+        )
         model = physics_model(
-            compiled=compiled, tables=tables, kernel_nz=settings["kernel_nz"],
+            compiled=compiled, tables=model_tables, baseline=baseline, kernel_nz=settings["kernel_nz"],
             table_boost=settings["table_boost"], fit_nz=settings["fit_nz"],
             source_readers=settings["source_readers"],
         )

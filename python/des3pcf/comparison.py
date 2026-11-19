@@ -8,7 +8,7 @@ implied by these finite-operator checks. All physical arrays use radians
 and the conventions named in each result.
 """
 
-from des3pcf.variance import reference_physics_model
+from des3pcf.variance import reference_physics_model, reference_bihalofit
 
 import argparse
 import hashlib
@@ -561,7 +561,7 @@ def _frozen_physics(settings, compiled):
     sources = np.empty(shape=(2, z.size), dtype=np.float64)
     sources[0] = z**2 * np.exp(-(z / 0.6)**1.5)
     sources[1] = z**2 * np.exp(-(z / 0.95)**1.5)
-    model = reference_physics_model(factory=compiled.production.PhysicsModel,
+    inputs = dict(
         k=k, p_linear0=linear, z=z,
         p_nonlinear=nonlinear0[None, :] / (1 + z[:, None])**2.4,
         chi=3000 * z / (1 + 0.35 * z),
@@ -572,14 +572,17 @@ def _frozen_physics(settings, compiled):
         los_z=np.linspace(start=0.005, stop=2.0, num=25),
         kernel_nz=101, source_readers=True, table_boost=8,
     )
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **inputs)
+    theory = reference_bihalofit(inputs=inputs)
     filename = PROJECT / "tests/data_vector/reference_physics_fastnc.json"
     record = json.loads(filename.read_text())
     sides = np.asarray(record["sides"], dtype=np.float64)
     redshift = np.asarray(record["redshifts"], dtype=np.float64)
     matter = []
     for component in range(4):
-        matter.append(model.matter(
-            sides=sides, redshifts=redshift, component=component,
+        matter.append(theory.evaluate(
+            k1=sides[:, 0], k2=sides[:, 1], k3=sides[:, 2], z=redshift,
+            component=component,
         ))
     matter = np.asarray(matter)
     reference = np.asarray(record["matter"])
@@ -588,7 +591,7 @@ def _frozen_physics(settings, compiled):
         ported=matter, x=np.arange(sides.shape[0]),
         plot_reference=reference, plot_ported=matter,
         labels=["total", "tree", "one halo", "three halo"], frozen=True,
-        note=("Stored source outputs, not a live original-code run. The "
+        note=("Python theory versus stored source outputs; no live original-code run. The "
               "source nonlinear-radius root permits the established 2e-4 "
               "matter comparison tolerance; the tree has a tighter test."),
     )]

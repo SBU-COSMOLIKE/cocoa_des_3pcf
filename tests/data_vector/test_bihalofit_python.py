@@ -77,6 +77,14 @@ def make_producer(block_size=65536, boost=2):
         block_size=block_size, boost=boost)
 
 
+def retired_matter(case, component):
+    """Read the independent pre-removal C result and its recorded provenance."""
+    path = Path(__file__).with_name("reference_retired_c_bihalofit.json")
+    archive = json.loads(path.read_text())
+    assert archive["core_commit"] == "ef64fb1"
+    return np.asarray(archive["cases"][case]["matter"][component])
+
+
 def evaluate(model, sides, redshift, component=0):
     """Map a [n,3] side array to the explicit broadcast query arguments."""
     return model.evaluate(k1=sides[:, 0], k2=sides[:, 1], k3=sides[:, 2],
@@ -97,6 +105,10 @@ def test_native_equation_with_pinned_inputs(compiled, tmp_path,
     native, supplied = comparison_inputs(source_readers=source_readers,
                                          fit_nz=fit_nz)
     native["table_boost"] = table_boost
+    archive = json.loads(Path(__file__).with_name(
+        "reference_retired_c_bihalofit.json").read_text())
+    key = f"equation_{int(source_readers)}_{fit_nz}_{table_boost}"
+    assert input_hashes(arrays=native, settings={}) == archive["cases"][key]["inputs"]
     sides, redshift = query_triangles()
     arrays = dict(native)
     arrays.update(supplied)
@@ -117,7 +129,6 @@ def test_native_equation_with_pinned_inputs(compiled, tmp_path,
         redshift = saved["query_redshift"].copy()
     model = BiHalofit(**supplied, fit_nz=fit_nz, table_boost=table_boost,
                       source_readers=source_readers)
-    reference = reference_physics_model(factory=compiled.PhysicsModel, **native)
     report = {
         "inputs_npz_sha256": hashlib.sha256(
             input_path.read_bytes()).hexdigest(),
@@ -129,8 +140,10 @@ def test_native_equation_with_pinned_inputs(compiled, tmp_path,
     for component in range(4):
         actual = evaluate(model=model, sides=sides, redshift=redshift,
                           component=component)
-        expected = reference.matter(sides=sides, redshifts=redshift,
-                                    component=component)
+        expected = retired_matter(
+            case=f"equation_{int(source_readers)}_{fit_nz}_{table_boost}",
+            component=component,
+        )
         relative = float(np.max(np.abs(actual / expected - 1.0)))
         report["relative_errors"][str(component)] = relative
         np.testing.assert_allclose(actual, expected, rtol=2.0e-11, atol=0.0)
@@ -184,13 +197,12 @@ def test_shared_variance_python_and_c_equations(compiled, source_readers):
         variance[name] = snapshot[name]
     native["variance"] = variance
     model = BiHalofit(**supplied, variance=variance, source_readers=source_readers)
-    reference = reference_physics_model(factory=compiled.PhysicsModel, **native)
     sides, redshift = query_triangles()
     for component in range(4):
         actual = evaluate(model=model, sides=sides, redshift=redshift,
                           component=component)
-        expected = reference.matter(sides=sides, redshifts=redshift,
-                                    component=component)
+        expected = retired_matter(case=f"shared_{int(source_readers)}",
+                                   component=component)
         np.testing.assert_allclose(actual, expected, rtol=2.0e-11, atol=0.0)
 
 

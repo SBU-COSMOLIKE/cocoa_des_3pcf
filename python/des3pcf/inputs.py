@@ -564,7 +564,7 @@ def camb_tables(
       include_bispectrum_background = also save CAMB's Omega_m(z), defined
           by CDM, baryons and massive neutrinos relative to critical density.
           The supplied-bispectrum route requires this provider quantity;
-          the default internal route keeps its existing table schema.
+          the required bispectrum producer and halo covariance use this background.
       camb_accuracy_boost = CAMB integration accuracy, independent of the
           CosmoLike controls; default one preserves existing calculations.
       camb_k_per_logint = CAMB transfer sampling per log-k interval; default

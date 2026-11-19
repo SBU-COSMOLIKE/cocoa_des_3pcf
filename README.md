@@ -30,14 +30,13 @@ adapters, while this project owns the compiled-module registration and
 tests. The project does not treat any existing LSST Y1 file as an
 editable dependency.
 
-The compiled calculation predicts BiHalofit matter bispectra, TATT and
+The theory block supplies BiHalofit matter bispectra. C computes TATT and
 velocity-shear intrinsic-shape terms, angular shear correlations, and
 third-order aperture moments. It also constructs the analytic joint
 covariance that a configuration requests. Python prepares physical
-tables, reads survey files and forms Fisher derivatives. The optional
-[supplied-bispectrum route](BIHALOFIT_PYTHON.md) prepares BiHalofit in Python
-and passes its table to the C projection; the internal C fit remains the
-default. The joint vector keeps every two-point row by default;
+tables, reads survey files and forms Fisher derivatives. The required
+[theory bispectrum](BIHALOFIT_PYTHON.md) is prepared in Python and passed
+to C for projection. There is no internal C BiHalofit fallback. The joint vector keeps every two-point row by default;
 [optional fixed compression](COMPRESSION.md) applies the same matrix to
 data, predictions and both covariance axes.
 The

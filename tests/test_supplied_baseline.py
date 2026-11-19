@@ -21,7 +21,7 @@ import pytest
 from data_vector.test_physics_model import compact_grid_settings, physical_inputs
 
 
-def baseline_input(*, amplitude=7.0, boost=2, varying=True, clamp=0):
+def baseline_input(*, amplitude=7.0, boost=2, varying=True, clamp=0, zmax=2.0):
     """Return a fresh analytic ln B table in the native coordinate convention.
 
     Arguments:
@@ -33,7 +33,7 @@ def baseline_input(*, amplitude=7.0, boost=2, varying=True, clamp=0):
     Returns:
         Dictionary of owned arrays and integer interpolation controls.
     """
-    redshift = np.linspace(start=0.0, stop=2.0, num=4)
+    redshift = np.linspace(start=0.0, stop=zmax, num=4)
     logk = np.linspace(start=-16.0, stop=16.0, num=5)
     logu = np.linspace(start=-40.0, stop=0.0, num=6)
     shape = np.linspace(start=0.0, stop=1.0, num=4)
@@ -336,20 +336,20 @@ def test_bridge_replacement_clear_and_owned_lifetime(compiled):
     np.testing.assert_array_equal(
         x=restored.matter(sides=sides, redshifts=redshifts), y=expected
     )
-    core.set_scalars(ns=0.965, sigma8=0.8, w0=-1.0, wa=0.0)
     core.set_baseline_bispectrum(baseline=None)
-    ordinary = core.model_from_core()
-    core.set_baseline_bispectrum(baseline=None)
-    assert core.model_from_core() is ordinary
-    ordinary_values = ordinary.matter(sides=sides, redshifts=redshifts)
+    # Clearing removes the input; it never chooses a second matter model.
+    # Refusal is tested in a child below because native errors are fatal.
     core.initial_setup()
     np.testing.assert_array_equal(
         x=restored.matter(sides=sides, redshifts=redshifts), y=expected
     )
     install_bridge(compiled=compiled, inputs=inputs, install_scalars=True)
+    core.set_baseline_bispectrum(
+        baseline=first_table, omega_m_z=matter_fraction, sigma8=0.8,
+    )
     fresh = core.model_from_core()
     np.testing.assert_array_equal(
-        x=fresh.matter(sides=sides, redshifts=redshifts), y=ordinary_values
+        x=fresh.matter(sides=sides, redshifts=redshifts), y=expected
     )
     core.initial_setup()
 
@@ -436,6 +436,9 @@ def test_every_supplied_bridge_value_invalidates(compiled, field):
 @pytest.mark.parametrize("case", [
     "one_halo",
     "three_halo",
+    "missing_baseline",
+    "cleared_baseline",
+    "stale_baseline",
     "domain",
     "nonfinite",
     "background_size",
@@ -457,6 +460,9 @@ def test_supplied_refusals_in_fresh_process(compiled, case):
     )
     assert run.returncode == 1, run.stdout + run.stderr
     expected = {
+        "missing_baseline": "theory-supplied matter bispectrum",
+        "cleared_baseline": "theory-supplied matter bispectrum",
+        "stale_baseline": "supplied matter bispectrum is stale",
         "one_halo": "no fitted one-/three-halo",
         "three_halo": "no fitted one-/three-halo",
         "domain": "exceeds its declared table domain",
@@ -481,6 +487,24 @@ def refusal_child(*, case):
     import cosmolike_des_3pcf_interface as compiled
 
     compiled.set_omp_threads(nthreads=1)
+    if case in ("missing_baseline", "cleared_baseline", "stale_baseline"):
+        inputs = physical_inputs()
+        install_bridge(compiled=compiled, inputs=inputs, install_scalars=False)
+        if case != "missing_baseline":
+            compiled.core.set_baseline_bispectrum(
+                baseline=baseline_input(),
+                omega_m_z=np.full(inputs["z"].shape, 0.3), sigma8=0.8,
+            )
+            compiled.core.model_from_core()
+        if case == "cleared_baseline":
+            compiled.core.set_baseline_bispectrum(baseline=None)
+        if case == "stale_baseline":
+            compiled.core.set_cosmological_parameters(
+                omega_matter=0.31, omega_baryon=0.05, hubble=70.0,
+                omega_nu_h2=0.0,
+            )
+        compiled.core.model_from_core()
+        raise AssertionError("missing/stale B was accepted")
     baseline = baseline_input()
     if case == "nonfinite":
         baseline["log_bispectrum"][0] = np.nan

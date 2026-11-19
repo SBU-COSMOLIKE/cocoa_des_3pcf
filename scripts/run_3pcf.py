@@ -249,7 +249,7 @@ def load_configuration(path, command):
     )
     if physics["cosmology_mode"] not in ("fixed_tables", "camb"):
         raise ValueError("physics.cosmology_mode must be fixed_tables or camb.")
-    physics.setdefault("bispectrum_source", "internal")
+    physics.setdefault("bispectrum_source", "supplied")
     if physics.get("variance_source", "local") not in ("local", "shared"):
         raise ValueError("physics.variance_source must be local or shared.")
     if physics.get("variance_growth", "factorized") not in ("factorized", "evolving"):
@@ -769,24 +769,20 @@ def supplied_bispectrum_settings(physics):
     Arguments:
       physics = the configuration's physical-table and source choices.
     Returns:
-      an axis dictionary for PhysicalProvider, or None for internal BiHalofit.
+      an axis dictionary for the required Python matter-bispectrum producer.
     Raises:
       ValueError for an unknown source, missing axes or invalid uniform grids.
     """
-    source = physics.get("bispectrum_source", "internal")
-    if source not in ("internal", "supplied"):
-        raise ValueError("physics.bispectrum_source must be internal or supplied.")
-    if source == "internal":
-        if "bispectrum_table" in physics:
-            raise ValueError(
-                "physics.bispectrum_table requires bispectrum_source: supplied."
-            )
-        return None
+    source = physics.get("bispectrum_source", "supplied")
+    if source != "supplied":
+        raise ValueError("physics.bispectrum_source must be supplied; C fit removed.")
     if "bispectrum_table" not in physics:
-        raise ValueError(
-            "The supplied route needs physics.bispectrum_table with explicit "
-            "z, logk, logu and v grids."
-        )
+        if "z" not in physics:
+            # Fixed-table jobs resolve the endpoint from the loaded background.
+            return None
+        from des3pcf.bihalofit import bispectrum_axes
+
+        return bispectrum_axes(zmax=float(grid_values(settings=physics["z"])[-1]))
     table = physics["bispectrum_table"]
     checked_fields(
         mapping=table,
@@ -854,7 +850,7 @@ def provider_for_run(compiled, config, path):
         accuracy=config["accuracy"],
         feedback=feedback,
         pixel_window=pixel_window,
-        bispectrum_source=config["physics"].get("bispectrum_source", "internal"),
+        bispectrum_source=config["physics"].get("bispectrum_source", "supplied"),
         bispectrum_table=supplied_bispectrum_settings(physics=config["physics"]),
         variance_source=config["physics"].get("variance_source", "local"),
         variance_growth=config["physics"].get("variance_growth", "factorized"),
