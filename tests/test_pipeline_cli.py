@@ -59,6 +59,7 @@ def toy_configuration(tmp_path):
         "wa": 0.0,
         "ns": 0.965,
         "sigma8": 0.8,
+        "omega_m_z": 0.3 * (1 + redshift)**3 / (0.3 * (1 + redshift)**3 + 0.7),
     }
     save_tables(path=tmp_path / "physics.npz", tables=tables,
                 metadata={"producer": "controlled CLI test"})
@@ -150,21 +151,35 @@ def test_pchip_requires_declared_source_count_and_padding(toy_configuration, pad
         assert "PCHIP needs" in result.stderr
 
 
-def test_evaluate_and_fixed_covariance_fisher(toy_configuration):
+@pytest.mark.parametrize("bispectrum_source", ["internal", "supplied"])
+def test_evaluate_and_fixed_covariance_fisher(toy_configuration, bispectrum_source):
     """Keep all rows and check calibration derivatives against their algebra."""
     path, config, rows = toy_configuration
+    if bispectrum_source == "supplied":
+        config["physics"]["bispectrum_source"] = "supplied"
+        config["physics"]["bispectrum_table"] = supplied_grid()
+        path.write_text(json.dumps(config), encoding="utf-8")
     result = run_driver(command="evaluate", config=path)
     assert result.returncode == 0, result.stderr
     result = run_driver(command="fisher", config=path)
     assert result.returncode == 0, result.stderr
     with np.load(path.parent / "mean.npz", allow_pickle=False) as mean_file:
         mean = mean_file["mean"]
+        mean_metadata = json.loads(str(mean_file["metadata_json"].item()))
         np.testing.assert_array_equal(mean_file["row_labels"], rows.labels)
     with np.load(path.parent / "fisher.npz", allow_pickle=False) as result_file:
         metadata = json.loads(str(result_file["metadata_json"].item()))
         assert metadata["compression"] == "none"
         assert metadata["covariance_is_fixed"] is True
         assert metadata["parameter_rank_status"] == "resolved"
+        if bispectrum_source == "supplied":
+            recorded = metadata["baseline_bispectrum"]
+            assert recorded == mean_metadata["baseline_bispectrum"]
+            assert recorded["native_input_sha256"]
+            assert recorded["input_sha256"]
+            assert recorded["controls"]["fit_nz"] == 33
+        else:
+            assert "baseline_bispectrum" not in metadata
         np.testing.assert_array_equal(result_file["mean"], mean)
         assert result_file["derivatives_h2"].shape == (8, 2)
         assert metadata["stencil_offsets"] == [-2.0, -1.0, 0.0, 1.0, 2.0]
@@ -194,6 +209,22 @@ def test_evaluate_and_fixed_covariance_fisher(toy_configuration):
     again = run_driver(command="evaluate", config=path)
     assert again.returncode == 2
     assert "--overwrite" in again.stderr
+
+
+def supplied_grid():
+    """Return broad, coarse axes for dispatch and archive checks.
+
+    These counts keep the toy CLI calculation short; they do not establish
+    bispectrum interpolation accuracy. logk and logu contain logarithms
+    already, so their stored coordinates are spaced linearly.
+    """
+    return {
+        "z": {"lower": 0.0, "upper": 2.0, "count": 7},
+        "logk": {"lower": -12.0, "upper": 12.0, "count": 17},
+        "logu": {"lower": -30.0, "upper": 0.0, "count": 17},
+        "v": {"lower": 0.0, "upper": 1.0, "count": 7},
+        "boost": 1,
+    }
 
 
 def test_pme_keeps_joint_labels_and_saves_precision(toy_configuration):
@@ -281,9 +312,15 @@ def test_analytic_covariance_requires_declared_physical_limits(
 
 
 @pytest.mark.parametrize("save_components", [False, True])
-def test_covariance_command_preserves_each_term(toy_configuration, save_components):
+@pytest.mark.parametrize("bispectrum_source", ["internal", "supplied"])
+def test_covariance_command_preserves_each_term(
+    toy_configuration, save_components, bispectrum_source,
+):
     """The saved diagnostic choice leaves the same final physical covariance."""
     path, config, rows = toy_configuration
+    if bispectrum_source == "supplied":
+        config["physics"]["bispectrum_source"] = "supplied"
+        config["physics"]["bispectrum_table"] = supplied_grid()
     config["covariance"] = {
         "mode": "analytic",
         "save_components": save_components,
@@ -337,6 +374,11 @@ def test_covariance_command_preserves_each_term(toy_configuration, save_componen
         np.testing.assert_array_equal(archive["row_labels"], rows.labels)
         metadata = json.loads(str(archive["metadata_json"].item()))
         assert metadata["covariance_components_saved"] is save_components
+        input_files = metadata["prediction_identity"]["input_files"]
+        assert "physical_tables" in input_files
+        assert "joint_covariance" not in input_files
+        if bispectrum_source == "supplied":
+            assert metadata["baseline_bispectrum"]["native_input_sha256"]
         assert archive["covariance"].shape == (8, 8)
         assert archive["covariance_model_mean"].shape == (8,)
         if save_components:

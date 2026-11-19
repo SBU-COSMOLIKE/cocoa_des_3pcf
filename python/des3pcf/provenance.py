@@ -114,6 +114,7 @@ def implementation_identity(
 
 def prediction_identity(
     config, configuration_path, project, three_point_path, two_point_path=None,
+    covariance_output=False,
 ):
     """Bind a saved Fisher base to its physical files and implementation.
 
@@ -121,6 +122,10 @@ def prediction_identity(
     checks labeled data rows and covariance values. This identity supplies
     the missing exact-byte dependency check. None-valued input paths are
     omitted only when the configuration generates those rows directly.
+    covariance_output=True omits the covariance and sample-covariance files:
+    they are not inputs when constructing an analytic covariance. This
+    allows that command to write a previously absent destination while
+    still checking the physical tables, source curves and implementation.
     """
     origin = Path(configuration_path).resolve().parent
     paths = {
@@ -133,7 +138,9 @@ def prediction_identity(
         "pixel_window": config.get("pixel_window", {}).get("path"),
     }
     precision = config.get("fisher", {}).get("precision", {})
-    if precision.get("mode") == "pme":
+    if covariance_output:
+        del paths["joint_covariance"]
+    elif precision.get("mode") == "pme":
         paths["sample_covariance"] = precision["sample_covariance"]["path"]
     files = {}
     for name, value in paths.items():

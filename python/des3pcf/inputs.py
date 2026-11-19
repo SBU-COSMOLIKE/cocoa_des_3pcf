@@ -26,6 +26,9 @@ ARRAY_NAMES = (
 SCALAR_NAMES = ("omega_m", "omega_de", "w0", "wa", "ns", "sigma8")
 # Full redshift-dependent linear spectra feed the unchanged two-point core.
 OPTIONAL_ARRAY_NAMES = ("p_linear", "p_linear_cb", "p_linear_nu")
+# A supplied bispectrum carries its provider's background as well. The halo
+# covariance then reads Omega_m(z) without assuming a dark-energy formula in C.
+BACKGROUND_ARRAY_NAMES = ("omega_m_z",)
 # Native samples define a reconstruction; source_z defines its numerical
 # read/integration grid. Neither axis is a CAMB transfer-redshift request.
 SOURCE_ARRAY_NAMES = (
@@ -153,6 +156,15 @@ def validate_tables(tables):
                     or not np.all(np.isfinite(values))):
                 raise ValueError(f"Optional {name} must be positive finite [nz,nk].")
             result[name] = values
+    for name in BACKGROUND_ARRAY_NAMES:
+        if name in tables:
+            values = np.array(tables[name], dtype=np.float64, order="C", copy=True)
+            if (values.shape != z.shape or np.any(values <= 0.0)
+                    or not np.all(np.isfinite(values))):
+                raise ValueError(
+                    f"Optional {name} must be positive finite [nz] on the background z grid."
+                )
+            result[name] = values
     return result
 
 
@@ -176,7 +188,7 @@ def load_tables(path):
             tables[name] = archive[name]
         for name in SCALAR_NAMES:
             tables[name] = metadata[name]
-        for name in OPTIONAL_ARRAY_NAMES + SOURCE_ARRAY_NAMES:
+        for name in OPTIONAL_ARRAY_NAMES + SOURCE_ARRAY_NAMES + BACKGROUND_ARRAY_NAMES:
             if name in archive.files:
                 tables[name] = archive[name]
         validated = validate_tables(tables=tables)
@@ -212,7 +224,7 @@ def save_tables(path, tables, metadata, overwrite=False):
         arrays[name] = checked[name]
     for name in SCALAR_NAMES:
         record[name] = checked[name]
-    for name in OPTIONAL_ARRAY_NAMES + SOURCE_ARRAY_NAMES:
+    for name in OPTIONAL_ARRAY_NAMES + SOURCE_ARRAY_NAMES + BACKGROUND_ARRAY_NAMES:
         if name in checked:
             arrays[name] = checked[name]
     arrays["metadata_json"] = np.array(json.dumps(record, sort_keys=True))
@@ -456,6 +468,7 @@ def _camb_power_limits(k, h, kmax_boltzmann, extrap_kmax):
 def camb_tables(
     parameters, k, z, sources, los_z, halofit_version="takahashi",
     kmax_boltzmann=5.0, extrap_kmax=None, source_z=None,
+    include_bispectrum_background=False,
 ):
     """Calculate the physical tables with the installed CAMB library.
 
@@ -482,6 +495,10 @@ def camb_tables(
       kmax_boltzmann = largest solved transfer wavenumber in 1/Mpc; default 5.
       extrap_kmax = interpolation tail endpoint in 1/Mpc. None covers at least
           250/Mpc and 1.01 times the output table's physical endpoint.
+      include_bispectrum_background = also save CAMB's Omega_m(z), defined
+          by CDM, baryons and massive neutrinos relative to critical density.
+          The supplied-bispectrum route requires this provider quantity;
+          the default internal route keeps its existing table schema.
     Returns:
       validated physical tables and metadata recording CAMB and model choices.
     Raises:
@@ -492,6 +509,8 @@ def camb_tables(
     """
     import camb
 
+    if not isinstance(include_bispectrum_background, (bool, np.bool_)):
+        raise ValueError("include_bispectrum_background must be a Boolean.")
     required = ("omega_m", "omega_b", "h", "ns", "sigma8", "w0", "wa")
     for name in required:
         if name not in parameters or not np.isfinite(parameters[name]):
@@ -629,4 +648,14 @@ def camb_tables(
         "massive_neutrino_effective_growth": neutrino_mass > 0.0,
         "flat_background": True,
     }
+    if include_bispectrum_background:
+        # Read each density from this CAMB solution. In particular, the
+        # neutrino background is not replaced with a pressureless a^-3 law.
+        matter = results.get_Omega(var="cdm", z=z)
+        matter = matter + results.get_Omega(var="baryon", z=z)
+        matter = matter + results.get_Omega(var="nu", z=z)
+        tables["omega_m_z"] = np.asarray(matter, dtype=np.float64)
+        metadata["omega_m_z_definition"] = (
+            "CAMB Omega_cdm(z)+Omega_baryon(z)+Omega_nu_massive(z)"
+        )
     return validate_tables(tables=tables), metadata

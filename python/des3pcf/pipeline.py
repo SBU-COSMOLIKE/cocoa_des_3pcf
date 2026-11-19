@@ -88,6 +88,11 @@ class PhysicalProvider:
       pixel_window = optional scalar W(ell), sampled at integers from zero.
           Owned and fixed for this provider; changing it needs a new provider.
           Only three-point angular observables are smoothed, not ordinary xi.
+      bispectrum_source = 'internal' retains C BiHalofit, the default;
+          'supplied' prepares the baseline matter bispectrum in Python.
+      bispectrum_table = explicit uniform z/logk/logu/v axes and an optional
+          dense-reader boost, required only for the supplied route. logk is
+          the natural logarithm of the middle triangle side in h/Mpc.
     Side effects:
       Retains the latest cosmology table and source-weighted C model.
       CAMB runs only after a physical parameter changes in camb mode.
@@ -100,6 +105,7 @@ class PhysicalProvider:
         accuracy=None, kmax_boltzmann=5.0, extrap_kmax=None,
         source_nz=None, source_interpolation=None, source_padding=None,
         feedback=None, pixel_window=None,
+        bispectrum_source="internal", bispectrum_table=None,
     ):
         """Store the physical baseline and validate the requested producer mode.
 
@@ -112,6 +118,30 @@ class PhysicalProvider:
         """
         if cosmology_mode not in ("fixed_tables", "camb"):
             raise ValueError("Cosmology mode must be fixed_tables or camb.")
+        if bispectrum_source not in ("internal", "supplied"):
+            raise ValueError("bispectrum_source must be internal or supplied.")
+        if bispectrum_source == "internal" and bispectrum_table is not None:
+            raise ValueError(
+                "bispectrum_table requires bispectrum_source='supplied'; "
+                "remove the unused table settings or select that route."
+            )
+        if bispectrum_source == "supplied":
+            from .bihalofit import BiHalofitProducer
+
+            if not isinstance(bispectrum_table, dict):
+                raise ValueError("The supplied route requires a bispectrum_table dictionary.")
+            required_axes = {"z", "logk", "logu", "v"}
+            if (not required_axes.issubset(bispectrum_table)
+                    or set(bispectrum_table) - required_axes - {"boost"}):
+                raise ValueError(
+                    "bispectrum_table requires z, logk, logu, v and only optional boost."
+                )
+            # Constructor checks the axes before a cosmology or model changes.
+            BiHalofitProducer(**bispectrum_table)
+        self.bispectrum_source = bispectrum_source
+        self.bispectrum_table = immutable_copy(value=bispectrum_table)
+        self._baseline_producer = None
+        self._baseline_resolution = None
         self.compiled = compiled
         if feedback is not None and not isinstance(feedback, (FeedbackPair, BaccoFeedback)):
             raise ValueError("feedback must be a FeedbackPair, BaccoFeedback or None.")
@@ -123,6 +153,11 @@ class PhysicalProvider:
 
             self.pixel_window = immutable_copy(value=checked_window(values=pixel_window))
         self.base = immutable_copy(value=validate_tables(tables=reference_tables))
+        if bispectrum_source == "supplied" and "omega_m_z" not in self.base:
+            raise ValueError(
+                "The supplied baseline requires provider omega_m_z; regenerate "
+                "the reference tables with include_bispectrum_background=True."
+            )
         self.base_metadata = immutable_copy(value=reference_metadata)
         recorded_source = reference_metadata.get(
             "source_reconstruction", "linear_midpoint",
@@ -256,6 +291,7 @@ class PhysicalProvider:
         self.model = None
         self.model_tables = None
         self.model_metadata = None
+        self._active_baseline = None
         self._reference_locked = True
 
     def __setattr__(self, name, value):
@@ -271,6 +307,7 @@ class PhysicalProvider:
             "reference_producer_settings", "reference_producer_verified",
             "source_interpolation", "source_padding",
             "feedback", "pixel_window",
+            "bispectrum_source", "bispectrum_table",
         )
         if getattr(self, "_reference_locked", False) and name in reference_names:
             raise AttributeError(
@@ -342,6 +379,47 @@ class PhysicalProvider:
             self.source_nz, self.source_interpolation, self.source_padding,
         )
 
+    def supplied_baseline(self):
+        """Prepare a baseline table only when its physical inputs change.
+
+        The coarse axes refine with accuracy_boost*bispectrum_boost. The
+        dense-reader ratio is independent, so a global boost is not applied
+        twice to the same intervals. The producer hashes power, growth,
+        background and fit controls; source shifts and IA amplitudes do not
+        rebuild its cosmology-only table. Previously returned owners remain
+        valid when the provider replaces its latest model.
+
+        Returns:
+          an immutable BaselineBispectrum, or None for the internal route.
+        """
+        if self.bispectrum_source == "internal":
+            return None
+        from .bihalofit import BiHalofitProducer
+
+        controls = accuracy_settings(value=self.accuracy)
+        resolution = (controls.accuracy_boost, controls.bispectrum_boost)
+        if resolution != self._baseline_resolution:
+            axes = {}
+            for name in ("z", "logk", "logu", "v"):
+                original = self.bispectrum_table[name]
+                count = controls.count(
+                    baseline=len(original), stage="bispectrum_boost", endpoints=True,
+                )
+                axes[name] = np.linspace(
+                    start=original[0], stop=original[-1], num=count,
+                )
+            axes["boost"] = self.bispectrum_table.get("boost", 2)
+            self._baseline_producer = BiHalofitProducer(**axes)
+            self._baseline_resolution = resolution
+        settings = controls.model_settings(
+            kernel_nz=self.kernel_nz, table_boost=self.table_boost,
+            fit_nz=self.fit_nz,
+        )
+        return self._baseline_producer.prepare(
+            tables=self.cosmology_tables, fit_nz=settings["fit_nz"],
+            table_boost=settings["table_boost"], source_readers=self.source_readers,
+        )
+
     def get(self, parameters):
         """Return the model and exact input tables for this physical point.
 
@@ -391,6 +469,7 @@ class PhysicalProvider:
                     kmax_boltzmann=self.kmax_boltzmann,
                     extrap_kmax=self.extrap_kmax,
                     source_z=self.base.get("source_z"),
+                    include_bispectrum_background=self.bispectrum_source == "supplied",
                 )
             self.cosmology_tables = immutable_copy(value=tables)
             self.cosmology_metadata = immutable_copy(value=metadata)
@@ -414,6 +493,10 @@ class PhysicalProvider:
                 )
             tables = dict(self.cosmology_tables)
             metadata = dict(self.cosmology_metadata)
+            baseline = self.supplied_baseline()
+            if baseline is not None:
+                metadata["bispectrum_source"] = "supplied"
+                metadata["baseline_bispectrum"] = baseline.record()
             if active_feedback is not None:
                 # A plain JSON copy records the response of this point,
                 # rather than exposing the producer's next cached table.
@@ -450,11 +533,13 @@ class PhysicalProvider:
                 accuracy=self.accuracy,
                 feedback=active_feedback,
                 pixel_window=self.pixel_window,
+                baseline=baseline,
             )
             self.model_tables = immutable_copy(value=tables)
             self.model_metadata = immutable_copy(value=metadata)
             self.model_key = combined
             self._active_feedback = active_feedback
+            self._active_baseline = baseline
         return self.model, self.model_tables, self.model_metadata
 
 

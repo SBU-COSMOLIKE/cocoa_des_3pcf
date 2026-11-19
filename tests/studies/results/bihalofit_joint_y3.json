@@ -1,0 +1,857 @@
+{
+  "scope": "declared joint DES Y3 example; unchanged estimator assumptions",
+  "background_definition": "CAMB Omega_cdm(z)+Omega_baryon(z)+Omega_nu_massive(z)",
+  "maximum_relative_hubble_residual": 2.220446049250313e-16,
+  "lensing_omega_m0": 0.289,
+  "provider_omega_m0": 0.2889999999797587,
+  "relative_omega_m0_difference": -7.003897461999031e-11,
+  "maximum_relative_background_difference": 0.0006463271277682425,
+  "original_files": {
+    "physics.tables": {
+      "original": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_pchip9601_physics.npz",
+      "copied": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/physics_tables.npz",
+      "sha256": "9f8a59d1144d236ba9b97c69d4ff280c2c9a7bde6e78e4abc8f25e6e708ca083"
+    },
+    "source.path": {
+      "original": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits",
+      "copied": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/source_path.fits",
+      "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+    },
+    "rows.two_point": {
+      "original": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits",
+      "copied": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_two_point.fits",
+      "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+    },
+    "rows.aperture": {
+      "original": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits",
+      "copied": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_aperture.fits",
+      "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+    },
+    "covariance.path": {
+      "original": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits",
+      "copied": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/covariance_path.fits",
+      "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+    }
+  },
+  "metric_and_data_sha256": "2ad03ed63442148addf6e9b9f65977bc7f9a38818481fdb803b6c0d4757a0152",
+  "resolved_configuration_sha256": "979c5f0c7fa61b7ac594a014dfb6e7e3ca97c6b1d98c52369039095d33b60e4c",
+  "driver_sha256": "f336ffbda0067eb7d26bfa836e6e229ca819bb040e31640b3d439bb47f70c921",
+  "prediction_identity": {
+    "format": "des3pcf-prediction-identity-v1",
+    "input_files": {
+      "physical_tables": {
+        "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/physical_with_background.npz",
+        "sha256": "fd3d99148905bc785111707da30fe3f963371d493c22f3020676aa8e4c29560c"
+      },
+      "source_curves": {
+        "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/source_path.fits",
+        "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+      },
+      "joint_covariance": {
+        "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/covariance_path.fits",
+        "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+      },
+      "two_point_rows": {
+        "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_two_point.fits",
+        "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+      },
+      "aperture_rows": {
+        "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_aperture.fits",
+        "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+      }
+    },
+    "implementation": {
+      "three_point_extension": {
+        "path": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+        "sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939"
+      },
+      "two_point_extension": {
+        "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+        "sha256": "ad18d75bfb0f78aebebcd37a8d831563f4ba6e9d4d994adbc9389d041ca7190b"
+      },
+      "python_implementation_sha256": {
+        "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+        "python/des3pcf/accuracy.py": "b6b5c8a01bf49504f4a9bb972ae15899d38b2a8351aa74ad3ae966a40b676288",
+        "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+        "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+        "python/des3pcf/bihalofit.py": "71ba577f0eed7f27e648aff64d879f5165d46c0f78e419ccbefcf01b9788fdfd",
+        "python/des3pcf/bihalofit_theory.py": "a82ccdef7da2fae291c5819544505548fac91a7787bd1ed33e342ffd800e747e",
+        "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+        "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+        "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+        "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+        "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+        "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+        "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+        "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+        "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+        "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+        "python/des3pcf/inputs.py": "0130f18c005936f1dee5a611ef6682213ca58c2749dca9f363236c042e2f0151",
+        "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+        "python/des3pcf/mean.py": "ba7369cf4805798a2fcedf2a6eb4120a550322ffe224ff5912bbae31f10acf78",
+        "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+        "python/des3pcf/pipeline.py": "3fb8bdc482c81308be2b54fd7e718b73a4816663c17440d4d3ff6a8c6c1a27cc",
+        "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+        "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+        "python/des3pcf/provenance.py": "58ad9d254a7e280574d3b7bbcdb1ad9145776f855585f7499d992bf7e9ae197c",
+        "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+        "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+        "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+        "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+        "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+        "scripts/run_3pcf.py": "8d4d72adca0d9d7640b683009d3c4659102a1d52ab828d1191cca592976e06b3"
+      }
+    }
+  },
+  "threads": 6,
+  "row_count": 480,
+  "cases": [
+    {
+      "name": "internal",
+      "coarse_counts": null,
+      "prediction_identity": {
+        "format": "des3pcf-prediction-identity-v1",
+        "input_files": {
+          "physical_tables": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/physical_with_background.npz",
+            "sha256": "fd3d99148905bc785111707da30fe3f963371d493c22f3020676aa8e4c29560c"
+          },
+          "source_curves": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/source_path.fits",
+            "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+          },
+          "joint_covariance": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/covariance_path.fits",
+            "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+          },
+          "two_point_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_two_point.fits",
+            "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+          },
+          "aperture_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_aperture.fits",
+            "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+          }
+        },
+        "implementation": {
+          "three_point_extension": {
+            "path": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+            "sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939"
+          },
+          "two_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+            "sha256": "ad18d75bfb0f78aebebcd37a8d831563f4ba6e9d4d994adbc9389d041ca7190b"
+          },
+          "python_implementation_sha256": {
+            "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+            "python/des3pcf/accuracy.py": "b6b5c8a01bf49504f4a9bb972ae15899d38b2a8351aa74ad3ae966a40b676288",
+            "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+            "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+            "python/des3pcf/bihalofit.py": "71ba577f0eed7f27e648aff64d879f5165d46c0f78e419ccbefcf01b9788fdfd",
+            "python/des3pcf/bihalofit_theory.py": "a82ccdef7da2fae291c5819544505548fac91a7787bd1ed33e342ffd800e747e",
+            "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+            "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+            "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+            "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+            "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+            "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+            "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+            "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+            "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+            "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+            "python/des3pcf/inputs.py": "0130f18c005936f1dee5a611ef6682213ca58c2749dca9f363236c042e2f0151",
+            "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+            "python/des3pcf/mean.py": "ba7369cf4805798a2fcedf2a6eb4120a550322ffe224ff5912bbae31f10acf78",
+            "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+            "python/des3pcf/pipeline.py": "3fb8bdc482c81308be2b54fd7e718b73a4816663c17440d4d3ff6a8c6c1a27cc",
+            "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+            "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+            "python/des3pcf/provenance.py": "58ad9d254a7e280574d3b7bbcdb1ad9145776f855585f7499d992bf7e9ae197c",
+            "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+            "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+            "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+            "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+            "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+            "scripts/run_3pcf.py": "8d4d72adca0d9d7640b683009d3c4659102a1d52ab828d1191cca592976e06b3"
+          }
+        }
+      },
+      "chi2": 25.29348881624672,
+      "delta_chi2_data": 0.0,
+      "squared_difference_norm": 0.0,
+      "two_point_bitwise_equal": true,
+      "mean_npz_sha256": "96cf2bdb0c81aea7d0bc9dadb80cfacd96d7b332531cd07b3925aab958bf470f"
+    },
+    {
+      "name": "coarse",
+      "coarse_counts": [
+        9,
+        65,
+        33,
+        9
+      ],
+      "prediction_identity": {
+        "format": "des3pcf-prediction-identity-v1",
+        "input_files": {
+          "physical_tables": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/physical_with_background.npz",
+            "sha256": "fd3d99148905bc785111707da30fe3f963371d493c22f3020676aa8e4c29560c"
+          },
+          "source_curves": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/source_path.fits",
+            "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+          },
+          "joint_covariance": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/covariance_path.fits",
+            "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+          },
+          "two_point_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_two_point.fits",
+            "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+          },
+          "aperture_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_aperture.fits",
+            "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+          }
+        },
+        "implementation": {
+          "three_point_extension": {
+            "path": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+            "sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939"
+          },
+          "two_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+            "sha256": "ad18d75bfb0f78aebebcd37a8d831563f4ba6e9d4d994adbc9389d041ca7190b"
+          },
+          "python_implementation_sha256": {
+            "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+            "python/des3pcf/accuracy.py": "b6b5c8a01bf49504f4a9bb972ae15899d38b2a8351aa74ad3ae966a40b676288",
+            "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+            "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+            "python/des3pcf/bihalofit.py": "71ba577f0eed7f27e648aff64d879f5165d46c0f78e419ccbefcf01b9788fdfd",
+            "python/des3pcf/bihalofit_theory.py": "a82ccdef7da2fae291c5819544505548fac91a7787bd1ed33e342ffd800e747e",
+            "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+            "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+            "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+            "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+            "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+            "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+            "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+            "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+            "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+            "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+            "python/des3pcf/inputs.py": "0130f18c005936f1dee5a611ef6682213ca58c2749dca9f363236c042e2f0151",
+            "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+            "python/des3pcf/mean.py": "ba7369cf4805798a2fcedf2a6eb4120a550322ffe224ff5912bbae31f10acf78",
+            "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+            "python/des3pcf/pipeline.py": "3fb8bdc482c81308be2b54fd7e718b73a4816663c17440d4d3ff6a8c6c1a27cc",
+            "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+            "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+            "python/des3pcf/provenance.py": "58ad9d254a7e280574d3b7bbcdb1ad9145776f855585f7499d992bf7e9ae197c",
+            "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+            "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+            "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+            "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+            "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+            "scripts/run_3pcf.py": "8d4d72adca0d9d7640b683009d3c4659102a1d52ab828d1191cca592976e06b3"
+          }
+        }
+      },
+      "chi2": 24.72215937016489,
+      "delta_chi2_data": -0.5713294460818332,
+      "squared_difference_norm": 0.04115737849526829,
+      "two_point_bitwise_equal": true,
+      "squared_difference_previous": 0.04115737849526829,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 1,
+        "controls": {
+          "baseline_boost": 1,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 33,
+          "ns": 0.959,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.7865548373195137,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 8,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "46839f2b3068fd2c06ba730aff5a8d976fbcc5dfa472b5948947ce9e316c1080",
+          "k": "c85d0f3a13a4d3db4b9ecf8460adfe3fbd9db581ef74039a9372d37a3b67d2f7",
+          "omega_m_redshift": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "omega_m_z": "d2594a67cddcc606538868fa5f554e114c0888502fe645793add47cd9aa9a6bc",
+          "output_logk": "fb853304416c6a52d3c979cddcf9f343163afd45f22f3b684c46cdde79e5e3cc",
+          "output_logu": "0b596e9fd9c891a2ac667f6c64ab8e1fbd11952c6f28af7906133acd01e15293",
+          "output_v": "cabb3ee62bab5b11221faab1ee1ee45fbe91664e75016cfb4b8f03f834ecacf8",
+          "output_z": "5add24d02f9ebb18895285b1dd96f58cdfe79e9eba696edc14029bee6a86a256",
+          "p_linear0": "fc33898e7c8bf838b5df289f167734b0c12a750281560eb9e7dd2e1e43afa127",
+          "settings": "6690a15015c72bdf7605019ede058282d2a3878f66b40f7e7404f5ab130a2bd5",
+          "z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "d2594a67cddcc606538868fa5f554e114c0888502fe645793add47cd9aa9a6bc",
+          "background_z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "log_bispectrum": "ceebdb5097f20191c95968965a2a8b0816a6f2d7d618ef739156b48b02e22b75",
+          "logk": "fb853304416c6a52d3c979cddcf9f343163afd45f22f3b684c46cdde79e5e3cc",
+          "logu": "0b596e9fd9c891a2ac667f6c64ab8e1fbd11952c6f28af7906133acd01e15293",
+          "settings": "282c8e484165e3de2637d4520e08fccabb17a46022ace57250caa753fc106964",
+          "v": "cabb3ee62bab5b11221faab1ee1ee45fbe91664e75016cfb4b8f03f834ecacf8",
+          "z": "5add24d02f9ebb18895285b1dd96f58cdfe79e9eba696edc14029bee6a86a256"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999686035798885,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      },
+      "mean_npz_sha256": "d529c01051a5e13ff09f365f4e4ab3a5217bcbb498de6769fb19ef45fcdc3c75"
+    },
+    {
+      "name": "medium",
+      "coarse_counts": [
+        17,
+        97,
+        49,
+        17
+      ],
+      "prediction_identity": {
+        "format": "des3pcf-prediction-identity-v1",
+        "input_files": {
+          "physical_tables": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/physical_with_background.npz",
+            "sha256": "fd3d99148905bc785111707da30fe3f963371d493c22f3020676aa8e4c29560c"
+          },
+          "source_curves": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/source_path.fits",
+            "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+          },
+          "joint_covariance": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/covariance_path.fits",
+            "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+          },
+          "two_point_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_two_point.fits",
+            "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+          },
+          "aperture_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_aperture.fits",
+            "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+          }
+        },
+        "implementation": {
+          "three_point_extension": {
+            "path": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+            "sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939"
+          },
+          "two_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+            "sha256": "ad18d75bfb0f78aebebcd37a8d831563f4ba6e9d4d994adbc9389d041ca7190b"
+          },
+          "python_implementation_sha256": {
+            "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+            "python/des3pcf/accuracy.py": "b6b5c8a01bf49504f4a9bb972ae15899d38b2a8351aa74ad3ae966a40b676288",
+            "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+            "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+            "python/des3pcf/bihalofit.py": "71ba577f0eed7f27e648aff64d879f5165d46c0f78e419ccbefcf01b9788fdfd",
+            "python/des3pcf/bihalofit_theory.py": "a82ccdef7da2fae291c5819544505548fac91a7787bd1ed33e342ffd800e747e",
+            "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+            "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+            "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+            "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+            "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+            "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+            "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+            "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+            "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+            "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+            "python/des3pcf/inputs.py": "0130f18c005936f1dee5a611ef6682213ca58c2749dca9f363236c042e2f0151",
+            "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+            "python/des3pcf/mean.py": "ba7369cf4805798a2fcedf2a6eb4120a550322ffe224ff5912bbae31f10acf78",
+            "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+            "python/des3pcf/pipeline.py": "3fb8bdc482c81308be2b54fd7e718b73a4816663c17440d4d3ff6a8c6c1a27cc",
+            "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+            "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+            "python/des3pcf/provenance.py": "58ad9d254a7e280574d3b7bbcdb1ad9145776f855585f7499d992bf7e9ae197c",
+            "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+            "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+            "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+            "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+            "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+            "scripts/run_3pcf.py": "8d4d72adca0d9d7640b683009d3c4659102a1d52ab828d1191cca592976e06b3"
+          }
+        }
+      },
+      "chi2": 24.980345799610895,
+      "delta_chi2_data": -0.3131430166358271,
+      "squared_difference_norm": 0.011765298078577631,
+      "two_point_bitwise_equal": true,
+      "squared_difference_previous": 0.009710228095937159,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 1,
+        "controls": {
+          "baseline_boost": 1,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 33,
+          "ns": 0.959,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.7865548373195137,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 8,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "46839f2b3068fd2c06ba730aff5a8d976fbcc5dfa472b5948947ce9e316c1080",
+          "k": "c85d0f3a13a4d3db4b9ecf8460adfe3fbd9db581ef74039a9372d37a3b67d2f7",
+          "omega_m_redshift": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "omega_m_z": "d2594a67cddcc606538868fa5f554e114c0888502fe645793add47cd9aa9a6bc",
+          "output_logk": "81a099cc11ec530bf857f65edcc692d7722107b588864200f6172028b33edeea",
+          "output_logu": "94509c861ac0cdb72af2cbc8be2ff655d69c6a091653050bc4ef537d2df65f84",
+          "output_v": "6908e53c5dfb8d5fabc093f102e6d54cb59b078d6a6257ecc2eea376c071dc12",
+          "output_z": "5aed256d4079075b6265b54930311701b36cd6e65175107623802a123e291b41",
+          "p_linear0": "fc33898e7c8bf838b5df289f167734b0c12a750281560eb9e7dd2e1e43afa127",
+          "settings": "6690a15015c72bdf7605019ede058282d2a3878f66b40f7e7404f5ab130a2bd5",
+          "z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "d2594a67cddcc606538868fa5f554e114c0888502fe645793add47cd9aa9a6bc",
+          "background_z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "log_bispectrum": "a7f1dfa880155e2926949246cb67b3383511b35bb4be046eddab323598faf472",
+          "logk": "81a099cc11ec530bf857f65edcc692d7722107b588864200f6172028b33edeea",
+          "logu": "94509c861ac0cdb72af2cbc8be2ff655d69c6a091653050bc4ef537d2df65f84",
+          "settings": "282c8e484165e3de2637d4520e08fccabb17a46022ace57250caa753fc106964",
+          "v": "6908e53c5dfb8d5fabc093f102e6d54cb59b078d6a6257ecc2eea376c071dc12",
+          "z": "5aed256d4079075b6265b54930311701b36cd6e65175107623802a123e291b41"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999686035798885,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      },
+      "mean_npz_sha256": "56b5f27a58e5095cc4e1a43365e3e520340c51d1aca5528fdcb22b52643bb0ae"
+    },
+    {
+      "name": "fine",
+      "coarse_counts": [
+        33,
+        129,
+        65,
+        25
+      ],
+      "prediction_identity": {
+        "format": "des3pcf-prediction-identity-v1",
+        "input_files": {
+          "physical_tables": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/physical_with_background.npz",
+            "sha256": "fd3d99148905bc785111707da30fe3f963371d493c22f3020676aa8e4c29560c"
+          },
+          "source_curves": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/source_path.fits",
+            "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+          },
+          "joint_covariance": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/covariance_path.fits",
+            "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+          },
+          "two_point_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_two_point.fits",
+            "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+          },
+          "aperture_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_aperture.fits",
+            "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+          }
+        },
+        "implementation": {
+          "three_point_extension": {
+            "path": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+            "sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939"
+          },
+          "two_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+            "sha256": "ad18d75bfb0f78aebebcd37a8d831563f4ba6e9d4d994adbc9389d041ca7190b"
+          },
+          "python_implementation_sha256": {
+            "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+            "python/des3pcf/accuracy.py": "b6b5c8a01bf49504f4a9bb972ae15899d38b2a8351aa74ad3ae966a40b676288",
+            "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+            "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+            "python/des3pcf/bihalofit.py": "71ba577f0eed7f27e648aff64d879f5165d46c0f78e419ccbefcf01b9788fdfd",
+            "python/des3pcf/bihalofit_theory.py": "a82ccdef7da2fae291c5819544505548fac91a7787bd1ed33e342ffd800e747e",
+            "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+            "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+            "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+            "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+            "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+            "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+            "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+            "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+            "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+            "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+            "python/des3pcf/inputs.py": "0130f18c005936f1dee5a611ef6682213ca58c2749dca9f363236c042e2f0151",
+            "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+            "python/des3pcf/mean.py": "ba7369cf4805798a2fcedf2a6eb4120a550322ffe224ff5912bbae31f10acf78",
+            "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+            "python/des3pcf/pipeline.py": "3fb8bdc482c81308be2b54fd7e718b73a4816663c17440d4d3ff6a8c6c1a27cc",
+            "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+            "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+            "python/des3pcf/provenance.py": "58ad9d254a7e280574d3b7bbcdb1ad9145776f855585f7499d992bf7e9ae197c",
+            "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+            "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+            "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+            "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+            "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+            "scripts/run_3pcf.py": "8d4d72adca0d9d7640b683009d3c4659102a1d52ab828d1191cca592976e06b3"
+          }
+        }
+      },
+      "chi2": 25.136121236113105,
+      "delta_chi2_data": -0.1573675801336165,
+      "squared_difference_norm": 0.0034531500826005725,
+      "two_point_bitwise_equal": true,
+      "squared_difference_previous": 0.004481175260967607,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 1,
+        "controls": {
+          "baseline_boost": 1,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 33,
+          "ns": 0.959,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.7865548373195137,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 8,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "46839f2b3068fd2c06ba730aff5a8d976fbcc5dfa472b5948947ce9e316c1080",
+          "k": "c85d0f3a13a4d3db4b9ecf8460adfe3fbd9db581ef74039a9372d37a3b67d2f7",
+          "omega_m_redshift": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "omega_m_z": "d2594a67cddcc606538868fa5f554e114c0888502fe645793add47cd9aa9a6bc",
+          "output_logk": "a8bd43059725bcc174e007d4bc41482630923a0f7526981acf7ea84eea1559b5",
+          "output_logu": "792a963f765bf403a31947547e09a9d9b04857011f331ff3f78aecc645b1d675",
+          "output_v": "741d7fd6aeab285aef196d7f804115091417c05315942e88e0b42c7bd5349518",
+          "output_z": "79dcb5280516468e63f5b31a104463a41b84eb0a0dab7b281adb6e444915c015",
+          "p_linear0": "fc33898e7c8bf838b5df289f167734b0c12a750281560eb9e7dd2e1e43afa127",
+          "settings": "6690a15015c72bdf7605019ede058282d2a3878f66b40f7e7404f5ab130a2bd5",
+          "z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "d2594a67cddcc606538868fa5f554e114c0888502fe645793add47cd9aa9a6bc",
+          "background_z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "log_bispectrum": "fb35bbbc93e72b865a1c9947ca6f89eef35bbe89bf35b764c739eff0a02f1189",
+          "logk": "a8bd43059725bcc174e007d4bc41482630923a0f7526981acf7ea84eea1559b5",
+          "logu": "792a963f765bf403a31947547e09a9d9b04857011f331ff3f78aecc645b1d675",
+          "settings": "282c8e484165e3de2637d4520e08fccabb17a46022ace57250caa753fc106964",
+          "v": "741d7fd6aeab285aef196d7f804115091417c05315942e88e0b42c7bd5349518",
+          "z": "79dcb5280516468e63f5b31a104463a41b84eb0a0dab7b281adb6e444915c015"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999686035798885,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      },
+      "mean_npz_sha256": "5371bc23aa299e8c6123359a48ead3c061ff79f00020839a8e37e8469e6b07c5"
+    },
+    {
+      "name": "refined",
+      "coarse_counts": [
+        49,
+        193,
+        97,
+        33
+      ],
+      "prediction_identity": {
+        "format": "des3pcf-prediction-identity-v1",
+        "input_files": {
+          "physical_tables": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/physical_with_background.npz",
+            "sha256": "fd3d99148905bc785111707da30fe3f963371d493c22f3020676aa8e4c29560c"
+          },
+          "source_curves": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/source_path.fits",
+            "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+          },
+          "joint_covariance": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/covariance_path.fits",
+            "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+          },
+          "two_point_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_two_point.fits",
+            "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+          },
+          "aperture_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_aperture.fits",
+            "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+          }
+        },
+        "implementation": {
+          "three_point_extension": {
+            "path": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+            "sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939"
+          },
+          "two_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+            "sha256": "ad18d75bfb0f78aebebcd37a8d831563f4ba6e9d4d994adbc9389d041ca7190b"
+          },
+          "python_implementation_sha256": {
+            "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+            "python/des3pcf/accuracy.py": "b6b5c8a01bf49504f4a9bb972ae15899d38b2a8351aa74ad3ae966a40b676288",
+            "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+            "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+            "python/des3pcf/bihalofit.py": "71ba577f0eed7f27e648aff64d879f5165d46c0f78e419ccbefcf01b9788fdfd",
+            "python/des3pcf/bihalofit_theory.py": "a82ccdef7da2fae291c5819544505548fac91a7787bd1ed33e342ffd800e747e",
+            "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+            "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+            "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+            "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+            "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+            "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+            "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+            "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+            "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+            "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+            "python/des3pcf/inputs.py": "0130f18c005936f1dee5a611ef6682213ca58c2749dca9f363236c042e2f0151",
+            "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+            "python/des3pcf/mean.py": "ba7369cf4805798a2fcedf2a6eb4120a550322ffe224ff5912bbae31f10acf78",
+            "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+            "python/des3pcf/pipeline.py": "3fb8bdc482c81308be2b54fd7e718b73a4816663c17440d4d3ff6a8c6c1a27cc",
+            "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+            "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+            "python/des3pcf/provenance.py": "58ad9d254a7e280574d3b7bbcdb1ad9145776f855585f7499d992bf7e9ae197c",
+            "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+            "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+            "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+            "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+            "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+            "scripts/run_3pcf.py": "8d4d72adca0d9d7640b683009d3c4659102a1d52ab828d1191cca592976e06b3"
+          }
+        }
+      },
+      "chi2": 25.210333920762984,
+      "delta_chi2_data": -0.08315489548373733,
+      "squared_difference_norm": 0.0007998646687945349,
+      "two_point_bitwise_equal": true,
+      "squared_difference_previous": 0.0011989864711279326,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 1,
+        "controls": {
+          "baseline_boost": 1,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 33,
+          "ns": 0.959,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.7865548373195137,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 8,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "46839f2b3068fd2c06ba730aff5a8d976fbcc5dfa472b5948947ce9e316c1080",
+          "k": "c85d0f3a13a4d3db4b9ecf8460adfe3fbd9db581ef74039a9372d37a3b67d2f7",
+          "omega_m_redshift": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "omega_m_z": "d2594a67cddcc606538868fa5f554e114c0888502fe645793add47cd9aa9a6bc",
+          "output_logk": "cf45393a24966b307aaf36c87a954d89dee8d0ae9804428c9dd4f72a3b1368c2",
+          "output_logu": "80abd1fa3b885e64e4bd1ecb1936182dc03b9a723f691e33254719fd8e30091d",
+          "output_v": "7265d3fdbcdd23cd15093b639c63aa157c5d63c1255b953a205b945141e474e2",
+          "output_z": "0539134fff83d4be9708f85fbcd63be4638f0feb82ceb361b5d08f3ef80d078e",
+          "p_linear0": "fc33898e7c8bf838b5df289f167734b0c12a750281560eb9e7dd2e1e43afa127",
+          "settings": "6690a15015c72bdf7605019ede058282d2a3878f66b40f7e7404f5ab130a2bd5",
+          "z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "d2594a67cddcc606538868fa5f554e114c0888502fe645793add47cd9aa9a6bc",
+          "background_z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "log_bispectrum": "142437ffd5c6ed1857576f7ba080c6af66ae3f73927c23a97d92c607407ed0f8",
+          "logk": "cf45393a24966b307aaf36c87a954d89dee8d0ae9804428c9dd4f72a3b1368c2",
+          "logu": "80abd1fa3b885e64e4bd1ecb1936182dc03b9a723f691e33254719fd8e30091d",
+          "settings": "282c8e484165e3de2637d4520e08fccabb17a46022ace57250caa753fc106964",
+          "v": "7265d3fdbcdd23cd15093b639c63aa157c5d63c1255b953a205b945141e474e2",
+          "z": "0539134fff83d4be9708f85fbcd63be4638f0feb82ceb361b5d08f3ef80d078e"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999686035798885,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      },
+      "mean_npz_sha256": "6c7a3e38a3def416cfc067847f84c919333b99dcc4045c22332b6bcefd36e279"
+    },
+    {
+      "name": "refined_radiation_free",
+      "coarse_counts": [
+        49,
+        193,
+        97,
+        33
+      ],
+      "prediction_identity": {
+        "format": "des3pcf-prediction-identity-v1",
+        "input_files": {
+          "physical_tables": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/physical_radiation_free_comparison.npz",
+            "sha256": "a57c81faa121ebcc31e3f75eb29a13484ad2baa2070721d4e7a45c6db41888a5"
+          },
+          "source_curves": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/source_path.fits",
+            "sha256": "2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231"
+          },
+          "joint_covariance": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/covariance_path.fits",
+            "sha256": "67ccdc9c92b7fe4d2261edee049783e2391158f203488d2c028dea7af3ea54f8"
+          },
+          "two_point_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_two_point.fits",
+            "sha256": "e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2"
+          },
+          "aperture_rows": {
+            "path": "/private/tmp/bihalofit_python_20261119/joint_y3_480/inputs/rows_aperture.fits",
+            "sha256": "310404fb72071be61bd99279d087f2852bc8ba019f282c5f03bbd1b4de5b76ae"
+          }
+        },
+        "implementation": {
+          "three_point_extension": {
+            "path": "/private/tmp/supplied_baseline_3pcf_20261119/full/Cocoa/projects/des_3pcf/interface/cosmolike_des_3pcf_interface.so",
+            "sha256": "c451e2a1d1538072746fd7caf261bbe36f97bb4c19f8c487d3a7677148f81939"
+          },
+          "two_point_extension": {
+            "path": "/Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_y3/interface/cosmolike_des_y3_interface.so",
+            "sha256": "ad18d75bfb0f78aebebcd37a8d831563f4ba6e9d4d994adbc9389d041ca7190b"
+          },
+          "python_implementation_sha256": {
+            "python/des3pcf/__init__.py": "9337be30be7aac6c2864524b40af0ee52e95500456702308759ab883780ef81f",
+            "python/des3pcf/accuracy.py": "b6b5c8a01bf49504f4a9bb972ae15899d38b2a8351aa74ad3ae966a40b676288",
+            "python/des3pcf/bacco_feedback.py": "fc5aeaaa2690719afc9cdc5d018510c73cff082d603c6fdfa48c3c00a16fda87",
+            "python/des3pcf/baryon_scenarios.py": "cc5dab33b41e54acd95a9ae18ba71846b28b89b07022836ce4cb1699a0ceeb86",
+            "python/des3pcf/bihalofit.py": "71ba577f0eed7f27e648aff64d879f5165d46c0f78e419ccbefcf01b9788fdfd",
+            "python/des3pcf/bihalofit_theory.py": "a82ccdef7da2fae291c5819544505548fac91a7787bd1ed33e342ffd800e747e",
+            "python/des3pcf/comparison.py": "96bee44b603c64a767717b0f8f98d3f6d0d748148403e103b9721bb6fffbd591",
+            "python/des3pcf/compression.py": "3958741f0ec8961c7ec60649957632abd0c3198be724c7b0d6887b180a931be8",
+            "python/des3pcf/core_two_point.py": "7e2030a983c16cb0b9487297f001ad7b2641cf26e00e0eb996109f101867e5c3",
+            "python/des3pcf/covariance.py": "9718b5f6dd5e2d4cb6b0ca5e3d9f93584c37f102af8901fcafe47e68b7e61777",
+            "python/des3pcf/feedback.py": "3b4092d1c0704d5722651c2f8475f6cbd7a9a5a574cd5b2e2664e2b7eaff6326",
+            "python/des3pcf/fisher_accuracy.py": "685f4180aa4bf4da9bd0246d643be3feaa2eff461c8775776b35a0e4f9aa2a69",
+            "python/des3pcf/fisher_comparison.py": "15701106f2f78c9d4d7a8ac57f9c3799337f0bbb68f9c73ef4f04e3e9280b3a7",
+            "python/des3pcf/forecast.py": "053da04aab2e89aaee3d33a8a2c0f71b4d69de2693028b070fea2cb4e4367d12",
+            "python/des3pcf/ia_components.py": "27dffc102465a50435a080a2e6bc9945f01924126b5e3b0b269f4b501867728c",
+            "python/des3pcf/inference.py": "287e79fecb050c5db46c7cefbdfeee8247f24fa26e40c507abc881c16d462717",
+            "python/des3pcf/inputs.py": "0130f18c005936f1dee5a611ef6682213ca58c2749dca9f363236c042e2f0151",
+            "python/des3pcf/likelihood.py": "b6d5eb2f4b59732cfe0597abe0c556ebb688d68da398a1748cb606fa0af970c4",
+            "python/des3pcf/mean.py": "ba7369cf4805798a2fcedf2a6eb4120a550322ffe224ff5912bbae31f10acf78",
+            "python/des3pcf/ownership.py": "e9a9dcc7c7077f2f61cb513f9e84e23fc6fe7158dff60c6ab43d6ecbd0be5a96",
+            "python/des3pcf/pipeline.py": "3fb8bdc482c81308be2b54fd7e718b73a4816663c17440d4d3ff6a8c6c1a27cc",
+            "python/des3pcf/pixel_window.py": "41f05a1fd930e52396c38d3d109c46c4f6dca346140ff93083ca6971e42bbfca",
+            "python/des3pcf/precision.py": "d071489107f0cc59368429d20d4fdeba11a80b360d634e71e8721829405103e1",
+            "python/des3pcf/provenance.py": "58ad9d254a7e280574d3b7bbcdb1ad9145776f855585f7499d992bf7e9ae197c",
+            "python/des3pcf/scaling.py": "fd7d6cd0ee8be2d0f0798af873160646492b93912c55de32fbfdc3e77f6cf948",
+            "python/des3pcf/scaling_lsst.py": "2ccca1526ba7d659fbc704307ab806c88d0dda4b7acebd6e49ab9038023da379",
+            "python/des3pcf/scaling_plot.py": "2b6ae6685cbaa30f296ddb7e62e578ec54a1122984895e44fc33626b9ed1cbc4",
+            "python/des3pcf/scaling_threepcf.py": "586fce09d5932df91ad6c9817d1e7c879723bfe48cec5adcc0648993026ef4a8",
+            "python/des3pcf/survey.py": "7a829eda27c44a1f0e1aa4acba94abfaaa38e28e81c1e661ea6b48018cebab64",
+            "scripts/run_3pcf.py": "8d4d72adca0d9d7640b683009d3c4659102a1d52ab828d1191cca592976e06b3"
+          }
+        }
+      },
+      "chi2": 25.210330974688773,
+      "delta_chi2_data": -0.08315784155794859,
+      "squared_difference_norm": 0.0008001333236033866,
+      "two_point_bitwise_equal": true,
+      "squared_difference_previous": 1.386936783620015e-10,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 1,
+        "controls": {
+          "baseline_boost": 1,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 33,
+          "ns": 0.959,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.7865548373195137,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 8,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "46839f2b3068fd2c06ba730aff5a8d976fbcc5dfa472b5948947ce9e316c1080",
+          "k": "c85d0f3a13a4d3db4b9ecf8460adfe3fbd9db581ef74039a9372d37a3b67d2f7",
+          "omega_m_redshift": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "omega_m_z": "141aa853d99e96cbaefc87022bdb96da5b2e8256a2ad650142b2f46f3f93e126",
+          "output_logk": "cf45393a24966b307aaf36c87a954d89dee8d0ae9804428c9dd4f72a3b1368c2",
+          "output_logu": "80abd1fa3b885e64e4bd1ecb1936182dc03b9a723f691e33254719fd8e30091d",
+          "output_v": "7265d3fdbcdd23cd15093b639c63aa157c5d63c1255b953a205b945141e474e2",
+          "output_z": "0539134fff83d4be9708f85fbcd63be4638f0feb82ceb361b5d08f3ef80d078e",
+          "p_linear0": "fc33898e7c8bf838b5df289f167734b0c12a750281560eb9e7dd2e1e43afa127",
+          "settings": "6690a15015c72bdf7605019ede058282d2a3878f66b40f7e7404f5ab130a2bd5",
+          "z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "141aa853d99e96cbaefc87022bdb96da5b2e8256a2ad650142b2f46f3f93e126",
+          "background_z": "fed9a9fb00145a0e7eee6e71a7d7c00e45ddef3d39b41c185bd405ac9ecf1d8c",
+          "log_bispectrum": "3a60056ef1fe410b0f532134edb995e2b8bd34952ceac2470ab9008de503de1f",
+          "logk": "cf45393a24966b307aaf36c87a954d89dee8d0ae9804428c9dd4f72a3b1368c2",
+          "logu": "80abd1fa3b885e64e4bd1ecb1936182dc03b9a723f691e33254719fd8e30091d",
+          "settings": "282c8e484165e3de2637d4520e08fccabb17a46022ace57250caa753fc106964",
+          "v": "7265d3fdbcdd23cd15093b639c63aa157c5d63c1255b953a205b945141e474e2",
+          "z": "0539134fff83d4be9708f85fbcd63be4638f0feb82ceb361b5d08f3ef80d078e"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999686035798885,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      },
+      "mean_npz_sha256": "5b91b8424e651f8907e6e8415ba414ef2b66905e7b990b618ec3dcf11f9a008a"
+    }
+  ],
+  "input_identity_unchanged": true
+}

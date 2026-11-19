@@ -25,7 +25,7 @@ import os
 from pathlib import Path
 import sys
 
-# Each scientific process owns at most four C workers. Matrix operations
+# Each scientific process owns at most six C workers. Matrix operations
 # must not create another worker team inside those workers or subprocesses.
 for variable in ("OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
                  "VECLIB_MAXIMUM_THREADS", "BLIS_NUM_THREADS",
@@ -218,8 +218,8 @@ def load_configuration(path, command):
     if config["format"] != FORMAT:
         raise ValueError(f"Configuration format must be {FORMAT}.")
     threads = config["threads"]
-    if isinstance(threads, bool) or int(threads) != threads or not 1 <= threads <= 4:
-        raise ValueError("threads must be an integer from one through four.")
+    if isinstance(threads, bool) or int(threads) != threads or not 1 <= threads <= 6:
+        raise ValueError("threads must be an integer from one through six.")
     source = config["source"]
     checked_fields(
         mapping=source, allowed={"path", "extension", "nbin"},
@@ -235,11 +235,14 @@ def load_configuration(path, command):
                  "los_z", "halofit_version", "source_interpolation",
                  "source_readers", "table_boost", "fit_nz",
                  "source_nz", "source_padding",
-                 "kmax_boltzmann", "extrap_kmax"},
+                 "kmax_boltzmann", "extrap_kmax",
+                 "bispectrum_source", "bispectrum_table"},
         required={"tables", "cosmology_mode", "kernel_nz"}, name="physics",
     )
     if physics["cosmology_mode"] not in ("fixed_tables", "camb"):
         raise ValueError("physics.cosmology_mode must be fixed_tables or camb.")
+    physics.setdefault("bispectrum_source", "internal")
+    supplied_bispectrum_settings(physics=physics)
     for name, default in (("kernel_nz", 101), ("table_boost", 8),
                           ("fit_nz", 33)):
         value = physics.get(name, default)
@@ -692,6 +695,7 @@ def prepare(config, path, metadata, overwrite):
         kmax_boltzmann=settings["kmax_boltzmann"],
         extrap_kmax=settings["extrap_kmax"],
         source_z=source_nodes,
+        include_bispectrum_background=settings.get("bispectrum_source", "internal") == "supplied",
     )
     tables["source_native_z"] = source_z
     tables["source_native"] = source_values
@@ -724,6 +728,52 @@ def compiled_extension(config):
     compiled = importlib.import_module(name="cosmolike_des_3pcf_interface")
     compiled.set_omp_threads(nthreads=config["threads"])
     return compiled
+
+
+def supplied_bispectrum_settings(physics):
+    """Resolve explicit table axes without evaluating a bispectrum.
+
+    logk and logu are already logarithmic coordinates, so their normal
+    YAML grids use linear spacing. The producer validates uniformity in
+    each stored coordinate. Domain extension is explicit: this route does
+    not clamp a baseline bispectrum beyond its table bounds.
+
+    Arguments:
+      physics = the configuration's physical-table and source choices.
+    Returns:
+      an axis dictionary for PhysicalProvider, or None for internal BiHalofit.
+    Raises:
+      ValueError for an unknown source, missing axes or invalid uniform grids.
+    """
+    source = physics.get("bispectrum_source", "internal")
+    if source not in ("internal", "supplied"):
+        raise ValueError("physics.bispectrum_source must be internal or supplied.")
+    if source == "internal":
+        if "bispectrum_table" in physics:
+            raise ValueError(
+                "physics.bispectrum_table requires bispectrum_source: supplied."
+            )
+        return None
+    if "bispectrum_table" not in physics:
+        raise ValueError(
+            "The supplied route needs physics.bispectrum_table with explicit "
+            "z, logk, logu and v grids."
+        )
+    table = physics["bispectrum_table"]
+    checked_fields(
+        mapping=table,
+        allowed={"z", "logk", "logu", "v", "boost"},
+        required={"z", "logk", "logu", "v"},
+        name="physics.bispectrum_table",
+    )
+    axes = {}
+    for name in ("z", "logk", "logu", "v"):
+        axes[name] = grid_values(settings=table[name])
+    axes["boost"] = table.get("boost", 2)
+    from des3pcf.bihalofit import BiHalofitProducer
+
+    BiHalofitProducer(**axes)
+    return axes
 
 
 def provider_for_run(compiled, config, path):
@@ -774,6 +824,8 @@ def provider_for_run(compiled, config, path):
         accuracy=config["accuracy"],
         feedback=feedback,
         pixel_window=pixel_window,
+        bispectrum_source=config["physics"].get("bispectrum_source", "internal"),
+        bispectrum_table=supplied_bispectrum_settings(physics=config["physics"]),
     )
     return provider, provenance
 
@@ -875,6 +927,8 @@ def evaluate(compiled, config, path, metadata, rows, provider, overwrite):
         two_point_path=second_extension,
     )
     vector = prediction(parameters=config["parameters"])
+    if provider._active_baseline is not None:
+        metadata["baseline_bispectrum"] = provider._active_baseline.record()
     if provider._active_feedback is not None:
         metadata["feedback_reference"] = provider._active_feedback.record()
     arrays = {"mean": vector}
@@ -911,6 +965,13 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
         raise ValueError("covariance command requires mode=analytic.")
     destination = resolve_path(path, settings["path"])
     check_destination(path=destination, overwrite=overwrite)
+    metadata["prediction_identity"] = prediction_identity(
+        config=config,
+        configuration_path=path,
+        project=PROJECT,
+        three_point_path=compiled.__file__,
+        covariance_output=True,
+    )
     noise_settings = settings["noise"]
     if "matrix" in noise_settings:
         noise = np.asarray(noise_settings["matrix"], dtype=np.float64)
@@ -929,6 +990,10 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
         accuracy=config["accuracy"],
     )
     model, _, _ = provider.get(parameters=config["parameters"])
+    if provider._active_baseline is not None:
+        metadata["baseline_bispectrum"] = provider._active_baseline.record()
+    if provider._active_feedback is not None:
+        metadata["feedback_reference"] = provider._active_feedback.record()
     model_mean, terms = compiled.production.physical_covariance(
         model=model, inputs=inputs,
     )
@@ -950,6 +1015,18 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
         arrays["terms"] = terms
         for index, name in enumerate(TERM_NAMES):
             arrays[name] = terms[index]
+    completed_identity = prediction_identity(
+        config=config,
+        configuration_path=path,
+        project=PROJECT,
+        three_point_path=compiled.__file__,
+        covariance_output=True,
+    )
+    verify_prediction_identity(
+        recorded=metadata["prediction_identity"],
+        current=completed_identity,
+        description="Physical inputs during covariance construction",
+    )
     save_result(path=destination, arrays=arrays, metadata=metadata,
                 rows=rows, overwrite=overwrite)
     return destination
@@ -1000,6 +1077,8 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
     # Capture the actual fiducial response before the derivative loop leaves
     # the provider at a displaced point. ExactMeanCache reuses this center.
     cached(parameters=reference)
+    if provider._active_baseline is not None:
+        metadata["baseline_bispectrum"] = provider._active_baseline.record()
     if provider._active_feedback is not None:
         metadata["feedback_reference"] = provider._active_feedback.record()
     names, mean, derivative, refined = differentiate(

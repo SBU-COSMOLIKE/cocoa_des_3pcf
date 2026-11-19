@@ -96,6 +96,31 @@ def test_legacy_baseline_cannot_inherit_current_files(tmp_path):
         )
 
 
+def test_covariance_construction_hashes_inputs_without_reading_output(tmp_path):
+    """An absent output matrix must not prevent checking its physical inputs.
+
+    The covariance command consumes power and source tables and creates a
+    matrix. Deleting that destination distinguishes its role from a Fisher
+    calculation, which must read the existing matrix before differentiating.
+    """
+    project, arguments = artificial_prediction(tmp_path=tmp_path)
+    (project / "covariance.npz").unlink()
+    arguments["covariance_output"] = True
+    beginning = prediction_identity(**arguments)
+    assert "joint_covariance" not in beginning["input_files"]
+    assert "physical_tables" in beginning["input_files"]
+    assert "source_curves" in beginning["input_files"]
+    target = project / "tables.npz"
+    target.write_bytes(b"changed input power table")
+    completed = prediction_identity(**arguments)
+    with pytest.raises(ValueError, match="files changed"):
+        verify_prediction_identity(
+            recorded=beginning,
+            current=completed,
+            description="Covariance construction",
+        )
+
+
 def save_noise_case(path, identity, addition):
     """Write one small completed archive with its actual expected identity."""
     np.savez(

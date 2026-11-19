@@ -31,6 +31,8 @@ class Accuracy:
           source_boost refines an explicitly independent source_nz grid,
           leaving the selected reconstruction and CAMB redshifts unchanged.
           power_table_boost changes the C model's dense reader ratio.
+          bispectrum_boost refines the four coarse axes of an explicitly
+          supplied baseline bispectrum; its dense-reader ratio stays fixed.
           triangle/multipole/fft/profile boosts change their named tables.
           angular_boost changes the bispectrum angular integration nodes.
           aperture/xi/covariance boosts change the named fixed quadratures.
@@ -46,6 +48,7 @@ class Accuracy:
     kernel_boost: float = 1.0
     source_boost: float = 1.0
     power_table_boost: float = 1.0
+    bispectrum_boost: float = 1.0
     feedback_table_boost: float = 1.0
     feedback_z_boost: float = 1.0
     feedback_k_boost: float = 1.0

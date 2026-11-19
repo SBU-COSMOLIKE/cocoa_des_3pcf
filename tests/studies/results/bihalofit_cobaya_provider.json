@@ -1,0 +1,460 @@
+{
+  "scope": "actual Cobaya provider graph, not a survey likelihood",
+  "survey_data_covariance_mask": "none",
+  "theory_settings": {
+    "baseline_z": [
+      0.0,
+      0.5,
+      1.0,
+      1.5
+    ],
+    "baseline_logk": [
+      -4.0,
+      -2.0,
+      0.0,
+      2.0
+    ],
+    "baseline_logu": [
+      -6.0,
+      -4.0,
+      -2.0,
+      0.0
+    ],
+    "baseline_v": [
+      0.0,
+      0.3333333333333333,
+      0.6666666666666666,
+      1.0
+    ],
+    "power_k": [
+      1e-05,
+      1.2139771890700753e-05,
+      1.473740615582478e-05,
+      1.789087489923219e-05,
+      2.171911402017426e-05,
+      2.6366508987303556e-05,
+      3.200834046599764e-05,
+      3.885739518570976e-05,
+      4.717199138213301e-05,
+      5.7265721500919524e-05,
+      6.951927961775606e-05,
+      8.439481965654006e-05,
+      0.00010245338593872234,
+      0.00012437607347260158,
+      0.000150989716061842,
+      0.00018329807108324357,
+      0.00022251967709560264,
+      0.0002701338121133005,
+      0.0003279362859020883,
+      0.0003981071705534969,
+      0.0004832930238571752,
+      0.0005867067065993104,
+      0.0007122485584859914,
+      0.0008646535029500361,
+      0.0010496696290308786,
+      0.0012742749857031334,
+      0.0015469407652462003,
+      0.0018779508018514912,
+      0.002279789435643565,
+      0.002767612370754228,
+      0.003359818286283781,
+      0.004078742758969022,
+      0.004951500669473132,
+      0.006011008864405581,
+      0.007297227644686393,
+      0.008858667904100823,
+      0.010754220761125612,
+      0.013055378690230301,
+      0.015848931924611124,
+      0.01924024182760239,
+      0.023357214690901212,
+      0.02835512583496652,
+      0.03442247595686089,
+      0.04178810060294219,
+      0.050729800906537274,
+      0.06158482110660261,
+      0.07476256801637687,
+      0.09076005216818141,
+      0.11018063301098226,
+      0.1337567751526335,
+      0.1623776739188721,
+      0.19712279215176962,
+      0.23930257311804995,
+      0.29050786505108583,
+      0.3526699214174659,
+      0.4281332398719396,
+      0.5197439870872004,
+      0.630957344480193,
+      0.7659678234751838,
+      0.9298674652605253,
+      1.1288378916846884,
+      1.370383450663168,
+      1.6636142493842228,
+      2.0195897501643776,
+      2.4517358879792868,
+      2.9763514416313193,
+      3.6132227567962474,
+      4.386370005779536,
+      5.324953129837532,
+      6.4643716324900655,
+      7.847599703514607,
+      9.526807029019817,
+      11.565326417902513,
+      14.040042455483146,
+      17.044291274531947,
+      20.6913808111479,
+      25.11886431509577,
+      30.493728293872582,
+      37.01869055846206,
+      44.9398459072167,
+      54.555947811685144,
+      66.22967617148325,
+      80.40131611167858,
+      97.6053637307899,
+      118.4906851000666,
+      143.8449888287663,
+      174.62453520016172,
+      211.99020238496072,
+      257.351270001691,
+      312.4185713602668,
+      379.2690190732246,
+      460.42393767587794,
+      558.9441576403378,
+      678.5454573393569,
+      823.7387069571012,
+      1000.0
+    ],
+    "fit_nz": 9,
+    "table_boost": 2,
+    "kmax_boltzmann": 5.0,
+    "stop_at_error": true
+  },
+  "parameters": {
+    "As": {
+      "prior": {
+        "min": 1e-09,
+        "max": 3e-09
+      }
+    },
+    "ns": 0.965,
+    "H0": 67.5,
+    "ombh2": 0.0224,
+    "omch2": 0.12,
+    "mnu": 0.06,
+    "tau": 0.054
+  },
+  "requirements": {
+    "ns": null,
+    "Hubble": {
+      "z": [
+        0.0
+      ]
+    },
+    "sigma8_z": {
+      "z": [
+        0.0,
+        0.5,
+        1.0,
+        1.5
+      ]
+    },
+    "Omega_b": {
+      "z": [
+        0.0,
+        0.1875,
+        0.375,
+        0.5,
+        0.5625,
+        0.75,
+        0.9375,
+        1.0,
+        1.125,
+        1.3125,
+        1.5
+      ]
+    },
+    "Omega_cdm": {
+      "z": [
+        0.0,
+        0.1875,
+        0.375,
+        0.5,
+        0.5625,
+        0.75,
+        0.9375,
+        1.0,
+        1.125,
+        1.3125,
+        1.5
+      ]
+    },
+    "Omega_nu_massive": {
+      "z": [
+        0.0,
+        0.1875,
+        0.375,
+        0.5,
+        0.5625,
+        0.75,
+        0.9375,
+        1.0,
+        1.125,
+        1.3125,
+        1.5
+      ]
+    },
+    "Pk_interpolator": {
+      "z": [
+        0.0,
+        0.5,
+        1.0,
+        1.5
+      ],
+      "k_max": 5.0,
+      "nonlinear": false,
+      "vars_pairs": [
+        [
+          "delta_tot",
+          "delta_tot"
+        ]
+      ]
+    }
+  },
+  "camb_version": "1.6.7",
+  "actual_power_kmax_Mpc_inverse": 5.6984493970870975,
+  "source_hashes": {
+    "bihalofit": "71ba577f0eed7f27e648aff64d879f5165d46c0f78e419ccbefcf01b9788fdfd",
+    "theory": "a82ccdef7da2fae291c5819544505548fac91a7787bd1ed33e342ffd800e747e"
+  },
+  "arrays_sha256": "0d8b7d71410953f0f33f98a6ba83f12614852017612151715c8de4c180492000",
+  "evaluations": [
+    {
+      "label": "A",
+      "As": 2.1e-09,
+      "loglike": 0.0,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 2,
+        "controls": {
+          "baseline_boost": 2,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 9,
+          "ns": 0.965,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.8106698321687319,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 2,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "ae6c279a6f5dc4a27f572706fd066465343a19836ce12c46f2e66ba40d35ee35",
+          "k": "f4d41d908518d7729968fd1ffe7258619d070fa9706147576e7fd1182f3b18f9",
+          "omega_m_redshift": "fa8a81330ae2bc43cd7247ee78692199fe26c8e9e098e0b078a74d7690ea879d",
+          "omega_m_z": "06860b214d12e96239ccbdfed71e4650a1765f0e6a3151059b9de4559c1b08f8",
+          "output_logk": "04c0c9a59d24d0775cc1ee020d68144fdfda228aeb686d0566979a89da604a44",
+          "output_logu": "a75b101edd65a9deeade6537954730833c064b6baa8535d740602e975c50a5f0",
+          "output_v": "5517223546c0436d76b10d962e3817ca70114a0fb56ec561fa085fc2b0fc388f",
+          "output_z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201",
+          "p_linear0": "af7f27ee5c1b5899a362b0739bd0d906537ad2c0234a19e7ce658fcd52778286",
+          "settings": "a54df3e649be0041b266e983a321c488199ff347e1ca8652ffb0b216e44ba74c",
+          "z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "09dee2916a96b530b3bc5542d6dea83e4863b63ffcf7fe7c5a07027f310da8c9",
+          "background_z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201",
+          "log_bispectrum": "b307f94bc727acd1667daabfafcb229cd0edd29fc56f42d4fc8ab9e0022e40a6",
+          "logk": "04c0c9a59d24d0775cc1ee020d68144fdfda228aeb686d0566979a89da604a44",
+          "logu": "a75b101edd65a9deeade6537954730833c064b6baa8535d740602e975c50a5f0",
+          "settings": "18a7f86bf58c1a99c578841956272bf7682d15010a544eb2564327f6ae41c143",
+          "v": "5517223546c0436d76b10d962e3817ca70114a0fb56ec561fa085fc2b0fc388f",
+          "z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999857588457528,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      }
+    },
+    {
+      "label": "A_cached",
+      "As": 2.1e-09,
+      "loglike": 0.0,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 2,
+        "controls": {
+          "baseline_boost": 2,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 9,
+          "ns": 0.965,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.8106698321687319,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 2,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "ae6c279a6f5dc4a27f572706fd066465343a19836ce12c46f2e66ba40d35ee35",
+          "k": "f4d41d908518d7729968fd1ffe7258619d070fa9706147576e7fd1182f3b18f9",
+          "omega_m_redshift": "fa8a81330ae2bc43cd7247ee78692199fe26c8e9e098e0b078a74d7690ea879d",
+          "omega_m_z": "06860b214d12e96239ccbdfed71e4650a1765f0e6a3151059b9de4559c1b08f8",
+          "output_logk": "04c0c9a59d24d0775cc1ee020d68144fdfda228aeb686d0566979a89da604a44",
+          "output_logu": "a75b101edd65a9deeade6537954730833c064b6baa8535d740602e975c50a5f0",
+          "output_v": "5517223546c0436d76b10d962e3817ca70114a0fb56ec561fa085fc2b0fc388f",
+          "output_z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201",
+          "p_linear0": "af7f27ee5c1b5899a362b0739bd0d906537ad2c0234a19e7ce658fcd52778286",
+          "settings": "a54df3e649be0041b266e983a321c488199ff347e1ca8652ffb0b216e44ba74c",
+          "z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "09dee2916a96b530b3bc5542d6dea83e4863b63ffcf7fe7c5a07027f310da8c9",
+          "background_z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201",
+          "log_bispectrum": "b307f94bc727acd1667daabfafcb229cd0edd29fc56f42d4fc8ab9e0022e40a6",
+          "logk": "04c0c9a59d24d0775cc1ee020d68144fdfda228aeb686d0566979a89da604a44",
+          "logu": "a75b101edd65a9deeade6537954730833c064b6baa8535d740602e975c50a5f0",
+          "settings": "18a7f86bf58c1a99c578841956272bf7682d15010a544eb2564327f6ae41c143",
+          "v": "5517223546c0436d76b10d962e3817ca70114a0fb56ec561fa085fc2b0fc388f",
+          "z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999857588457528,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      }
+    },
+    {
+      "label": "B",
+      "As": 2.15e-09,
+      "loglike": 0.0,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 2,
+        "controls": {
+          "baseline_boost": 2,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 9,
+          "ns": 0.965,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.8202638919435018,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 2,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "d5326759c46a7eaf6901ac1a7880f104f1040b92ac798987d44d6ba315d4395f",
+          "k": "f4d41d908518d7729968fd1ffe7258619d070fa9706147576e7fd1182f3b18f9",
+          "omega_m_redshift": "fa8a81330ae2bc43cd7247ee78692199fe26c8e9e098e0b078a74d7690ea879d",
+          "omega_m_z": "06860b214d12e96239ccbdfed71e4650a1765f0e6a3151059b9de4559c1b08f8",
+          "output_logk": "04c0c9a59d24d0775cc1ee020d68144fdfda228aeb686d0566979a89da604a44",
+          "output_logu": "a75b101edd65a9deeade6537954730833c064b6baa8535d740602e975c50a5f0",
+          "output_v": "5517223546c0436d76b10d962e3817ca70114a0fb56ec561fa085fc2b0fc388f",
+          "output_z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201",
+          "p_linear0": "0a00d7dd3f5fe32aa0feb5475054a13b102c0ea916810e1ee55877865d634bf9",
+          "settings": "c07de207b390e7b39635f9a000536320cef60a228a9e7ad5f4383ab31afaac99",
+          "z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "09dee2916a96b530b3bc5542d6dea83e4863b63ffcf7fe7c5a07027f310da8c9",
+          "background_z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201",
+          "log_bispectrum": "148ea28aebf943185100335b7006391ddfaf103ae6676ebc9cc71e522a556c9d",
+          "logk": "04c0c9a59d24d0775cc1ee020d68144fdfda228aeb686d0566979a89da604a44",
+          "logu": "a75b101edd65a9deeade6537954730833c064b6baa8535d740602e975c50a5f0",
+          "settings": "18a7f86bf58c1a99c578841956272bf7682d15010a544eb2564327f6ae41c143",
+          "v": "5517223546c0436d76b10d962e3817ca70114a0fb56ec561fa085fc2b0fc388f",
+          "z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999857588457528,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      }
+    },
+    {
+      "label": "A_restored",
+      "As": 2.1e-09,
+      "loglike": 0.0,
+      "baseline": {
+        "bispectrum_units": "(Mpc/h)^6",
+        "boost": 2,
+        "controls": {
+          "baseline_boost": 2,
+          "block_size": 65536,
+          "domain": "error",
+          "fit_nz": 9,
+          "ns": 0.965,
+          "radius_rtol": 1e-05,
+          "sigma8": 0.8106698321687319,
+          "slope_nodes": 2000,
+          "source_readers": false,
+          "table_boost": 2,
+          "variance_nodes": 1000
+        },
+        "coordinates": "z, ln(middle side), ln(short/middle), gap/short",
+        "domain": "error",
+        "fastnc_revision": "7b2336ce37a909bed51f07f32a2a4f096e71b6ce",
+        "growth_convention": "P_linear(k,0) times D(z)^2",
+        "input_sha256": {
+          "growth": "ae6c279a6f5dc4a27f572706fd066465343a19836ce12c46f2e66ba40d35ee35",
+          "k": "f4d41d908518d7729968fd1ffe7258619d070fa9706147576e7fd1182f3b18f9",
+          "omega_m_redshift": "fa8a81330ae2bc43cd7247ee78692199fe26c8e9e098e0b078a74d7690ea879d",
+          "omega_m_z": "06860b214d12e96239ccbdfed71e4650a1765f0e6a3151059b9de4559c1b08f8",
+          "output_logk": "04c0c9a59d24d0775cc1ee020d68144fdfda228aeb686d0566979a89da604a44",
+          "output_logu": "a75b101edd65a9deeade6537954730833c064b6baa8535d740602e975c50a5f0",
+          "output_v": "5517223546c0436d76b10d962e3817ca70114a0fb56ec561fa085fc2b0fc388f",
+          "output_z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201",
+          "p_linear0": "af7f27ee5c1b5899a362b0739bd0d906537ad2c0234a19e7ce658fcd52778286",
+          "settings": "a54df3e649be0041b266e983a321c488199ff347e1ca8652ffb0b216e44ba74c",
+          "z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201"
+        },
+        "matter_field": "total",
+        "model": "Takahashi et al. BiHalofit, DMO",
+        "native_input_sha256": {
+          "background_omega_m_z": "09dee2916a96b530b3bc5542d6dea83e4863b63ffcf7fe7c5a07027f310da8c9",
+          "background_z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201",
+          "log_bispectrum": "b307f94bc727acd1667daabfafcb229cd0edd29fc56f42d4fc8ab9e0022e40a6",
+          "logk": "04c0c9a59d24d0775cc1ee020d68144fdfda228aeb686d0566979a89da604a44",
+          "logu": "a75b101edd65a9deeade6537954730833c064b6baa8535d740602e975c50a5f0",
+          "settings": "18a7f86bf58c1a99c578841956272bf7682d15010a544eb2564327f6ae41c143",
+          "v": "5517223546c0436d76b10d962e3817ca70114a0fb56ec561fa085fc2b0fc388f",
+          "z": "4a228011bb37ed2f25d0e4613c455b80dbdf5a3b4a0d436f9b0e21202d7ff201"
+        },
+        "normalization": "legacy sigma8 renormalization; k>=1e-3 h/Mpc",
+        "omega_m_source": "explicit supplied density-fraction array",
+        "ported_c_source_sha256": "af3c533d7a85ddf493ab5840823134206fcd154ac2d5cd648875185de41ac351",
+        "power_normalization": 0.999857588457528,
+        "reference": "https://arxiv.org/abs/1911.07886",
+        "source_url": "https://github.com/git-sunao/fastnc/tree/tatt"
+      }
+    }
+  ]
+}

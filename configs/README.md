@@ -12,7 +12,7 @@ The JSON and YAML files describe examples, not validated DES forecasts.
 Both use the same schema, and the driver loads YAML with its safe
 data-only reader. Every path inside a configuration is relative to the
 configuration file, independently of the shell's directory. The driver
-restricts OpenMP to one through four workers, sets every BLAS vendor to
+restricts OpenMP to one through six workers, sets every BLAS vendor to
 one thread before importing numerical libraries, creates only the
 requested output files, and installs no software.
 
@@ -29,6 +29,7 @@ prepare/evaluate flow, the thread settings, the `--validate-config` and
 |---|---|
 | `des_y3_nla_demo_fisher.yaml` | Worked 480-row NLA demonstration with its recorded source processing and measured-edge PCHIP reconstruction. |
 | `des_y3_tatt_demo_fisher.yaml` | The corresponding TATT demonstration, with its larger IA parameter space and separate Fisher base. |
+| `des_y3_supplied_bihalofit.yaml` | The NLA demonstration with an explicit Python-produced baseline bispectrum and CAMB matter-density background. It writes separate physical tables and results. |
 | `y3_full_filter_example.json` | A joint forecast definition with 400 xi± entries and 80 full-filter aperture moments. Preparation reads the pinned public Y3 midpoint curves. Area and per-bin shape-noise properties are unset. |
 | `y3_finite_sas_example.json` | All 400 xi± and 80 aperture rows in the pinned public simulated Y3 FITS files, with their 480-by-480 covariance. Apertures integrate a finite side-angle-side shear grid. |
 | `y6_full_filter_example.json` | A forecast design with 100 aperture moments at 3, 5, 10, 20 and 40 arcmin, plus 400 illustrative xi± entries. Source curves, survey area and noise properties remain unset. |
@@ -100,6 +101,35 @@ implementation comparison; it is not the default numerical route.
 **Matter-fit anchors.** `physics.fit_nz` selects the coarse redshift
 preparation of matter-fit coefficients, independently of the dense
 readers above.
+
+**Bispectrum source.** `physics.bispectrum_source` defaults to `internal`.
+Selecting `supplied` asks Python to prepare the positive, full BiHalofit
+bispectrum before constructing the C model. This route requires
+`physics.bispectrum_table` with uniform `z`, `logk`, `logu` and `v` axes,
+plus an optional integer `boost` for dense C preparation. For sorted sides
+$`a\leq b\leq c`$, these coordinates mean redshift, $`\ln b`$,
+$`\ln(a/b)`$ and $`(c-b)/a`$. The logarithmic coordinates already contain
+logarithms, so their grid objects use ordinary linear spacing. The
+[BiHalofit guide](../BIHALOFIT_PYTHON.md) explains the fit and its controls.
+
+Run `prepare` for the supplied example before evaluating it: its physical
+file must contain CAMB's `omega_m_z` array. An internal-route file lacking
+that array is refused; the reader does not infer the missing background.
+The baseline table uses fixed bounds and rejects out-of-domain queries.
+`accuracy.bispectrum_boost` refines its coarse intervals, multiplied once
+by `accuracy.accuracy_boost`. It leaves the dense-table ratio unchanged.
+Saved evaluation, covariance and Fisher results record the actual baseline
+hashes and fit controls; Fisher records the central model before taking
+parameter displacements.
+
+The supplied example uses 49, 193, 97 and 33 nodes on those four axes, with
+dense boost 1. In the saved 480-row fiducial NLA comparison, these counts
+change the data chi-squared by -0.0831549 relative to the internal fit;
+all 400 two-point entries remain byte-identical. The two coarsest tested
+tables exceed the group's 0.2 limit. The
+[comparison record](../tests/studies/results/bihalofit_joint_y3.json)
+identifies every input and both binaries. This one-point check does not
+establish derivative accuracy across the forecast parameter space.
 
 **Projection grids.** The prepared projection route under
 `aperture_settings` exposes its triangle grids and dense-table boosts;

@@ -90,6 +90,7 @@ def aligned_fft_grid(theta_lower, dlnt, ell_min, ell_max, minimum_size):
 def physics_model(
     compiled, tables, kernel_nz=101, source_readers=False, table_boost=8, fit_nz=33,
     accuracy=None, adapter="production", feedback=None, pixel_window=None,
+    baseline=None,
 ):
     """Construct the owned C model after validating its physical input arrays.
 
@@ -107,6 +108,9 @@ def physics_model(
       pixel_window = optional W(ell) at consecutive integers starting at zero.
           Three-point angular observables use one W per leg. Raw projected
           bispectra and ordinary xi retain their declared unsmoothed convention.
+      baseline = optional immutable BaselineBispectrum prepared in Python.
+          None retains the existing internal BiHalofit calculation. A supplied
+          baseline also needs tables['omega_m_z'] from its background provider.
     Returns:
       production.PhysicsModel, owning copies of its prepared physical state.
     Raises:
@@ -149,6 +153,41 @@ def physics_model(
         from .pixel_window import checked_window
 
         arguments["pixel_window"] = checked_window(values=pixel_window)
+    if baseline is not None:
+        from .bihalofit import BaselineBispectrum
+
+        if not isinstance(baseline, BaselineBispectrum):
+            raise ValueError(
+                "baseline must be a prepared BaselineBispectrum; construct it "
+                "from the prescribed bispectrum and its background arrays."
+            )
+        if "omega_m_z" not in checked:
+            raise ValueError(
+                "A supplied bispectrum requires provider omega_m_z on the "
+                "background grid; regenerate the physical tables with that input."
+            )
+        if baseline.background_z is not None:
+            same_redshifts = np.array_equal(
+                baseline.background_z, checked["z"],
+            )
+            same_matter_fraction = np.array_equal(
+                baseline.background_omega_m_z, checked["omega_m_z"],
+            )
+            if not same_redshifts or not same_matter_fraction:
+                raise ValueError(
+                    "The baseline bispectrum and physical tables have different "
+                    "background z or omega_m_z arrays. Prepare the baseline for "
+                    "these tables, or supply its recorded background arrays."
+                )
+        # The prescribed bispectrum and its background arrive as arrays. C
+        # needs no spectral tilt or dark-energy parameters to interpret them.
+        for name in ("omega_de", "w0", "wa", "ns"):
+            del arguments[name]
+        arguments["baseline"] = dict(baseline.native)
+        arguments["omega_m_z"] = checked["omega_m_z"]
+        return binding.PhysicsModelWithBispectrum(
+            **arguments, **settings, source_readers=source_readers,
+        )
     return binding.PhysicsModel(
         **arguments, **settings, source_readers=source_readers,
     )

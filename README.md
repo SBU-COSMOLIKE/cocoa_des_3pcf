@@ -18,7 +18,8 @@
 16. [Optional compression and finite-simulation likelihoods](COMPRESSION.md)
 17. [Matching the aperture estimator](ESTIMATOR.md)
 18. [BACCO feedback in a joint shear forecast](BACCO.md)
-19. [Acknowledgements](#acknowledgements)
+19. [Supplying BiHalofit from Python](BIHALOFIT_PYTHON.md)
+20. [Acknowledgements](#acknowledgements)
 
 ## Purpose and current scope <a name="scope"></a>
 
@@ -33,8 +34,10 @@ The compiled calculation predicts BiHalofit matter bispectra, TATT and
 velocity-shear intrinsic-shape terms, angular shear correlations, and
 third-order aperture moments. It also constructs the analytic joint
 covariance that a configuration requests. Python prepares physical
-tables, reads survey files and forms Fisher derivatives. By default the
-joint vector keeps every two-point row;
+tables, reads survey files and forms Fisher derivatives. The optional
+[supplied-bispectrum route](BIHALOFIT_PYTHON.md) prepares BiHalofit in Python
+and passes its table to the C projection; the internal C fit remains the
+default. The joint vector keeps every two-point row by default;
 [optional fixed compression](COMPRESSION.md) applies the same matrix to
 data, predictions and both covariance axes.
 The
@@ -108,13 +111,13 @@ checks their lengths and Git blob hashes, and stores them in
 `data/upstream_y3/`. It does not download the whole simulation archive or
 execute upstream code.
 
-**Step :two:**: select four OpenMP workers and serial BLAS.
+**Step :two:**: allow up to six OpenMP workers and select serial BLAS.
 
 Linux:
 
 ```bash
-export OMP_NUM_THREADS=4
-export OMP_THREAD_LIMIT=4
+export OMP_NUM_THREADS=6
+export OMP_THREAD_LIMIT=6
 export OMP_PROC_BIND=close
 export OMP_PLACES=cores
 export OMP_DYNAMIC=FALSE
@@ -127,8 +130,8 @@ export BLIS_NUM_THREADS=1
 macOS:
 
 ```bash
-export OMP_NUM_THREADS=4
-export OMP_THREAD_LIMIT=4
+export OMP_NUM_THREADS=6
+export OMP_THREAD_LIMIT=6
 export OMP_PROC_BIND=disabled
 export OMP_PLACES=cores
 export OMP_DYNAMIC=FALSE

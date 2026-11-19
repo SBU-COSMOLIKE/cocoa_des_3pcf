@@ -56,6 +56,7 @@ doubling its resolution twice.
 | `kernel_boost` | Source-window redshift grid | Sampling |
 | `source_boost` | Independent uniform source-density grid, when the configuration declares one | Sampling |
 | `fit_z_boost` | Matter-fit redshift anchors | Sampling |
+| `bispectrum_boost` | Four coarse axes of the optional supplied absolute bispectrum | Sampling |
 | `feedback_table_boost` | Paired response dense interpolation ratio | Sampling |
 | `feedback_z_boost` | BACCO response redshift intervals | Sampling |
 | `feedback_k_boost` | BACCO response log-wavenumber intervals | Sampling |
@@ -88,6 +89,17 @@ one individually. The analogous distinction holds between covariance profile
 samples and their dense interpolation ratio. Use the individual controls to
 determine which approximation limits a calculation before increasing all of
 them together.
+
+For the [supplied BiHalofit route](BIHALOFIT_PYTHON.md), the coarse baseline
+intervals grow by `accuracy_boost * bispectrum_boost`. Its explicit
+`physics.bispectrum_table.boost` stays fixed. Doubling the coarse intervals
+on all four axes therefore multiplies the stored table size by roughly
+sixteen, even though the global factor enters each axis only once. The
+49-by-193-by-97-by-33 example stores 30,271,857 double values, about 231 MiB
+for one table; Python ownership, C ownership and temporary preparation need
+additional memory. Change an individual YAML axis count when isolating that
+axis's error. The Python fit's `fit_z_boost` and `power_table_boost` control
+different approximations and remain independent of baseline interpolation.
 
 The four BACCO input-axis controls apply to the dynamic producer. A loaded
 fixed response file has no emulator from which to obtain new input values;

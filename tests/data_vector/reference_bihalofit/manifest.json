@@ -1,0 +1,25 @@
+{
+  "description": "Frozen controlled four-row inputs and full six-term joint covariance",
+  "row_order": [
+    "Map3",
+    "xi+",
+    "xi-",
+    "Map2"
+  ],
+  "metric": "Full covariance, all four rows retained, no regularization",
+  "source_report": "../../studies/results/bihalofit_refinement.json",
+  "files": {
+    "frozen_inputs.npz": {
+      "sha256": "32968985b687e42d7976db4162432140b14a7e7b523b0001256c451ce60d6983",
+      "original_archive_sha256": "bc9336dac43c80f38e5a4f80d6bb000e2d7db7eee459aaac78aff4ca38845536",
+      "size_bytes": 53939,
+      "array_bytes": "identical to original archive; ZIP compression only"
+    },
+    "frozen_measurement.npz": {
+      "sha256": "eff7141efed3ef28c2a420a5d60c21a7fc9bcc5e70ece8f97e588c8903293ec1",
+      "original_archive_sha256": "493c9f0b7b1a6b8c244405463c9bf10b47a7dc4f93978ee1b52364cdd77055ca",
+      "size_bytes": 1131,
+      "array_bytes": "identical to original archive; ZIP compression only"
+    }
+  }
+}
