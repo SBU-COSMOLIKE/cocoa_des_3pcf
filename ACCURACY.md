@@ -484,8 +484,21 @@ output coordinates and resolved counts. Another provider may replace the
 shared core state without changing an earlier snapshot or immutable model.
 Changing a source distribution does not change its matter smoothing inputs.
 The component tests check those ownership rules and compare the C and Python
-fits using the same shared arrays. Full joint mean, derivative and Fisher
-checks are still required before adopting the shared route as the default.
+fits using the same shared arrays.
+
+The joint NLA and TATT comparisons pass on factorized-growth inputs prepared
+with CAMB AccuracyBoost 2, k_per_logint 50 and 1025 uniform log-k samples.
+At four-times shared sampling, the largest parameter-pair FoM differences
+from the refined independent reference are 0.0541% for NLA and 0.0581% for
+TATT, including both derivative steps. All two-point stencil rows remain
+bitwise unchanged. NLA refinement from four to eight times sampling changes
+any pair FoM by at most 0.0356%; there is no equivalent full TATT refinement
+run. These are comparisons at specified inputs, not a universal forecast
+accuracy guarantee. The older coarse-input calculation failed the same
+comparison because the legacy scalar normalization changed the spectrum.
+Some marginalized errors still change by about 2.8% under derivative-step
+halving in both NLA methods. Defaults and native compatibility remain
+separate from this acceptance record.
 
 For analytic covariance, the shared route supplies halo variances and
 logarithmic mass slopes at the exact requested mass and line-of-sight
