@@ -538,3 +538,17 @@ previous internal-C timings and Fisher results do not certify this route.
 The global and bispectrum boosts refine all four coarse axes. Memory grows
 with their product, so use individual sampling studies before large joint
 boosts. Notebook and survey-refreeze runs remain paused during consolidation.
+
+
+### Mandatory theory-B consolidation, 19 November 2026
+
+The complete project suite passed 900 optimized tests and 900 UBSan tests.
+Before/after comparisons of the existing supplied-B path preserved all
+60 arrays bitwise: matter/tree queries, NLA/TATT alignment and projections,
+radial outputs, the mean and the six supported covariance families. All
+30 one-versus-six-worker pairs were bitwise identical. Frozen pre-removal C
+and fastnc outputs remain independent equation references for Python
+BiHalofit, including squeezed triangles and shared-variance inputs.
+These are implementation and state checks. They do not establish full DES
+Fisher convergence or transfer the retired internal-C timing to the theory
+producer. Notebook execution and survey refreezes remain paused.
