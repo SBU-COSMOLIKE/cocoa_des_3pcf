@@ -31,3 +31,23 @@ parameter-pair FoM changes by 0.5%. Repeat with finer shared sampling and
 both derivative steps. A failed criterion must be explained before the
 local duplicates are retired. Evolving versus factorized power is a
 separate physical comparison, not an accuracy refinement.
+
+The first full NLA comparison fails these acceptance criteria. It retains
+400 two-point and 80 aperture rows, 17 parameters, the same covariance,
+and two derivative spacings. With all shared sampling controls doubled,
+the mean difference is 2.1594e-4 in delta chi-squared; all two-point rows
+at all 103 evaluated points remain bitwise identical. At the larger step,
+the maximum whitened derivative change is 0.2822%, marginalized-error
+change 4.0321%, and pair-FoM change 5.2781%. At the smaller step these are
+0.2510%, 2.0651%, and 2.3896%. Refining shared sampling from baseline to
+twice baseline changes a pair FoM by up to 0.5953%, also above the 0.5%
+criterion. The shared route therefore remains optional.
+
+Two effects require separate investigation. The legacy calculation
+renormalizes the input power spectrum to its scalar sigma8; its fiducial
+power multiplier is about 0.999686. Shared smoothing preserves the input
+power amplitude. The old calculation also uses a finite root-solving
+tolerance, and its Fisher result changes when the derivative step halves.
+Archived CAMB arrays permit testing finer smoothing and root tolerances
+without changing the input cosmology or repeating the Boltzmann solves.
+These are hypotheses to test, not a justification for relaxing acceptance.
