@@ -48,7 +48,7 @@ interval weights; its counts are `projection_settings.nmu_log` and
 requires the projection and transform `lmax` values to agree, so the study
 changes both together.
 [Angular weights](https://github.com/SBU-COSMOLIKE/cocoa-cosmolike-core/blob/lowrank_fftlog/cosmolike/3pcf/physics_grid_3pcf.c#L563);
-the count rules are in [the accuracy guide](../../ACCURACY.md#stages).
+the count rules are in [the accuracy guide](../../../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md#accuracy-controls).
 
 The third control, `transform_options.npsi`, concerns the geometric
 coupling rather than the physical bispectrum table. Its value 200

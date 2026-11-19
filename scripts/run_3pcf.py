@@ -1,7 +1,7 @@
 """Prepare, predict and forecast explicitly defined DES three-point rows.
 
 Example, from this project directory:
-  python scripts/run_3pcf.py evaluate configs/y3_full_filter_example.json
+  python scripts/run_3pcf.py evaluate configs/y3_full_filter_example.yaml
 
 Absolute paths also work from another directory. Every path in the
 JSON or YAML file is relative to that file. ``--validate-config`` reads the
@@ -24,6 +24,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import yaml
 
 # Each scientific process owns at most six C workers. Matrix operations
 # must not create another worker team inside those workers or subprocesses.
@@ -1247,7 +1248,7 @@ def main(argv=None):
                 "missing_inputs": missing,
                 "description": config.get("description", ""),
             }
-            print(json.dumps(report, indent=2))
+            print(yaml.safe_dump(report, sort_keys=False))
             return 0
         if missing:
             raise FileNotFoundError(json.dumps(missing, indent=2))

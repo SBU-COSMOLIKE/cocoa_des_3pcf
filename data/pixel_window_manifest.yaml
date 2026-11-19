@@ -1,0 +1,11 @@
+source: Official HEALPix pixel-window tables distributed by healpy
+repository: https://github.com/healpy/healpy-data
+commit: 9ae7af095679c424dc0b085ccd0620c53f0f2928
+url: https://raw.githubusercontent.com/healpy/healpy-data/9ae7af095679c424dc0b085ccd0620c53f0f2928/pixel_window_functions/pixel_window_n1024.fits
+path: upstream_healpix/pixel_window_n1024.fits
+bytes: 72000
+sha256: d1d2afc8b0cf662f46664ee680065d703c1082257586c20ace49f8fc672ae8f7
+nside: 1024
+column: TEMPERATURE
+ell_max: 3071
+upper_extension: zero

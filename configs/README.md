@@ -8,9 +8,9 @@
 
 ## Schema and worked flows <a name="schema"></a>
 
-The JSON and YAML files describe examples, not validated DES forecasts.
-Both use the same schema, and the driver loads YAML with its safe
-data-only reader. Every path inside a configuration is relative to the
+The YAML files describe examples, not validated DES forecasts.
+The driver loads YAML with its data-only reader; JSON remains readable for
+frozen test configurations. Every path inside a configuration is relative to the
 configuration file, independently of the shell's directory. The driver
 restricts OpenMP to one through six workers, sets every BLAS vendor to
 one thread before importing numerical libraries, creates only the
@@ -20,7 +20,7 @@ This page defines the configuration keys and the file choices. The
 [project instructions](../README.md#evaluate) give the worked
 prepare/evaluate flow, the thread settings, the `--validate-config` and
 `--overwrite` flags and the demonstration source file; the
-[Fisher guide](../FISHER.md) gives the derivative flow and the
+[Fisher guide](../../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher) gives the derivative flow and the
 [covariance guide](../covariance/README.md) gives the covariance flow.
 
 ## Which example to use <a name="examples"></a>
@@ -30,14 +30,14 @@ prepare/evaluate flow, the thread settings, the `--validate-config` and
 | `des_y3_nla_demo_fisher.yaml` | Worked 480-row NLA demonstration with its recorded source processing and measured-edge PCHIP reconstruction. |
 | `des_y3_tatt_demo_fisher.yaml` | The corresponding TATT demonstration, with its larger IA parameter space and separate Fisher base. |
 | `des_y3_supplied_bihalofit.yaml` | The NLA demonstration with an explicit Python-produced baseline bispectrum and CAMB matter-density background. It writes separate physical tables and results. |
-| `y3_full_filter_example.json` | A joint forecast definition with 400 xi± entries and 80 full-filter aperture moments. Preparation reads the pinned public Y3 midpoint curves. Area and per-bin shape-noise properties are unset. |
-| `y3_finite_sas_example.json` | All 400 xi± and 80 aperture rows in the pinned public simulated Y3 FITS files, with their 480-by-480 covariance. Apertures integrate a finite side-angle-side shear grid. |
-| `y6_full_filter_example.json` | A forecast design with 100 aperture moments at 3, 5, 10, 20 and 40 arcmin, plus 400 illustrative xi± entries. Source curves, survey area and noise properties remain unset. |
+| `y3_full_filter_example.yaml` | A joint forecast definition with 400 xi± entries and 80 full-filter aperture moments. Preparation reads the pinned public Y3 midpoint curves. Area and per-bin shape-noise properties are unset. |
+| `y3_finite_sas_example.yaml` | All 400 xi± and 80 aperture rows in the pinned public simulated Y3 FITS files, with their 480-by-480 covariance. Apertures integrate a finite side-angle-side shear grid. |
+| `y6_full_filter_example.yaml` | A forecast design with 100 aperture moments at 3, 5, 10, 20 and 40 arcmin, plus 400 illustrative xi± entries. Source curves, survey area and noise properties remain unset. |
 | `des_y3_tatt_fisher.yaml` | A full 480-row IA Fisher design using CFASTPT two-point TATT and the three-point TATT model, with explicitly recorded covariance/estimator limitations. |
 | `des_y3_nla_fisher.yaml` | The same design with quadratic IA fixed and its derivative columns removed; a comparison conditional on the simpler model. |
 
 The YAML demonstrations use an approximate 8–80 arcmin range for both SAS
-side parameters; `y3_finite_sas_example.json` starts at 0.1 arcmin.
+side parameters; `y3_finite_sas_example.yaml` starts at 0.1 arcmin.
 Neither configuration adopts the published xi scale mask, and exact
 agreement with the public covariance's bin selection, averaging and
 simulation pixel treatment remains unvalidated.
@@ -47,7 +47,7 @@ about a released Y6 likelihood; the example invents no source curve,
 measured data vector, covariance or calibration prior. The Y3
 covariance's filename also does not justify inferring a number of
 independent skies: the driver checks its block labels and dimensions when
-it reads the file. [Paper targets](../PAPER_TARGETS.md) lists the cut,
+it reads the file. [Paper targets](../README.md#estimator) lists the cut,
 compression and likelihood choices that separate these examples from the
 published analysis.
 
@@ -60,13 +60,19 @@ labeled alternative; the driver never inserts it silently.
 
 ## Physical preparation keys <a name="physics"></a>
 
+`source.path` names an input in `data/`. `physics.tables` names a generated
+file in `runs/`; create it with `run_3pcf.py prepare` before evaluating that
+configuration. Output means, covariances and Fisher matrices also go in
+`runs/`. The [data guide](../data/README.md) lists the preparation commands
+and distinguishes generated results from the frozen comparisons in `tests/`.
+
 `prepare` reads source-redshift midpoint curves from a FITS table and
 reconstructs them with the configured source model. The worked
 demonstrations use measured-edge PCHIP with an independent source grid;
 the design templates use linear midpoint interpolation. Both normalize
 the sampled curve and record the original integrals, and the reader
 refuses to discard nonzero source support beyond the configured grid.
-The [accuracy guide](../ACCURACY.md#source-curves) defines the
+The [accuracy guide](../../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md#accuracy-controls) defines the
 reconstruction choices and their endpoint policies.
 
 CAMB then supplies power, distance and growth tables. Wavenumbers use
@@ -82,7 +88,7 @@ rule includes the change-of-variable factor in its returned weights.
 Increasing a count or widening a range creates a different requested
 calculation, and no adaptive loop keeps increasing the work until a
 result appears stable. Accuracy comparisons belong to the
-[accuracy guide](../ACCURACY.md).
+[accuracy guide](../../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md#accuracy-controls).
 
 The halo-profile radius table in the full-filter examples uses 512
 positive logarithmic nodes from 1e-7 to 0.5 radians, plus an explicit
@@ -110,7 +116,7 @@ plus an optional integer `boost` for dense C preparation. For sorted sides
 $`a\leq b\leq c`$, these coordinates mean redshift, $`\ln b`$,
 $`\ln(a/b)`$ and $`(c-b)/a`$. The logarithmic coordinates already contain
 logarithms, so their grid objects use ordinary linear spacing. The
-[BiHalofit guide](../BIHALOFIT_PYTHON.md) explains the fit and its controls.
+[BiHalofit guide](../python/des3pcf/README.md) explains the fit and its controls.
 
 Run `prepare` for the supplied example before evaluating it: its physical
 file must contain CAMB's `omega_m_z` array. An internal-route file lacking
@@ -176,7 +182,7 @@ calls are serial at the Python level and C owns the OpenMP workers.
 
 ## Fisher and precision keys <a name="fisher"></a>
 
-The [Fisher guide](../FISHER.md) defines the derivative keys
+The [Fisher guide](../../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher) defines the derivative keys
 (`fisher.steps`, `fisher.priors`, `fisher.bounds`, `fisher.fom_pairs`),
 the saved arrays and the rank diagnostic. `fisher` reads one fiducial
 covariance and holds it fixed throughout every parameter displacement.
@@ -199,7 +205,7 @@ PME is optional under `fisher.precision`:
 The count above illustrates the schema; it is not a DES realization
 count. An NPZ matrix file needs an exact `row_labels` array beside
 `covariance`, and it may be rank deficient. The
-[Fisher guide](../FISHER.md#precision) states the required row agreement,
+[Fisher guide](../../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher) states the required row agreement,
 the independence assumption and the refusal of an indefinite precision.
 
 Output NPZ files contain numerical and string arrays plus a JSON metadata

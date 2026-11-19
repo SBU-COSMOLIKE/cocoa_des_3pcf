@@ -28,7 +28,7 @@ notes:
   than forecast.
 - Numerical grids are starting choices. Refine transforms, projection, CFASTPT, ell
   quadrature and derivative steps separately before interpreting errors.
-- FITS clipping and normalization are recorded in runs/y3_demo_sources.json; original
+- FITS clipping and normalization are recorded in data/demonstration/y3_demo_sources.yaml; original
   upstream FITS bytes remain unchanged. The physical NPZ metadata separately records
   the PCHIP reconstruction, measured edges and numerical sampling.
 - Sources use measured-edge PCHIP with 9601 samples, 401 kernel nodes and 129 LOS
@@ -44,7 +44,7 @@ notes:
   changes; quadratic IA and the supplied covariance are held fixed.
 threads: 4
 source:
-  path: ../runs/y3_demo_sources.fits
+  path: ../data/demonstration/y3_demo_sources.fits
   extension: nz_source
   nbin: 4
 physics:

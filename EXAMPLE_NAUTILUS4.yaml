@@ -1,161 +1,175 @@
-format: cosmolike-3pcf-inference-v1
-description: Synthetic TATT example with explicit independent-pilot compression and Percival
-  likelihood.
-notes:
-- Teaching configuration; not a reproduction of the published estimator, priors, compression
-  or posterior.
-- Run EXAMPLE_COMPRESSION.ipynb to create the fixed independent-pilot matrix; its historical
-  derivative basis is not a current accuracy validation.
-- Ns=796 and independent Gaussian mocks are explicit approximations. Four footprints from
-  one full sky need an independence assessment.
-- The ordinary supplied sample covariance is used without Hartlap or PME correction. Compression
-  is applied to data, mean and both covariance axes.
-- The baseline synthetic mean uses recorded source clipping. All 480 rows enter before explicit
-  compression; no hidden scale cut is made.
-- Uniform sigma8 and the demonstration priors differ from published inference. Posterior reproduction
-  is not established.
-prediction: configs/des_y3_tatt_demo_fisher.yaml
-projection_overrides:
-  signed_baseline: 1
-threads: 1
-data:
-  mode: synthetic_fiducial
-selection:
-  mode: all
-initial:
-  w0: -1.0
-  wa: 0.0
-  m1: -0.0063
-  m2: -0.0198
-  m3: -0.0241
-  m4: -0.0369
-priors:
+# Standard Cobaya model, sampled by EXAMPLE_NAUTILUS4.py.
+# The dataset identifies local inputs, numerical settings and the fixed covariance.
+# Priors are defined here and enter Nautilus exactly once.
+timing: true
+debug: false
+stop_at_error: true
+likelihood:
+  des3pcf.cobaya_likelihood.JointShear:
+    data_file: des_y3_joint4.dataset
+params:
   omega_m:
-    distribution: uniform
-    minimum: 0.1
-    maximum: 0.5
+    prior:
+      min: 0.1
+      max: 0.5
+    ref: 0.289
     latex: \Omega_{\rm m}
   omega_b:
-    distribution: uniform
-    minimum: 0.03
-    maximum: 0.07
+    prior:
+      min: 0.03
+      max: 0.07
+    ref: 0.0463
     latex: \Omega_{\rm b}
   h:
-    distribution: uniform
-    minimum: 0.55
-    maximum: 0.91
+    prior:
+      min: 0.55
+      max: 0.91
+    ref: 0.722
     latex: h
   ns:
-    distribution: uniform
-    minimum: 0.87
-    maximum: 1.07
+    prior:
+      min: 0.87
+      max: 1.07
+    ref: 0.959
     latex: n_{\rm s}
   sigma8:
-    distribution: uniform
-    minimum: 0.6
-    maximum: 1.0
+    prior:
+      min: 0.6
+      max: 1.0
+    ref: 0.7865548373195137
     latex: \sigma_8
   a1:
-    distribution: uniform
-    minimum: -5.0
-    maximum: 5.0
+    prior:
+      min: -5.0
+      max: 5.0
+    ref: -0.33
     latex: A_1
   eta1:
-    distribution: uniform
-    minimum: -5.0
-    maximum: 5.0
+    prior:
+      min: -5.0
+      max: 5.0
+    ref: 2.81
     latex: \eta_1
   m1:
-    distribution: normal
-    mean: -0.0063
-    sigma: 0.0091
-    minimum: -0.1
-    maximum: 0.1
+    prior:
+      dist: truncnorm
+      a: -10.296703296703297
+      b: 11.68131868131868
+      loc: -0.0063
+      scale: 0.0091
+    ref: -0.0063
     latex: m_1
   m2:
-    distribution: normal
-    mean: -0.0198
-    sigma: 0.0078
-    minimum: -0.1
-    maximum: 0.1
+    prior:
+      dist: truncnorm
+      a: -10.282051282051283
+      b: 15.35897435897436
+      loc: -0.0198
+      scale: 0.0078
+    ref: -0.0198
     latex: m_2
   m3:
-    distribution: normal
-    mean: -0.0241
-    sigma: 0.0076
-    minimum: -0.1
-    maximum: 0.1
+    prior:
+      dist: truncnorm
+      a: -9.98684210526316
+      b: 16.32894736842105
+      loc: -0.0241
+      scale: 0.0076
+    ref: -0.0241
     latex: m_3
   m4:
-    distribution: normal
-    mean: -0.0369
-    sigma: 0.0076
-    minimum: -0.1
-    maximum: 0.1
+    prior:
+      dist: truncnorm
+      a: -8.302631578947368
+      b: 18.013157894736846
+      loc: -0.0369
+      scale: 0.0076
+    ref: -0.0369
     latex: m_4
   dz1:
-    distribution: normal
-    mean: 0.0
-    sigma: 0.018
-    minimum: -0.1
-    maximum: 0.1
+    prior:
+      dist: truncnorm
+      a: -5.555555555555556
+      b: 5.555555555555556
+      loc: 0.0
+      scale: 0.018
+    ref: 0
     latex: \Delta z_1
   dz2:
-    distribution: normal
-    mean: 0.0
-    sigma: 0.015
-    minimum: -0.1
-    maximum: 0.1
+    prior:
+      dist: truncnorm
+      a: -6.666666666666667
+      b: 6.666666666666667
+      loc: 0.0
+      scale: 0.015
+    ref: 0
     latex: \Delta z_2
   dz3:
-    distribution: normal
-    mean: 0.0
-    sigma: 0.011
-    minimum: -0.1
-    maximum: 0.1
+    prior:
+      dist: truncnorm
+      a: -9.090909090909092
+      b: 9.090909090909092
+      loc: 0.0
+      scale: 0.011
+    ref: 0
     latex: \Delta z_3
   dz4:
-    distribution: normal
-    mean: 0.0
-    sigma: 0.017
-    minimum: -0.1
-    maximum: 0.1
+    prior:
+      dist: truncnorm
+      a: -5.88235294117647
+      b: 5.88235294117647
+      loc: 0.0
+      scale: 0.017
+    ref: 0
     latex: \Delta z_4
   a2:
-    distribution: uniform
-    minimum: -5.0
-    maximum: 5.0
+    prior:
+      min: -5.0
+      max: 5.0
+    ref: 0.65
     latex: A_2
   eta2:
-    distribution: uniform
-    minimum: -5.0
-    maximum: 5.0
+    prior:
+      min: -5.0
+      max: 5.0
+    ref: 1.69
     latex: \eta_2
   bta:
-    distribution: uniform
-    minimum: 0.0
-    maximum: 2.0
+    prior:
+      min: 0.0
+      max: 2.0
+    ref: 0.91
     latex: b_{\rm TA}
-check:
-  parameter: a1
-  delta: 0.01
+  ct: 0
+  zpivot: 0.62
+  c1rho: 0.0134
+  power_mode: 2
+  ct_mode: 0
+  fb: 0
+  suppress_only: 1
+  w0: -1.0
+  wa: 0.0
+  mnu: 0.06
+  num_massive_neutrinos: 3
+  nnu: 3.046
 sampler:
-  n_live: 1000
-  n_networks: 4
-  n_eff: 10000
-  n_like_max: 100000
-  f_live: 0.01
-  seed: 137
-output: runs/nautilus_tatt_percival_teaching
-compression:
-  mode: file
-  path: runs/independent_pilot_compression.npz
-likelihood:
-  mode: percival
-  mock_count: 796
-  assumptions:
-    covariance_kind: sample
-    independent_mocks: true
-    independent_data: true
-    gaussian_mocks: true
-    compression_independent: true
+  evaluate:
+    override:
+      omega_m: 0.289
+      omega_b: 0.0463
+      h: 0.722
+      ns: 0.959
+      sigma8: 0.7865548373195137
+      a1: -0.33
+      eta1: 2.81
+      m1: -0.0063
+      m2: -0.0198
+      m3: -0.0241
+      m4: -0.0369
+      dz1: 0
+      dz2: 0
+      dz3: 0
+      dz4: 0
+      a2: 0.65
+      eta2: 1.69
+      bta: 0.91

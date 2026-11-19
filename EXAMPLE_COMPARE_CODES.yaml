@@ -1,5 +1,5 @@
 # Paths are relative to this file. Replace the three local snapshot paths
-# with your own checkouts at the commits in data/code_comparison_manifest.json.
+# with your own checkouts at the commits in data/code_comparison_manifest.yaml.
 # A null path reports that source as unavailable; nothing is downloaded.
 format: des3pcf-code-comparison-v1
 sources:

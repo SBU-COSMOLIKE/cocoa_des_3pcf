@@ -80,7 +80,7 @@ separately receives the bin width; replacing only the side-bin edges
 therefore does not make the final aperture contraction identical to the
 archived Y3 route. The area-weighted and empirical-offset choices, the
 original-bank selection and the pinned scalar pixel window are documented
-in [the estimator guide](../../ESTIMATOR.md), which `Map3Engine`
+in [the estimator guide](../../README.md#estimator), which `Map3Engine`
 implements.
 
 The aperture measure and component conventions are recoverable: the Y3
@@ -217,7 +217,7 @@ The port can therefore examine the paper's IA-response mechanism and
 produce a local forecast with stated assumptions. The fixed covariance
 and uncalibrated demonstration response support no claim of full TATT
 covariance accuracy or recovery of the published posterior gains. The
-[paired response API](../../FEEDBACK.md) accepts independent matter power
+[paired response API](../../../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md#paired-feedback) accepts independent matter power
 and bispectrum tables; its synthetic example is not a calibrated
 hydrodynamic family.
 

@@ -4,9 +4,7 @@ interface/*.d
 interface/.build/
 __pycache__/
 .pytest_cache/
-data/upstream_y3/
-data/upstream_y3_observed/
 outputs/
 runs/
+chains/
 *.pyc
-data/upstream_healpix/

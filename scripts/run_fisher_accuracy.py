@@ -12,7 +12,7 @@ Example from the project directory:
 
 The baseline Fisher result and physical tables must already exist. A saved
 candidate is reused only when its baseline, resolved settings and compiled
-module agree. Full derivative checks use the generated candidate JSON with
+module agree. Full derivative checks use the generated candidate YAML with
 the ordinary run_3pcf.py fisher command. No timing experiment is performed.
 """
 
@@ -123,7 +123,7 @@ def run(configuration, plan_path, output, only=None):
       output = study directory; existing consistent cases may be loaded.
       only = optional list of candidate names to execute in this invocation.
     Returns:
-      JSON-serializable study summary, also written to summary.json.
+      JSON-serializable study summary, also written to summary.yaml.
     Side effects:
       Runs one case at a time using the configured maximum of four workers;
       writes candidate configurations, stencils and provenance.
@@ -289,8 +289,8 @@ def run(configuration, plan_path, output, only=None):
         case["mean"]["two_point"].update(candidate.get("two_point", {}))
         case["outputs"]["fisher"] = str(output / f"{name}_full_fisher.npz")
         case["outputs"]["evaluate"] = str(output / f"{name}_mean.npz")
-        case_path = output / f"{name}.json"
-        content = json.dumps(case, indent=2, allow_nan=False) + "\n"
+        case_path = output / f"{name}.yaml"
+        content = yaml.safe_dump(case, sort_keys=False)
         if case_path.exists() and case_path.read_text(encoding="utf-8") != content:
             raise ValueError(f"{case_path} has different settings; choose a new study directory.")
         case_path.write_text(content, encoding="utf-8")
@@ -399,8 +399,8 @@ def run(configuration, plan_path, output, only=None):
             "a": additions.tolist(),
         }
         report["cases"].append(record)
-        (output / "summary.json").write_text(
-            json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8",
+        (output / "summary.yaml").write_text(
+            yaml.safe_dump(report, sort_keys=False), encoding="utf-8",
         )
         print(json.dumps(record, allow_nan=False), flush=True)
     return report

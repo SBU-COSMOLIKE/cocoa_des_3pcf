@@ -1,0 +1,75 @@
+audit_path: /Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.json
+bins:
+- column: BIN1
+  negative_area_fraction_of_positive: 0.0004101922963981577
+  negative_area_magnitude: 0.000410360623164525
+  negative_sample_count: 12
+  normalization_factor: 0.9995898077036017
+  original_fits_format: D
+  original_positive_integral: 1.0004103606231647
+  original_signed_integral: 1.0
+  output_fits_format: D
+  output_midpoint_integral: 0.9999999999999999
+- column: BIN2
+  negative_area_fraction_of_positive: 0.0
+  negative_area_magnitude: 0.0
+  negative_sample_count: 0
+  normalization_factor: 1.0
+  original_fits_format: D
+  original_positive_integral: 1.0
+  original_signed_integral: 1.0
+  output_fits_format: D
+  output_midpoint_integral: 1.0
+- column: BIN3
+  negative_area_fraction_of_positive: 0.0
+  negative_area_magnitude: 0.0
+  negative_sample_count: 0
+  normalization_factor: 1.0
+  original_fits_format: D
+  original_positive_integral: 1.0
+  original_signed_integral: 1.0
+  output_fits_format: D
+  output_midpoint_integral: 1.0
+- column: BIN4
+  negative_area_fraction_of_positive: 0.0
+  negative_area_magnitude: 0.0
+  negative_sample_count: 0
+  normalization_factor: 1.0
+  original_fits_format: D
+  original_positive_integral: 1.0
+  original_signed_integral: 1.0
+  output_fits_format: D
+  output_midpoint_integral: 1.0
+demonstration_only: true
+extension: NZ_SOURCE
+format: des3pcf-demonstration-sources-v1
+input:
+  bytes: 6534720
+  path: /Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits
+  sha256: e285c79faf6715be4839bf77272754ad43c42a0f5649b29b974f31e3ed7197a2
+integration_rule: trapezoid over supplied midpoint samples
+limitations:
+- Clipping changes the supplied calibration; these are not recalibrated survey source
+  distributions.
+- Uncertainty in the removed negative samples is not propagated.
+- The integration treats supplied midpoint values as a piecewise-linear curve, not
+  a reconstructed histogram.
+- No redshift nodes, bin boundaries, extrapolated tails or source shifts are introduced.
+- Fisher results using these curves are demonstrations, not validated survey constraints
+  or a reproduction of a published likelihood.
+nbin: 4
+output:
+  bytes: 23040
+  path: /Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits
+  sha256: 2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231
+policy: 'Demonstration Fisher forecast only: replace negative BIN midpoint samples
+  by zero, then divide each bin by the trapezoidal integral of its clipped curve over
+  the supplied Z_MID samples.'
+redshift_count: 301
+redshift_maximum: 2.995
+redshift_minimum: 0.0
+signed_integral_requirement: strictly positive before clipping
+unchanged_source_columns:
+- Z_LOW
+- Z_MID
+- Z_HIGH

@@ -1,0 +1,69 @@
+description: Synthetic TATT example with explicit independent-pilot compression and
+  Percival likelihood.
+notes:
+- Teaching configuration; not a reproduction of the published estimator, priors, compression
+  or posterior.
+- Run EXAMPLE_COMPRESSION.ipynb to create the fixed independent-pilot matrix; its
+  historical derivative basis is not a current accuracy validation.
+- Ns=796 and independent Gaussian mocks are explicit approximations. Four footprints
+  from one full sky need an independence assessment.
+- The ordinary supplied sample covariance is used without Hartlap or PME correction.
+  Compression is applied to data, mean and both covariance axes.
+- The baseline synthetic mean uses recorded source clipping. All 480 rows enter before
+  explicit compression; no hidden scale cut is made.
+- Uniform sigma8 and the demonstration priors differ from published inference. Posterior
+  reproduction is not established.
+prediction: ../configs/des_y3_tatt_demo_fisher.yaml
+projection_overrides:
+  signed_baseline: 1
+threads: 1
+data:
+  mode: synthetic_fiducial
+selection:
+  mode: all
+compression:
+  mode: file
+  path: ../runs/independent_pilot_compression.npz
+likelihood:
+  mode: percival
+  mock_count: 796
+  assumptions:
+    covariance_kind: sample
+    independent_mocks: true
+    independent_data: true
+    gaussian_mocks: true
+    compression_independent: true
+check:
+  parameter: a1
+  delta: 0.01
+initial:
+  a1: -0.33
+  eta1: 2.81
+  a2: 0.65
+  eta2: 1.69
+  bta: 0.91
+  ct: 0
+  zpivot: 0.62
+  c1rho: 0.0134
+  power_mode: 2
+  ct_mode: 0
+  fb: 0
+  suppress_only: 1
+  omega_m: 0.289
+  omega_b: 0.0463
+  h: 0.722
+  ns: 0.959
+  sigma8: 0.7865548373195137
+  w0: -1.0
+  wa: 0.0
+  mnu: 0.06
+  num_massive_neutrinos: 3
+  nnu: 3.046
+  m1: -0.0063
+  m2: -0.0198
+  m3: -0.0241
+  m4: -0.0369
+  dz1: 0
+  dz2: 0
+  dz3: 0
+  dz4: 0

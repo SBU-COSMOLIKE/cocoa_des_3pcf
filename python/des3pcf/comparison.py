@@ -14,6 +14,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import yaml
 import os
 from pathlib import Path
 import subprocess
@@ -22,7 +23,7 @@ import tempfile
 
 
 PROJECT = Path(__file__).resolve().parents[2]
-MANIFEST = PROJECT / "data" / "code_comparison_manifest.json"
+MANIFEST = PROJECT / "data" / "code_comparison_manifest.yaml"
 FORMAT = "des3pcf-code-comparison-v1"
 BLAS_VARIABLES = (
     "OPENBLAS_NUM_THREADS",
@@ -106,7 +107,7 @@ def comparison_status(path):
     file and of the individual main/integrator files used here.
     """
     settings = load_comparison_config(path=path)
-    manifest = json.loads(MANIFEST.read_text())
+    manifest = yaml.safe_load(MANIFEST.read_text())
     report = {"format": FORMAT, "sources": {}, "dependencies": {}}
     for package in ("numpy", "scipy", "astropy", "pandas", "mpi4py",
                     "cosmosis", "treecorr"):
@@ -189,9 +190,9 @@ def run_code_comparison(path):
             prefix="comparison-", dir=output
         )
         with temporary_directory as temporary:
-            request_file = Path(temporary) / "request.json"
-            request_file.write_text(json.dumps(settings, indent=2) + "\n")
-            result_file = output / f"{task}_result.json"
+            request_file = Path(temporary) / "request.yaml"
+            request_file.write_text(yaml.safe_dump(settings, sort_keys=False))
+            result_file = output / f"{task}_result.yaml"
             process = subprocess.run(
                 args=[sys.executable, "-B", "-m", "des3pcf.comparison",
                       "--worker", task, "--request", str(request_file),
@@ -212,9 +213,9 @@ def run_code_comparison(path):
                     "diagnostic": process.stderr[-4000:],
                 })
             else:
-                report["cases"].extend(json.loads(result_file.read_text()))
-    report_file = output / "comparison_report.json"
-    report_file.write_text(json.dumps(report, indent=2) + "\n")
+                report["cases"].extend(yaml.safe_load(result_file.read_text()))
+    report_file = output / "comparison_report.yaml"
+    report_file.write_text(yaml.safe_dump(report, sort_keys=False))
     report["report_file"] = str(report_file)
     return report
 
@@ -672,9 +673,9 @@ def main():
     parser.add_argument("--request", type=Path, required=True)
     parser.add_argument("--result", type=Path, required=True)
     arguments = parser.parse_args()
-    settings = json.loads(arguments.request.read_text())
+    settings = yaml.safe_load(arguments.request.read_text())
     result = _worker(task=arguments.worker, settings=settings)
-    arguments.result.write_text(json.dumps(result, indent=2) + "\n")
+    arguments.result.write_text(yaml.safe_dump(result, sort_keys=False))
 
 
 if __name__ == "__main__":

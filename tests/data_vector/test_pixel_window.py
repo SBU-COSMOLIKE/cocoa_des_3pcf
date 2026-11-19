@@ -10,6 +10,7 @@ from des3pcf.variance import reference_physics_model
 
 import gc
 import json
+import yaml
 from pathlib import Path
 import subprocess
 import sys
@@ -202,10 +203,10 @@ def test_prepared_nonconstant_window_angular_integral(compiled):
 def test_pinned_healpix_schema_and_default_truncation():
     """The official scalar table preserves its ulp-sized W0 excess and ell cutoff."""
     project = Path(__file__).resolve().parents[2]
-    manifest = json.loads((project / "data/pixel_window_manifest.json").read_text())
+    manifest = yaml.safe_load((project / "data/pixel_window_manifest.yaml").read_text())
     path = project / "data" / manifest["path"]
     if not path.is_file():
-        pytest.skip("Run scripts/fetch_pixel_window.py to inspect the pinned FITS.")
+        pytest.fail("The bundled HEALPix FITS is missing from data/upstream_healpix.")
     values, metadata = load_healpix_window(path=path, nside=1024,
                                          sha256=manifest["sha256"])
     assert values.shape == (3072,)

@@ -1,0 +1,67 @@
+description: Observed DES Y3 joint-data demonstration; estimator/source/scale-cut
+  and Gaussian-likelihood approximations prevent a publication-reproduction claim.
+notes:
+- These observed unblinded files are paired by the pinned upstream joint NLA configuration,
+  recorded in data/y3_observed_manifest.yaml. This demonstration does not reproduce
+  its cuts, compression, calibrated source treatment or Percival likelihood.
+- All 400 xi and 80 Map3 rows are retained. Small-scale baryonic contamination, exact
+  finite-SAS estimator agreement and connected IA covariance changes are not validated
+  by this demonstration.
+- The likelihood is a normalized fixed Gaussian with the complete joint cross-covariance.
+  It applies no Hartlap, Percival or PME correction and no MOPED compression.
+- Source clipping and normalization follow the explicitly recorded demonstration source
+  file. These processed curves are not a calibrated replacement for the published
+  source model.
+- Uniform cosmological and IA ranges below are demonstration priors. In particular
+  sigma8 is sampled uniformly, unlike a uniform S8 prior in the published inference.
+- Gaussian source-calibration widths and means follow 2503.03964 Table 3; finite bounds
+  explicitly truncate and renormalize each Gaussian prior.
+- Flat dark energy w0=-1,wa=0 and mnu=0.06 eV are fixed. Ct and the bispectrum-only
+  feedback fb remain fixed at zero.
+- A short --check evaluates the fiducial probability; it does not establish
+  numerical convergence or a converged posterior.
+prediction: ../configs/des_y3_nla_demo_fisher.yaml
+projection_overrides:
+  signed_baseline: 1
+threads: 1
+data:
+  mode: observed
+  two_point: ../data/upstream_y3_observed/data/dv/real_2pt_desy3_unblind_g2flip_matchElisa_2025Mar10.fits
+  aperture: ../data/upstream_y3_observed/data/dv/real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits
+  covariance: ../data/upstream_y3_observed/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits
+selection:
+  mode: all
+check:
+  parameter: a1
+  delta: 0.01
+initial:
+  a1: -0.33
+  eta1: 2.81
+  a2: 0.0
+  eta2: 0.0
+  bta: 0.0
+  ct: 0
+  zpivot: 0.62
+  c1rho: 0.0134
+  power_mode: 2
+  ct_mode: 0
+  fb: 0
+  suppress_only: 1
+  omega_m: 0.289
+  omega_b: 0.0463
+  h: 0.722
+  ns: 0.959
+  sigma8: 0.7865548373195137
+  w0: -1.0
+  wa: 0.0
+  mnu: 0.06
+  num_massive_neutrinos: 3
+  nnu: 3.046
+  m1: -0.0063
+  m2: -0.0198
+  m3: -0.0241
+  m4: -0.0369
+  dz1: 0
+  dz2: 0
+  dz3: 0
+  dz4: 0

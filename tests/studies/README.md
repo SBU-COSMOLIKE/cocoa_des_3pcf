@@ -155,7 +155,7 @@ shear with and without Map3, using independently emulated power and
 bispectrum feedback responses, and compares the neutrino, continuation
 and interpolation prescriptions. The measurements are in
 [the BACCO record](bacco_validation.md); the
-[example commands](../../BACCO.md#running) run its notebook and off-grid
+[example commands](../../README.md#feedback) run its notebook and off-grid
 interpolation check.
 
 Saved records in [results/bacco/](results/bacco/): `execution.json`,
@@ -219,4 +219,4 @@ passing comparisons on refined CAMB inputs as one chronology in
 [the shared-variance record](shared_variance_validation.md). There is no
 separate driver and no saved record here; the measured limits live in
 the page itself, and the current acceptance statement is in
-[ACCURACY.md](../../ACCURACY.md#shared-smoothing).
+[shared smoothing controls](../../../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md#shared-smoothing).

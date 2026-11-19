@@ -16,7 +16,7 @@ notes:
   kept; no published posterior claim is made.
 threads: 4
 source:
-  path: ../runs/y3_demo_sources.fits
+  path: ../data/demonstration/y3_demo_sources.fits
   extension: nz_source
   nbin: 4
 physics:

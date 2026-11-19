@@ -129,6 +129,72 @@ def projection_overrides(specification):
     return dict(overrides)
 
 
+def read_dataset(data_file, path=None):
+    """Read a local dataset beside the project's bundled data by default."""
+    directory = Path(__file__).resolve().parents[2] / "data"
+    if path is not None:
+        directory = Path(path).resolve()
+    location = (directory / data_file).resolve()
+    settings = yaml.safe_load(location.read_text(encoding="utf-8"))
+    return settings, location
+
+
+def cobaya_specification(parameters, dataset):
+    """Map standard Cobaya parameters onto the existing prediction preparation.
+
+    Cobaya owns the actual prior evaluation. These equivalent independent
+    distributions are used only to validate the fiducial and to count the
+    sampled parameters for the finite-simulation likelihood. The legacy
+    sampler fields below are unused by the Cobaya/Nautilus examples.
+    """
+    specification = deepcopy(dataset)
+    specification["format"] = FORMAT
+    specification["priors"] = {}
+    for name, definition in parameters.items():
+        if not isinstance(definition, dict) or "prior" not in definition:
+            value = definition
+            if isinstance(definition, dict):
+                value = definition.get("value")
+            if isinstance(value, (int, float)) and name in specification["initial"]:
+                specification["initial"][name] = value
+            continue
+        prior = definition["prior"]
+        kind = prior.get("dist", "uniform")
+        if kind == "uniform":
+            if "min" in prior:
+                lower = prior["min"]
+                upper = prior["max"]
+            else:
+                lower = prior["loc"]
+                upper = lower + prior["scale"]
+            entry = {"distribution": "uniform", "minimum": lower,
+                     "maximum": upper}
+        elif kind in ("norm", "truncnorm"):
+            mean = prior.get("loc", 0.0)
+            sigma = prior.get("scale", 1.0)
+            entry = {"distribution": "normal", "mean": mean, "sigma": sigma}
+            if kind == "truncnorm":
+                entry["minimum"] = mean + sigma * prior["a"]
+                entry["maximum"] = mean + sigma * prior["b"]
+        else:
+            raise ValueError(
+                f"JointShear prior {name} uses {kind}; supported priors are "
+                "uniform, norm and truncnorm."
+            )
+        entry["latex"] = definition.get("latex", name)
+        specification["priors"][name] = entry
+    specification["sampler"] = {
+        "n_live": 1000,
+        "n_networks": 4,
+        "n_eff": 10000,
+        "n_like_max": 100000,
+        "f_live": 0.01,
+        "seed": 42,
+    }
+    specification["output"] = "unused_by_cobaya"
+    return specification
+
+
 def load_inference(path):
     """Read inference choices without importing the compiled physical model.
 
@@ -139,6 +205,20 @@ def load_inference(path):
     """
     location = Path(path).resolve()
     specification = yaml.safe_load(location.read_text(encoding="utf-8"))
+    if "format" not in specification:
+        component = "des3pcf.cobaya_likelihood.JointShear"
+        options = specification["likelihood"][component]
+        dataset, location = read_dataset(
+            data_file=options["data_file"], path=options.get("path"),
+        )
+        specification = cobaya_specification(
+            parameters=specification["params"], dataset=dataset,
+        )
+    return validate_inference(specification=specification, location=location)
+
+
+def validate_inference(specification, location):
+    """Validate prepared inference choices before physical construction."""
     fields(
         mapping=specification,
         allowed={
@@ -346,13 +426,18 @@ def analysis_configuration(specification, location, driver):
     return config, path, digest, parameters, distributions
 
 
-def inspect_inference(path, driver):
+def inspect_inference(path, driver, specification=None):
     """List dependencies and choices without evaluating a model or covariance.
 
     The output is configuration inspection, not the --check calculation.
     Missing files are reported together so preparation can address them once.
     """
-    specification, location = load_inference(path=path)
+    if specification is None:
+        specification, location = load_inference(path=path)
+    else:
+        specification, location = validate_inference(
+            specification=specification, location=Path(path).resolve(),
+        )
     config, prediction_path, digest, parameters, _ = analysis_configuration(
         specification=specification, location=location, driver=driver,
     )
@@ -395,7 +480,7 @@ def inspect_inference(path, driver):
     }
 
 
-def prepare_likelihood(path, driver):
+def prepare_likelihood(path, driver, specification=None):
     """Build the same physical mean as Fisher, then fix data and covariance.
 
     Arguments:
@@ -407,12 +492,18 @@ def prepare_likelihood(path, driver):
       Imports compiled interfaces and constructs geometry; synthetic data
       additionally require one fiducial prediction. No sampling occurs.
     """
-    record = inspect_inference(path=path, driver=driver)
+    record = inspect_inference(path=path, driver=driver,
+                               specification=specification)
     if record["missing_inputs"]:
         raise FileNotFoundError(
             "Inference inputs are missing: " + json.dumps(record["missing_inputs"])
         )
-    specification, location = load_inference(path=path)
+    if specification is None:
+        specification, location = load_inference(path=path)
+    else:
+        specification, location = validate_inference(
+            specification=specification, location=Path(path).resolve(),
+        )
     config, prediction_path, _, parameters, distributions = analysis_configuration(
         specification=specification, location=location, driver=driver,
     )
@@ -511,11 +602,12 @@ def prepare_likelihood(path, driver):
         three_point_path=compiled.__file__,
         two_point_path=two_point_path,
         use_camb=config["physics"]["cosmology_mode"] == "camb",
-        extra_scripts=("scripts/run_nautilus.py",),
+        extra_scripts=("EXAMPLE_NAUTILUS1.py", "EXAMPLE_NAUTILUS2.py",
+                       "EXAMPLE_NAUTILUS3.py", "EXAMPLE_NAUTILUS4.py"),
     ))
     if specification["data"]["mode"] == "observed":
-        manifest_path = project / "data" / "y3_observed_manifest.json"
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_path = project / "data" / "y3_observed_manifest.yaml"
+        manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
         observed_root = project / "data" / "upstream_y3_observed"
         expected_paths = set()
         for item in manifest["files"]:

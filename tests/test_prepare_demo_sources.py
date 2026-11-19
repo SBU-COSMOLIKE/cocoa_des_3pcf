@@ -7,7 +7,7 @@ writing for invalid inputs. No CAMB calculation or native model is needed.
 """
 
 import hashlib
-import json
+import yaml
 from pathlib import Path
 import subprocess
 import sys
@@ -110,9 +110,9 @@ def test_clipping_accounting_and_original_preservation(tmp_path):
         input_path=original, output_path=output, extension="nz_source", nbin=4,
     )
     assert original.read_bytes() == raw_bytes
-    sidecar = output.with_suffix(".json")
+    sidecar = output.with_suffix(".yaml")
     sidecar_contents = sidecar.read_text()
-    stored = json.loads(s=sidecar_contents)
+    stored = yaml.safe_load(sidecar_contents)
     assert stored == record
     assert record["demonstration_only"] is True
     assert record["input"]["sha256"] == raw_digest
@@ -234,7 +234,7 @@ def test_invalid_samples_refused_before_writing(tmp_path, problem, message):
             extension="nz_source", nbin=4,
         )
     assert not output.exists()
-    assert not output.with_suffix(".json").exists()
+    assert not output.with_suffix(".yaml").exists()
     assert original.read_bytes() == raw_bytes
 
 
@@ -271,7 +271,7 @@ def test_column_and_extension_mismatches(tmp_path, problem, message):
             extension=extension, nbin=4,
         )
     assert not output.exists()
-    assert not output.with_suffix(".json").exists()
+    assert not output.with_suffix(".yaml").exists()
 
 
 @pytest.mark.parametrize("existing", ["fits", "json"])
@@ -286,7 +286,7 @@ def test_existing_outputs_are_not_overwritten(tmp_path, existing):
     original = tmp_path / "original.fits"
     output = tmp_path / "demonstration.fits"
     write_source(path=original)
-    destination = output if existing == "fits" else output.with_suffix(".json")
+    destination = output if existing == "fits" else output.with_suffix(".yaml")
     destination.write_bytes(b"retain these original bytes")
     with pytest.raises(FileExistsError):
         prepare_demo_sources(
@@ -294,7 +294,7 @@ def test_existing_outputs_are_not_overwritten(tmp_path, existing):
             extension="nz_source", nbin=4,
         )
     assert destination.read_bytes() == b"retain these original bytes"
-    other = output.with_suffix(".json") if existing == "fits" else output
+    other = output.with_suffix(".yaml") if existing == "fits" else output
     assert not other.exists()
 
 
@@ -314,7 +314,7 @@ def test_input_cannot_be_an_output_or_sidecar(tmp_path):
             input_path=original, output_path=original,
             extension="nz_source", nbin=4,
         )
-    disguised = tmp_path / "demonstration.json"
+    disguised = tmp_path / "demonstration.yaml"
     disguised.write_bytes(raw_bytes)
     with pytest.raises(ValueError, match="distinct"):
         prepare_demo_sources(
@@ -334,12 +334,12 @@ def test_exclusive_creation_removes_only_its_partial_file(tmp_path):
       None; the sidecar is preserved and the partial FITS file is removed.
     """
     output = tmp_path / "demonstration.fits"
-    sidecar = tmp_path / "demonstration.json"
+    sidecar = tmp_path / "demonstration.yaml"
     sidecar.write_text(data="retain the existing sidecar")
     with pytest.raises(FileExistsError):
         write_pair(
             output=output, fits_content=b"prepared FITS bytes",
-            sidecar=sidecar, json_content="{}\n",
+            sidecar=sidecar, yaml_content="{}\n",
         )
     assert not output.exists()
     assert sidecar.read_text() == "retain the existing sidecar"
@@ -372,9 +372,9 @@ def test_cli_uses_the_explicit_extension(tmp_path):
     result = subprocess.run(
         args=command, capture_output=True, text=True, check=True,
     )
-    audit = output.with_suffix(".json")
+    audit = output.with_suffix(".yaml")
     audit_contents = audit.read_text()
-    record = json.loads(s=audit_contents)
+    record = yaml.safe_load(audit_contents)
     assert record["extension"].casefold() == "custom_sources"
     assert record["demonstration_only"] is True
     assert str(output) in result.stdout

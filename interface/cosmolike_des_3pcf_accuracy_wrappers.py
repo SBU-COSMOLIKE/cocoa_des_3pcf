@@ -32,6 +32,16 @@ from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 
 
+def summary_file(directory):
+    """Prefer YAML records while retaining readable frozen JSON studies."""
+    directory = Path(directory)
+    current = directory / "summary.yaml"
+    archived = directory / "summary.json"
+    if current.is_file() or not archived.is_file():
+        return current
+    return archived
+
+
 def _digest(path):
     """Hash the exact archived bytes, not just a matching filename."""
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -183,7 +193,7 @@ class AccuracyStudy:
 
     Arguments:
       configuration = baseline Fisher YAML/JSON path.
-      output = directory containing summary.json and candidate files.
+      output = directory containing summary.yaml (or archived summary.json) and candidate files.
       plan = selection/candidate YAML, used to report unfinished cases.
     Construction and loading write nothing and import no compiled extension.
     Paths are resolved when constructed; file contents are reread each time,
@@ -236,7 +246,7 @@ class AccuracyStudy:
             "configuration": str(self.configuration),
             "baseline_result": str(baseline),
             "baseline_available": baseline.is_file(),
-            "summary_available": (self.output / "summary.json").is_file(),
+            "summary_available": summary_file(self.output).is_file(),
             "requested_cases": candidates,
             "scan_command": self.scan_command(),
         }
@@ -249,12 +259,12 @@ class AccuracyStudy:
         code/input digest map in that archive. This loader preserves that
         record; it does not claim the current checkout matches an old run.
         """
-        summary_path = self.output / "summary.json"
+        summary_path = summary_file(self.output)
         if not summary_path.is_file():
             raise FileNotFoundError(
                 f"Accuracy scan pending: {summary_path}\nRun: {self.scan_command()}"
             )
-        report = json.loads(summary_path.read_text(encoding="utf-8"))
+        report = yaml.safe_load(summary_path.read_text(encoding="utf-8"))
         if report["format"] != "des3pcf-fisher-accuracy-result-v1":
             raise ValueError("Unsupported accuracy summary format.")
         if report["configuration_sha256"] != _digest(path=self.configuration):
@@ -306,7 +316,7 @@ class AccuracyStudy:
 
     def _available(self):
         """Report pending work without fabricating an empty scientific result."""
-        if not (self.output / "summary.json").is_file():
+        if not summary_file(self.output).is_file():
             print(f"Scan pending for {self.configuration.name}.")
             print(f"Explicit command: {self.scan_command()}")
             return None
@@ -440,7 +450,7 @@ class AccuracyStudy:
         """Read a historical step study associated with this exact baseline.
 
         Arguments:
-          directory = study folder containing summary.json and stencils.npz.
+          directory = study folder containing summary.yaml (or archived summary.json) and stencils.npz.
         Returns:
           Labels, two plot-ratio rows and the complete recorded step summary.
           The noise row is normalized to this same subset's h2 noise estimate;
@@ -455,7 +465,7 @@ class AccuracyStudy:
         if baseline_report.get("pair") != ["w0", "wa"]:
             raise ValueError("The cosmology step producer supports only the w0-wa pair.")
         directory = Path(directory).resolve()
-        summary = json.loads((directory/"summary.json").read_text(encoding="utf-8"))
+        summary = yaml.safe_load(summary_file(directory).read_text(encoding="utf-8"))
         if (summary.get("format") != "des3pcf-cosmology-step-study-v1"
                 or summary.get("executed") is not True):
             raise ValueError("Step study is not a completed supported calculation.")
@@ -579,7 +589,7 @@ class AccuracyStudy:
           Historical identities are checked; no physical calculation is launched.
         """
         directory = Path(directory).resolve()
-        files = (directory/"summary.json", directory/"stencils.npz")
+        files = (summary_file(directory), directory/"stencils.npz")
         if not all(path.is_file() for path in files):
             print(f"Step study pending: {directory}")
             return None
@@ -685,11 +695,11 @@ def plot_xi_preflight(directory="runs/xi_refinement", show=1):
     and the upper integration bound all belong in the labels: an ell-count
     plateau alone need not imply convergence in the other two controls.
     """
-    path = Path(directory).resolve() / "summary.json"
+    path = summary_file(Path(directory).resolve())
     if not path.is_file():
         print(f"Xi quadrature preflight pending: {path}")
         return None
-    report = json.loads(path.read_text(encoding="utf-8"))
+    report = yaml.safe_load(path.read_text(encoding="utf-8"))
     distances = []
     labels = []
     for case in report["cases"]:

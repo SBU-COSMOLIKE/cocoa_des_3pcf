@@ -25,7 +25,6 @@ from des3pcf.inference import analysis_configuration, check_likelihood
 from des3pcf.likelihood import FixedGaussianLikelihood
 from des3pcf.survey import SurveyRows
 import run_3pcf as driver
-from run_nautilus import resume_identity, verify_resume
 
 
 def rows():
@@ -262,7 +261,7 @@ def test_example_configuration_resolves_declared_model(number):
 )
 def test_inference_rejects_invalid_projection_override(tmp_path, overrides):
     """An unsupported chart or silently truncated flag cannot define a target."""
-    example = yaml.safe_load((PROJECT / "EXAMPLE_NAUTILUS1.yaml").read_text())
+    example, _ = load_inference(path=PROJECT / "EXAMPLE_NAUTILUS1.yaml")
     example["projection_overrides"] = overrides
     path = tmp_path / "invalid_chart.yaml"
     path.write_text(yaml.safe_dump(example), encoding="utf-8")
@@ -291,57 +290,3 @@ def test_malformed_selection_is_rejected(indices):
             predict=linear_mean, rows=rows(), covariance=covariance(),
             parameters={"amplitude": 0.0}, indices=np.asarray(indices),
         )
-
-
-def test_resume_preserves_target_but_can_extend_stopping_budget(tmp_path):
-    """A resume verifies data and model identity, while budgets may be extended."""
-    from des3pcf.inference import file_digest
-
-    prefix = tmp_path / "posterior"
-    data_path = Path(str(prefix) + "_data.npz")
-    data_path.write_bytes(b"selected measurement bytes")
-    record = {
-        "sampled_parameters": ["a1", "eta1"],
-        "input_files": {"covariance": "fixed digest"},
-        "three_point_extension": {"sha256": "binary digest"},
-        "check": {"restored_bitwise": True},
-    }
-    settings = {
-        "n_live": 100,
-        "n_networks": 4,
-        "seed": 137,
-        "n_like_max": 1000,
-    }
-    identity = resume_identity(record=record, settings=settings)
-    saved = {
-        "identity": identity,
-        "selected_data_sha256": file_digest(path=data_path),
-        "attempts": [settings],
-    }
-    Path(str(prefix) + "_run.json").write_text(json.dumps(saved))
-    extended = dict(settings)
-    extended["n_like_max"] = 2000
-    candidate = resume_identity(record=record, settings=extended)
-    assert verify_resume(prefix=prefix, identity=candidate) == saved
-    changed = dict(record)
-    changed["sampled_parameters"] = ["eta1", "a1"]
-    with pytest.raises(ValueError, match="Resume target differs"):
-        verify_resume(
-            prefix=prefix, identity=resume_identity(record=changed, settings=extended),
-        )
-    data_path.write_bytes(b"altered measurement bytes")
-    with pytest.raises(ValueError, match="Saved likelihood data changed"):
-        verify_resume(prefix=prefix, identity=candidate)
-
-
-def test_resume_rejects_changed_sampler_definition():
-    """A different live-point definition cannot inherit an existing checkpoint."""
-    settings = {
-        "n_live": 100,
-        "n_networks": 4,
-        "seed": 137,
-    }
-    first = resume_identity(record={"target": "same"}, settings=settings)
-    settings["n_live"] = 200
-    second = resume_identity(record={"target": "same"}, settings=settings)
-    assert first != second

@@ -51,14 +51,14 @@ the notebook user is responsible for preserving that information.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py covariance \
-  projects/des_3pcf/configs/y3_full_filter_example.json --validate-config
+  projects/des_3pcf/configs/y3_full_filter_example.yaml --validate-config
 ```
 
 **Step :two:**: calculate the fiducial covariance after supplying those inputs.
 
 ```bash
 python projects/des_3pcf/scripts/run_3pcf.py covariance \
-  projects/des_3pcf/configs/y3_full_filter_example.json
+  projects/des_3pcf/configs/y3_full_filter_example.yaml
 ```
 
 The output path is `covariance.path` in the configuration. The driver

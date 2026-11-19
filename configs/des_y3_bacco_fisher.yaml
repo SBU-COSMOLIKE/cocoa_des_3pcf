@@ -30,7 +30,7 @@ notes:
   parameters. Rank failures are reported; no pseudoinverse or invented BCM prior is used.'
 threads: 1
 source:
-  path: ../runs/y3_demo_sources.fits
+  path: ../data/demonstration/y3_demo_sources.fits
   extension: nz_source
   nbin: 4
 physics:

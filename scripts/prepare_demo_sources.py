@@ -13,15 +13,15 @@ Run with all input choices explicit:
 The original file is read without modification. The output contains its
 copied primary HDU and selected source table, with the selected BIN columns
 stored as float64. Other source-table columns, including all redshift
-columns, retain their values and column definitions. A JSON sidecar uses
-the output stem, for example demonstration_sources.json. Both destinations
+columns, retain their values and column definitions. A YAML sidecar uses
+the output stem, for example demonstration_sources.yaml. Both destinations
 must be absent. No overwrite option, CAMB call or native model is used.
 """
 
 import argparse
 import hashlib
 from io import BytesIO
-import json
+import yaml
 import os
 from pathlib import Path
 import re
@@ -124,7 +124,7 @@ def normalize_midpoints(redshift, densities):
     return normalized, records
 
 
-def write_pair(output, fits_content, sidecar, json_content):
+def write_pair(output, fits_content, sidecar, yaml_content):
     """Create two absent files after all scientific validation has finished.
 
     Exclusive creation refuses a destination created by another process
@@ -134,7 +134,7 @@ def write_pair(output, fits_content, sidecar, json_content):
     Arguments:
       output, sidecar = distinct destination Paths in existing directories.
       fits_content = already serialized FITS bytes.
-      json_content = already serialized UTF-8 audit text.
+      yaml_content = already serialized UTF-8 audit text.
     Returns:
       None; creates the requested files without replacing an existing file.
     Raises:
@@ -149,7 +149,7 @@ def write_pair(output, fits_content, sidecar, json_content):
                 state = os.fstat(audit_stream.fileno())
                 created.append((sidecar, state.st_dev, state.st_ino))
                 fits_stream.write(fits_content)
-                audit_stream.write(json_content)
+                audit_stream.write(yaml_content)
     except OSError:
         for path, device, inode in created:
             try:
@@ -175,7 +175,7 @@ def prepare_demo_sources(input_path, output_path, extension, nbin):
       extension = explicit source binary-table HDU name.
       nbin = positive integer number of source columns.
     Returns:
-      JSON-compatible record also saved beside output_path with suffix .json.
+      Plain metadata record also saved beside output_path with suffix .yaml.
     Raises:
       ValueError for column/count mismatches, unsuitable numerical inputs,
       ambiguous extension names, colliding paths or missing output directory.
@@ -191,7 +191,7 @@ def prepare_demo_sources(input_path, output_path, extension, nbin):
     requested_output = Path(output_path)
     if requested_output.suffix.lower() != ".fits":
         raise ValueError("The demonstration output must have a .fits suffix.")
-    requested_sidecar = requested_output.with_suffix(".json")
+    requested_sidecar = requested_output.with_suffix(".yaml")
     output = requested_output.resolve()
     sidecar = requested_sidecar.resolve()
     paths = {
@@ -319,12 +319,10 @@ def prepare_demo_sources(input_path, output_path, extension, nbin):
         "signed_integral_requirement": "strictly positive before clipping",
         "bins": bin_records,
     }
-    json_content = json.dumps(
-        obj=record, indent=2, sort_keys=True, allow_nan=False,
-    ) + "\n"
+    yaml_content = yaml.safe_dump(record, sort_keys=False)
     write_pair(
         output=output, fits_content=fits_content,
-        sidecar=sidecar, json_content=json_content,
+        sidecar=sidecar, yaml_content=yaml_content,
     )
     return record
 

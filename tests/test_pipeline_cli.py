@@ -118,14 +118,14 @@ def toy_configuration(tmp_path):
 
 def test_public_examples_dry_check_without_physics():
     """Y6 missing source input is reported without generating a substitute."""
-    for name in ("y3_full_filter_example.json", "y3_finite_sas_example.json",
-                 "y6_full_filter_example.json", "des_y3_tatt_fisher.yaml",
+    for name in ("y3_full_filter_example.yaml", "y3_finite_sas_example.yaml",
+                 "y6_full_filter_example.yaml", "des_y3_tatt_fisher.yaml",
                  "des_y3_nla_fisher.yaml"):
         config_path = PROJECT / "configs" / name
         result = run_driver(command="prepare", config=config_path,
                             validate=True)
         assert result.returncode == 0, result.stderr
-        report = json.loads(result.stdout)
+        report = yaml.safe_load(result.stdout)
         assert report["schema_valid"] is True
         if name.startswith("y6"):
             assert report["missing_inputs"] == [{"input": "source FITS",
@@ -146,7 +146,7 @@ def test_pchip_requires_declared_source_count_and_padding(toy_configuration, pad
     result = run_driver(command="fisher", config=path, validate=True)
     if padding is not None:
         assert result.returncode == 0, result.stderr
-        assert json.loads(result.stdout)["schema_valid"] is True
+        assert yaml.safe_load(result.stdout)["schema_valid"] is True
     else:
         assert result.returncode != 0
         assert "PCHIP needs" in result.stderr

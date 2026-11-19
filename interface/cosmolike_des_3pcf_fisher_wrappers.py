@@ -15,6 +15,7 @@ matrix operations use the same des3pcf helpers as the command-line driver.
 import hashlib
 import importlib
 import json
+import yaml
 import os
 from pathlib import Path
 import subprocess
@@ -245,8 +246,8 @@ def verify_public_inputs():
     file bytes. A matching filename alone does not establish provenance.
     Missing files are reported; this helper never downloads replacements.
     """
-    manifest_path = PROJECT / "data" / "y3_reference_manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest_path = PROJECT / "data" / "y3_reference_manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     records = []
     for record in manifest["files"]:
         path = PROJECT / "data" / "upstream_y3" / record["path"]
@@ -396,7 +397,7 @@ def source_report(workflow):
     Arguments:
       workflow = FisherWorkflow containing the demonstration source path.
     Returns:
-      Redshift, source density[bin,z], midpoint integrals and JSON sidecar.
+      Redshift, source density[bin,z], midpoint integrals and YAML sidecar.
       Source FITS SHA256 must match that sidecar; original bytes are untouched.
     Raises:
       ValueError for an inconsistent sidecar or an invalid source curve.
@@ -411,8 +412,8 @@ def source_report(workflow):
         path=source, nbin=config["source"]["nbin"],
         extension=config["source"]["extension"],
     )
-    sidecar = source.with_suffix(".json")
-    record = json.loads(s=sidecar.read_text(encoding="utf-8"))
+    sidecar = source.with_suffix(".yaml")
+    record = yaml.safe_load(sidecar.read_text(encoding="utf-8"))
     digest = hashlib.sha256(source.read_bytes()).hexdigest()
     if record["output"]["sha256"] != digest:
         raise ValueError("Source FITS differs from its preprocessing record.")
@@ -500,8 +501,8 @@ def ia_sign_workflows(workflow):
             derived["outputs"][command] = str(
                 directory / f"{tag}_{command}.npz"
             )
-        target = directory / f"{tag}.json"
-        text = json.dumps(obj=derived, indent=2, sort_keys=True) + "\n"
+        target = directory / f"{tag}.yaml"
+        text = yaml.safe_dump(derived, sort_keys=False)
         if target.exists() and target.read_text(encoding="utf-8") != text:
             raise ValueError(f"Existing sign configuration differs: {target}")
         prepared.append((target, text))
@@ -1226,8 +1227,8 @@ def ia_figure9_workflows(workflow):
             derived["outputs"][command] = str(
                 directory / f"{tag}_{command}.npz"
             )
-        target = directory / f"{tag}.json"
-        text = json.dumps(obj=derived, indent=2, sort_keys=True) + "\n"
+        target = directory / f"{tag}.yaml"
+        text = yaml.safe_dump(derived, sort_keys=False)
         if target.exists() and target.read_text(encoding="utf-8") != text:
             raise ValueError(f"Existing IA comparison differs: {target}")
         prepared.append((tag, target, text))

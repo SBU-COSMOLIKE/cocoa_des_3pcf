@@ -80,7 +80,7 @@ marginalized-error and pair-FoM differences of 0.00826%, 0.0541% and
 identical two-point rows. There is no eight-times TATT refinement result
 yet. This page narrates the investigation; the authoritative current
 numbers are the acceptance statement in
-[ACCURACY.md](../../ACCURACY.md#shared-smoothing).
+[shared smoothing controls](../../../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md#shared-smoothing).
 
 These passes establish method agreement at the tested inputs and
 resolutions, not a forecast guarantee. Full paired forecasts remain

@@ -173,8 +173,18 @@ def preflight(path):
     return report
 
 
-def _write_json(path, value):
-    """Write a readable JSON record, refusing nonfinite numerical values.
+def _read_record(path):
+    """Read a YAML record or its frozen JSON predecessor under tests/."""
+    path = Path(path)
+    if not path.is_file():
+        archived = path.with_suffix(".json")
+        if archived.is_file():
+            path = archived
+    return yaml.safe_load(path.read_text())
+
+
+def _write_yaml(path, value):
+    """Write a readable YAML record, refusing nonfinite numerical values.
 
     Arguments:
       path = output filename; an existing record is replaced.
@@ -184,7 +194,8 @@ def _write_json(path, value):
     Raises:
       ValueError if a numerical value is NaN or infinite.
     """
-    Path(path).write_text(json.dumps(value, indent=2, sort_keys=True, allow_nan=False))
+    plain = json.loads(json.dumps(value, allow_nan=False))
+    Path(path).write_text(yaml.safe_dump(plain, sort_keys=False))
 
 
 def _child(command, job, threads, timeout):
@@ -252,12 +263,12 @@ def prepare_job(path):
     Arguments:
       path = preparation job's JSON filename.
     Returns:
-      None. Writes eleven NPZ tables and preparation.json in the job directory.
+      None. Writes eleven NPZ tables and preparation.yaml in the job directory.
     """
     from .scaling_lsst import prepare_lsst_tables
     from .scaling_threepcf import prepare_threepcf_tables
 
-    job = json.loads(Path(path).read_text())
+    job = yaml.safe_load(Path(path).read_text())
     points = [job["bank"]["warmup_point"]] + job["bank"]["points"]
     records = []
     for index, point in enumerate(points):
@@ -265,7 +276,7 @@ def prepare_job(path):
         reuse_path = None
         if job.get("reuse_tables") is not None:
             previous = Path(job["reuse_tables"])
-            prior_records = json.loads((previous / "preparation.json").read_text())
+            prior_records = _read_record(previous / "preparation.yaml")
             source = prior_records[index]["table"]
             if file_record(source["path"])["sha256"] != source["sha256"]:
                 raise RuntimeError("A saved preparation archive changed before reuse.")
@@ -286,7 +297,7 @@ def prepare_job(path):
             "reused_archive": reuse_path,
             "table": file_record(destination),
         })
-        _write_json(Path(job["tables_directory"]) / "preparation.json", records)
+        _write_yaml(Path(job["tables_directory"]) / "preparation.yaml", records)
         print(f"Prepared {job['workload']} point {index - 1}", flush=True)
 
 
@@ -347,7 +358,7 @@ def run_job(path):
     from .scaling_lsst import initialize_lsst, load_lsst_tables
     from .scaling_threepcf import initialize_threepcf, load_threepcf_tables
 
-    job = json.loads(Path(path).read_text())
+    job = yaml.safe_load(Path(path).read_text())
     threads = job["threads"]
     directory = Path(job["result_directory"])
     directory.mkdir()
@@ -368,8 +379,8 @@ def run_job(path):
         )
         loader = load_threepcf_tables
     runtime = _runtime_check(job["extension"], threads)
-    preparation_file = Path(job["tables_directory"]) / "preparation.json"
-    prepared = json.loads(preparation_file.read_text())
+    preparation_file = Path(job["tables_directory"]) / "preparation.yaml"
+    prepared = _read_record(preparation_file)
     points = [job["bank"]["warmup_point"]] + job["bank"]["points"]
     records = []
     for index, point in enumerate(points):
@@ -391,7 +402,7 @@ def run_job(path):
             raise RuntimeError("A prediction must be a nonempty finite vector.")
         np.save(directory / f"point_{index:02d}.npy", values, allow_pickle=False)
         if index == 0:
-            _write_json(directory / "warmup.json", {
+            _write_yaml(directory / "warmup.yaml", {
                 "seconds": elapsed,
                 "runtime": runtime,
                 "point": point,
@@ -406,7 +417,7 @@ def run_job(path):
                 "point": point,
                 "rows": values.size,
             })
-            _write_json(directory / "records.json", records)
+            _write_yaml(directory / "records.yaml", records)
         message = f"{job['workload']} threads={threads} point={index - 1} complete"
         print(message, flush=True)
     _runtime_check(job["extension"], threads)
@@ -419,7 +430,7 @@ def run_job(path):
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     if sys.platform != "darwin":
         peak *= 1024
-    _write_json(directory / "memory.json", {
+    _write_yaml(directory / "memory.yaml", {
         "peak_process_resident_bytes": int(peak),
         "scope": "Whole worker process, including preparation and imports.",
     })
@@ -502,7 +513,7 @@ def run_study(path, reuse_from=None):
         "logical_cpus": os.cpu_count(),
     }
     report["numerical_work_executed"] = True
-    _write_json(output / "manifest.json", report)
+    _write_yaml(output / "manifest.yaml", report)
     records = []
     # Copy each binary once so both IA models use the same compiled code even
     # if another team rebuilds a library while this study is running.
@@ -543,8 +554,8 @@ def run_study(path, reuse_from=None):
             "reuse_tables": reuse_tables,
         }
         job.update(specification["specification"])
-        filename = output / f"prepare_{case}.json"
-        _write_json(filename, job)
+        filename = output / f"prepare_{case}.yaml"
+        _write_yaml(filename, job)
         print(f"Preparing eleven {case} physical tables with one worker", flush=True)
         _child("_prepare", filename, threads=1, timeout=config["child_timeout_seconds"])
         template = job
@@ -554,8 +565,8 @@ def run_study(path, reuse_from=None):
                 threads=threads,
                 result_directory=str(output / f"{case}_{threads}"),
             )
-            filename = output / f"worker_{case}_{threads}.json"
-            _write_json(filename, job)
+            filename = output / f"worker_{case}_{threads}.yaml"
+            _write_yaml(filename, job)
             print(f"Running {case}: {threads} threads, ten points", flush=True)
             _child(
                 "_worker",
@@ -563,11 +574,11 @@ def run_study(path, reuse_from=None):
                 threads=threads,
                 timeout=config["child_timeout_seconds"],
             )
-            result_file = Path(job["result_directory"]) / "records.json"
-            records.extend(json.loads(result_file.read_text()))
+            result_file = Path(job["result_directory"]) / "records.yaml"
+            records.extend(_read_record(result_file))
         validate_vectors(output, workloads=[case])
     validate_vectors(output)
-    _write_json(output / "records.json", records)
+    _write_yaml(output / "records.yaml", records)
     with (output / "timings.csv").open("w", newline="") as stream:
         fields = ("workload", "threads", "repetition", "seconds", "rows")
         writer = csv.DictWriter(
@@ -575,7 +586,7 @@ def run_study(path, reuse_from=None):
         )
         writer.writeheader()
         writer.writerows(records)
-    _write_json(output / "validation.json", {
+    _write_yaml(output / "validation.yaml", {
         "thread_results_bitwise_equal": True,
         "random_points_per_workload": 10,
         "timed_vectors": 120,
@@ -606,10 +617,10 @@ def plot_study(path):
 
     config = load_configuration(path)
     output = Path(config["output"])
-    validation = json.loads((output / "validation.json").read_text())
+    validation = _read_record(output / "validation.yaml")
     if validation.get("thread_results_bitwise_equal") is not True:
         raise ValueError("Scaling plots require the saved thread-consistency check.")
-    records = json.loads((output / "records.json").read_text())
+    records = _read_record(output / "records.yaml")
     matplotlib.rcParams.update({
         "mathtext.fontset": "stix",
         "font.family": "STIXGeneral",

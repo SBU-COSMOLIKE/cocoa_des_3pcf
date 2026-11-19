@@ -73,5 +73,41 @@ at their controlled inputs; the
 runs select no DES integration bounds, triangle grids, scale cuts or
 nuisance priors, and no Y3/Y6 posterior reproduction or runtime speedup
 is claimed by this record. The
-[paper-target guide](../PAPER_TARGETS.md) separates those survey
+[paper-target guide](../README.md#estimator) separates those survey
 questions from agreement between shared numerical kernels.
+
+## Input layout and shared Nautilus driver, 19 November 2026
+
+Generated theory tables, artificial feedback responses and trained compression
+matrices use `runs/`. Released measurements, mock inputs, sources and covariances
+use `data/`; frozen numerical comparisons use `tests/`. All 25 released files
+match their recorded source hashes. The processed source matches its YAML hash.
+The 26 relocated timing records, arrays and figures retain their exact bytes.
+
+The four Nautilus examples call `cocoa_hybrid_sampling.run` as LSST Y1 does,
+with `hybrid=False` for physical theory. Their Cobaya likelihood uses the
+existing joint provider. A real two-parameter analytic Nautilus run checked
+that independent Gaussian priors were not counted twice, external correlated
+priors entered once, and a repeated output prefix was refused without changing
+its files. The default hybrid loader still rejects physical-only configurations.
+
+Checks used serial BLAS and `OMP_THREAD_LIMIT=6`, one numerical job at a time:
+
+| Check | Result |
+|---|---|
+| Source processing, original-code configuration, public covariance, pixel window and CLI configuration tests | 40 passed; live upstream execution deselected |
+| Shared Nautilus examples, likelihood priors/selection and scaling control/plot tests | 64 passed |
+| Accuracy-result identities, Fisher screening and step-plot readers | 26 passed |
+| Real `EXAMPLE_NAUTILUS1.py` through `4.py`, each with `--check` | All four exited successfully |
+
+The four fiducial log likelihoods were respectively 7124.056851, 7124.056851,
+6398.736620 and 1810.569075. These are normalized likelihood densities, not
+best-fit statistics or posterior-reproduction results. The observed example
+exercised a fresh native evaluation: fixed numeric selectors from Cobaya are
+converted to integers only after checking exact integrality.
+
+All nine notebooks validate and retain their saved outputs and execution
+counts. No notebook, refreeze, survey posterior or timing study was rerun.
+The edited Markdown pages render with tables; their local links and anchors
+resolve. Shared algorithms are documented in the core READMEs, while the
+project top directory contains only its README and linked appendices.

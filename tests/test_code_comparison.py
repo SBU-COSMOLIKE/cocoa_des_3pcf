@@ -6,7 +6,6 @@ the configuration and provenance checks remain runnable independently.
 No test downloads source code or installs a dependency.
 """
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -137,5 +136,5 @@ def test_live_original_codes_and_frozen_labels(tmp_path):
     assert cases["physics_matter_frozen"]["max_scaled_error"] < 2.0e-4
     assert cases["physics_ia_mode0_frozen"]["max_scaled_error"] < 1.0e-12
     assert cases["physics_ia_mode1_frozen"]["max_scaled_error"] < 1.0e-12
-    stored = json.loads(Path(report["report_file"]).read_text())
+    stored = yaml.safe_load(Path(report["report_file"]).read_text())
     assert len(stored["cases"]) == 10

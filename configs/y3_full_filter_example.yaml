@@ -1,0 +1,235 @@
+format: cosmolike-3pcf-run-v1
+description: DES Y3 full-filter forecast example; numerical and prior choices need
+  refinement.
+notes:
+- This is an example calculation, not a reproduction of the published likelihood.
+- The source midpoint curves and reference values come from the pinned public Y3 simulated
+  configuration.
+- sigma8 is converted from its S8=0.759 and Omega_m=0.290; w0 and wa forecasts extend
+  the source fit.
+- No scale cuts, Gaussian nuisance priors, data compression, Hartlap correction or
+  Percival likelihood are inserted.
+- Survey area and per-bin shape-noise properties remain unset until supplied for the
+  intended catalogue.
+- The full-filter covariance is gravitational only; its halo-abundance response is
+  not full SSC.
+- Every integration count is a fixed starting choice, not demonstrated DES precision.
+- Signed ratios and the stretched shape chart avoid the documented raw-residual interpolation
+  failure. The stretch is half ln(2 ell_max/ell_min); these starting grids still require
+  estimator-specific refinement.
+threads: 1
+source:
+  path: ../data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits
+  extension: nz_source
+  nbin: 4
+physics:
+  tables: ../runs/y3_physics.npz
+  cosmology_mode: camb
+  kernel_nz: 201
+  k:
+    lower: 1.0e-05
+    upper: 1000
+    count: 256
+    logarithmic: true
+  z:
+    lower: 0
+    upper: 3
+    count: 101
+  los_z:
+    lower: 0.005
+    upper: 3
+    count: 65
+  halofit_version: takahashi
+  source_interpolation: linear_midpoint
+  source_readers: false
+  table_boost: 8
+  fit_nz: 33
+parameters:
+  omega_m: 0.29
+  omega_b: 0.048
+  h: 0.69
+  ns: 0.97
+  sigma8: 0.7719752988722927
+  w0: -1
+  wa: 0
+  mnu: 0.0773
+  num_massive_neutrinos: 3
+  nnu: 3.046
+  m1: 0
+  m2: 0
+  m3: 0
+  m4: 0
+  dz1: 0
+  dz2: 0
+  dz3: 0
+  dz4: 0
+ia:
+  a1: 0.7
+  eta1: -1.7
+  a2: 0
+  eta2: 0
+  bta: 0
+  ct: 0
+  zpivot: 0.62
+  c1rho: 0.0134
+  power_mode: 0
+  ct_mode: 0
+  fb: 0
+  suppress_only: 1
+rows:
+  mode: forecast
+  aperture_radii_arcmin:
+  - 7
+  - 14
+  - 25
+  - 40
+  xi_edges_arcmin:
+    lower: 2.5
+    upper: 250
+    count: 21
+    logarithmic: true
+mean:
+  aperture_estimator: full_filter
+  aperture_settings:
+    ell:
+      lower: 1
+      upper: 30000
+      count: 64
+      logarithmic: true
+    phi:
+      lower: 0
+      upper: 6.283185307179586
+      count: 32
+    projection_mode: prepared
+    projection_batch_size: 4
+    projection_settings:
+      ell_min: 0.001
+      ell_max: 60000
+      epmu: 0.0001
+      nr: 32
+      nu: 24
+      nv: 24
+      np: 32
+      npu_log: 24
+      npu_linear: 24
+      nell: 64
+      npsi_log: 32
+      npsi_linear: 32
+      nmu_log: 32
+      nmu_linear: 32
+      lmax: 20
+      reference_mode: false
+      table_boost: 2
+      multipole_boost: 2
+      npsi: 80
+      nshape: 160
+      prepare_multipoles: 0
+      shape_stretch: 9.30150115037316
+      signed_baseline: 1
+      residual_scaling: 1
+      psi_scale: 0.02
+  xi_settings:
+    ell:
+      lower: 1
+      upper: 30000
+      count: 256
+      logarithmic: true
+    theta_count: 16
+    pair_weight: uniform_area
+  two_point:
+    mode: isolated_nla
+covariance:
+  mode: analytic
+  path: ../runs/y3_full_filter_covariance.npz
+  ia_covariance: gravitational_only
+  neutrino_model: single_fluid_effective_growth
+  noise:
+    number_density: null
+    sigma_component: null
+  physical:
+    area: null
+    center_window: 1
+    large_area: 1
+    noise_mode: 1
+    estimator: 0
+    ia_model: 0
+    st_a: 0.707
+    st_p: 0.3
+    st_norm: 0.3222
+    delta_c: 1.686
+    collapse_model: 0
+    concentration_a: 10.14
+    concentration_b: -0.081
+    concentration_c: -1.01
+    concentration_pivot: 2000000000000
+    baryon_strength: 0
+  grids:
+    ell:
+      lower: 1
+      upper: 30000
+      count: 64
+      logarithmic: true
+    window_ell:
+      lower: 0.01
+      upper: 1000
+      count: 64
+      logarithmic: true
+    phi:
+      lower: 0
+      upper: 6.283185307179586
+      count: 32
+    radius:
+      lower: 1.0e-07
+      upper: 0.25
+      count: 128
+      logarithmic: true
+    profile_radius:
+      lower: 1.0e-07
+      upper: 0.5
+      count: 512
+      logarithmic: true
+      include_zero: true
+    k:
+      lower: 1.0e-05
+      upper: 1000
+      count: 256
+      logarithmic: true
+    mass:
+      lower: 100000000
+      upper: 10000000000000000
+      count: 48
+      logarithmic: true
+  theta_count: 16
+  pair_weight: uniform_area
+fisher:
+  steps:
+    omega_m: 0.003
+    sigma8: 0.005
+    w0: 0.02
+    wa: 0.04
+    a1: 0.02
+    eta1: 0.03
+    m1: 0.001
+    m2: 0.001
+    m3: 0.001
+    m4: 0.001
+    dz1: 0.001
+    dz2: 0.001
+    dz3: 0.001
+    dz4: 0.001
+  priors: {}
+  bounds:
+    omega_m:
+    - 0.1
+    - 0.5
+    sigma8:
+    - 0.4
+    - 1.2
+  fom_pairs:
+  - - w0
+    - wa
+  precision:
+    mode: inverse
+outputs:
+  evaluate: ../runs/y3_full_filter_mean.npz
+  fisher: ../runs/y3_full_filter_fisher.npz

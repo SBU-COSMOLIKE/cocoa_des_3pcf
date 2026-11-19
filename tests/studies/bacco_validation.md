@@ -10,7 +10,7 @@ whose derivatives the notebook recomputed. These are local Fisher
 comparisons at one fiducial cosmology. They do not establish calibrated
 posterior constraints.
 
-The [physical derivation](../../BACCO.md) defines the cold-to-total conversion
+The [physical derivation](../../python/des3pcf/README.md#bacco) defines the cold-to-total conversion
 and its assumptions. This page records the numerical results from
 2026-11-18, their interpretation, and the checks still needed. The
 [execution record](results/bacco/execution.json) identifies the eleven saved
@@ -74,7 +74,7 @@ coordinate changes.
 The physical gas parameters replace variation of the generic logarithmic
 feedback amplitude, which remains exactly one.
 
-The mean uses the [archived triangle geometry](../../ESTIMATOR.md), its
+The mean uses the [archived triangle geometry](../../README.md#estimator), its
 minimum-side selection, and the scalar HEALPix pixel window. The
 source distribution uses the recorded clipping and renormalization approved
 for this demonstration. Neither choice settles equivalence to the catalogue
@@ -317,7 +317,7 @@ emulator's training range.
 ## Reproducing the records <a name="reproduction"></a>
 
 Use the environment, working-directory and thread setup in
-[Running the BACCO examples](../../BACCO.md#running). That sequence prepares
+[Running the BACCO examples](../../README.md#feedback). That sequence prepares
 CAMB tables, evaluates the joint mean, opens the notebook and runs the
 separate off-grid interpolation study. The notebook reads saved cases only
 after verifying their inputs, settings, emulator weights and implementation

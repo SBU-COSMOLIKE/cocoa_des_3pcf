@@ -29,7 +29,7 @@ notes:
   and derivative steps separately before interpreting errors.
 - This reduced NLA run fixes a2,bta,eta2 and removes their derivative columns; it is conditional
   on the simpler IA model.
-- FITS clipping and normalization are recorded in runs/y3_demo_sources.json; original
+- FITS clipping and normalization are recorded in data/demonstration/y3_demo_sources.yaml; original
   upstream FITS bytes remain unchanged. The physical NPZ metadata separately records
   the PCHIP reconstruction, measured edges and numerical sampling.
 - Sources use measured-edge PCHIP with 9601 samples, 401 kernel nodes and 129 LOS nodes.
@@ -41,7 +41,7 @@ notes:
   beyond the fixed-dark-energy paper analyses.
 threads: 4
 source:
-  path: ../runs/y3_demo_sources.fits
+  path: ../data/demonstration/y3_demo_sources.fits
   extension: nz_source
   nbin: 4
 physics:
