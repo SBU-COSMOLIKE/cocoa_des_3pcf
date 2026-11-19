@@ -114,6 +114,8 @@ def physics_model(
       variance = optional copied core fit arrays z/rnl/neff/sigma8, prepared
           from the same supplied linear power. This route trusts that power's
           amplitude and does not renormalize it with the separate sigma8 scalar.
+          When absent, the independent Python reference prepares the fit and
+          applies the legacy scalar normalization before constructing C state.
     Returns:
       production.PhysicsModel, owning copies of its prepared physical state.
     Raises:
@@ -140,6 +142,19 @@ def physics_model(
     )
     if adapter not in ("production", "notebook"):
         raise ValueError("Physical adapter must be production or notebook.")
+    if variance is None:
+        # Keep the standalone helper's legacy reference convention in Python.
+        # The native model receives an explicit spectrum and fit arrays; it
+        # need not integrate or renormalize the same power a second time.
+        from .variance import ReferenceVariance
+
+        reference = ReferenceVariance()
+        variance, multiplier, unused_record = reference.prepare(
+            tables=checked, fit_nz=settings["fit_nz"],
+            table_boost=settings["table_boost"], source_readers=source_readers,
+        )
+        checked = dict(checked)
+        checked["p_linear0"] = checked["p_linear0"] * multiplier
     arguments = {}
     for name in ARRAY_NAMES + SCALAR_NAMES:
         arguments[name] = checked[name]

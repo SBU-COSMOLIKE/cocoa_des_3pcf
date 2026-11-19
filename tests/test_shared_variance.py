@@ -10,7 +10,7 @@ import pytest
 
 from des3pcf.accuracy import Accuracy
 from des3pcf.pipeline import PhysicalProvider
-from des3pcf.variance import SharedVariance
+from des3pcf.variance import SharedVariance, ReferenceVariance
 from test_pipeline import toy_tables
 
 
@@ -20,6 +20,65 @@ def request(engine, tables, parameters, **settings):
         tables=tables, parameters=parameters, metadata={},
         z=np.array([0.0, 0.5, 1.0]), **settings,
     )
+
+
+@pytest.mark.parametrize("fit_nz,table_boost", [(17, 4), (33, 8)])
+@pytest.mark.parametrize("source_readers", [False, True])
+def test_python_reference_can_supply_the_native_fit(
+        compiled, fit_nz, table_boost, source_readers):
+    """External reference arrays reproduce the legacy native matter equation."""
+    from des3pcf.mean import physics_model
+
+    tables, unused = toy_tables()
+    # Call the native legacy constructor directly: the Python factory also
+    # supplies reference fit arrays, so comparing two factory calls would
+    # fail to test the independent C integration being replaced.
+    reference = compiled.production.PhysicsModel(
+        **tables, fit_nz=fit_nz, table_boost=table_boost,
+        source_readers=source_readers,
+    )
+    engine = ReferenceVariance()
+    fit, multiplier, record = engine.prepare(
+        tables=tables, fit_nz=fit_nz, table_boost=table_boost,
+        source_readers=source_readers,
+    )
+    normalized = dict(tables)
+    normalized["p_linear0"] = tables["p_linear0"] * multiplier
+    candidate = physics_model(compiled=compiled, tables=normalized,
+                              fit_nz=fit_nz, table_boost=table_boost,
+                              variance=fit, source_readers=source_readers)
+    sides = np.array([[0.03, 0.04, 0.05], [0.1, 0.2, 0.25], [0.5, 0.7, 1.0]])
+    redshift = np.array([0.0, 0.4, 1.8])
+    for component in range(4):
+        expected = reference.matter(sides=sides, redshifts=redshift,
+                                    component=component)
+        actual = candidate.matter(sides=sides, redshifts=redshift,
+                                   component=component)
+        np.testing.assert_allclose(actual, expected, rtol=2.0e-11, atol=0.0)
+    assert record["power_normalization"] == multiplier
+
+
+def test_reference_variance_retains_inputs_outputs_and_exact_keys():
+    """A/B/A restores fit arrays and a caller cannot alter retained results."""
+    tables, unused = toy_tables()
+    engine = ReferenceVariance()
+    original, multiplier, record = engine.prepare(tables=tables)
+    saved = original["rnl"].copy()
+    with pytest.raises(ValueError):
+        original["rnl"][0] = 0.0
+    record["sampling"]["variance_nodes"] = 0
+    same, same_multiplier, clean = engine.prepare(tables=tables)
+    assert same is original
+    assert same_multiplier == multiplier
+    assert clean["sampling"]["variance_nodes"] == 1000
+    changed = dict(tables)
+    changed["sigma8"] += 0.02
+    displaced, unused_multiplier, unused_record = engine.prepare(tables=changed)
+    assert not np.array_equal(displaced["rnl"], saved)
+    restored, restored_multiplier, unused_record = engine.prepare(tables=tables)
+    np.testing.assert_array_equal(restored["rnl"], saved)
+    assert restored_multiplier == multiplier
+    np.testing.assert_array_equal(original["rnl"], saved)
 
 
 def test_snapshot_ownership_and_interleaved_owners(compiled):

@@ -5,6 +5,9 @@ and top-hat windows. This adapter installs that spectrum serially, resolves
 the shared sampling counts and copies the requested outputs. It leaves the
 choice of evolving or factorized linear growth explicit. Neither choice
 rescales power to a second sigma8 scalar.
+
+ReferenceVariance separately retains the older finite-integral and scalar
+normalization convention for independent comparisons.
 """
 
 import hashlib
@@ -15,6 +18,87 @@ import numpy as np
 from .accuracy import accuracy_settings
 from .inputs import uniform_segments
 from .ownership import immutable_copy
+
+
+class ReferenceVariance:
+    """Retain the independent Python calculation for legacy comparisons.
+
+    This reference integrates the original finite log-k rules and rescales
+    power to the separate sigma8 value. SharedVariance never applies that
+    rescaling. Keeping the reference in Python lets the C model consume
+    explicit fit arrays without invoking its local smoothing calculation.
+    """
+
+    def __init__(self):
+        """Start without a retained reference spectrum or fit arrays."""
+        self._latest = None
+
+    def prepare(self, tables, fit_nz=33, table_boost=8, source_readers=False):
+        """Return owned fit arrays, the power multiplier and their input record.
+
+        Arguments:
+          tables = validated linear power, growth and cosmological scalars.
+          fit_nz = coefficient redshift count in the uniform production mode.
+          table_boost = dense-reader ratio used by the reference calculation.
+          source_readers = retain the upstream cubic-reader convention.
+        Returns:
+          fit dictionary, scalar power multiplier and independent metadata.
+        Side effects:
+          Retains one immutable result; never changes core globals or inputs.
+        """
+        from .bihalofit import BiHalofit, input_hashes
+
+        arguments = {}
+        for name in ("k", "p_linear0", "z", "growth", "ns", "sigma8"):
+            arguments[name] = tables[name]
+        # BiHalofit also validates a background, although density fractions
+        # do not enter its smoothing integrals. Use a supplied background
+        # when available; otherwise retain the internal fit's flat CPL
+        # background for this explicit legacy reference only.
+        if "omega_m_z" in tables:
+            matter_fraction = tables["omega_m_z"]
+        else:
+            redshift = np.asarray(tables["z"], dtype=np.float64)
+            matter = tables["omega_m"] * (1.0 + redshift)**3
+            exponent = 3.0 * (1.0 + tables["w0"] + tables["wa"])
+            dark = tables["omega_de"] * (1.0 + redshift)**exponent
+            dark *= np.exp(-3.0 * tables["wa"] * redshift / (1.0 + redshift))
+            matter_fraction = matter / (matter + dark)
+        arguments["omega_m_z"] = matter_fraction
+        settings = {
+            "fit_nz": fit_nz,
+            "table_boost": table_boost,
+            "source_readers": source_readers,
+        }
+        hashes = input_hashes(arrays=arguments, settings=settings)
+        key = json.dumps(hashes, sort_keys=True)
+        if self._latest is not None and self._latest[0] == key:
+            fit, multiplier, record = self._latest[1:]
+            return fit, multiplier, json.loads(record)
+        model = BiHalofit(**arguments, **settings)
+        fit = immutable_copy(value={
+            "z": model.fit_anchors,
+            "rnl": model.radius_anchors,
+            "neff": model.neff_anchors,
+            "sigma8": model.sigma8_anchors,
+        })
+        multiplier = float(model.power_normalization)
+        record = {
+            "engine": "Python reference Simpson integration and bisection",
+            "growth_mode": "factorized",
+            "normalization": "legacy scalar sigma8 normalization",
+            "power_normalization": multiplier,
+            "sampling": {
+                "variance_nodes": model.variance_nodes,
+                "slope_nodes": model.slope_nodes,
+                "radius_rtol": model.radius_rtol,
+                **settings,
+            },
+            "input_sha256": hashes,
+        }
+        encoded = json.dumps(record, sort_keys=True)
+        self._latest = (key, fit, multiplier, encoded)
+        return fit, multiplier, json.loads(encoded)
 
 
 class SharedVariance:

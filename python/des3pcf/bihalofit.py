@@ -469,7 +469,9 @@ class BiHalofit(PreparedGeometry):
             sigma8z = _values(values=variance["sigma8"], shape=anchors.shape,
                               name="shared sigma8(z)", positive=True)
             self.power_normalization = 1.0
-        natural = variance is not None or not self.source_readers
+        # Supplied anchors change who evaluates the smoothing integral,
+        # not the interpolation convention selected for the comparison.
+        natural = not self.source_readers
         self._radius = _Curve(x=anchors, y=radius, natural=natural)
         self._neff = _Curve(x=anchors, y=spectral, natural=natural)
         self._sigma8z = _Curve(x=anchors, y=sigma8z, natural=natural)

@@ -452,6 +452,16 @@ mean and Fisher acceptance checks are completed. This selector is separate
 from `bispectrum_source`: either the internal C fit or supplied Python
 bispectrum can consume the same copied variance arrays.
 
+The project prepares the `local` fit through the independent Python
+`ReferenceVariance` calculation and passes its owned arrays to C. Its
+finite log-k integration, radius solve and scalar sigma8 normalization
+retain the old reference convention. The normalization multiplies only
+the three-point model's linear power; the ordinary two-point calculation
+receives the original supplied spectrum. The saved metadata records the
+multiplier and all inputs. Neither mode can silently normalize the other's
+spectrum. The native constructors still accept the old no-array route
+while its callers are being migrated and checked.
+
 `physics.variance_growth: factorized` installs P(k,0)D(z)^2 and retains the
 existing three-point effective-growth approximation. `evolving` instead
 requires the complete linear P(k,z) table. With massive neutrinos those are

@@ -138,6 +138,7 @@ class PhysicalProvider:
         self.variance_source = variance_source
         self.variance_growth = variance_growth
         self._variance_engine = None
+        self._reference_variance_engine = None
         self._active_variance = None
         if bispectrum_source == "internal" and bispectrum_table is not None:
             raise ValueError(
@@ -455,7 +456,28 @@ class PhysicalProvider:
             fit[name] = snapshot[name]
         return immutable_copy(value=fit), record
 
-    def supplied_baseline(self, variance=None):
+    def reference_variance(self):
+        """Prepare the explicit legacy reference once per spectrum/resolution.
+
+        This returns the old scalar-normalized fit for source comparisons.
+        Its multiplier applies only to the three-point model's linear power;
+        the ordinary two-point prediction retains the original provider arrays.
+        """
+        from .variance import ReferenceVariance
+
+        if self._reference_variance_engine is None:
+            self._reference_variance_engine = ReferenceVariance()
+        controls = accuracy_settings(value=self.accuracy)
+        settings = controls.model_settings(
+            kernel_nz=self.kernel_nz, table_boost=self.table_boost,
+            fit_nz=self.fit_nz,
+        )
+        return self._reference_variance_engine.prepare(
+            tables=self.cosmology_tables, fit_nz=settings["fit_nz"],
+            table_boost=settings["table_boost"], source_readers=self.source_readers,
+        )
+
+    def supplied_baseline(self, variance=None, tables=None):
         """Prepare a baseline table only when its physical inputs change.
 
         The coarse axes refine with accuracy_boost*bispectrum_boost. The
@@ -491,8 +513,10 @@ class PhysicalProvider:
             kernel_nz=self.kernel_nz, table_boost=self.table_boost,
             fit_nz=self.fit_nz,
         )
+        if tables is None:
+            tables = self.cosmology_tables
         return self._baseline_producer.prepare(
-            tables=self.cosmology_tables, fit_nz=settings["fit_nz"],
+            tables=tables, fit_nz=settings["fit_nz"],
             table_boost=settings["table_boost"], source_readers=self.source_readers,
             variance=variance,
         )
@@ -530,7 +554,8 @@ class PhysicalProvider:
                 or producer_settings != self.reference_producer_settings
             ):
                 raise ValueError(
-                    "A cosmological parameter changed; select camb or supply new tables."
+                    "A cosmological parameter changed or a CAMB producer setting changed; "
+                    "select camb or supply new tables."
                 )
             if (key == self.reference_cosmology_key
                     and producer_settings == self.reference_producer_settings
@@ -572,8 +597,15 @@ class PhysicalProvider:
                 )
             tables = dict(self.cosmology_tables)
             metadata = dict(self.cosmology_metadata)
-            variance, variance_record = self.shared_variance(parameters=cosmology)
-            baseline = self.supplied_baseline(variance=variance)
+            if self.variance_source == "local":
+                variance, multiplier, variance_record = self.reference_variance()
+            else:
+                variance, variance_record = self.shared_variance(parameters=cosmology)
+                multiplier = 1.0
+            model_tables = dict(tables)
+            if multiplier != 1.0:
+                model_tables["p_linear0"] = tables["p_linear0"] * multiplier
+            baseline = self.supplied_baseline(variance=variance, tables=model_tables)
             if variance_record is not None:
                 metadata["variance"] = variance_record
             if baseline is not None:
@@ -608,8 +640,14 @@ class PhysicalProvider:
                 )
                 tables["source_z"] = nodes
                 metadata.update(source_record)
+            # Source reconstruction is common to both spectra. Only the
+            # legacy three-point reference receives the power multiplier;
+            # returning raw power below keeps ordinary xi exactly unchanged.
+            model_tables["sources"] = tables["sources"]
+            if "source_z" in tables:
+                model_tables["source_z"] = tables["source_z"]
             self.model = physics_model(
-                compiled=self.compiled, tables=tables, kernel_nz=self.kernel_nz,
+                compiled=self.compiled, tables=model_tables, kernel_nz=self.kernel_nz,
                 source_readers=self.source_readers, table_boost=self.table_boost,
                 fit_nz=self.fit_nz,
                 accuracy=self.accuracy,
