@@ -10,6 +10,7 @@ from pathlib import Path
 import subprocess
 import sys
 
+import mpmath
 import numpy as np
 import pytest
 from numpy.polynomial.legendre import leggauss
@@ -194,6 +195,95 @@ def test_nfw_against_radial_mass_integral(compiled, covariance_model):
     assert np.all(sigma2 > 0.0)
     assert np.all(abundance > 0.0)
     assert np.all(bias > 0.0)
+
+
+def nfw_reference(concentration, phase):
+    """Return the normalized truncated profile with 70-digit Si/Ci values.
+
+    Arguments:
+        concentration = positive r200/r_s, dimensionless.
+        phase = one-dimensional float64 array of nonnegative q=k*r200.
+
+    Returns:
+        array = u(c,q), with the shape of phase and exact value one at zero.
+
+    Si(x) integrates sin(t)/t from zero to x; Ci(x) is minus the integral
+    of cos(t)/t from x to infinity. Integrating the NFW radial mass weight
+    gives their differences at x=q/c and (1+c)*x, plus the outer boundary
+    term. Dividing by ln(1+c)-c/(1+c) normalizes the enclosed mass.
+
+    High precision resolves the subtraction of oscillatory Si/Ci values
+    when q is large. The separate radial-integral test checks this physical
+    transform without using special functions. Neither reference reads the
+    production f/G interpolation table.
+    """
+    expected = np.empty_like(phase)
+    with mpmath.workdps(70):
+        c = mpmath.mpf(float(concentration))
+        normalization = mpmath.log1p(c) - c / (1 + c)
+        for index, value in enumerate(phase):
+            if value == 0.0:
+                expected[index] = 1.0
+                continue
+            q = mpmath.mpf(float(value))
+            x = q / c
+            outer = (1 + c) * x
+            numerator = mpmath.sin(x) * (mpmath.si(outer) - mpmath.si(x))
+            numerator += mpmath.cos(x) * (mpmath.ci(outer) - mpmath.ci(x))
+            numerator -= mpmath.sin(q) / outer
+            expected[index] = float(numerator / normalization)
+    return expected
+
+
+@pytest.mark.parametrize("concentration", [1.0, 3.0, 10.0, 30.0])
+def test_nfw_dimensionless_domain(compiled, covariance_model, concentration):
+    """Check the production profile from zero through q=20000.
+
+    The transform depends on concentration and q=k*r200, not on mass and
+    k separately. A single mass therefore spans this numerical domain by
+    varying k. Fixing the concentration coefficients isolates the profile
+    reader from the Duffy mass/redshift law. This is not a covariance or
+    concentration-prescription convergence test.
+
+    Include both sides of q=1e-4 (the small-phase expansion), x=50 and
+    (1+c)*x=50 (the two table/asymptotic transitions). The 2e-8 relative
+    allowance encloses the measured 1.17e-8 maximum in the independent
+    524288-node comparison over c=1..30, q<=10000. The 2e-13 absolute
+    allowance also tests the small profile values in the extended tail.
+    The stricter, resolved radial-integral test retains its own tolerance.
+    """
+    inputs = covariance_arguments()
+    mass = 1.0e12
+    inputs["mass"] = np.asarray([mass])
+    inputs["dmass"] = np.asarray([mass])
+    inputs["concentration_a"] = concentration
+    inputs["concentration_b"] = 0.0
+    inputs["concentration_c"] = 0.0
+    rho = 2.77536627e11 * 0.3
+    radius = np.cbrt(3.0 * mass / (4.0 * np.pi * rho)) / np.cbrt(200.0)
+    phase = list(np.geomspace(start=1.0e-8, stop=2.0e4, num=41))
+    phase.append(0.0)
+    for boundary in (1.0e-4, 50.0 * concentration / (1.0 + concentration),
+                     50.0 * concentration):
+        for factor in (1.0 - 2.0e-8, 1.0, 1.0 + 2.0e-8):
+            phase.append(boundary * factor)
+    phase = np.unique(np.asarray(phase, dtype=np.float64))
+    wave = phase / radius
+    # Evaluate the reference at the rounded supplied k values, using the
+    # halo_tables mass-radius expression. C and NumPy cube roots can differ
+    # in their last bit; this test compares the physical transform within
+    # the stated tolerance rather than demanding identical radius bits.
+    expected = nfw_reference(concentration=concentration, phase=wave * radius)
+    for adapter in (compiled.production, compiled.notebook):
+        result = adapter.halo_tables(
+            model=covariance_model, inputs=inputs, z=np.asarray([0.0]),
+            k_profile=wave,
+        )
+        actual_concentration = result[3][0, 0]
+        actual = result[4][0, 0]
+        assert actual_concentration == concentration
+        assert actual[0] == 1.0
+        np.testing.assert_allclose(actual, expected, rtol=2.0e-8, atol=2.0e-13)
 
 
 def test_halo_bias_as_abundance_response(compiled, covariance_model):

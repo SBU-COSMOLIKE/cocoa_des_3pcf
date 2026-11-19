@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-19",
+  "core_change": "f2d3de034c36444ebd63d7e8084b0a22c93351de",
+  "test": "tests/covariance/test_physical_covariance.py::test_nfw_dimensionless_domain",
+  "test_source_sha256": "b92aad4f41e17161712babab526328e37053a94afd76d2e03d8337311f677ef3",
+  "reference": "70-digit mpmath sine/cosine integrals; independent of the production f/G table.",
+  "concentrations": [
+    1.0,
+    3.0,
+    10.0,
+    30.0
+  ],
+  "adapters": [
+    "production",
+    "notebook"
+  ],
+  "dimensionless_phase": "q=k*r200: zero, 41 geometric samples from 1e-8 to 20000, and three samples straddling each of q=1e-4, q/c=50, and (1+c)*q/c=50.",
+  "mass_msun_over_h": 1000000000000.0,
+  "redshift": 0.0,
+  "acceptance": "abs(actual-reference) <= 2e-13 + 2e-8*abs(reference); actual(q=0) == 1 exactly.",
+  "allowance_basis": "The independently measured maximum relative discrepancy was 1.17e-8 at 524288 table nodes over c=1..30 and q<=10000. The committed test extends the sampled tail to q=20000 with an absolute term for small values.",
+  "native_checks": {
+    "strict": {
+      "full_suite_passed": 829,
+      "log_sha256": "d3ad8cc0ad98d8b95252820390b4c4931406226d06c26ca0956e9b6aff44426b",
+      "binary_sha256": "6550f3718576bbaba2fc20b07453375d43af83cd577630bf8ad52782ee8c4878"
+    },
+    "debug": {
+      "full_suite_passed": 829,
+      "log_sha256": "8e48322b18bef645bb7af7046f4559a784b88216e1caa57c0d83b02f406f8a7c",
+      "binary_sha256": "41b5df11ce2802f4aa026cbbf16106c1b67ca86de7762cb29fef3fa8d8933ae2"
+    }
+  },
+  "limits": "Four concentrations and sampled phases are not a continuous-domain bound, a Duffy calibration, or a survey covariance/Fisher convergence result. The original stricter radial-integral test remains unchanged.",
+  "validation_build_scope": "Combined reviewed candidate including allocator, bridge and adapter changes; core_change identifies the NFW change, not every source in the tested binary.",
+  "candidate_input_manifest_sha256": "9a83729c3064d23609c515438f610516b1e0a0cb74048bd1a404d73fbf865a5c"
+}
