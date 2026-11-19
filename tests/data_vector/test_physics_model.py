@@ -212,7 +212,11 @@ def test_alignment_limits_and_independent_parameters(physical_model):
     assert not np.allclose(actual_first, actual_second, rtol=1.0e-3)
 
 
-def test_radial_projection_and_multipole_definition(compiled, physical_model):
+@pytest.mark.parametrize("nmu", [8, 33, 128])
+@pytest.mark.parametrize("parameters", [{}, {"a1": 0.4, "a2": 0.7, "bta": 0.3}])
+def test_radial_projection_and_multipole_definition(
+    compiled, physical_model, nmu, parameters,
+):
     """An explicit radial sum and external Legendre quadrature check C paths."""
     sides = np.asarray([[170.0, 240.0, 330.0], [600.0, 800.0, 1050.0]])
     bins = np.asarray([0, 1, 0], dtype=np.int32)
@@ -230,7 +234,6 @@ def test_radial_projection_and_multipole_definition(compiled, physical_model):
     actual = physical_model.projected(sides=sides, bins=bins, parameters={})
     np.testing.assert_allclose(actual, expected, rtol=2.0e-13, atol=0.0)
     ell = np.asarray([140.0, 260.0], dtype=np.float64)
-    nmu = 8
     lmax = 3
     nodes, weights = np.polynomial.legendre.leggauss(deg=nmu)
     legendre = np.polynomial.legendre.legvander(x=nodes, deg=lmax)
@@ -244,18 +247,20 @@ def test_radial_projection_and_multipole_definition(compiled, physical_model):
             triangles = np.column_stack(
                 (np.full(nmu, ell[first]), np.full(nmu, ell[second]), third)
             )
-            signal = physical_model.projected(sides=triangles, bins=bins)
+            signal = physical_model.projected(
+                sides=triangles, bins=bins, parameters=parameters
+            )
             for order in range(lmax + 1):
                 expected[order, first, second] = (
                     (order + 0.5) * np.sum(weights * legendre[:, order] * signal)
                 )
     actual = physical_model.multipoles(
-        ell=ell, bins=bins, parameters={}, lmax=lmax, nmu=nmu
+        ell=ell, bins=bins, parameters=parameters, lmax=lmax, nmu=nmu
     )
     np.testing.assert_allclose(actual, expected, rtol=2.0e-12, atol=1.0e-30)
     compiled.set_omp_threads(nthreads=2)
     parallel = physical_model.multipoles(
-        ell=ell, bins=bins, parameters={}, lmax=lmax, nmu=nmu
+        ell=ell, bins=bins, parameters=parameters, lmax=lmax, nmu=nmu
     )
     compiled.set_omp_threads(nthreads=1)
     np.testing.assert_array_equal(actual, parallel)
