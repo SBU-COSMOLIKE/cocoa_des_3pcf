@@ -518,3 +518,20 @@ The optional Cobaya `BiHalofitTheory` uses the same `variance_source` and
 shared smoothing controls. The project setup must make the compiled 3PCF
 interface importable when this route is selected. The local Python
 reference does not require that compiled dependency.
+
+
+## Background matter fraction in the native model
+
+The internal C fit consumes an exact `omega_m_z` table when supplied. Otherwise
+it derives the pressureless fraction from the supplied expansion history,
+`Omega_m0*(1+z)^3/[H(z)/H0]^2`. It no longer constructs a separate CPL background.
+CAMB preparation saves its exact CDM+baryon+massive-neutrino fraction by default,
+and the model provider forwards it for both internal and supplied bispectra.
+Massive-neutrino reference tables without that field must be regenerated.
+
+The original-library reference adapter explicitly supplies the legacy fraction
+on its original fit anchors. This keeps the frozen variance comparisons focused
+on the smoothing calculation. Their earlier Fisher numbers do not establish
+convergence of the new expansion-derived background route. That route has
+analytic-identity, copied-ownership, stale-state and exact-CAMB component checks;
+full paired survey forecasts remain a separate validation task.

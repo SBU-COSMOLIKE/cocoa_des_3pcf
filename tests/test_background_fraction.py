@@ -48,7 +48,9 @@ def test_expansion_history_sets_pressureless_fraction(compiled, source_readers, 
 
 
 @pytest.mark.parametrize("adapter", ["production", "notebook"])
-def test_exact_fraction_is_owned_and_changes_only_its_matter_coefficient(compiled, adapter):
+def test_exact_fraction_is_owned_and_changes_only_its_matter_coefficient(
+    compiled, adapter,
+):
     """An explicit provider fraction overrides H(z), including on its own axis."""
     inputs = physical_inputs()
     fit, unused, record = ReferenceVariance().prepare(tables=inputs)
