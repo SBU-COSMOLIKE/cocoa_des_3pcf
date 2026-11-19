@@ -41,7 +41,9 @@ the maximum whitened derivative change is 0.2822%, marginalized-error
 change 4.0321%, and pair-FoM change 5.2781%. At the smaller step these are
 0.2510%, 2.0651%, and 2.3896%. Refining shared sampling from baseline to
 twice baseline changes a pair FoM by up to 0.5953%, also above the 0.5%
-criterion. The shared route therefore remains optional.
+criterion. The shared route therefore remains optional. A later
+investigation resolved this discrepancy; the dated continuation below
+records it.
 
 Two effects require separate investigation. The legacy calculation
 renormalizes the input power spectrum to its scalar sigma8; its fiducial
@@ -51,3 +53,36 @@ tolerance, and its Fisher result changes when the derivative step halves.
 Archived CAMB arrays permit testing finer smoothing and root tolerances
 without changing the input cosmology or repeating the Boltzmann solves.
 These are hypotheses to test, not a justification for relaxing acceptance.
+
+## Diagnosis and current standing (2026-11-19) <a name="diagnosis"></a>
+
+Both hypotheses were tested, and the discrepancy traces to the
+normalization difference together with the CAMB transfer sampling behind
+it. As a diagnostic, the comparison retained the old sigma8
+renormalization as an explicit multiplier on the shared route's linear
+power; the factor serves only this test and never enters the production
+adapter. At four-times shared sampling that multiplier brought the NLA
+comparison within 0.014% per derivative and 0.172% per parameter-pair
+FoM of the refined local reference, at both derivative steps. Without
+the multiplier, the FoM discrepancy persisted.
+
+Refining the input spectrum removes the multiplier instead of adopting
+it. CAMB AccuracyBoost 2 with k_per_logint 50, the transfer samples per
+logarithmic wavenumber interval, and 1025 uniform log-k output samples
+bring the multiplier within 1.5e-7 of unity. No multiplier therefore
+enters production; the shared route keeps the supplied power amplitude.
+
+On these refined inputs the acceptance comparisons pass. The full NLA
+comparison passes at four and eight times shared sampling. The full TATT
+comparison at four-times shared sampling gives maximum derivative,
+marginalized-error and pair-FoM differences of 0.00826%, 0.0541% and
+0.0581%, with a mean delta chi-squared of 1.55056e-8 and bitwise
+identical two-point rows. There is no eight-times TATT refinement result
+yet. This page narrates the investigation; the authoritative current
+numbers are the acceptance statement in
+[ACCURACY.md](../../ACCURACY.md#shared-smoothing).
+
+These passes establish method agreement at the tested inputs and
+resolutions, not a forecast guarantee. Full paired forecasts remain
+necessary before any default change, and the local route remains the
+default.

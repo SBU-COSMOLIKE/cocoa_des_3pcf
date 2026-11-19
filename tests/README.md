@@ -174,4 +174,7 @@ memory. Independent references include the physical TATT components and
 angular transforms as well as the covariance terms. The checks do not
 establish a finite-catalogue covariance, Y3/Y6 publication reproduction
 or survey Fisher accuracy. Those require the inputs and
-refinements of the whole estimator.
+refinements of the whole estimator. Whether shared smoothing may replace
+the local variance reference is decided by the full-forecast acceptance
+record in
+[studies/shared_variance_validation.md](studies/shared_variance_validation.md).

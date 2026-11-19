@@ -37,6 +37,7 @@ pass.
 7. [E and B after finite triangle cuts](#finite_eb)
 8. [Joint IA conventions](#ia_conventions)
 9. [Stretched-edge conditioning](#stretched_edge)
+10. [Shared-variance acceptance](#shared_variance)
 
 ## Angular orders <a name="angular"></a>
 
@@ -207,3 +208,15 @@ the controlled spectra of
 [../data_vector/test_physics_model.py](../data_vector/test_physics_model.py);
 there is no separate driver and the measured values live in the page
 itself.
+
+## Shared-variance acceptance <a name="shared_variance"></a>
+
+This record answers whether the shared CosmoLike smoothing route may
+replace the local reference variance calculation in the full NLA and
+TATT forecasts. It keeps the acceptance criteria, the first full
+comparison that failed them, the diagnosis of that failure, and the
+passing comparisons on refined CAMB inputs as one chronology in
+[the shared-variance record](shared_variance_validation.md). There is no
+separate driver and no saved record here; the measured limits live in
+the page itself, and the current acceptance statement is in
+[ACCURACY.md](../../ACCURACY.md#shared-smoothing).
