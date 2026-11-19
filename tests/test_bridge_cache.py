@@ -613,3 +613,30 @@ def test_native_shorter_prefix_survives_replacement(compiled, alias_helper, fiel
     assert status == 0, f"Native prefix resubmission failed with status {status}."
     np.testing.assert_array_equal(actual, expected)
     core.initial_setup()
+
+
+def test_simultaneous_python_builds_share_one_owned_model(compiled):
+    """Global-state preparation and copying must be one serialized operation.
+
+    Both threads request the same uncached model. The bridge keeps Python's
+    lock while reading global power and copying its scratch arrays, so only
+    one assembly occurs; native OpenMP work remains available within it.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+
+    core = install_state(compiled=compiled)
+    before = core.model_generation()
+    ready = threading.Barrier(parties=2)
+
+    def build():
+        ready.wait(timeout=20)
+        return core.model_from_core()
+
+    with ThreadPoolExecutor(max_workers=2) as workers:
+        first = workers.submit(build)
+        second = workers.submit(build)
+        left = first.result(timeout=60)
+        right = second.result(timeout=60)
+    assert left is right
+    assert core.model_generation() == before + 1

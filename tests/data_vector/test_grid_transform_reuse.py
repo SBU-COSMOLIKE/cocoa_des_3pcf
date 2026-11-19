@@ -15,6 +15,8 @@ include every float64 bit, and ordinary tests request at most four OpenMP
 workers with serial BLAS.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import os
 from pathlib import Path
 import subprocess
@@ -90,7 +92,7 @@ def prepare_grid(compiled, state):
     """Build an independent physical model and its owned projected table."""
     case = grid_case(state=state)
     inputs = physical_inputs(specification=case["physical"])
-    model = compiled.production.PhysicsModel(**inputs)
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **inputs)
     return model.projection_grid(
         bins=np.asarray(case["bins"], dtype=np.int32),
         parameters=case["ia"],

@@ -6,6 +6,8 @@ Separate tests use resolved quadrature and analytic or independently
 integrated references for the halo and xi transforms. No timing is measured.
 """
 
+from des3pcf.variance import reference_physics_model
+
 from pathlib import Path
 import subprocess
 import sys
@@ -41,7 +43,7 @@ def make_covariance_model(compiled):
     sources = np.empty(shape=(2, redshift.size), dtype=np.float64)
     sources[0] = redshift**2 * np.exp(-(redshift / 0.6) ** 1.5)
     sources[1] = redshift**2 * np.exp(-(redshift / 0.95) ** 1.5)
-    return compiled.PhysicsModel(
+    return reference_physics_model(factory=compiled.PhysicsModel,
         k=wave,
         p_linear0=linear,
         z=redshift,

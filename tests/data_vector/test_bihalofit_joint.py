@@ -7,6 +7,8 @@ stricter than the group's 0.2 route-comparison ceiling. This is a controlled
 four-row integration regression, not a DES convergence declaration.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import hashlib
 import json
 from pathlib import Path
@@ -58,7 +60,7 @@ def test_supplied_full_mean_in_fixed_joint_covariance(compiled, tmp_path):
     np.testing.assert_array_equal(mask, np.ones(shape=4, dtype=np.int32))
     cholesky = np.linalg.cholesky(a=covariance)
     assert np.any(covariance[0, 1:] != 0.0)
-    internal = compiled.PhysicsModel(**native)
+    internal = reference_physics_model(factory=compiled.PhysicsModel, **native)
     internal_mean, unused_terms = compiled.production.physical_covariance(
         model=internal, inputs=covariance_input)
     # The archived vector used not-a-knot background/power preparation.
@@ -97,7 +99,7 @@ def test_supplied_full_mean_in_fixed_joint_covariance(compiled, tmp_path):
             del inputs[unused]
         inputs["omega_m_z"] = baseline.background_omega_m_z
         inputs["baseline"] = dict(baseline.native)
-        model = compiled.production.PhysicsModelWithBispectrum(**inputs)
+        model = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum, **inputs)
         mean, unused_terms = compiled.production.physical_covariance(
             model=model, inputs=covariance_input)
         np.testing.assert_array_equal(mean[1:], internal_mean[1:])

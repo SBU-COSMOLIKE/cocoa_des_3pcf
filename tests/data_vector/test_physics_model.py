@@ -7,6 +7,8 @@ comes from the original Python files; it checks implementation agreement.
 Separate resolution studies are still required for survey predictions.
 """
 
+from des3pcf.variance import reference_physics_model
+
 from decimal import Decimal, localcontext
 import json
 from pathlib import Path
@@ -63,7 +65,7 @@ def physical_inputs():
 @pytest.fixture(scope="module")
 def physical_model(compiled):
     """Build one immutable toy model; parameter queries do not mutate it."""
-    return compiled.PhysicsModel(**physical_inputs())
+    return reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs())
 
 
 def test_pinned_matter_and_all_alignment_components(physical_model):
@@ -174,7 +176,7 @@ def test_power_evolution_and_model_ownership(compiled, physical_model):
     expected_evolved = nonlinear0 / (1.0 + redshift) ** 2.4
     np.testing.assert_allclose(source, expected_source, rtol=1.0e-12)
     np.testing.assert_allclose(evolved, expected_evolved, rtol=1.0e-12)
-    owned = compiled.PhysicsModel(**inputs)
+    owned = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     inputs["p_nonlinear"][:] *= 2.0
     np.testing.assert_array_equal(owned.power(k=wave, z=redshift, mode=2), evolved)
 
@@ -264,7 +266,7 @@ def test_notebook_layouts_and_baryon_factor(compiled, physical_model):
     inputs = physical_inputs()
     inputs["p_nonlinear"] = np.asfortranarray(inputs["p_nonlinear"])
     inputs["sources"] = np.asfortranarray(inputs["sources"])
-    notebook = compiled.physics_model_notebook(**inputs)
+    notebook = reference_physics_model(factory=compiled.physics_model_notebook, **inputs)
     sides = np.asarray([[0.1, 0.17, 0.22], [1.0, 1.4, 2.2]])
     redshift = np.asarray([0.2, 0.9])
     direct = physical_model.matter(sides=sides, redshifts=redshift)
@@ -294,7 +296,7 @@ def test_analytic_source_kernel_and_nla_power(compiled):
     inputs["sources"] = np.asarray([2.0 * redshift / maximum**2])
     inputs["los_z"] = redshift[1:].copy()
     inputs["kernel_nz"] = redshift.size - 1
-    model = compiled.PhysicsModel(**inputs)
+    model = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     radial = model.radial()
     expected = (
         1.5 * inputs["omega_m"] * (100.0 / 299792.0) ** 2
@@ -392,9 +394,9 @@ def test_uniform_production_reader_refinement(compiled):
     inputs = physical_inputs()
     inputs["source_readers"] = False
     inputs["table_boost"] = 2
-    coarse = compiled.PhysicsModel(**inputs)
+    coarse = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     inputs["table_boost"] = 8
-    fine = compiled.PhysicsModel(**inputs)
+    fine = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     wave = np.geomspace(start=0.0023, stop=18.7, num=31)
     redshift = np.linspace(start=0.023, stop=1.91, num=wave.size)
     log_power = CubicSpline(
@@ -606,7 +608,7 @@ def test_bihalofit_redshift_preparation_refines(compiled):
     predictions = []
     for anchors in (9, 33, 129):
         inputs["fit_nz"] = anchors
-        model = compiled.PhysicsModel(**inputs)
+        model = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
         predictions.append(model.matter(sides=sides, redshifts=redshift))
     coarse_error = np.max(np.abs(predictions[0] / predictions[2] - 1.0))
     fine_error = np.max(np.abs(predictions[1] / predictions[2] - 1.0))
@@ -662,7 +664,7 @@ def test_nla_power_simd_tiles_and_extrapolation(compiled):
     """
     inputs = physical_inputs()
     inputs["source_readers"] = False
-    model = compiled.PhysicsModel(**inputs)
+    model = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     radial = model.radial()
     ell = np.geomspace(start=1.0e-5, stop=2.0e7, num=259)
     bins = np.asarray([0, 1], dtype=np.int32)

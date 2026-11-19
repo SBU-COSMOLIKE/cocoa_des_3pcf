@@ -420,7 +420,14 @@ def compare_ia(*, compiled, inputs, query):
     isolates the derivative choice; it is not a continuum projection test.
     """
     bridged = install_background(compiled=compiled, inputs=inputs)
-    direct = compiled.production.PhysicsModel(**inputs)
+    # Match smoothing explicitly so this comparison isolates the distance
+    # derivative, rather than comparing two variance prescriptions.
+    snapshot = compiled.core.variance_snapshot(
+        z=np.linspace(start=0.0, stop=inputs["z"][-1], num=33))
+    fit = {}
+    for name in ("z", "rnl", "neff", "sigma8"):
+        fit[name] = snapshot[name]
+    direct = compiled.production.PhysicsModel(**inputs, variance=fit)
     actual = ia_observables(model=bridged, query=query)
     reference = ia_observables(model=direct, query=query)
     result = {}

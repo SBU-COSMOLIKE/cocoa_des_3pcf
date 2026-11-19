@@ -8,6 +8,8 @@ implied by these finite-operator checks. All physical arrays use radians
 and the conventions named in each result.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import argparse
 import hashlib
 import importlib.util
@@ -559,7 +561,7 @@ def _frozen_physics(settings, compiled):
     sources = np.empty(shape=(2, z.size), dtype=np.float64)
     sources[0] = z**2 * np.exp(-(z / 0.6)**1.5)
     sources[1] = z**2 * np.exp(-(z / 0.95)**1.5)
-    model = compiled.production.PhysicsModel(
+    model = reference_physics_model(factory=compiled.production.PhysicsModel,
         k=k, p_linear0=linear, z=z,
         p_nonlinear=nonlinear0[None, :] / (1 + z[:, None])**2.4,
         chi=3000 * z / (1 + 0.35 * z),

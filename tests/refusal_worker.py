@@ -6,6 +6,8 @@ the other checks. No method is replaced and no production state is shared
 between the child process and its caller.
 """
 
+from des3pcf.variance import reference_physics_model
+
 from pathlib import Path
 import sys
 
@@ -89,7 +91,7 @@ def run_case(case, adapter_name):
         from test_physics_model import physical_inputs
         from test_physical_covariance import covariance_arguments
 
-        model = adapter.PhysicsModel(**physical_inputs(), pixel_window=np.ones(10))
+        model = reference_physics_model(factory=adapter.PhysicsModel, **physical_inputs(), pixel_window=np.ones(10))
         adapter.physical_covariance(model=model, inputs=covariance_arguments())
     else:
         raise ValueError(f"Unknown refusal case: {case}")

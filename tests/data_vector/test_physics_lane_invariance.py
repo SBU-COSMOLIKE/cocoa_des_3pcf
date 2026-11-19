@@ -6,6 +6,8 @@ physical inputs and quadrature are unchanged, so the retained values must
 match bitwise. These checks isolate arithmetic grouping from refinement.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import numpy as np
 import pytest
 
@@ -24,7 +26,7 @@ def lane_model(compiled):
     inputs = physical_inputs()
     inputs["los_z"] = np.array([0.15, 0.5, 1.0, 1.8])
     inputs["source_readers"] = False
-    return compiled.PhysicsModel(**inputs)
+    return reference_physics_model(factory=compiled.PhysicsModel, **inputs)
 
 
 @pytest.mark.parametrize("adapter", ["production", "notebook"])
@@ -83,7 +85,7 @@ def test_unused_ell_preserves_nla_power(compiled, adapter, source_readers, query
     inputs = physical_inputs()
     inputs["source_readers"] = source_readers
     inputs["los_z"] = np.array([0.15, 0.5, 1.0, 1.8])
-    model = compiled.PhysicsModel(**inputs)
+    model = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     evaluate = model.nla_power
     if adapter == "notebook":
         evaluate = model.nla_power_notebook

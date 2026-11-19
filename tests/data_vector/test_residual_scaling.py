@@ -13,6 +13,8 @@ The wide-range comparison uses direct physical values as its reference;
 the tolerance is an interpolation check for these controlled spectra.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import numpy as np
 import pytest
 
@@ -49,8 +51,8 @@ def make_model(compiled, adapter):
     if adapter == "notebook":
         inputs["sources"] = np.asfortranarray(inputs["sources"])
         inputs["p_nonlinear"] = np.asfortranarray(inputs["p_nonlinear"])
-        return compiled.notebook.PhysicsModel(**inputs)
-    return compiled.production.PhysicsModel(**inputs)
+        return reference_physics_model(factory=compiled.notebook.PhysicsModel, **inputs)
+    return reference_physics_model(factory=compiled.production.PhysicsModel, **inputs)
 
 
 def settings_for_test(reference_mode, scaling, multipoles=False):

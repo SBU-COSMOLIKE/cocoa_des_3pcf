@@ -6,6 +6,8 @@ prepared tables, both IA components and both array adapters. Raw matter
 and projected-bispectrum queries remain unsmoothed building blocks.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import gc
 import json
 from pathlib import Path
@@ -25,13 +27,13 @@ from test_grid_transform_reuse import plan_and_weights
 def test_constant_window_owned_and_grid_survives_model(compiled, adapter):
     """Three legs give W cubed; deleting the model cannot invalidate its grid."""
     inputs = physical_inputs()
-    original = getattr(compiled, adapter).PhysicsModel(**inputs)
+    original = reference_physics_model(factory=getattr(compiled, adapter).PhysicsModel, **inputs)
     window = np.full(300001, .8)
     supplied = window
     if adapter == "notebook":
         storage = np.full(600002, .8)
         supplied = storage[::2]
-    smoothed = getattr(compiled, adapter).PhysicsModel(**inputs, pixel_window=supplied)
+    smoothed = reference_physics_model(factory=getattr(compiled, adapter).PhysicsModel, **inputs, pixel_window=supplied)
     supplied[:] = .2
     settings = compact_grid_settings(reference_mode=0)
     settings.update(signed_baseline=1)
@@ -52,7 +54,7 @@ def test_constant_window_owned_and_grid_survives_model(compiled, adapter):
         np.testing.assert_allclose(
             actual=actual, desired=expected, rtol=3.e-13, atol=1.e-32,
         )
-    restored = getattr(compiled, adapter).PhysicsModel(**inputs)
+    restored = reference_physics_model(factory=getattr(compiled, adapter).PhysicsModel, **inputs)
     restored_grid = restored.projection_grid(bins=bins, parameters=parameters,
                                              settings=settings)
     np.testing.assert_array_equal(x=baseline.multipoles(ell=ell),
@@ -62,8 +64,8 @@ def test_constant_window_owned_and_grid_survives_model(compiled, adapter):
 def test_direct_multipoles_use_window_on_all_three_legs(compiled):
     """The closure leg's angle-dependent window belongs inside the mu integral."""
     window = np.exp(-np.arange(1201) / 400.)
-    model = compiled.production.PhysicsModel(**physical_inputs(), pixel_window=window)
-    raw = compiled.production.PhysicsModel(**physical_inputs())
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **physical_inputs(), pixel_window=window)
+    raw = reference_physics_model(factory=compiled.production.PhysicsModel, **physical_inputs())
     ell = np.array([100., 330., 600.])
     bins = np.array([0, 1, 0], dtype=np.int32)
     parameters = {"a1": .4, "a2": .6, "bta": .3}
@@ -98,7 +100,7 @@ def test_retained_transform_reads_replaced_window_and_restores(compiled):
     settings["lmax"] = arguments["lmax"]
     values = []
     for amplitude in (1., .7, 1.):
-        model = compiled.production.PhysicsModel(
+        model = reference_physics_model(factory=compiled.production.PhysicsModel,
             **physical_inputs(), pixel_window=np.full(300001, amplitude),
         )
         grid = model.projection_grid(
@@ -119,8 +121,8 @@ def test_retained_transform_reads_replaced_window_and_restores(compiled):
 
 def test_full_filter_direct_and_prepared_windows(compiled):
     """The full-filter callbacks apply the same three factors exactly once."""
-    baseline = compiled.production.PhysicsModel(**physical_inputs())
-    model = compiled.production.PhysicsModel(**physical_inputs(),
+    baseline = reference_physics_model(factory=compiled.production.PhysicsModel, **physical_inputs())
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **physical_inputs(),
                                              pixel_window=np.full(300001, .8))
     bins = np.array([0, 1, 0], dtype=np.int32)
     parameters = {"a1": .5, "a2": .4, "bta": .7}
@@ -146,7 +148,7 @@ def test_full_filter_direct_and_prepared_windows(compiled):
 
 def test_prepared_query_does_not_interpolate_across_first_two_leg_cutoffs(compiled):
     """A discontinuous supplied upper extension must give exact zero outside it."""
-    model = compiled.production.PhysicsModel(**physical_inputs(),
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **physical_inputs(),
                                              pixel_window=np.ones(301))
     settings = compact_grid_settings(reference_mode=0)
     grid = model.projection_grid(bins=np.array([0, 1, 0], dtype=np.int32),
@@ -161,7 +163,7 @@ def test_prepared_query_does_not_interpolate_across_first_two_leg_cutoffs(compil
 def test_prepared_nonconstant_window_angular_integral(compiled):
     """Integrate the sampled W3*B linear segments independently at table nodes."""
     window = np.exp(-np.arange(5001) / 400.)
-    model = compiled.production.PhysicsModel(**physical_inputs(), pixel_window=window)
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **physical_inputs(), pixel_window=window)
     settings = compact_grid_settings(reference_mode=1)
     grid = model.projection_grid(
         bins=np.array([0, 1, 0], dtype=np.int32),

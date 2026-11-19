@@ -5,6 +5,8 @@ compared with an evolving notebook-style session. The small fixed rules
 test state ownership and rebuilding, not integration accuracy or speed.
 """
 
+from des3pcf.variance import reference_physics_model
+
 from pathlib import Path
 import subprocess
 import sys
@@ -314,7 +316,7 @@ def test_dimension_and_mode_round_trips(compiled, fresh_references, adapter_name
     small = dimension_signature(state_inputs("shrink"))
     assert all(a < b for a, b in zip(base, grown))
     assert all(a > b for a, b in zip(base, small))
-    model = compiled.PhysicsModel(**model_inputs("a"))
+    model = reference_physics_model(factory=compiled.PhysicsModel, **model_inputs("a"))
     adapter = getattr(compiled, adapter_name)
     sequence = ("base", "grow", "shrink", "grow", "pure_xi", "finite",
                 "analytic", "base", "pure_xi", "base")
@@ -338,7 +340,7 @@ def overwrite_same_shape(target, source):
 @pytest.mark.parametrize("adapter_name", ["production", "notebook"])
 def test_individual_in_place_setting_changes(compiled, fresh_references, adapter_name):
     """Same-size edits must invalidate by value, not by pointer or dimensions."""
-    model = compiled.PhysicsModel(**model_inputs("a"))
+    model = reference_physics_model(factory=compiled.PhysicsModel, **model_inputs("a"))
     adapter = getattr(compiled, adapter_name)
     inputs = state_inputs("base")
     for name in SAME_SIZE + tuple(reversed(SAME_SIZE)) + ("base",):
@@ -362,8 +364,8 @@ def test_old_models_and_owned_arrays(compiled, fresh_references, adapter_name):
     """Old model objects, input buffers and returned arrays have separate lives."""
     constructor_a = model_inputs("a")
     constructor_b = model_inputs("b")
-    first = compiled.PhysicsModel(**constructor_a)
-    second = compiled.PhysicsModel(**constructor_b)
+    first = reference_physics_model(factory=compiled.PhysicsModel, **constructor_a)
+    second = reference_physics_model(factory=compiled.PhysicsModel, **constructor_b)
     # These remain valid arrays but no longer describe either owned model.
     for supplied in (constructor_a, constructor_b):
         supplied["p_linear0"] *= 1.07
@@ -406,7 +408,7 @@ def test_old_models_and_owned_arrays(compiled, fresh_references, adapter_name):
 @pytest.mark.parametrize("adapter_name", ["production", "notebook"])
 def test_worker_count_changes(compiled, fresh_references, adapter_name):
     """Changing worker count preserves the prescribed integration order."""
-    model = compiled.PhysicsModel(**model_inputs("a"))
+    model = reference_physics_model(factory=compiled.PhysicsModel, **model_inputs("a"))
     adapter = getattr(compiled, adapter_name)
     try:
         for threads in (1, 2, 1, 2):
@@ -426,7 +428,7 @@ def reference_worker(adapter_name, state, destination):
 
     compiled.set_omp_threads(nthreads=1)
     version = "b" if state == "model_b" else "a"
-    model = compiled.PhysicsModel(**model_inputs(version))
+    model = reference_physics_model(factory=compiled.PhysicsModel, **model_inputs(version))
     output = evaluate(getattr(compiled, adapter_name), model, state_inputs(state))
     np.savez(destination, **output)
 

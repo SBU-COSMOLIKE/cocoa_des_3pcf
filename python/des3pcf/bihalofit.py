@@ -9,8 +9,8 @@ physical response, applied by the existing project machinery.
 
 Units are k in h/Mpc, P in (Mpc/h)^3 and B in (Mpc/h)^6. The background is
 provided as arrays. No w0-wa expansion model or flatness relation is assumed
-here. The compatibility fit uses P_lin(k,0) D(z)^2, including the existing C
-sigma8 normalization; it does not promote this approximation to a calibrated
+here. The reference fit uses P_lin(k,0) D(z)^2 and explicit scalar sigma8
+normalization; it does not promote this approximation to a calibrated
 massive-neutrino bispectrum model.
 
 Original fastnc license: MIT License, Copyright (c) 2024 Sunao Sugiyama.
@@ -336,7 +336,7 @@ def _upper_gamma(shape, lower):
 
 
 def fit_redshifts(zmax, fit_nz=33, source_readers=False):
-    """Return exactly the C coefficient anchors, including reference mode."""
+    """Return uniform production or upstream-comparison fit anchors."""
     fit_nz = _integer(value=fit_nz, name="fit_nz", minimum=4)
     if not np.isfinite(zmax) or zmax <= 0.0:
         raise ValueError("The fit requires a finite positive redshift maximum.")
@@ -358,6 +358,49 @@ def fit_redshifts(zmax, fit_nz=33, source_readers=False):
     return np.asarray(nodes, dtype=np.float64)
 
 
+def reference_smoothed_variance(linear, radius, growth_squared, window, logk_min, count, tail):
+    """Integrate k^3 P W^2/(2pi^2), sharing k nodes across redshift rows."""
+    coordinates = np.linspace(start=logk_min, stop=np.log(100.0), num=count)
+    wave = np.exp(coordinates)
+    radius = np.asarray(radius, dtype=np.float64)
+    x = radius[..., None] * wave
+    if window == 0:
+        square = x * x
+        small = np.abs(x) < 1.0e-3
+        # Do not evaluate the cancellation-prone expression on the small
+        # branch; np.where would evaluate both of its array arguments.
+        kernel = np.empty_like(x)
+        kernel[small] = (1.0 - square[small] / 10.0
+                         + square[small]**2 / 280.0)
+        large = x[~small]
+        kernel[~small] = 3.0 * (
+            np.sin(large) - large * np.cos(large)) / large**3
+    else:
+        kernel = np.exp(-0.5 * x * x)
+        if window == 2:
+            kernel *= x
+    power = np.exp(linear.read(coordinates, endpoint_power=True))
+    integrand = power * wave * wave * wave * INVERSE_TWO_PI_SQUARED
+    integrand = integrand * np.asarray(growth_squared)[..., None]
+    integrand = integrand * kernel * kernel
+    spacing = (coordinates[-1] - coordinates[0]) / (count - 1)
+    result = _simpson_uniform(values=integrand, spacing=spacing)
+    if tail:
+        end = coordinates[-1]
+        previous = end - spacing
+        log_last = linear.read(end, endpoint_power=True) + 3.0 * end
+        log_previous = linear.read(
+            previous, endpoint_power=True) + 3.0 * previous
+        slope = float((log_last - log_previous) / spacing)
+        gamma = _upper_gamma(shape=0.5 * slope, lower=(100.0 * radius)**2)
+        result += (0.5 * np.exp(log_last - slope * end)
+                   * radius**(-slope) * gamma
+                   * INVERSE_TWO_PI_SQUARED * growth_squared)
+    if np.any(~np.isfinite(result)) or np.any(result <= 0.0):
+        raise ValueError("BiHalofit variance must be positive and finite.")
+    return result
+
+
 class BiHalofit(PreparedGeometry):
     """Own the supplied background and the fitted matter-bispectrum equation.
 
@@ -367,11 +410,11 @@ class BiHalofit(PreparedGeometry):
       omega_m_z = supplied matter-density fraction, including massive nu.
       omega_m_redshift = its coordinate grid; None means the background z.
       ns, sigma8 = primordial slope and target normalization used by the
-        existing C comparison path. Trusting raw P normalization is a
+        independent comparison calculation. Trusting raw P normalization is a
         separate numerical/physical change and is not silently selected.
       fit_nz, table_boost, source_readers = existing C preparation controls.
       variance_nodes, slope_nodes, radius_rtol = explicit refinement controls;
-        defaults reproduce the C 1000/2000-node rules and 1e-5 root tolerance.
+        defaults use 1000/2000-node rules and a 1e-5 root tolerance.
 
     The fit is a DMO prescription. Its full, tree, one-halo and three-halo
     components are diagnostics of this equation. Only the positive full B
@@ -436,7 +479,7 @@ class BiHalofit(PreparedGeometry):
             raise ValueError("Interpolated Omega_m must be positive.")
 
         if variance is None:
-            # The old C path first normalizes with a 1e-3 h/Mpc lower bound.
+            # The reference first normalizes with a 1e-3 h/Mpc lower bound.
             # Fit variances then use 1e-4. Keeping both bounds is necessary for
             # equation comparisons; replacing the normalization is separate work.
             normalization = self._variance(
@@ -488,46 +531,11 @@ class BiHalofit(PreparedGeometry):
         self._seal_geometry()
 
     def _variance(self, radius, growth_squared, window, logk_min, count, tail):
-        """Integrate k^3 P W^2/(2pi^2), sharing k nodes across redshift rows."""
-        coordinates = np.linspace(start=logk_min, stop=np.log(100.0), num=count)
-        wave = np.exp(coordinates)
-        radius = np.asarray(radius, dtype=np.float64)
-        x = radius[..., None] * wave
-        if window == 0:
-            square = x * x
-            small = np.abs(x) < 1.0e-3
-            # Do not evaluate the cancellation-prone expression on the small
-            # branch; np.where would evaluate both of its array arguments.
-            kernel = np.empty_like(x)
-            kernel[small] = (1.0 - square[small] / 10.0
-                             + square[small]**2 / 280.0)
-            large = x[~small]
-            kernel[~small] = 3.0 * (
-                np.sin(large) - large * np.cos(large)) / large**3
-        else:
-            kernel = np.exp(-0.5 * x * x)
-            if window == 2:
-                kernel *= x
-        power = np.exp(self._linear.read(coordinates, endpoint_power=True))
-        integrand = power * wave * wave * wave * INVERSE_TWO_PI_SQUARED
-        integrand = integrand * np.asarray(growth_squared)[..., None]
-        integrand = integrand * kernel * kernel
-        spacing = (coordinates[-1] - coordinates[0]) / (count - 1)
-        result = _simpson_uniform(values=integrand, spacing=spacing)
-        if tail:
-            end = coordinates[-1]
-            previous = end - spacing
-            log_last = self._linear.read(end, endpoint_power=True) + 3.0 * end
-            log_previous = self._linear.read(
-                previous, endpoint_power=True) + 3.0 * previous
-            slope = float((log_last - log_previous) / spacing)
-            gamma = _upper_gamma(shape=0.5 * slope, lower=(100.0 * radius)**2)
-            result += (0.5 * np.exp(log_last - slope * end)
-                       * radius**(-slope) * gamma
-                       * INVERSE_TWO_PI_SQUARED * growth_squared)
-        if np.any(~np.isfinite(result)) or np.any(result <= 0.0):
-            raise ValueError("BiHalofit variance must be positive and finite.")
-        return result
+        """Evaluate the independent finite-grid reference on this spectrum."""
+        return reference_smoothed_variance(
+            linear=self._linear, radius=radius, growth_squared=growth_squared,
+            window=window, logk_min=logk_min, count=count, tail=tail,
+        )
 
     def _nonlinear_radius(self, growth_squared):
         """Solve sigma_G(R,z)=1 with the legacy bracket and stop criterion."""

@@ -1,5 +1,7 @@
 """Refuse unsupported geometry and labels before lossy conversions."""
 
+from des3pcf.variance import reference_physics_model
+
 import argparse
 from pathlib import Path
 import subprocess
@@ -18,9 +20,11 @@ def invalid_physics_input(case):
 
     compiled.set_omp_threads(nthreads=1)
     inputs = physical_inputs()
+    if case == "missing_variance":
+        compiled.PhysicsModel(**inputs)
     if case == "curved":
         inputs["omega_de"] = 0.65
-    model = compiled.PhysicsModel(**inputs)
+    model = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     sides = np.asarray([[10.0, 15.0, 20.0]], dtype=np.float64)
     if case == "underflow":
         sides[0] = [np.nextafter(0.0, 1.0), 1.0e10, 1.0e10]
@@ -47,6 +51,7 @@ def invalid_physics_input(case):
 @pytest.mark.parametrize(
     "case, expected",
     [
+        ("missing_variance", "internal BiHalofit requires supplied variance arrays"),
         (
             "curved",
             "flat geometry requires abs(omega_m + omega_de - 1) <= 1e-8",
@@ -79,7 +84,7 @@ def test_notebook_keeps_strided_int64_labels(compiled):
     """Integer dtype conversion preserves labels and negative strides."""
     from test_physics_model import physical_inputs
 
-    model = compiled.PhysicsModel(**physical_inputs())
+    model = reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs())
     sides = np.asarray([[10.0, 15.0, 20.0]], dtype=np.float64)
     original = np.asarray([0, 1, 1], dtype=np.int64)
     bins = original[::-1]

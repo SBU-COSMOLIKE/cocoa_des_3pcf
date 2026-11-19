@@ -7,6 +7,8 @@ arithmetic loses for a triangle with one side a billion times shorter.
 All inputs to the reference are the exact binary doubles supplied to C.
 """
 
+from des3pcf.variance import reference_physics_model
+
 from decimal import Decimal, localcontext
 import json
 from pathlib import Path
@@ -176,7 +178,7 @@ def decimal_alignment(sides, power, c1, c2, ct, bta, remove_alignment):
 @pytest.fixture(scope="module")
 def squeezed_model(compiled):
     """Use the same smooth physical tables as the source comparison."""
-    return compiled.PhysicsModel(**physical_inputs())
+    return reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs())
 
 
 def squeezed_triangles():

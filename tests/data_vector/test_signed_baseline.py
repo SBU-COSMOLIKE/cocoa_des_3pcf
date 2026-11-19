@@ -12,6 +12,8 @@ at a baseline zero. The separate TATT residual is checked without claiming
 that its coarse interpolation is scientifically accurate.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import numpy as np
 import pytest
 from scipy.optimize import brentq
@@ -118,7 +120,7 @@ def test_signed_baseline_negative_and_zero_crossing(compiled, adapter, reference
     reached by the independently evaluated model before the test continues.
     """
     compiled.set_omp_threads(nthreads=1)
-    model = compiled.production.PhysicsModel(**signed_inputs())
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **signed_inputs())
     settings = grid_settings(reference_mode=reference_mode)
     negative = prepare_grid(
         model=model,
@@ -178,7 +180,7 @@ def test_signed_baseline_refinement_away_from_knots(compiled, adapter):
     passing this small test is not a survey-accuracy determination.
     """
     compiled.set_omp_threads(nthreads=1)
-    model = compiled.production.PhysicsModel(**signed_inputs())
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **signed_inputs())
     sides = np.asarray(
         [
             [100.0, 130.0, 170.0],
@@ -209,7 +211,7 @@ def test_signed_baseline_refinement_away_from_knots(compiled, adapter):
 def test_signed_baseline_preserves_default_and_tatt_residual(compiled, adapter):
     """Omitting the new setting keeps old bits; signed mode does not alter IA2."""
     compiled.set_omp_threads(nthreads=1)
-    model = compiled.production.PhysicsModel(**physical_inputs())
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **physical_inputs())
     settings = grid_settings(reference_mode=0, signed=0)
     ia = parameters(amplitude=0.0, residual=True)
     ordinary = prepare_grid(model=model, adapter=adapter, ia=ia, settings=settings)
@@ -238,7 +240,7 @@ def test_signed_baseline_preserves_default_and_tatt_residual(compiled, adapter):
 @pytest.mark.parametrize("adapter", ["production", "notebook"])
 def test_signed_baseline_workers_and_retained_query(compiled, adapter):
     """Reused geometric maps read fresh signed physics and restore old outputs."""
-    model = compiled.production.PhysicsModel(**signed_inputs())
+    model = reference_physics_model(factory=compiled.production.PhysicsModel, **signed_inputs())
     ordinary = grid_settings(reference_mode=0, signed=0, multipoles=True)
     signed = grid_settings(reference_mode=0, signed=1, multipoles=True)
     grids = []

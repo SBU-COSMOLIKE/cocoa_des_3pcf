@@ -7,6 +7,8 @@ provider-background change cannot be mistaken for a port error. No survey
 data vector, covariance or mask is read by these equation-level tests.
 """
 
+from des3pcf.variance import reference_physics_model
+
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
@@ -115,7 +117,7 @@ def test_native_equation_with_pinned_inputs(compiled, tmp_path,
         redshift = saved["query_redshift"].copy()
     model = BiHalofit(**supplied, fit_nz=fit_nz, table_boost=table_boost,
                       source_readers=source_readers)
-    reference = compiled.PhysicsModel(**native)
+    reference = reference_physics_model(factory=compiled.PhysicsModel, **native)
     report = {
         "inputs_npz_sha256": hashlib.sha256(
             input_path.read_bytes()).hexdigest(),
@@ -182,7 +184,7 @@ def test_shared_variance_python_and_c_equations(compiled, source_readers):
         variance[name] = snapshot[name]
     native["variance"] = variance
     model = BiHalofit(**supplied, variance=variance, source_readers=source_readers)
-    reference = compiled.PhysicsModel(**native)
+    reference = reference_physics_model(factory=compiled.PhysicsModel, **native)
     sides, redshift = query_triangles()
     for component in range(4):
         actual = evaluate(model=model, sides=sides, redshift=redshift,

@@ -5,6 +5,9 @@ state ownership, physical input selection and numerical control wiring.
 Full joint means and Fisher derivatives require separate survey checks.
 """
 
+import json
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -28,15 +31,21 @@ def test_python_reference_can_supply_the_native_fit(
         compiled, fit_nz, table_boost, source_readers):
     """External reference arrays reproduce the legacy native matter equation."""
     from des3pcf.mean import physics_model
+    from des3pcf.bihalofit import input_hashes
 
     tables, unused = toy_tables()
-    # Call the native legacy constructor directly: the Python factory also
-    # supplies reference fit arrays, so comparing two factory calls would
-    # fail to test the independent C integration being replaced.
-    reference = compiled.production.PhysicsModel(
-        **tables, fit_nz=fit_nz, table_boost=table_boost,
-        source_readers=source_readers,
-    )
+    # These values were captured from the native legacy integrator before
+    # its removal. Comparing two current factories would compare the same
+    # Python fit preparation with itself and lose the independent check.
+    archive = json.loads(Path(__file__).with_name(
+        "reference_legacy_variance.json").read_text())
+    assert input_hashes(arrays=tables, settings={}) == archive["input_sha256"]
+    reference = None
+    for case in archive["cases"]:
+        if (case["fit_nz"] == fit_nz and case["table_boost"] == table_boost
+                and case["source_readers"] == source_readers):
+            reference = case["matter"]
+    assert reference is not None
     engine = ReferenceVariance()
     fit, multiplier, record = engine.prepare(
         tables=tables, fit_nz=fit_nz, table_boost=table_boost,
@@ -50,8 +59,7 @@ def test_python_reference_can_supply_the_native_fit(
     sides = np.array([[0.03, 0.04, 0.05], [0.1, 0.2, 0.25], [0.5, 0.7, 1.0]])
     redshift = np.array([0.0, 0.4, 1.8])
     for component in range(4):
-        expected = reference.matter(sides=sides, redshifts=redshift,
-                                    component=component)
+        expected = np.asarray(reference[component])
         actual = candidate.matter(sides=sides, redshifts=redshift,
                                    component=component)
         np.testing.assert_allclose(actual, expected, rtol=2.0e-11, atol=0.0)
@@ -79,6 +87,35 @@ def test_reference_variance_retains_inputs_outputs_and_exact_keys():
     np.testing.assert_array_equal(restored["rnl"], saved)
     assert restored_multiplier == multiplier
     np.testing.assert_array_equal(original["rnl"], saved)
+
+
+def test_native_model_preserves_supplied_power_amplitude(compiled):
+    """The legacy scalar cannot renormalize P or an explicit shared fit."""
+    tables, parameters = toy_tables()
+    snapshot, unused = SharedVariance(compiled=compiled).prepare(
+        tables=tables, parameters=parameters, metadata={},
+        z=np.linspace(start=0.0, stop=tables["z"][-1], num=33),
+    )
+    fit = {}
+    for name in ("z", "rnl", "neff", "sigma8"):
+        fit[name] = snapshot[name]
+    original = compiled.production.PhysicsModel(**tables, variance=fit)
+    changed = dict(tables)
+    changed["sigma8"] = 1.2
+    other = compiled.notebook.PhysicsModel(**changed, variance=fit)
+    wave = tables["k"].copy()
+    redshift = np.zeros_like(wave)
+    actual = original.power(k=wave, z=redshift, mode=0)
+    # One exact endpoint isolates an overall normalization from the tiny
+    # dense-reader coordinate errors at other supplied sample positions.
+    np.testing.assert_allclose(actual[0], tables["p_linear0"][0], rtol=1.0e-13)
+    np.testing.assert_array_equal(other.power(k=wave, z=redshift, mode=0), actual)
+    sides = np.array([[0.1, 0.2, 0.25]])
+    at = np.array([0.4])
+    np.testing.assert_array_equal(
+        original.matter(sides=sides, redshifts=at),
+        other.matter(sides=sides, redshifts=at),
+    )
 
 
 def test_snapshot_ownership_and_interleaved_owners(compiled):

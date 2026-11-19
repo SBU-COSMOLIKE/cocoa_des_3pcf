@@ -15,6 +15,8 @@ reset operation is release of the Python owner, which frees its C arrays. The
 fresh-worker comparison remains the same as the existing data-vector tests.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import argparse
 import copy
 import gc
@@ -376,9 +378,9 @@ def worker(family, adapter, output, index):
             inputs = physical_inputs(case["physical"])
             if adapter == "notebook":
                 inputs = notebook_buffers(inputs)
-                model = compiled.notebook.PhysicsModel(**inputs)
+                model = reference_physics_model(factory=compiled.notebook.PhysicsModel, **inputs)
             else:
-                model = compiled.production.PhysicsModel(**inputs)
+                model = reference_physics_model(factory=compiled.production.PhysicsModel, **inputs)
             models[key] = (model, inputs)
         model, inputs = models[key]
         last = case["physical"]["nbin"] - 1

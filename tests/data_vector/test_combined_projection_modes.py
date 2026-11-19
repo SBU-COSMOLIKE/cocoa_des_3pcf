@@ -6,6 +6,8 @@ labels. The same physical triplet is also moved between SIMD lanes and a
 scalar tail; adding an unrequested output must not change its bits.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import numpy as np
 import pytest
 
@@ -37,8 +39,8 @@ def make_combined_model(compiled, adapter):
     if adapter == "notebook":
         inputs["sources"] = np.asfortranarray(inputs["sources"])
         inputs["p_nonlinear"] = np.asfortranarray(inputs["p_nonlinear"])
-        return compiled.notebook.PhysicsModel(**inputs)
-    return compiled.production.PhysicsModel(**inputs)
+        return reference_physics_model(factory=compiled.notebook.PhysicsModel, **inputs)
+    return reference_physics_model(factory=compiled.production.PhysicsModel, **inputs)
 
 
 def prepare_single(model, adapter, bins, parameters, settings):

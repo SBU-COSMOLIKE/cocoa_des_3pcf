@@ -6,6 +6,8 @@ smooth source reconstruction is an explicit model choice; its successful
 preparation does not certify the later IA-kernel interpolation or a forecast.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import importlib
 from pathlib import Path
 import sys
@@ -304,7 +306,7 @@ def test_notebook_constructor_copies_strided_readonly_source_arrays(compiled):
     arguments["kernel_nz"] = 9
     arguments["table_boost"] = 1
     arguments["fit_nz"] = 5
-    copied = compiled.notebook.PhysicsModel(**arguments)
+    copied = reference_physics_model(factory=compiled.notebook.PhysicsModel, **arguments)
     for name, values in reference.radial().items():
         assert_bits(values, copied.radial()[name])
 

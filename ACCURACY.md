@@ -400,6 +400,7 @@ controls = Accuracy(chi_boost=2.0, kernel_boost=2.0)
 arguments = dict(physical_tables)
 arguments["los_z"] = controls.los_nodes(baseline=physical_tables["los_z"])
 arguments.update(controls.model_settings(kernel_nz=101, table_boost=8, fit_nz=33))
+arguments["variance"] = fit_arrays  # z/rnl/neff/sigma8 from this same power
 model = compiled.notebook.PhysicsModel(**arguments)
 
 settings = controls.projection_settings(baseline={"lmax": 20})
@@ -459,8 +460,11 @@ retain the old reference convention. The normalization multiplies only
 the three-point model's linear power; the ordinary two-point calculation
 receives the original supplied spectrum. The saved metadata records the
 multiplier and all inputs. Neither mode can silently normalize the other's
-spectrum. The native constructors still accept the old no-array route
-while its callers are being migrated and checked.
+spectrum. Internal native constructors require explicit fit arrays; the
+local C integral and normalization have been removed. Original-library
+comparisons use `reference_physics_model(factory=..., **inputs)` to prepare
+the independent Python reference before calling the real native adapter.
+An absolute supplied B bypasses the fit and trusts the supplied power.
 
 `physics.variance_growth: factorized` installs P(k,0)D(z)^2 and retains the
 existing three-point effective-growth approximation. `evolving` instead

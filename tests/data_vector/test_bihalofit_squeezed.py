@@ -8,6 +8,8 @@ with 80 decimal digits from each route's actual power values and propagate
 the measured power difference through that same physical equation.
 """
 
+from des3pcf.variance import reference_physics_model
+
 from decimal import Decimal, localcontext
 import hashlib
 import json
@@ -107,7 +109,7 @@ def test_nonzero_gap_squeezed_conditioning(compiled, tmp_path, source_readers):
     sides = loaded["query"]["sides"]
     redshift = loaded["query"]["z"]
     python = BiHalofit(**supplied, source_readers=source_readers)
-    reference = compiled.PhysicsModel(**native)
+    reference = reference_physics_model(factory=compiled.PhysicsModel, **native)
     actual_power = np.exp(python._linear.read(
         coordinates=np.log(sides), endpoint_power=True))
     growth = python._growth.read(coordinates=redshift)

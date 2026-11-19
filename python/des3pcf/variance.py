@@ -20,6 +20,43 @@ from .inputs import uniform_segments
 from .ownership import immutable_copy
 
 
+def reference_physics_model(factory, **inputs):
+    """Construct a native model using the explicit upstream reference convention.
+
+    This adapter is for original-library comparisons and controlled tests.
+    Production providers select their variance engine explicitly. The factory
+    argument is the real production or notebook constructor; no compiled
+    function is replaced. A supplied variance mapping already declares its
+    power amplitude, so that route passes through without normalization.
+    """
+    if inputs.get("variance") is not None:
+        return factory(**inputs)
+    prepared = dict(inputs)
+    source_readers = inputs.get("source_readers", False)
+    if inputs.get("baseline") is None:
+        fit, multiplier, unused = ReferenceVariance().prepare(
+            tables=inputs, fit_nz=inputs.get("fit_nz", 33),
+            table_boost=inputs.get("table_boost", 8),
+            source_readers=source_readers,
+        )
+        prepared["variance"] = dict(fit)
+    else:
+        # A supplied absolute B needs no nonlinear radius or spectral fit.
+        # Retain only the old comparison's power normalization, using the
+        # same independent Python integral as the internal reference.
+        from .bihalofit import _Curve, reference_smoothed_variance
+
+        curve = _Curve(x=np.log(inputs["k"]), y=np.log(inputs["p_linear0"]),
+                       natural=not source_readers)
+        variance = reference_smoothed_variance(
+            linear=curve, radius=np.asarray(8.0), growth_squared=1.0,
+            window=0, logk_min=np.log(1.0e-3), count=1000, tail=False,
+        )
+        multiplier = inputs["sigma8"]**2 / float(variance)
+    prepared["p_linear0"] = np.asarray(inputs["p_linear0"]) * multiplier
+    return factory(**prepared)
+
+
 class ReferenceVariance:
     """Retain the independent Python calculation for legacy comparisons.
 

@@ -13,6 +13,8 @@ test_physical_covariance.py. All grids here are small fixed rules used
 to test reuse and ownership, not survey accuracy or execution time.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import numpy as np
 import pytest
 
@@ -22,7 +24,7 @@ from test_setting_sequences import base_inputs, model_inputs
 @pytest.fixture(scope="module")
 def model(compiled):
     """Construct the two-source physical model used by the state checks."""
-    return compiled.PhysicsModel(**model_inputs(version="a"))
+    return reference_physics_model(factory=compiled.PhysicsModel, **model_inputs(version="a"))
 
 
 def mixed_inputs(large_area):

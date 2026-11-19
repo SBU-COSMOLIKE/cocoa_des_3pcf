@@ -6,6 +6,8 @@ from this check. Refining the input redshifts then measures the error of
 the prepared redshift interpolant, including both sides of a grid join.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import numpy as np
 import pytest
 
@@ -64,7 +66,8 @@ def test_piecewise_power_refinement(compiled, adapter):
     errors = []
     factory = getattr(compiled, adapter).PhysicsModel
     for refinement in (1, 2, 4):
-        model = factory(**piecewise_inputs(refinement=refinement))
+        model = reference_physics_model(
+            factory=factory, **piecewise_inputs(refinement=refinement))
         actual = model.power(k=wave, z=redshift, mode=2)
         errors.append(np.max(np.abs(actual / expected - 1.0)))
         # Adjacent floating-point coordinates at the join must agree to
@@ -92,7 +95,7 @@ def test_python_and_native_piecewise_fit(compiled):
     supplied["omega_m_redshift"] = anchors
     supplied["omega_m_z"] = omega
     python = BiHalofit(**supplied, fit_nz=33, table_boost=16)
-    native = compiled.production.PhysicsModel(**inputs)
+    native = reference_physics_model(factory=compiled.production.PhysicsModel, **inputs)
     sides, redshift = query_triangles()
     for component in range(4):
         expected = native.matter(sides=sides, redshifts=redshift, component=component)

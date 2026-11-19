@@ -15,6 +15,8 @@ Example (one command):
       --output /path/to/new/results --threads 6
 """
 
+from des3pcf.variance import reference_physics_model
+
 import argparse
 import hashlib
 import json
@@ -102,7 +104,7 @@ def run(options):
     covariance_input = restored["covariance"]
     query_sides = restored["query"]["sides"]
     query_z = restored["query"]["z"]
-    internal = compiled.PhysicsModel(**native)
+    internal = reference_physics_model(factory=compiled.PhysicsModel, **native)
     reference_mean, covariance_terms = compiled.production.physical_covariance(
         model=internal, inputs=covariance_input)
     fixed_covariance = np.sum(covariance_terms, axis=0)
@@ -157,7 +159,7 @@ def run(options):
             del inputs[unused]
         inputs["omega_m_z"] = baseline.background_omega_m_z
         inputs["baseline"] = dict(baseline.native)
-        model = compiled.production.PhysicsModelWithBispectrum(**inputs)
+        model = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum, **inputs)
         mean, terms = compiled.production.physical_covariance(
             model=model, inputs=covariance_input)
         np.testing.assert_array_equal(mean[1:], reference_mean[1:])

@@ -7,6 +7,8 @@ retain P and IA while replacing B, test ownership after input mutation,
 and follow the core bridge through replacement, clearing and resetting.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import gc
 import os
 from pathlib import Path
@@ -94,7 +96,7 @@ def test_off_grid_baseline_and_input_ownership(compiled, adapter, boost):
     """Off-grid values, side permutations and copied storage share one answer."""
     baseline = baseline_input(boost=boost)
     inputs = supplied_inputs()
-    model = getattr(compiled, adapter).PhysicsModelWithBispectrum(
+    model = reference_physics_model(factory=getattr(compiled, adapter).PhysicsModelWithBispectrum,
         **inputs, baseline=baseline
     )
     baseline["log_bispectrum"][:] = 100.0
@@ -121,8 +123,8 @@ def test_tree_power_and_raw_alignment_unchanged(compiled, source_readers):
     ordinary_inputs["source_readers"] = source_readers
     supplied = supplied_inputs()
     supplied["source_readers"] = source_readers
-    original = compiled.PhysicsModel(**ordinary_inputs)
-    replacement = compiled.production.PhysicsModelWithBispectrum(
+    original = reference_physics_model(factory=compiled.PhysicsModel, **ordinary_inputs)
+    replacement = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum,
         **supplied, baseline=baseline_input()
     )
     sides = np.array([[0.03, 0.04, 0.05], [0.2, 0.3, 0.4]])
@@ -155,7 +157,7 @@ def test_tree_power_and_raw_alignment_unchanged(compiled, source_readers):
 
 def test_constant_baseline_projection_and_retained_grid(compiled):
     """A constant B gives its exact radial-weight sum and survives model deletion."""
-    model = compiled.production.PhysicsModelWithBispectrum(
+    model = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum,
         **supplied_inputs(), baseline=baseline_input(varying=False)
     )
     bins = np.array([0, 1, 0], dtype=np.int32)
@@ -189,7 +191,7 @@ def test_supplied_baseline_and_feedback_remain_distinct(compiled):
     )
     response["boost"] = 2
     response["clamp"] = 0
-    model = compiled.production.PhysicsModelWithBispectrum(
+    model = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum,
         **supplied_inputs(), baseline=baseline, feedback=response
     )
     parameters = {
@@ -225,10 +227,10 @@ def test_covariance_uses_supplied_b_in_each_b_family(compiled):
 
     inputs = supplied_inputs()
     inputs["los_z"] = np.array([0.15, 0.5, 1.0, 1.8])
-    first = compiled.production.PhysicsModelWithBispectrum(
+    first = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum,
         **inputs, baseline=baseline_input(amplitude=7.0, varying=False)
     )
-    second = compiled.production.PhysicsModelWithBispectrum(
+    second = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum,
         **inputs, baseline=baseline_input(amplitude=14.0, varying=False)
     )
     request = covariance_arguments()
@@ -485,7 +487,7 @@ def refusal_child(*, case):
     inputs = supplied_inputs()
     if case == "background_size":
         inputs["omega_m_z"] = inputs["omega_m_z"][:-1].copy()
-    model = compiled.production.PhysicsModelWithBispectrum(
+    model = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum,
         **inputs, baseline=baseline
     )
     component = 0

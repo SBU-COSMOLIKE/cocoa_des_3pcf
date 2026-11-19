@@ -6,6 +6,8 @@ the IA split tests the declared fixed-quadratic-IA approximation. Smooth
 test tables are numerical references, not hydro simulations.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import numpy as np
 import pytest
 
@@ -41,8 +43,8 @@ def test_independent_power_and_bispectrum_scalings(compiled, adapter):
     """Pure NLA scales by R_P and R_B independently and restores at A=0."""
     pair = paired_input()
     inputs = physical_inputs()
-    model = getattr(compiled, adapter).PhysicsModel(**inputs, feedback=dict(pair.native))
-    reference = compiled.PhysicsModel(**inputs)
+    model = reference_physics_model(factory=getattr(compiled, adapter).PhysicsModel, **inputs, feedback=dict(pair.native))
+    reference = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     ell = np.array([100., 210., 350.])
     bins2 = np.array([0, 1], dtype=np.int32)
     bins3 = np.array([0, 1, 0], dtype=np.int32)
@@ -72,7 +74,7 @@ def test_independent_power_and_bispectrum_scalings(compiled, adapter):
 def test_feedback_leaves_quadratic_ia_exactly_fixed(compiled):
     """Changing A must not change even the residual's interpolation scale."""
     pair = paired_input()
-    model = compiled.PhysicsModel(**physical_inputs(), feedback=dict(pair.native))
+    model = reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs(), feedback=dict(pair.native))
     bins = np.array([0, 1, 0], dtype=np.int32)
     sides = np.array([[120., 180., 250.], [200., 270., 340.]])
     parameters = {"a1": .4, "a2": .7, "bta": .9, "ct": .2}
@@ -106,7 +108,7 @@ def test_multilinear_log_response_and_input_ownership(compiled, boost):
     native["log_bispectrum"] = (
         -.03*z + .01*logk + .02*logu + .04*v + .004*z*logk + .003*logu*v
     ).ravel()
-    model = compiled.PhysicsModel(**physical_inputs(), feedback=native)
+    model = reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs(), feedback=native)
     native["log_bispectrum"][:] = 500.
     sides = np.array([[.3, .4, .5], [.8, 1., 1.3], [1.e-12, 1., 1.+5.e-13]])
     redshift = np.array([.4, 1.4, .7])
@@ -180,7 +182,7 @@ def test_feedback_two_point_tatt_keeps_loop_terms_fixed(compiled):
 
     tables = physical_inputs()
     tables["p_linear"] = tables["growth"][:, None]**2 * tables["p_linear0"]
-    model = compiled.PhysicsModel(**physical_inputs(), feedback=dict(paired_input().native))
+    model = reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs(), feedback=dict(paired_input().native))
     adapter = CoreTwoPoint(core=core, nbin=2, threads=1, ell_internal=32,
                            accuracy_boost=.5)
     parameters = {"h": .7, "omega_b": .05, "mnu": 0.}

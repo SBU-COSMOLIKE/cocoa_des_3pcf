@@ -6,6 +6,8 @@ the finite source-kernel splines and signed interpolation. Small grids test
 algebra and state ownership; they are not survey accuracy settings.
 """
 
+from des3pcf.variance import reference_physics_model
+
 import numpy as np
 import pytest
 
@@ -17,7 +19,7 @@ from test_transform_setting_sequences import configuration, make_plan, aperture_
 @pytest.mark.parametrize("adapter", ["production", "notebook"])
 def test_equilateral_operators(compiled, adapter):
     """Equation 51 gives ddE/P²=-C2/6-C1delta/2 for an equilateral triangle."""
-    model = getattr(compiled, adapter).PhysicsModel(**physical_inputs())
+    model = reference_physics_model(factory=getattr(compiled, adapter).PhysicsModel, **physical_inputs())
     sides = np.array([[0.2, 0.2, 0.2]], dtype=np.float64)
     redshift = np.array([0.0])
     parameters = {"a1": 0.7, "a2": 0.8, "bta": 0.4, "zpivot": 0.0}
@@ -48,7 +50,7 @@ def test_equilateral_operators(compiled, adapter):
 @pytest.mark.parametrize("scaled", [0, 1])
 def test_components_close_after_interpolation_transform_and_aperture(compiled, scaled):
     """A reused transform must recover the total from signed pieces at 1/4 threads."""
-    model = compiled.PhysicsModel(**physical_inputs())
+    model = reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs())
     case = base_case()
     parameters = dict(case["ia"])
     bins = np.array([0, 1, 0], dtype=np.int32)
@@ -105,7 +107,7 @@ def test_ordered_legs_and_nla_limits(compiled):
     inputs = physical_inputs()
     sources = inputs["sources"]
     inputs["sources"] = np.vstack((sources, 0.3 * sources[0] + sources[1]))
-    model = compiled.PhysicsModel(**inputs)
+    model = reference_physics_model(factory=compiled.PhysicsModel, **inputs)
     sides = np.array([[120., 210., 260.]])
     bins = np.array([0, 1, 2], dtype=np.int32)
     parameters = {"a1": 0.8, "a2": 0.6, "bta": 0.4}
