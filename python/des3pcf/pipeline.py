@@ -16,7 +16,7 @@ import numpy as np
 from copy import deepcopy
 
 from .inputs import validate_tables, shifted_sources, camb_tables, _camb_power_limits
-from .inputs import reconstructed_sources
+from .inputs import reconstructed_sources, camb_accuracy_settings
 from .mean import physics_model, Map3Engine, XiEngine
 from .feedback import FeedbackPair, feedback_power_tables
 from .bacco_feedback import BaccoFeedback, BACCO_PARAMETERS
@@ -97,6 +97,9 @@ class PhysicalProvider:
           'shared' supplies owned core FFTLog quantities and trusts input P.
       variance_growth = 'factorized' retains P(k,0)D(z)^2; 'evolving' requires
           the full supplied linear power and the shared variance source.
+      camb_accuracy_boost, camb_k_per_logint = independent CAMB integration
+          and transfer sampling controls; defaults one/zero preserve the
+          previous producer. Both enter saved provenance and exact cache keys.
     Side effects:
       Retains the latest cosmology table and source-weighted C model.
       CAMB runs only after a physical parameter changes in camb mode.
@@ -111,6 +114,7 @@ class PhysicalProvider:
         feedback=None, pixel_window=None,
         bispectrum_source="internal", bispectrum_table=None,
         variance_source="local", variance_growth="factorized",
+        camb_accuracy_boost=1.0, camb_k_per_logint=0,
     ):
         """Store the physical baseline and validate the requested producer mode.
 
@@ -224,6 +228,8 @@ class PhysicalProvider:
         self.halofit_version = halofit_version
         self.kmax_boltzmann = kmax_boltzmann
         self.extrap_kmax = extrap_kmax
+        self.camb_accuracy_boost = camb_accuracy_boost
+        self.camb_k_per_logint = camb_k_per_logint
         if not isinstance(source_readers, (bool, np.bool_)):
             raise ValueError("source_readers must be an explicit Boolean choice.")
         if int(table_boost) != table_boost or table_boost < 1:
@@ -281,7 +287,7 @@ class PhysicalProvider:
             limits_recorded and recorded_halofit is not None
         )
         if limits_recorded:
-            expected = self.reference_producer_settings[1:]
+            expected = self.reference_producer_settings[1:3]
             recorded_limits = (
                 self.base_metadata["kmax_boltzmann"],
                 self.base_metadata["extrap_kmax"],
@@ -291,6 +297,17 @@ class PhysicalProvider:
                     "CAMB wavenumber limits differ from table provenance; "
                     "regenerate tables with the declared limits."
                 )
+        # Tables predating these controls were produced with one/zero.
+        # A new precision request cannot silently reuse those old arrays.
+        recorded_accuracy = camb_accuracy_settings(
+            accuracy_boost=self.base_metadata.get("camb_accuracy_boost", 1.0),
+            k_per_logint=self.base_metadata.get("camb_k_per_logint", 0),
+        )
+        if recorded_accuracy != self.reference_producer_settings[3:]:
+            raise ValueError(
+                "CAMB accuracy differs from table provenance; regenerate tables "
+                "with the declared accuracy settings."
+            )
         if self.mode == "camb" and not self.reference_producer_verified:
             raise ValueError(
                 "CAMB reference tables lack kmax_boltzmann/extrap_kmax provenance; "
@@ -344,7 +361,8 @@ class PhysicalProvider:
         Arguments:
           parameters = cosmology containing h.
         Returns:
-          Tuple of halofit name, evolution limit and resolved extrapolation limit.
+          Tuple of halofit name, evolution limit, resolved extrapolation limit,
+          CAMB accuracy boost and transfer sampling count.
         Raises:
           ValueError for nonpositive/nonfinite limits or insufficient read support.
         """
@@ -355,7 +373,11 @@ class PhysicalProvider:
             k=self.base["k"], h=float(parameters["h"]),
             kmax_boltzmann=self.kmax_boltzmann, extrap_kmax=self.extrap_kmax,
         )
-        return self.halofit_version, limit, extrapolation
+        boost, sampling = camb_accuracy_settings(
+            accuracy_boost=self.camb_accuracy_boost,
+            k_per_logint=self.camb_k_per_logint,
+        )
+        return self.halofit_version, limit, extrapolation, boost, sampling
 
     def numerical_key(self):
         """Validate mutable controls before comparing any retained prediction.
@@ -397,6 +419,7 @@ class PhysicalProvider:
             self.kernel_nz, self.source_readers, self.table_boost, self.fit_nz,
             accuracy_settings(value=self.accuracy),
             self.kmax_boltzmann, self.extrap_kmax,
+            self.camb_accuracy_boost, self.camb_k_per_logint,
             self.source_nz, self.source_interpolation, self.source_padding,
         )
 
@@ -522,6 +545,8 @@ class PhysicalProvider:
                     halofit_version=self.halofit_version,
                     kmax_boltzmann=self.kmax_boltzmann,
                     extrap_kmax=self.extrap_kmax,
+                    camb_accuracy_boost=self.camb_accuracy_boost,
+                    camb_k_per_logint=self.camb_k_per_logint,
                     source_z=self.base.get("source_z"),
                     include_bispectrum_background=self.bispectrum_source == "supplied",
                 )

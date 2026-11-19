@@ -12,7 +12,7 @@ production helper's physical-unit queries and explicit powers of h.
 import numpy as np
 import pytest
 
-from des3pcf.inputs import _camb_power_limits, camb_tables
+from des3pcf.inputs import _camb_power_limits, camb_tables, camb_accuracy_settings
 
 
 @pytest.fixture(scope="module")
@@ -110,6 +110,55 @@ def test_transfer_reuse_reaches_sigma8_and_preserves_background(
     assert metadata["extrap_kmax"] == 800.0
     assert metadata["camb_wavenumber_limit_units"] == "1/Mpc"
     assert metadata["amplitude_method"] == "reuse_matter_transfers"
+    assert metadata["camb_accuracy_boost"] == 1.0
+    assert metadata["camb_k_per_logint"] == 0
+
+
+@pytest.mark.parametrize("name,value", [
+    ("accuracy_boost", True), ("accuracy_boost", 0.5),
+    ("accuracy_boost", np.nan), ("accuracy_boost", np.inf),
+    ("accuracy_boost", "2"), ("accuracy_boost", 2.0j),
+    ("k_per_logint", True), ("k_per_logint", -1),
+    ("k_per_logint", 1.5), ("k_per_logint", np.inf),
+    ("k_per_logint", 2**31),
+    ("k_per_logint", "50"),
+])
+def test_invalid_camb_precision_is_refused_before_calculation(name, value):
+    """Precision controls must have the stated scalar domains."""
+    with pytest.raises(ValueError, match="camb_"):
+        camb_accuracy_settings(**{name: value})
+
+
+@pytest.mark.parametrize("name,value", [
+    ("camb_accuracy_boost", 2.0), ("camb_k_per_logint", 50),
+])
+def test_real_camb_accuracy_rebuild_and_restore(
+    compiled, prepared_and_fresh, name, value,
+):
+    """A notebook precision change rebuilds power; A/B/A restores it exactly."""
+    from des3pcf.pipeline import PhysicalProvider
+
+    parameters, tables, metadata, unused = prepared_and_fresh
+    provider = PhysicalProvider(
+        compiled=compiled, reference_tables=tables,
+        reference_metadata=metadata, reference_parameters=parameters,
+        cosmology_mode="camb", kernel_nz=21, extrap_kmax=800.0,
+    )
+    initial, original, unused = provider.get(parameters=parameters)
+    saved = original["p_linear0"].copy()
+    baseline = getattr(provider, name)
+    setattr(provider, name, value)
+    changed, displaced, record = provider.get(parameters=parameters)
+    assert changed is not initial
+    assert not np.array_equal(displaced["p_linear0"], saved)
+    assert provider.cosmology_metadata[name] == value
+    repeated, unused, unused_record = provider.get(parameters=parameters)
+    assert repeated is changed
+    np.testing.assert_array_equal(original["p_linear0"], saved)
+    setattr(provider, name, baseline)
+    restored, restored_tables, unused = provider.get(parameters=parameters)
+    np.testing.assert_array_equal(restored_tables["p_linear0"], saved)
+    assert provider.cosmology_metadata[name] == baseline
 
 
 def test_reused_power_matches_fresh_solve_in_native_h_units(

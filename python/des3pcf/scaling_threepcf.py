@@ -30,6 +30,7 @@ import numpy as np
 
 from .accuracy import accuracy_settings
 from .inputs import camb_tables, load_tables, save_tables, shifted_sources
+from .inputs import camb_accuracy_settings
 from .inputs import _camb_power_limits
 from .mean import aligned_fft_grid, physics_model
 from .ownership import immutable_copy
@@ -499,6 +500,7 @@ def preflight_threepcf(config_path):
 def _table_request(
     cosmology, halofit_version, axes, processing,
     kmax_boltzmann=5.0, extrap_kmax=None,
+    camb_accuracy_boost=1.0, camb_k_per_logint=0,
 ):
     """Identify every input to the physical table producer before running CAMB.
 
@@ -515,10 +517,15 @@ def _table_request(
       kmax_boltzmann = upper evolved CAMB wavenumber in 1/Mpc.
       extrap_kmax = interpolator read limit in 1/Mpc; None derives the declared
           default from this point's h and largest output k in h/Mpc.
+      camb_accuracy_boost, camb_k_per_logint = independent CAMB precision
+          choices, included even when their historical defaults are used.
     Returns:
       JSON-compatible physical-request dictionary for exact equality checks.
     """
     producer = importlib.import_module(name=camb_tables.__module__)
+    camb_accuracy_boost, camb_k_per_logint = camb_accuracy_settings(
+        accuracy_boost=camb_accuracy_boost, k_per_logint=camb_k_per_logint,
+    )
     if isinstance(kmax_boltzmann, np.bool_) or isinstance(extrap_kmax, np.bool_):
         raise ValueError("CAMB limits must be physical wavenumbers, not Boolean.")
     kmax_boltzmann, resolved_extrapolation = _camb_power_limits(
@@ -539,6 +546,8 @@ def _table_request(
         ).hexdigest(),
         "parameters": dict(cosmology),
         "halofit_version": halofit_version,
+        "camb_accuracy_boost": camb_accuracy_boost,
+        "camb_k_per_logint": camb_k_per_logint,
         "kmax_boltzmann": float(kmax_boltzmann),
         "extrap_kmax": float(resolved_extrapolation),
         "extrap_kmax_requested": extrap_kmax,
@@ -580,6 +589,8 @@ def _reuse_tables(path, request, axes):
         "producer": "CAMB",
         "parameters": request["parameters"],
         "halofit_version": request["halofit_version"],
+        "camb_accuracy_boost": request["camb_accuracy_boost"],
+        "camb_k_per_logint": request["camb_k_per_logint"],
         "kmax_boltzmann": request["kmax_boltzmann"],
         "extrap_kmax": request["extrap_kmax"],
         "flat_background": True,
@@ -652,6 +663,8 @@ def prepare_threepcf_tables(config_path, point, output_path, reuse_path=None):
         axes=axes, processing=processing,
         kmax_boltzmann=settings.get("kmax_boltzmann", 5.0),
         extrap_kmax=settings.get("extrap_kmax"),
+        camb_accuracy_boost=settings.get("camb_accuracy_boost", 1.0),
+        camb_k_per_logint=settings.get("camb_k_per_logint", 0),
     )
     reused = None
     if reuse_path is None:
@@ -660,6 +673,8 @@ def prepare_threepcf_tables(config_path, point, output_path, reuse_path=None):
             los_z=axes["los_z"], halofit_version=settings["halofit_version"],
             kmax_boltzmann=settings.get("kmax_boltzmann", 5.0),
             extrap_kmax=settings.get("extrap_kmax"),
+            camb_accuracy_boost=settings.get("camb_accuracy_boost", 1.0),
+            camb_k_per_logint=settings.get("camb_k_per_logint", 0),
         )
     else:
         tables, metadata, reused = _reuse_tables(

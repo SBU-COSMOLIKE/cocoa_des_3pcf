@@ -501,10 +501,40 @@ def _camb_power_limits(k, h, kmax_boltzmann, extrap_kmax):
     return float(kmax_boltzmann), float(extrap_kmax)
 
 
+def camb_accuracy_settings(accuracy_boost=1.0, k_per_logint=0):
+    """Validate CAMB's independent integration and transfer-sampling controls.
+
+    Increasing output-table density cannot repair an inaccurate transfer
+    solution. These controls act inside CAMB; they do not enlarge its
+    maximum solved wavenumber or multiply the CosmoLike accuracy controls.
+
+    Arguments:
+      accuracy_boost = finite CAMB AccuracyBoost, at least one.
+      k_per_logint = integer transfer samples per log-k interval; zero uses
+          CAMB's existing automatic sampling, not zero transfer samples.
+    Returns:
+      float boost and integer sampling count suitable for exact cache keys.
+    Raises:
+      ValueError for Boolean, nonfinite or out-of-domain controls.
+    """
+    if (isinstance(accuracy_boost, (bool, np.bool_))
+            or not isinstance(accuracy_boost, (int, float, np.integer, np.floating))
+            or not np.isfinite(accuracy_boost) or accuracy_boost < 1.0):
+        raise ValueError("camb_accuracy_boost must be finite and at least one.")
+    if (isinstance(k_per_logint, (bool, np.bool_))
+            or not isinstance(k_per_logint, (int, float, np.integer, np.floating))
+            or not np.isfinite(k_per_logint)
+            or int(k_per_logint) != k_per_logint or k_per_logint < 0
+            or k_per_logint > np.iinfo(np.int32).max):
+        raise ValueError("camb_k_per_logint must be an integer from zero to INT_MAX.")
+    return float(accuracy_boost), int(k_per_logint)
+
+
 def camb_tables(
     parameters, k, z, sources, los_z, halofit_version="takahashi",
     kmax_boltzmann=5.0, extrap_kmax=None, source_z=None,
     include_bispectrum_background=False,
+    camb_accuracy_boost=1.0, camb_k_per_logint=0,
 ):
     """Calculate the physical tables with the installed CAMB library.
 
@@ -535,6 +565,10 @@ def camb_tables(
           by CDM, baryons and massive neutrinos relative to critical density.
           The supplied-bispectrum route requires this provider quantity;
           the default internal route keeps its existing table schema.
+      camb_accuracy_boost = CAMB integration accuracy, independent of the
+          CosmoLike controls; default one preserves existing calculations.
+      camb_k_per_logint = CAMB transfer sampling per log-k interval; default
+          zero preserves its automatic grid. Output k is a separate grid.
     Returns:
       validated physical tables and metadata recording CAMB and model choices.
     Raises:
@@ -545,6 +579,9 @@ def camb_tables(
     """
     import camb
 
+    camb_accuracy_boost, camb_k_per_logint = camb_accuracy_settings(
+        accuracy_boost=camb_accuracy_boost, k_per_logint=camb_k_per_logint,
+    )
     if not isinstance(include_bispectrum_background, (bool, np.bool_)):
         raise ValueError("include_bispectrum_background must be a Boolean.")
     required = ("omega_m", "omega_b", "h", "ns", "sigma8", "w0", "wa")
@@ -599,7 +636,10 @@ def camb_tables(
     # Like the LSST likelihood, solve a bounded transfer range and let the
     # power interpolator extend its high-k tail. Output table resolution and
     # extent must not silently enlarge the Boltzmann differential equations.
-    settings.set_matter_power(redshifts=z[::-1], kmax=kmax_boltzmann, silent=True)
+    if camb_accuracy_boost != 1.0:
+        settings.set_accuracy(AccuracyBoost=camb_accuracy_boost)
+    settings.set_matter_power(redshifts=z[::-1], kmax=kmax_boltzmann,
+                              k_per_logint=camb_k_per_logint, silent=True)
     # Keep the same transfer sampling in both calls. Switching the nonlinear
     # mode only after the amplitude calibration changes CAMB's k sampling
     # and shifts its numerical sigma8 even though the linear scaling is exact.
@@ -667,6 +707,8 @@ def camb_tables(
         "camb_version": camb.__version__,
         "halofit_version": halofit_version,
         "kmax_boltzmann": kmax_boltzmann,
+        "camb_accuracy_boost": camb_accuracy_boost,
+        "camb_k_per_logint": camb_k_per_logint,
         "extrap_kmax": extrap_kmax,
         "extrap_kmax_requested": requested_extrapolation,
         "camb_wavenumber_limit_units": "1/Mpc",

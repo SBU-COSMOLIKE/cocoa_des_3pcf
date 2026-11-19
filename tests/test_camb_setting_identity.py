@@ -18,7 +18,8 @@ from test_pipeline import toy_tables
 PROJECT = Path(__file__).resolve().parents[1]
 
 
-def make_provider(kmax_boltzmann=5.0, extrap_kmax=1000.0, mode="camb"):
+def make_provider(kmax_boltzmann=5.0, extrap_kmax=1000.0, mode="camb",
+                  camb_accuracy_boost=1.0, camb_k_per_logint=0):
     """Construct a provider with declared reference provenance and no C interface.
 
     A native call would fail because compiled=None. The tests exercise only
@@ -35,6 +36,8 @@ def make_provider(kmax_boltzmann=5.0, extrap_kmax=1000.0, mode="camb"):
         compiled=None, reference_tables=tables, reference_metadata=metadata,
         reference_parameters=parameters, cosmology_mode=mode,
         kmax_boltzmann=kmax_boltzmann, extrap_kmax=extrap_kmax,
+        camb_accuracy_boost=camb_accuracy_boost,
+        camb_k_per_logint=camb_k_per_logint,
     )
 
 
@@ -83,7 +86,28 @@ def test_camb_reference_requires_limit_provenance_but_fixed_arrays_do_not():
             assert provider.model is None
             # k[-1]=1000 h/Mpc and h=0.7 require a 700/Mpc query;
             # the default extension is 1.01 times that endpoint.
-            assert provider.reference_producer_settings[1:] == (5.0, 707.0)
+            assert provider.reference_producer_settings[1:3] == (5.0, 707.0)
+
+
+@pytest.mark.parametrize("name,value", [
+    ("camb_accuracy_boost", 2.0), ("camb_k_per_logint", 50),
+])
+def test_camb_accuracy_provenance_and_exact_keys(name, value):
+    """Precision changes cannot reuse old tables or an exact-mean cache hit."""
+    with pytest.raises(ValueError, match="accuracy differs from table provenance"):
+        make_provider(**{name: value})
+    provider = make_provider(mode="fixed_tables")
+    original = provider.numerical_key()
+    baseline = getattr(provider, name)
+    setattr(provider, name, value)
+    assert provider.numerical_key() != original
+    with pytest.raises(ValueError, match="select camb or supply new tables"):
+        provider.get(parameters={})
+    setattr(provider, name, baseline)
+    assert provider.numerical_key() == original
+    setattr(provider, name, True)
+    with pytest.raises(ValueError, match=name):
+        provider.numerical_key()
 
 
 def test_cli_preserves_explicit_camb_limits_and_rejects_inadequate_tail(tmp_path):
@@ -105,4 +129,21 @@ def test_cli_preserves_explicit_camb_limits_and_rejects_inadequate_tail(tmp_path
     changed["physics"]["extrap_kmax"] = 700.0
     filename.write_text(yaml.safe_dump(changed, sort_keys=False))
     with pytest.raises(ValueError, match="cover h"):
+        _configuration(path=filename)
+
+
+def test_cli_preserves_independent_camb_precision(tmp_path):
+    """YAML precision choices reach configuration validation unchanged."""
+    path = PROJECT / "configs/des_y3_nla_scaling.yaml"
+    changed = yaml.safe_load(path.read_text())
+    changed["physics"]["camb_accuracy_boost"] = 2.0
+    changed["physics"]["camb_k_per_logint"] = 50
+    filename = tmp_path / "precision.yaml"
+    filename.write_text(yaml.safe_dump(changed, sort_keys=False))
+    unused, config, unused_path, unused_hash = _configuration(path=filename)
+    assert config["physics"]["camb_accuracy_boost"] == 2.0
+    assert config["physics"]["camb_k_per_logint"] == 50
+    changed["physics"]["camb_k_per_logint"] = True
+    filename.write_text(yaml.safe_dump(changed, sort_keys=False))
+    with pytest.raises(ValueError, match="camb_k_per_logint"):
         _configuration(path=filename)

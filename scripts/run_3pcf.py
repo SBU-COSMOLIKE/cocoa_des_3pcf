@@ -45,7 +45,7 @@ import numpy as np
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT / "python"))
 
-from des3pcf.inputs import camb_tables, load_tables, save_tables
+from des3pcf.inputs import camb_tables, load_tables, save_tables, camb_accuracy_settings
 from des3pcf.inputs import shifted_sources, reconstructed_sources
 from des3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows, read_survey
 from des3pcf.survey import read_joint_covariance, read_source_distributions
@@ -242,6 +242,7 @@ def load_configuration(path, command):
                  "source_readers", "table_boost", "fit_nz",
                  "source_nz", "source_padding",
                  "kmax_boltzmann", "extrap_kmax",
+                 "camb_accuracy_boost", "camb_k_per_logint",
                  "bispectrum_source", "bispectrum_table",
                  "variance_source", "variance_growth"},
         required={"tables", "cosmology_mode", "kernel_nz"}, name="physics",
@@ -293,6 +294,10 @@ def load_configuration(path, command):
     # Separating them bounds CAMB work while retaining the requested read grid.
     physics.setdefault("kmax_boltzmann", 5.0)
     physics.setdefault("extrap_kmax", None)
+    camb_accuracy_settings(
+        accuracy_boost=physics.get("camb_accuracy_boost", 1.0),
+        k_per_logint=physics.get("camb_k_per_logint", 0),
+    )
     for name in ("kmax_boltzmann", "extrap_kmax"):
         value = physics[name]
         if value is None and name == "extrap_kmax":
@@ -715,6 +720,8 @@ def prepare(config, path, metadata, overwrite):
         halofit_version=settings["halofit_version"],
         kmax_boltzmann=settings["kmax_boltzmann"],
         extrap_kmax=settings["extrap_kmax"],
+        camb_accuracy_boost=settings.get("camb_accuracy_boost", 1.0),
+        camb_k_per_logint=settings.get("camb_k_per_logint", 0),
         source_z=source_nodes,
         include_bispectrum_background=settings.get("bispectrum_source", "internal") == "supplied",
     )
@@ -836,6 +843,8 @@ def provider_for_run(compiled, config, path):
         halofit_version=config["physics"].get("halofit_version", "takahashi"),
         kmax_boltzmann=config["physics"].get("kmax_boltzmann", 5.0),
         extrap_kmax=config["physics"].get("extrap_kmax"),
+        camb_accuracy_boost=config["physics"].get("camb_accuracy_boost", 1.0),
+        camb_k_per_logint=config["physics"].get("camb_k_per_logint", 0),
         source_readers=config["physics"].get("source_readers", False),
         table_boost=config["physics"].get("table_boost", 8),
         fit_nz=config["physics"].get("fit_nz", 33),

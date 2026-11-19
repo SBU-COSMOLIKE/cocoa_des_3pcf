@@ -249,6 +249,30 @@ amplitude procedure. Changing either limit invalidates the provider and
 outer mean cache. Regenerate reference tables without this limit provenance
 before varying cosmology in CAMB mode.
 
+Two independent controls refine the transfer calculation:
+`physics.camb_accuracy_boost` sets CAMB's `AccuracyBoost` (default 1), and
+`physics.camb_k_per_logint` sets its transfer sampling per logarithmic
+wavenumber interval (default 0, CAMB's automatic spacing). These controls
+do not change the solved cutoff, the output `physics.k` grid, or any
+CosmoLike sampling boost. All four choices must be recorded when comparing
+power spectra. A dense output grid cannot recover structure missed by an
+insufficiently resolved transfer calculation.
+
+Both precision values enter saved metadata, the provider's exact cache
+key and the timing-table reuse check. Changing them in a notebook rebuilds
+CAMB tables; restoring the original values restores the original reference
+arrays. Fixed-table providers refuse a changed precision request. Regenerate
+the reference tables before declaring a new precision in a configuration.
+Older tables without these fields retain their historical one/zero settings.
+
+During shared-variance validation, the old three-point renormalization of
+power was about 0.999686 at the fiducial point and changed nonmonotonically
+under some parameter displacements. A nine-point diagnostic with CAMB
+AccuracyBoost 2, transfer sampling 50, and 1025 uniform log-k output samples
+reduced that multiplier's deviation from unity below 1.5e-7. This identifies
+an input-accuracy requirement; it does not by itself establish converged
+Fisher errors. The full joint comparison remains the acceptance test.
+
 Vary the solved cutoff separately when testing sensitivity to the extrapolated
 tail. A denser output grid only samples that same tail more closely; it does
 not establish its physical accuracy. The C sampling and quadrature boosts
