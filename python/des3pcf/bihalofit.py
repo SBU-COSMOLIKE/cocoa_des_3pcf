@@ -381,7 +381,7 @@ class BiHalofit(PreparedGeometry):
     def __init__(self, k, p_linear0, z, growth, omega_m_z, ns, sigma8,
                  fit_nz=33, table_boost=8, source_readers=False,
                  omega_m_redshift=None, variance_nodes=1000,
-                 slope_nodes=2000, radius_rtol=1.0e-5):
+                 slope_nodes=2000, radius_rtol=1.0e-5, variance=None):
         self.k = _axis(values=k, name="power k")
         self.z = _axis(values=z, name="background z")
         if self.k[0] <= 0.0 or self.z[0] != 0.0:
@@ -435,26 +435,41 @@ class BiHalofit(PreparedGeometry):
         if np.any(self.background_omega_m_z <= 0.0):
             raise ValueError("Interpolated Omega_m must be positive.")
 
-        # The old C path first normalizes with a 1e-3 h/Mpc lower bound.
-        # Fit variances then use 1e-4. Keeping both bounds is necessary for
-        # equation comparisons; replacing the normalization is separate work.
-        normalization = self._variance(
-            radius=np.asarray(8.0), growth_squared=1.0, window=0,
-            logk_min=np.log(1.0e-3), count=self.variance_nodes, tail=False)
-        self.power_normalization = self.sigma8**2 / float(normalization)
-        self._linear.shift(offset=np.log(self.power_normalization))
-        anchors = fit_redshifts(zmax=self.z[-1], fit_nz=self.fit_nz,
-                                source_readers=self.source_readers)
-        growth_squared = self._growth.read(coordinates=anchors)**2
-        radius = self._nonlinear_radius(growth_squared=growth_squared)
-        spectral = -3.0 + 2.0 * self._variance(
-            radius=radius, growth_squared=growth_squared, window=2,
-            logk_min=np.log(1.0e-4), count=self.slope_nodes, tail=False)
-        sigma8z = np.sqrt(self._variance(
-            radius=np.full(anchors.shape, 8.0),
-            growth_squared=growth_squared, window=0,
-            logk_min=np.log(1.0e-4), count=self.variance_nodes, tail=False))
-        natural = not self.source_readers
+        if variance is None:
+            # The old C path first normalizes with a 1e-3 h/Mpc lower bound.
+            # Fit variances then use 1e-4. Keeping both bounds is necessary for
+            # equation comparisons; replacing the normalization is separate work.
+            normalization = self._variance(
+                radius=np.asarray(8.0), growth_squared=1.0, window=0,
+                logk_min=np.log(1.0e-3), count=self.variance_nodes, tail=False)
+            self.power_normalization = self.sigma8**2 / float(normalization)
+            self._linear.shift(offset=np.log(self.power_normalization))
+            anchors = fit_redshifts(zmax=self.z[-1], fit_nz=self.fit_nz,
+                                    source_readers=self.source_readers)
+            growth_squared = self._growth.read(coordinates=anchors)**2
+            radius = self._nonlinear_radius(growth_squared=growth_squared)
+            spectral = -3.0 + 2.0 * self._variance(
+                radius=radius, growth_squared=growth_squared, window=2,
+                logk_min=np.log(1.0e-4), count=self.slope_nodes, tail=False)
+            sigma8z = np.sqrt(self._variance(
+                radius=np.full(anchors.shape, 8.0),
+                growth_squared=growth_squared, window=0,
+                logk_min=np.log(1.0e-4), count=self.variance_nodes, tail=False))
+        else:
+            if set(variance) != {"z", "rnl", "neff", "sigma8"}:
+                raise ValueError("Shared fit variance requires exactly z/rnl/neff/sigma8.")
+            anchors = _axis(values=variance["z"], name="shared fit redshift")
+            uniform_segments(coordinates=anchors, name="shared fit redshift")
+            if anchors.size < 4 or anchors[0] != 0.0 or anchors[-1] != self.z[-1]:
+                raise ValueError("Shared fit anchors must span exactly 0..background zmax with at least four nodes.")
+            radius = _values(values=variance["rnl"], shape=anchors.shape,
+                             name="shared nonlinear radius", positive=True)
+            spectral = _values(values=variance["neff"], shape=anchors.shape,
+                               name="shared effective index", positive=False)
+            sigma8z = _values(values=variance["sigma8"], shape=anchors.shape,
+                              name="shared sigma8(z)", positive=True)
+            self.power_normalization = 1.0
+        natural = variance is not None or not self.source_readers
         self._radius = _Curve(x=anchors, y=radius, natural=natural)
         self._neff = _Curve(x=anchors, y=spectral, natural=natural)
         self._sigma8z = _Curve(x=anchors, y=sigma8z, natural=natural)
@@ -824,7 +839,8 @@ class BiHalofitProducer(PreparedGeometry):
         self._seal_geometry()
 
     def prepare(self, tables, fit_nz=33, table_boost=8, source_readers=False,
-                variance_nodes=1000, slope_nodes=2000, radius_rtol=1.0e-5):
+                variance_nodes=1000, slope_nodes=2000, radius_rtol=1.0e-5,
+                variance=None):
         """Return the table for explicit supplied arrays, reusing exact matches.
 
         tables contains k,p_linear0,z,growth,omega_m_z,ns,sigma8; optional
@@ -873,6 +889,18 @@ class BiHalofitProducer(PreparedGeometry):
         }
         all_inputs = dict(arrays)
         all_inputs.update(geometry)
+        fit_variance = None
+        if variance is not None:
+            if set(variance) != {"z", "rnl", "neff", "sigma8"}:
+                raise ValueError("Shared fit variance requires exactly z/rnl/neff/sigma8.")
+            fit_variance = {}
+            for name in ("z", "rnl", "neff", "sigma8"):
+                if name not in variance:
+                    raise ValueError(f"Shared fit variance lacks {name}.")
+                all_inputs["variance_" + name] = np.array(
+                    variance[name], dtype=np.float64, order="C", copy=True)
+                fit_variance[name] = all_inputs["variance_" + name]
+        controls["variance_source"] = "local" if variance is None else "supplied"
         hashes = input_hashes(arrays=all_inputs, settings=controls)
         key = json.dumps(hashes, sort_keys=True)
         latest = self._latest_cache
@@ -887,7 +915,7 @@ class BiHalofitProducer(PreparedGeometry):
             source_readers=controls["source_readers"],
             variance_nodes=controls["variance_nodes"],
             slope_nodes=controls["slope_nodes"],
-            radius_rtol=controls["radius_rtol"])
+            radius_rtol=controls["radius_rtol"], variance=fit_variance)
         shape = (self.z.size, self.logk.size, self.logu.size, self.v.size)
         logarithm = np.empty(shape=shape, dtype=np.float64)
         count = self.logk.size * self.logu.size * self.v.size
@@ -922,6 +950,10 @@ class BiHalofitProducer(PreparedGeometry):
             "input_sha256": hashes,
             "controls": controls,
         }
+        if variance is not None:
+            record["normalization"] = "supplied power amplitude; no scalar sigma8 rescaling"
+            record["variance_source"] = "supplied owned fit arrays"
+            record["growth_convention"] = "factorized tree power; fit variances supplied separately"
         result = BaselineBispectrum(
             z=self.z, logk=self.logk, logu=self.logu, v=self.v,
             log_bispectrum=logarithm, metadata=record, boost=self.boost,

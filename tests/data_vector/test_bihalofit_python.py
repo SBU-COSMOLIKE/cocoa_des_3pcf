@@ -148,6 +148,7 @@ def test_scalar_permutations_and_component_sum():
         permuted = evaluate(model=model, sides=sides[:, permutation],
                             redshift=redshift)
         np.testing.assert_array_equal(permuted, full)
+
     scalar = model.evaluate(k1=0.8, k2=1.3, k3=1.8, z=0.4)
     np.testing.assert_allclose(scalar, full[2], rtol=0.0, atol=0.0)
     equilateral = model.evaluate(k1=0.1, k2=0.1, k3=0.1, z=0.0, component=1)
@@ -155,6 +156,40 @@ def test_scalar_permutations_and_component_sum():
                                       endpoint_power=True))
     np.testing.assert_allclose(equilateral, (12.0 / 7.0) * power**2,
                                rtol=2.0e-15)
+
+
+@pytest.mark.parametrize("source_readers", [False, True])
+def test_shared_variance_python_and_c_equations(compiled, source_readers):
+    """The same shared anchors must give the same fit in both languages.
+
+    Supply the variance arrays explicitly, so differences cannot come from
+    independent smoothing quadratures or a second sigma8 normalization.
+    The existing equation tolerance covers library arithmetic only.
+    """
+    from des3pcf.variance import SharedVariance
+
+    native, supplied = comparison_inputs(source_readers=source_readers)
+    engine = SharedVariance(compiled=compiled)
+    tables = dict(native)
+    parameters = {"omega_b": 0.05, "h": 0.7}
+    anchors = fit_redshifts(zmax=native["z"][-1], fit_nz=native["fit_nz"],
+                            source_readers=source_readers)
+    snapshot, unused = engine.prepare(
+        tables=tables, parameters=parameters, metadata={}, z=anchors,
+    )
+    variance = {}
+    for name in ("z", "rnl", "neff", "sigma8"):
+        variance[name] = snapshot[name]
+    native["variance"] = variance
+    model = BiHalofit(**supplied, variance=variance, source_readers=source_readers)
+    reference = compiled.PhysicsModel(**native)
+    sides, redshift = query_triangles()
+    for component in range(4):
+        actual = evaluate(model=model, sides=sides, redshift=redshift,
+                          component=component)
+        expected = reference.matter(sides=sides, redshifts=redshift,
+                                    component=component)
+        np.testing.assert_allclose(actual, expected, rtol=2.0e-11, atol=0.0)
 
 
 @pytest.mark.parametrize("count", [7, 8, 1000, 2000])

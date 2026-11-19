@@ -93,6 +93,10 @@ class PhysicalProvider:
       bispectrum_table = explicit uniform z/logk/logu/v axes and an optional
           dense-reader boost, required only for the supplied route. logk is
           the natural logarithm of the middle triangle side in h/Mpc.
+      variance_source = 'local' retains the reference smoothing calculation;
+          'shared' supplies owned core FFTLog quantities and trusts input P.
+      variance_growth = 'factorized' retains P(k,0)D(z)^2; 'evolving' requires
+          the full supplied linear power and the shared variance source.
     Side effects:
       Retains the latest cosmology table and source-weighted C model.
       CAMB runs only after a physical parameter changes in camb mode.
@@ -106,6 +110,7 @@ class PhysicalProvider:
         source_nz=None, source_interpolation=None, source_padding=None,
         feedback=None, pixel_window=None,
         bispectrum_source="internal", bispectrum_table=None,
+        variance_source="local", variance_growth="factorized",
     ):
         """Store the physical baseline and validate the requested producer mode.
 
@@ -120,6 +125,16 @@ class PhysicalProvider:
             raise ValueError("Cosmology mode must be fixed_tables or camb.")
         if bispectrum_source not in ("internal", "supplied"):
             raise ValueError("bispectrum_source must be internal or supplied.")
+        if variance_source not in ("local", "shared"):
+            raise ValueError("variance_source must be local or shared.")
+        if variance_growth not in ("factorized", "evolving"):
+            raise ValueError("variance_growth must be factorized or evolving.")
+        if variance_source == "local" and variance_growth != "factorized":
+            raise ValueError("Evolving variance growth requires variance_source='shared'.")
+        self.variance_source = variance_source
+        self.variance_growth = variance_growth
+        self._variance_engine = None
+        self._active_variance = None
         if bispectrum_source == "internal" and bispectrum_table is not None:
             raise ValueError(
                 "bispectrum_table requires bispectrum_source='supplied'; "
@@ -308,6 +323,7 @@ class PhysicalProvider:
             "source_interpolation", "source_padding",
             "feedback", "pixel_window",
             "bispectrum_source", "bispectrum_table",
+            "variance_source", "variance_growth",
         )
         if getattr(self, "_reference_locked", False) and name in reference_names:
             raise AttributeError(
@@ -367,6 +383,11 @@ class PhysicalProvider:
         elif "source_z" in self.base or self.source_interpolation == "pchip_midpoint":
             raise ValueError("An independent source model requires a source_nz count.")
         controls = accuracy_settings(value=self.accuracy)
+        if self.variance_source == "local":
+            for name in ("variance_mass_boost", "variance_a_boost",
+                         "variance_radius_boost", "variance_inverse_boost"):
+                if getattr(controls, name) != 1.0:
+                    raise ValueError(f"{name} requires variance_source='shared'.")
         if self.source_nz is None and controls.source_boost != 1.0:
             raise ValueError("source_boost requires an explicit independent source_nz.")
         self._producer_settings(parameters=self.reference)
@@ -379,7 +400,39 @@ class PhysicalProvider:
             self.source_nz, self.source_interpolation, self.source_padding,
         )
 
-    def supplied_baseline(self):
+    def shared_variance(self, parameters):
+        """Copy shared fit anchors for this cosmology and declared resolution.
+
+        Source distributions, IA amplitudes and feedback responses do not
+        enter the smoothing calculation. The owned result may therefore
+        survive source reconstruction or another provider's core changes.
+        """
+        if self.variance_source == "local":
+            return None, None
+        from .bihalofit import fit_redshifts
+        from .variance import SharedVariance
+
+        if self._variance_engine is None:
+            self._variance_engine = SharedVariance(compiled=self.compiled)
+        controls = accuracy_settings(value=self.accuracy)
+        settings = controls.model_settings(
+            kernel_nz=self.kernel_nz, table_boost=self.table_boost,
+            fit_nz=self.fit_nz,
+        )
+        anchors = fit_redshifts(zmax=self.cosmology_tables["z"][-1],
+                                fit_nz=settings["fit_nz"],
+                                source_readers=self.source_readers)
+        snapshot, record = self._variance_engine.prepare(
+            tables=self.cosmology_tables, parameters=parameters,
+            metadata=self.cosmology_metadata, z=anchors, accuracy=controls,
+            growth_mode=self.variance_growth,
+        )
+        fit = {}
+        for name in ("z", "rnl", "neff", "sigma8"):
+            fit[name] = snapshot[name]
+        return immutable_copy(value=fit), record
+
+    def supplied_baseline(self, variance=None):
         """Prepare a baseline table only when its physical inputs change.
 
         The coarse axes refine with accuracy_boost*bispectrum_boost. The
@@ -418,6 +471,7 @@ class PhysicalProvider:
         return self._baseline_producer.prepare(
             tables=self.cosmology_tables, fit_nz=settings["fit_nz"],
             table_boost=settings["table_boost"], source_readers=self.source_readers,
+            variance=variance,
         )
 
     def get(self, parameters):
@@ -493,7 +547,10 @@ class PhysicalProvider:
                 )
             tables = dict(self.cosmology_tables)
             metadata = dict(self.cosmology_metadata)
-            baseline = self.supplied_baseline()
+            variance, variance_record = self.shared_variance(parameters=cosmology)
+            baseline = self.supplied_baseline(variance=variance)
+            if variance_record is not None:
+                metadata["variance"] = variance_record
             if baseline is not None:
                 metadata["bispectrum_source"] = "supplied"
                 metadata["baseline_bispectrum"] = baseline.record()
@@ -534,12 +591,14 @@ class PhysicalProvider:
                 feedback=active_feedback,
                 pixel_window=self.pixel_window,
                 baseline=baseline,
+                variance=variance,
             )
             self.model_tables = immutable_copy(value=tables)
             self.model_metadata = immutable_copy(value=metadata)
             self.model_key = combined
             self._active_feedback = active_feedback
             self._active_baseline = baseline
+            self._active_variance = variance
         return self.model, self.model_tables, self.model_metadata
 
 

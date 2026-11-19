@@ -417,3 +417,37 @@ address accuracy relative to the physical model.
 | [Finite-window E/B study](tests/studies/finite_window_eb.md) | Why refinement of the E-only mean cannot measure leakage from omitted single-B bispectra after triangle cuts |
 | [Fiducial angular-order study](tests/studies/angular_order_results.md) | Legendre and Fourier truncation orders separated from angular sampling and coupling interpolation; ten NLA/TATT fiducial mean comparisons and their distinction from derivative convergence |
 | [BACCO response study](tests/studies/bacco_validation.md) | Direct emulator values, native interpolation, response-grid refinement and finite-difference steps, separated from neutrino and continuation choices |
+
+## Shared smoothing controls
+
+`physics.variance_source: shared` asks the ordinary CosmoLike smoothing
+engine for the fit's nonlinear radius, effective index and sigma8(z).
+The default `local` retains the reference calculation while the full joint
+mean and Fisher acceptance checks are completed. This selector is separate
+from `bispectrum_source`: either the internal C fit or supplied Python
+bispectrum can consume the same copied variance arrays.
+
+`physics.variance_growth: factorized` installs P(k,0)D(z)^2 and retains the
+existing three-point effective-growth approximation. `evolving` instead
+requires the complete linear P(k,z) table. With massive neutrinos those are
+different physical choices. The shared route trusts the supplied power
+amplitude; it does not rescale it to a second sigma8 scalar. The metadata
+records that choice and the Boltzmann provider's exact neutrino density.
+
+Four controls refine the shared tables: `variance_mass_boost` for top-hat
+mass sampling, `variance_a_boost` for both scale-factor tables,
+`variance_radius_boost` for Gaussian radii, and `variance_inverse_boost`
+for the inverse Gaussian-variance table. Each multiplies `accuracy_boost`
+and rounds upward to a power-of-two subdivision of the original intervals,
+up to a factor of sixteen. Counts always come from the saved unboosted
+baseline. Repeated calls therefore cannot square a boost. The analytic
+FFTLog smoothing does not use `integration_accuracy_boost`; input power
+sampling remains a separate producer-grid choice.
+
+The provider retains owned snapshots keyed by the supplied power, cosmology,
+output coordinates and resolved counts. Another provider may replace the
+shared core state without changing an earlier snapshot or immutable model.
+Changing a source distribution does not change its matter smoothing inputs.
+The component tests check those ownership rules and compare the C and Python
+fits using the same shared arrays. Full joint mean, derivative and Fisher
+checks are still required before adopting the shared route as the default.

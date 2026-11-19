@@ -33,6 +33,8 @@ class Accuracy:
           power_table_boost changes the C model's dense reader ratio.
           bispectrum_boost refines the four coarse axes of an explicitly
           supplied baseline bispectrum; its dense-reader ratio stays fixed.
+          variance_mass/variance_a/variance_radius/variance_inverse boosts
+          refine shared smoothing tables from saved unboosted counts.
           triangle/multipole/fft/profile boosts change their named tables.
           angular_boost changes the bispectrum angular integration nodes.
           aperture/xi/covariance boosts change the named fixed quadratures.
@@ -55,6 +57,10 @@ class Accuracy:
     feedback_u_boost: float = 1.0
     feedback_v_boost: float = 1.0
     fit_z_boost: float = 1.0
+    variance_mass_boost: float = 1.0
+    variance_a_boost: float = 1.0
+    variance_radius_boost: float = 1.0
+    variance_inverse_boost: float = 1.0
     triangle_boost: float = 1.0
     multipole_boost: float = 1.0
     angular_boost: float = 1.0
@@ -161,6 +167,42 @@ class Accuracy:
             "table_boost": self.count(table_boost, stage="power_table_boost"),
             "fit_nz": self.count(fit_nz, stage="fit_z_boost", endpoints=True),
         }
+
+    def variance_settings(self, baseline):
+        """Refine shared variance tables from saved unboosted node counts.
+
+        The scale-factor multiplier refines both window families. Radius
+        and inverse multipliers affect only Gaussian smoothing; mass
+        affects the top-hat table. Nested interval doubling follows the
+        ordinary core's Gaussian accuracy rule and is capped at sixteen.
+        FFTLog integrates its Fourier modes analytically, so the fixed
+        quadrature integration_accuracy_boost does not enter these counts.
+        More input k/z samples remain a separate producer-grid refinement.
+        """
+        stages = {
+            "mass_nodes": "variance_mass_boost",
+            "scale_factor_nodes": "variance_a_boost",
+            "gaussian_radius_nodes": "variance_radius_boost",
+            "gaussian_scale_factor_nodes": "variance_a_boost",
+            "gaussian_inverse_nodes": "variance_inverse_boost",
+        }
+        if set(baseline) != set(stages):
+            raise ValueError("Variance baseline requires all five core sampling counts.")
+        result = {}
+        for name, stage in stages.items():
+            count = baseline[name]
+            if (isinstance(count, (bool, np.bool_)) or not np.isfinite(count)
+                    or int(count) != count or count < 2):
+                raise ValueError(f"Variance baseline {name}={count!r} must be an integer >=2.")
+            factor = self.accuracy_boost * getattr(self, stage)
+            if not np.isfinite(factor) or factor > 16.0:
+                raise ValueError(f"Combined variance boost for {name} must not exceed 16.")
+            multiplier = 2**int(np.ceil(np.log2(factor)))
+            resolved = (int(count) - 1) * multiplier + 1
+            if resolved > np.iinfo(np.int32).max:
+                raise ValueError(f"Resolved variance count {name} exceeds the C int range.")
+            result[name] = resolved
+        return result
 
     def projection_settings(self, baseline):
         """Resolve triangle, multipole and angular nodes from the C defaults.

@@ -242,12 +242,20 @@ def load_configuration(path, command):
                  "source_readers", "table_boost", "fit_nz",
                  "source_nz", "source_padding",
                  "kmax_boltzmann", "extrap_kmax",
-                 "bispectrum_source", "bispectrum_table"},
+                 "bispectrum_source", "bispectrum_table",
+                 "variance_source", "variance_growth"},
         required={"tables", "cosmology_mode", "kernel_nz"}, name="physics",
     )
     if physics["cosmology_mode"] not in ("fixed_tables", "camb"):
         raise ValueError("physics.cosmology_mode must be fixed_tables or camb.")
     physics.setdefault("bispectrum_source", "internal")
+    if physics.get("variance_source", "local") not in ("local", "shared"):
+        raise ValueError("physics.variance_source must be local or shared.")
+    if physics.get("variance_growth", "factorized") not in ("factorized", "evolving"):
+        raise ValueError("physics.variance_growth must be factorized or evolving.")
+    if (physics.get("variance_source", "local") == "local"
+            and physics.get("variance_growth", "factorized") != "factorized"):
+        raise ValueError("Evolving variance growth requires the shared variance source.")
     supplied_bispectrum_settings(physics=physics)
     for name, default in (("kernel_nz", 101), ("table_boost", 8),
                           ("fit_nz", 33)):
@@ -832,6 +840,8 @@ def provider_for_run(compiled, config, path):
         pixel_window=pixel_window,
         bispectrum_source=config["physics"].get("bispectrum_source", "internal"),
         bispectrum_table=supplied_bispectrum_settings(physics=config["physics"]),
+        variance_source=config["physics"].get("variance_source", "local"),
+        variance_growth=config["physics"].get("variance_growth", "factorized"),
     )
     return provider, provenance
 
