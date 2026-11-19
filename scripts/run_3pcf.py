@@ -723,7 +723,7 @@ def prepare(config, path, metadata, overwrite):
         camb_accuracy_boost=settings.get("camb_accuracy_boost", 1.0),
         camb_k_per_logint=settings.get("camb_k_per_logint", 0),
         source_z=source_nodes,
-        include_bispectrum_background=settings.get("bispectrum_source", "internal") == "supplied",
+        include_bispectrum_background=True,
     )
     tables["source_native_z"] = source_z
     tables["source_native"] = source_values

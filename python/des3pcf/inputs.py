@@ -533,7 +533,7 @@ def camb_accuracy_settings(accuracy_boost=1.0, k_per_logint=0):
 def camb_tables(
     parameters, k, z, sources, los_z, halofit_version="takahashi",
     kmax_boltzmann=5.0, extrap_kmax=None, source_z=None,
-    include_bispectrum_background=False,
+    include_bispectrum_background=True,
     camb_accuracy_boost=1.0, camb_k_per_logint=0,
 ):
     """Calculate the physical tables with the installed CAMB library.

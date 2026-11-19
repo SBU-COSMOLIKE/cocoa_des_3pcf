@@ -13,7 +13,7 @@ import pytest
 
 from des3pcf.accuracy import Accuracy
 from des3pcf.pipeline import PhysicalProvider
-from des3pcf.variance import SharedVariance, ReferenceVariance
+from des3pcf.variance import SharedVariance, ReferenceVariance, reference_physics_model
 from test_pipeline import toy_tables
 
 
@@ -53,9 +53,11 @@ def test_python_reference_can_supply_the_native_fit(
     )
     normalized = dict(tables)
     normalized["p_linear0"] = tables["p_linear0"] * multiplier
-    candidate = physics_model(compiled=compiled, tables=normalized,
-                              fit_nz=fit_nz, table_boost=table_boost,
-                              variance=fit, source_readers=source_readers)
+    candidate = reference_physics_model(
+        factory=compiled.production.PhysicsModel, **normalized,
+        fit_nz=fit_nz, table_boost=table_boost,
+        variance=fit, source_readers=source_readers,
+    )
     sides = np.array([[0.03, 0.04, 0.05], [0.1, 0.2, 0.25], [0.5, 0.7, 1.0]])
     redshift = np.array([0.0, 0.4, 1.8])
     for component in range(4):

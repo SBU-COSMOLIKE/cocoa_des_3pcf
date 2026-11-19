@@ -20,6 +20,24 @@ from .inputs import uniform_segments
 from .ownership import immutable_copy
 
 
+def reference_matter_fraction(tables, redshift):
+    """Return the legacy CPL fraction for explicit upstream comparisons only.
+
+    This preserves the upstream equation independently of the toy distance
+    tables used by those tests. Production derives a pressureless fraction
+    from its expansion history or supplies its exact provider background.
+    """
+    scale = 1.0 / (1.0 + np.asarray(redshift, dtype=np.float64))
+    dark = scale**(-1.0 - 3.0 * (tables["w0"] + tables["wa"]))
+    dark *= np.exp(-3.0 * (1.0 - scale) * tables["wa"])
+    omega = tables["omega_m"]
+    vacuum = tables["omega_de"]
+    total = 1.0 + (omega + vacuum - 1.0) / (
+        1.0 - omega - vacuum + vacuum * dark + omega / scale
+    )
+    return total * omega / (omega + vacuum * scale * dark)
+
+
 def reference_physics_model(factory, **inputs):
     """Construct a native model using the explicit upstream reference convention.
 
@@ -29,9 +47,16 @@ def reference_physics_model(factory, **inputs):
     function is replaced. A supplied variance mapping already declares its
     power amplitude, so that route passes through without normalization.
     """
-    if inputs.get("variance") is not None:
-        return factory(**inputs)
     prepared = dict(inputs)
+    if inputs.get("variance") is not None:
+        prepared["variance"] = dict(inputs["variance"])
+        if inputs.get("baseline") is None and "omega_m_z" not in inputs:
+            axis = inputs["variance"]["z"]
+            prepared["omega_m_redshift"] = axis
+            prepared["omega_m_z"] = reference_matter_fraction(
+                tables=inputs, redshift=axis,
+            )
+        return factory(**prepared)
     source_readers = inputs.get("source_readers", False)
     if inputs.get("baseline") is None:
         fit, multiplier, unused = ReferenceVariance().prepare(
@@ -40,6 +65,11 @@ def reference_physics_model(factory, **inputs):
             source_readers=source_readers,
         )
         prepared["variance"] = dict(fit)
+        if "omega_m_z" not in inputs:
+            prepared["omega_m_redshift"] = fit["z"]
+            prepared["omega_m_z"] = reference_matter_fraction(
+                tables=inputs, redshift=fit["z"],
+            )
     else:
         # A supplied absolute B needs no nonlinear radius or spectral fit.
         # Retain only the old comparison's power normalization, using the

@@ -461,7 +461,7 @@ def test_supplied_refusals_in_fresh_process(compiled, case):
         "three_halo": "no fitted one-/three-halo",
         "domain": "exceeds its declared table domain",
         "nonfinite": "nonfinite",
-        "background_size": "Omega_m(z) must match background z",
+        "background_size": "Omega_m(z) must match its redshift axis",
     }
     assert expected[case] in run.stdout + run.stderr
 

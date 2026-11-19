@@ -160,6 +160,8 @@ def physics_model(
         arguments[name] = checked[name]
     if "source_z" in checked:
         arguments["source_z"] = checked["source_z"]
+    if "omega_m_z" in checked:
+        arguments["omega_m_z"] = checked["omega_m_z"]
     arguments["los_z"] = controls.los_nodes(baseline=checked["los_z"])
     if variance is not None:
         arguments["variance"] = dict(variance)

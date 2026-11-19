@@ -178,6 +178,12 @@ class PhysicalProvider:
                 "The supplied baseline requires provider omega_m_z; regenerate "
                 "the reference tables with include_bispectrum_background=True."
             )
+        if float(reference_parameters.get("mnu", 0.0)) > 0.0:
+            if "omega_m_z" not in self.base:
+                raise ValueError(
+                    "Massive-neutrino tables require provider omega_m_z; "
+                    "regenerate with include_bispectrum_background=True."
+                )
         self.base_metadata = immutable_copy(value=reference_metadata)
         recorded_source = reference_metadata.get(
             "source_reconstruction", "linear_midpoint",
@@ -573,7 +579,7 @@ class PhysicalProvider:
                     camb_accuracy_boost=self.camb_accuracy_boost,
                     camb_k_per_logint=self.camb_k_per_logint,
                     source_z=self.base.get("source_z"),
-                    include_bispectrum_background=self.bispectrum_source == "supplied",
+                    include_bispectrum_background=True,
                 )
             self.cosmology_tables = immutable_copy(value=tables)
             self.cosmology_metadata = immutable_copy(value=metadata)

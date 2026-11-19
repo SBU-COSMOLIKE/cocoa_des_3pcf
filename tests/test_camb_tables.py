@@ -273,3 +273,15 @@ def test_uncovered_or_invalid_tail_is_refused(endpoint):
             k=np.array([0.01, 1000.0]), h=0.67,
             kmax_boltzmann=5.0, extrap_kmax=endpoint,
         )
+
+
+def test_matter_fraction_uses_exact_massive_neutrino_background(prepared_and_fresh):
+    """The saved fraction comes from the same CAMB background as the powers."""
+    parameters, tables, metadata, fresh = prepared_and_fresh
+    redshift = tables["z"]
+    expected = fresh.get_Omega(var="cdm", z=redshift)
+    expected += fresh.get_Omega(var="baryon", z=redshift)
+    expected += fresh.get_Omega(var="nu", z=redshift)
+    np.testing.assert_allclose(
+        actual=tables["omega_m_z"], desired=expected, rtol=2.0e-12, atol=0.0,
+    )
