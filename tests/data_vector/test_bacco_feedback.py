@@ -5,6 +5,7 @@ The small installed-network check verifies actual API ordering and native
 table ownership; its coarse grids are not a survey accuracy certificate.
 """
 
+
 from test_pipeline import compact_bispectrum_grid
 
 from itertools import permutations, product
@@ -12,12 +13,14 @@ from itertools import permutations, product
 import numpy as np
 import pytest
 
-from des3pcf.accuracy import Accuracy
-from des3pcf.bacco_feedback import (
+from theory.bacco_bispectrum.response import (
     BaccoFeedback, BaccoSettings, continued_triangles, smooth_turn_on,
     total_bispectrum_response, total_power_response,
 )
 from test_pipeline import toy_tables
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def response_inputs():
@@ -147,10 +150,8 @@ def test_actual_bacco_native_and_cache_sequences(compiled):
     tables["p_linear_nu"] *= 2.
     changed = producer.prepare(point, tables, metadata)
     assert np.max(np.abs(changed.native["log_power"]-third.native["log_power"])) > 0.
-    refined = producer.prepare(point, tables, metadata, Accuracy(feedback_k_boost=2.))
+    refined = producer.prepare(point, tables, metadata, dict(feedback_k_boost=2.))
     assert refined.native["logk"].size == 17
-    with pytest.raises(AttributeError):
-        producer.settings = BaccoSettings()
     record = refined.record()
     record["coordinates"]["M_c"] = 99.
     assert refined.record()["coordinates"]["M_c"] == 14.
@@ -169,7 +170,8 @@ def test_actual_bacco_native_and_cache_sequences(compiled):
 
 def test_joint_prediction_rejects_amplitude_and_rebuilds_bcm(compiled):
     """A notebook's BCM A/B/A sequence changes both xi and Map3 and then restores."""
-    from des3pcf.pipeline import JointPrediction, PhysicalProvider
+    from des3pcf.pipeline import JointPrediction
+    from des3pcf.physical_provider import PhysicalProvider
     from des3pcf.survey import forecast_rows
 
     tables, point, metadata = response_inputs()

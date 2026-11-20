@@ -14,8 +14,10 @@ import numpy as np
 import pytest
 
 from des3pcf.baryon_scenarios import (
-    BaccoColdResponses, _checked_grid, bfmt_model_input, bfmt_power_response,
-    checked_bacco_triangles, installed_bacco_weights,
+    _checked_grid, bfmt_model_input, bfmt_power_response,
+)
+from theory.bacco_bispectrum.emulator import (
+    BaccoColdResponses, checked_bacco_triangles, installed_bacco_weights,
 )
 
 
@@ -152,27 +154,51 @@ scenarios:
     np.testing.assert_array_equal(installed[-1], table["p_nonlinear"])
 
 
-def test_wrapper_passes_nonzero_shear_calibration():
-    """A notebook's edited calibration parameters reach the angular transform."""
+def test_wrapper_passes_nonzero_shear_calibration(compiled):
+    """The actual native xi calculation applies one calibration per leg."""
     import cosmolike_des_3pcf_feedback_wrappers as wrapper
+    from native_inputs import init_two_point
+    from test_pipeline import toy_tables
+    from des3pcf.survey import forecast_rows
 
-    seen = {}
-
-    def integrate(spectra_e, spectra_b, calibration):
-        """Record calibration where XiEngine applies it once after integration."""
-        seen["calibration"] = calibration.copy()
-        return np.ones(2)
-
-    prediction = SimpleNamespace(
-        provider=SimpleNamespace(nbin=2),
-        two_point_core=SimpleNamespace(spectra=lambda **kwargs: (None, None)),
-        xi_engine=SimpleNamespace(ell=np.array([10.]),
-                                 rows=SimpleNamespace(bins=np.zeros((2, 3), dtype=int)),
-                                 evaluate_spectra=integrate),
+    tables, parameters = toy_tables()
+    tables["p_linear"] = tables["p_nonlinear"].copy()
+    init_two_point(core=compiled, nbin=2)
+    rows = forecast_rows(nbin=2, aperture_radii=[], xi_edges=[.001, .002])
+    ell, dell = compiled.quadrature(
+        lower=30.0, upper=2000.0, count=24, logarithmic=True,
     )
-    wrapper._two_point_mean(prediction=prediction, tables={}, metadata={},
-                            parameters={"m1": .02, "m2": -.01}, ia={})
-    np.testing.assert_array_equal(seen["calibration"], [.02, -.01])
+    theta, theta_weight = compiled.xi_bin_weights(
+        kind=rows.kind.tolist(), angles=rows.angles,
+        count=3, pair_weight="uniform_area",
+    )
+    prediction = SimpleNamespace(
+        compiled=compiled,
+        provider=SimpleNamespace(nbin=2),
+        two_point_core={"threads": 1},
+        xi_ell=ell,
+        xi_dell=dell,
+        xi_theta=theta,
+        xi_weight=theta_weight,
+        xi_rows=rows,
+        xi_sign=np.where(rows.kind == "xim", -1, 1).astype(np.int32),
+    )
+    baseline = wrapper._two_point_mean(
+        prediction=prediction, tables=tables, metadata={},
+        parameters=parameters, ia={"a1": .2},
+    )
+    changed = wrapper._two_point_mean(
+        prediction=prediction, tables=tables, metadata={},
+        parameters=dict(parameters, m1=.02, m2=-.01), ia={"a1": .2},
+    )
+    calibration = np.array([1.02, .99])
+    factors = calibration[rows.bins[:, 0]] * calibration[rows.bins[:, 1]]
+    np.testing.assert_allclose(changed, baseline*factors, rtol=3.e-15)
+    restored = wrapper._two_point_mean(
+        prediction=prediction, tables=tables, metadata={},
+        parameters=parameters, ia={"a1": .2},
+    )
+    np.testing.assert_array_equal(restored, baseline)
 
 
 @pytest.mark.parametrize("sides", [

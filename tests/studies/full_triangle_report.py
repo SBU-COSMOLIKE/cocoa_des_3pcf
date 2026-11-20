@@ -11,7 +11,7 @@ From the project directory:
 After both full calculations have finished:
   python tests/studies/full_triangle_report.py --execute
 
-The default output is runs/fisher_array_diagnostics/full_triangle.json.
+The default output is chains/fisher_array_diagnostics/full_triangle.json.
 An existing output is accepted only if its complete bytes match this report.
 """
 
@@ -87,7 +87,7 @@ def check_matrix(saved, rebuilt, name):
     This is an archive-consistency test, not a physical convergence tolerance.
     Both matrices pass the shared shape, finiteness and symmetry validator.
     """
-    from des3pcf.forecast import symmetric_matrix
+    from cosmolike_notebook_utils.fisher import symmetric_matrix
 
     first = symmetric_matrix(values=saved, name=name)
     second = symmetric_matrix(values=rebuilt, name=name + " reconstruction")
@@ -110,8 +110,8 @@ def information_summary(derivatives, arrays, metadata, saved_fisher=None, step=N
     marginalizes every other parameter. The free-DE summary marginalizes them
     too. Both retain the xi-Map3 cross-covariance and count each prior once.
     """
-    from des3pcf.forecast import figure_of_merit
-    from des3pcf.fisher_comparison import compare_information, marginalized_errors
+    from cosmolike_notebook_utils.fisher import figure_of_merit
+    from cosmolike_notebook_utils.fisher import compare_information, marginalized_errors
     from cosmolike_des_3pcf_fisher_wrappers import fixed_dark_energy_summary
     from cosmolike_des_3pcf_fisher_wrappers import derived_amplitude_summary
 
@@ -196,7 +196,7 @@ def information_summary(derivatives, arrays, metadata, saved_fisher=None, step=N
 def derivative_changes(baseline, refined, covariance, names, steps, label):
     """Describe each column's change with the full covariance, in physical units."""
     from scipy.linalg import solve_triangular
-    from des3pcf.forecast import symmetric_matrix
+    from cosmolike_notebook_utils.fisher import symmetric_matrix
 
     shape = (covariance.shape[0], len(names))
     for values in (baseline, refined):
@@ -346,7 +346,7 @@ def analyze_model(study):
     from run_fisher_accuracy import absolute_configuration
 
     os.environ["OMP_NUM_THREADS"] = "1"
-    from des3pcf.forecast import figure_of_merit
+    from cosmolike_notebook_utils.fisher import figure_of_merit
     from cosmolike_des_3pcf_fisher_wrappers import FisherWorkflow
     from cosmolike_des_3pcf_fisher_wrappers import finite_sign_pair_separation
 
@@ -558,7 +558,9 @@ def run(project, destination, execute=False):
     destination = destination.resolve()
     sys.path.insert(0, str(project / "interface"))
     sys.path.insert(0, str(project / "scripts"))
-    sys.path.insert(0, str(project / "python"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
+    sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import run_3pcf as driver
     from cosmolike_des_3pcf_accuracy_wrappers import AccuracyStudy
     from des3pcf.provenance import file_digest
@@ -572,7 +574,7 @@ def run(project, destination, execute=False):
     status = {}
     for model in MODELS:
         configuration = project / f"configs/des_y3_{model}_demo_fisher.yaml"
-        scan = project / f"runs/{model}_accuracy"
+        scan = project / f"chains/{model}_accuracy"
         plan = project / "configs/des_y3_fisher_accuracy.yaml"
         config, path, _ = driver.load_configuration(path=configuration, command="fisher")
         baseline = driver.resolve_path(
@@ -643,8 +645,10 @@ def run(project, destination, execute=False):
     if not execute or pending_model:
         print(json.dumps(obj=preflight, indent=2, allow_nan=False))
         return preflight
-    code_directory = project / "python/des3pcf"
+    code_directory = project / "scripts/des3pcf"
     code = list(code_directory.glob("*.py"))
+    shared = project.parents[1] / "external_modules/code/cosmolike_core/theory"
+    code.extend(shared.rglob("*.py"))
     code.extend([
         Path(__file__).resolve(),
         project / "scripts/run_3pcf.py",
@@ -721,7 +725,7 @@ def main():
     arguments = parser.parse_args()
     project = project_directory(requested=arguments.project)
     destination = arguments.output or (
-        project / "runs/fisher_array_diagnostics/full_triangle.json"
+        project / "chains/fisher_array_diagnostics/full_triangle.json"
     )
     run(project=project, destination=destination, execute=arguments.execute)
 

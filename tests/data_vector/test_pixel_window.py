@@ -6,7 +6,7 @@ prepared tables, both IA components and both array adapters. Raw matter
 and projected-bispectrum queries remain unsmoothed building blocks.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import gc
 import json

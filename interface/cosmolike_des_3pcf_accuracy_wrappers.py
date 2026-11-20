@@ -21,13 +21,12 @@ import yaml
 
 PROJECT = Path(__file__).resolve().parents[1]
 CORE = PROJECT.parents[1] / "external_modules/code/cosmolike_core"
-sys.path.insert(0, str(PROJECT / "python"))
 sys.path.insert(0, str(PROJECT / "scripts"))
 sys.path.insert(0, str(CORE))
 
 import run_3pcf as driver
 from cosmolike_des_3pcf_fisher_wrappers import FisherWorkflow
-from des3pcf.forecast import figure_of_merit
+from cosmolike_notebook_utils.fisher import figure_of_merit
 from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 
@@ -688,7 +687,7 @@ class AccuracyStudy:
         raise ValueError(f"No completed noise scan named {case} is in this study.")
 
 
-def plot_xi_preflight(directory="runs/xi_refinement", show=1):
+def plot_xi_preflight(directory="chains/xi_refinement", show=1):
     """Plot the saved fiducial xi quadrature check, with no mean evaluations.
 
     The summary's finest vector is the comparison reference. N_ell, N_theta

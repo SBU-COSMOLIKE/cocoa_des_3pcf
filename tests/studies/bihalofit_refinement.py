@@ -15,7 +15,7 @@ Example (one command):
       --output /path/to/new/results --threads 6
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import argparse
 import hashlib
@@ -71,14 +71,15 @@ def run(options):
     os.environ["OMP_THREAD_LIMIT"] = "6"
     os.environ["OMP_DYNAMIC"] = "FALSE"
     project = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(project / "python"))
+    sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     sys.path.insert(0, str(project / "tests" / "data_vector"))
     sys.path.insert(0, str(project / "tests" / "covariance"))
     sys.path.insert(0, str(options.extension.resolve()))
     import numpy as np
     import cosmolike_des_3pcf_interface as compiled
-    from des3pcf import bihalofit
-    from des3pcf.bihalofit import BiHalofit, BiHalofitProducer, input_hashes
+    from theory.bihalofit import model as bihalofit
+    from theory.bihalofit.model import BiHalofit, BiHalofitProducer, input_hashes
     from test_bihalofit_python import comparison_inputs, query_triangles
     from test_physical_covariance import covariance_arguments
 
@@ -166,8 +167,8 @@ def run(options):
         inputs = dict(native)
         for unused in ("omega_de", "w0", "wa", "ns"):
             del inputs[unused]
-        inputs["omega_m_z"] = baseline.background_omega_m_z
-        inputs["baseline"] = dict(baseline.native)
+        inputs["omega_m_z"] = baseline["background_omega_m_z"]
+        inputs["baseline"] = dict(baseline["native"])
         model = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum, **inputs)
         mean, terms = compiled.production.physical_covariance(
             model=model, inputs=covariance_input)
@@ -181,7 +182,7 @@ def run(options):
             "dense_boost": 2,
             "delta_chi2_internal": weighted_error,
             "mean": mean.tolist(),
-            "baseline": baseline.record(),
+            "baseline": baseline["metadata"],
             "maximum_covariance_scaled_change": float(np.max(
                 np.abs(np.sum(terms, axis=0) - fixed_covariance)
                 / np.sqrt(np.outer(np.diag(fixed_covariance),

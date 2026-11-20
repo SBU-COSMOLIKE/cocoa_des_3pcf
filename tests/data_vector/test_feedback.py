@@ -8,12 +8,13 @@ test tables are numerical references, not hydro simulations.
 
 from test_pipeline import compact_bispectrum_grid
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
 import pytest
 
-from des3pcf.feedback import FeedbackPair, feedback_power_tables
+from theory.bacco_bispectrum.response import FeedbackPair
+from theory.bacco_bispectrum.response import feedback_power_tables
 from test_physics_model import physical_inputs, compact_grid_settings
 
 
@@ -134,11 +135,12 @@ def test_multilinear_log_response_and_input_ownership(compiled, boost):
 
 def test_joint_feedback_cache_and_metadata(compiled):
     """One retained DMO model supports A/B/A without a new Boltzmann solve."""
-    from des3pcf.pipeline import PhysicalProvider, JointPrediction
+    from des3pcf.physical_provider import PhysicalProvider
+    from des3pcf.pipeline import JointPrediction
     from des3pcf.survey import forecast_rows
 
     tables = physical_inputs()
-    from des3pcf.variance import reference_matter_fraction
+    from theory.bihalofit.variance import reference_matter_fraction
 
     tables["omega_m_z"] = reference_matter_fraction(tables=tables, redshift=tables["z"])
     parameters = {"omega_m": .3, "omega_b": .05, "h": .7, "ns": .965,
@@ -172,15 +174,13 @@ def test_joint_feedback_cache_and_metadata(compiled):
     np.testing.assert_allclose(changed, expected, rtol=5.e-14)
     assert provider.model is owner
     np.testing.assert_array_equal(prediction(parameters=parameters), original)
-    with pytest.raises(AttributeError, match="new.*provider"):
-        provider.feedback = paired_input(power=.7)
 
 
 def test_feedback_two_point_tatt_keeps_loop_terms_fixed(compiled):
     """Actual CFASTPT loops stay fixed while the nonlinear baseline is suppressed."""
     import sys
     from pathlib import Path
-    from des3pcf.core_two_point import CoreTwoPoint
+    from native_inputs import two_point_spectra
 
     project = Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(project.parent / "des_y3/interface"))
@@ -189,7 +189,7 @@ def test_feedback_two_point_tatt_keeps_loop_terms_fixed(compiled):
     tables = physical_inputs()
     tables["p_linear"] = tables["growth"][:, None]**2 * tables["p_linear0"]
     model = reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs(), feedback=dict(paired_input().native))
-    adapter = CoreTwoPoint(core=core, nbin=2, threads=1, ell_internal=32,
+    adapter = dict(core=core, nbin=2, threads=1, ell_internal=32,
                            accuracy_boost=.5)
     parameters = {"h": .7, "omega_b": .05, "mnu": 0.}
     ell = np.array([60., 170., 500.])
@@ -199,9 +199,9 @@ def test_feedback_two_point_tatt_keeps_loop_terms_fixed(compiled):
         modified = feedback_power_tables(model=model, tables=tables, amplitude=amplitude)
         metadata = {"paired_feedback_amplitude": amplitude}
         ia = {"a1": .4, "a2": .7, "bta": .9, "feedback_amplitude": amplitude}
-        even, odd = adapter.spectra(parameters=parameters, tables=modified,
+        even, odd = two_point_spectra(**adapter, parameters=parameters, tables=modified,
                                     metadata=metadata, ia=ia, ell=ell, bins=bins)
-        baseline, zero = adapter.spectra(
+        baseline, zero = two_point_spectra(**adapter,
             parameters=parameters, tables=modified, metadata=metadata,
             ia=dict(ia, a2=0., bta=0.), ell=ell, bins=bins,
         )

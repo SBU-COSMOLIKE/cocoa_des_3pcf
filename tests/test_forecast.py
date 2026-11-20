@@ -10,12 +10,13 @@ import numpy as np
 import pytest
 from scipy.special import roots_genlaguerre, gamma
 
-from des3pcf.forecast import (
+from cosmolike_notebook_utils.fisher import (
     ExactMeanCache, differentiate, fisher_matrix, parameter_covariance,
     figure_of_merit,
 )
-from des3pcf.precision import precision_expansion, split_precision_expansion
-from des3pcf.inputs import shifted_sources, load_tables, save_tables
+from cosmolike_notebook_utils.covariance.precision import precision_expansion, split_precision_expansion
+from des3pcf.survey import shifted_sources
+from des3pcf.physical_provider import load_tables, save_tables
 
 
 def test_exact_keys_and_polynomial_derivatives():

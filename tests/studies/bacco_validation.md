@@ -10,7 +10,7 @@ whose derivatives the notebook recomputed. These are local Fisher
 comparisons at one fiducial cosmology. They do not establish calibrated
 posterior constraints.
 
-The [physical derivation](../../python/des3pcf/README.md#bacco) defines the cold-to-total conversion
+The [physical derivation](../../../../external_modules/code/cosmolike_core/theory/bacco_bispectrum/README.md#bacco) defines the cold-to-total conversion
 and its assumptions. This page records the numerical results from
 2026-11-18, their interpretation, and the checks still needed. The
 [execution record](results/bacco/execution.json) identifies the eleven saved
@@ -327,7 +327,7 @@ identity; choose another output directory to preserve both records.
 
 Inspecting the committed JSON records and figures requires no forecast
 run. The full per-case derivative arrays remain in the local
-`runs/bacco_joint_study/` directory, and the notebook can regenerate them;
+`chains/bacco_joint_study/` directory, and the notebook can regenerate them;
 their hashes are in the execution record. The interpolation sample arrays
 accompany this page. A later input or implementation change does not
 relabel any copied result.

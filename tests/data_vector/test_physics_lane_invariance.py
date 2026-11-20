@@ -6,7 +6,7 @@ physical inputs and quadrature are unchanged, so the retained values must
 match bitwise. These checks isolate arithmetic grouping from refinement.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
 import pytest

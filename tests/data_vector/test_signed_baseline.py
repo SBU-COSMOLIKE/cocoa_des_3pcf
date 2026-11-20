@@ -12,7 +12,7 @@ at a baseline zero. The separate TATT residual is checked without claiming
 that its coarse interpolation is scientifically accurate.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
 import pytest

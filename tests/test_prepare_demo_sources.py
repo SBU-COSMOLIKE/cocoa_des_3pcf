@@ -19,6 +19,7 @@ from astropy.io import fits
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 from prepare_demo_sources import prepare_demo_sources, write_pair
 
 

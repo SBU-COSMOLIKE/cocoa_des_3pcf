@@ -10,14 +10,14 @@ import numpy as np
 import pytest
 
 from cosmolike_notebook_utils import fisher as shared_fisher
-from des3pcf.fisher_accuracy import (
+from cosmolike_notebook_utils.fisher import (
     get_fom_noise_weights,
     get_stencil_noise,
     make_offset_predictor,
     predict_fom_noise,
     retained_stencil_noise,
 )
-from des3pcf.forecast import ExactMeanCache, differentiate, fisher_matrix
+from cosmolike_notebook_utils.fisher import ExactMeanCache, differentiate, fisher_matrix
 
 
 def saved_values(predict, reference, names, steps):

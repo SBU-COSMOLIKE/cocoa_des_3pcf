@@ -14,7 +14,7 @@ from test_pipeline import compact_bispectrum_grid
 import numpy as np
 import pytest
 
-from des3pcf.inputs import _camb_power_limits, camb_tables, camb_accuracy_settings
+from des3pcf.physical_provider import _camb_power_limits, camb_tables, camb_accuracy_settings
 
 
 @pytest.fixture(scope="module")
@@ -138,7 +138,7 @@ def test_real_camb_accuracy_rebuild_and_restore(
     compiled, prepared_and_fresh, name, value,
 ):
     """A notebook precision change rebuilds power; A/B/A restores it exactly."""
-    from des3pcf.pipeline import PhysicalProvider
+    from des3pcf.physical_provider import PhysicalProvider
 
     parameters, tables, metadata, unused = prepared_and_fresh
     provider = PhysicalProvider(
@@ -216,7 +216,7 @@ def test_cold_sigma8_and_neutrino_archive_use_the_same_cosmology(
     through the opposite radius-unit convention of a fresh CAMB solution.
     The saved neutrino field must survive NPZ serialization unchanged.
     """
-    from des3pcf.inputs import load_tables, save_tables
+    from des3pcf.physical_provider import load_tables, save_tables
 
     parameters, tables, metadata, fresh = prepared_and_fresh
     expected = fresh.get_sigmaR(

@@ -8,7 +8,7 @@ therefore cannot masquerade as the correct two-point-only experiment.
 import numpy as np
 import pytest
 
-from des3pcf.fisher_comparison import compare_information, marginalized_errors
+from cosmolike_notebook_utils.fisher import compare_information, marginalized_errors
 
 
 def test_schur_information_and_prior_count_with_interleaved_rows():

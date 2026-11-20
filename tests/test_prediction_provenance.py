@@ -14,7 +14,8 @@ import pytest
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "python"))
+sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 from des3pcf.provenance import prediction_identity, verify_prediction_identity
 from des3pcf.fisher_accuracy import accuracy_cases_for_request
@@ -23,7 +24,7 @@ from des3pcf.fisher_accuracy import load_retained_noise_case
 
 def artificial_prediction(tmp_path):
     """Create distinct physical-input and implementation files without imports."""
-    project = tmp_path / "project"
+    project = tmp_path / "Cocoa" / "projects" / "project"
     files = {
         "source.txt": b"source density samples A",
         "tables.npz": b"physical table bytes A",
@@ -31,12 +32,22 @@ def artificial_prediction(tmp_path):
         "interface/third.so": b"three-point native library A",
         "interface/second.so": b"two-point native library A",
         "scripts/run_3pcf.py": b"# physical driver A\n",
-        "python/des3pcf/mean.py": b"# mean implementation A\n",
+        "scripts/des3pcf/mean.py": b"# mean implementation A\n",
     }
     for name, contents in files.items():
         path = project / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(contents)
+    core = project.parents[1] / "external_modules/code/cosmolike_core"
+    for relative in (
+        "cosmolike_notebook_utils/fisher.py",
+        "cosmolike_notebook_utils/covariance/precision.py",
+        "theory/bihalofit/model.py",
+        "theory/bacco_bispectrum/response.py",
+    ):
+        filename = core / relative
+        filename.parent.mkdir(parents=True, exist_ok=True)
+        filename.write_text("# Artificial shared implementation A\n")
     config = {
         "physics": {"tables": "tables.npz", "cosmology_mode": "fixed"},
         "source": {"path": "source.txt"},
@@ -60,7 +71,7 @@ def artificial_prediction(tmp_path):
         "tables.npz",
         "interface/third.so",
         "interface/second.so",
-        "python/des3pcf/mean.py",
+        "scripts/des3pcf/mean.py",
     ],
 )
 def test_same_path_input_or_implementation_change_is_detected(tmp_path, changed_file):

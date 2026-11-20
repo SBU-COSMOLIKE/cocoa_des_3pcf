@@ -22,7 +22,8 @@ os.environ["MKL_DYNAMIC"] = "FALSE"
 os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "python"))
+sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 from des3pcf.scaling import preflight, run_study, plot_study, prepare_job, run_job
 

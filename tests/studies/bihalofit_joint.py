@@ -142,9 +142,10 @@ def run(options):
     """
     project = Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import run_3pcf as driver
     import numpy as np
-    from des3pcf.inputs import load_tables, save_tables
+    from des3pcf.physical_provider import load_tables, save_tables
     from des3pcf.provenance import prediction_identity, verify_prediction_identity
 
     sys.path.insert(0, str(options.extension.resolve()))
@@ -309,7 +310,7 @@ def run(options):
             step = np.linalg.solve(a=factor, b=mean - previous)
             result["squared_difference_previous"] = float(step @ step)
         if provider._active_baseline is not None:
-            result["baseline"] = provider._active_baseline.record()
+            result["baseline"] = provider._active_baseline["metadata"]
         mean_path = options.output / (name + "_mean.npz")
         np.savez(file=mean_path, mean=mean)
         result["mean_npz_sha256"] = hashlib.sha256(mean_path.read_bytes()).hexdigest()

@@ -14,7 +14,7 @@ import sys
 import numpy as np
 import pytest
 
-from des3pcf.forecast import differentiate
+from cosmolike_notebook_utils.fisher import differentiate
 from des3pcf.provenance import file_digest
 
 

@@ -7,7 +7,7 @@ comes from the original Python files; it checks implementation agreement.
 Separate resolution studies are still required for survey predictions.
 """
 
-from des3pcf.variance import reference_physics_model, reference_bihalofit
+from theory.bihalofit.variance import reference_physics_model, reference_bihalofit
 
 from decimal import Decimal, localcontext
 import json
@@ -86,7 +86,7 @@ def test_pinned_matter_and_all_alignment_components(physical_model):
         tolerance = 2.0e-10 if component == 1 else 2.0e-4
         np.testing.assert_allclose(actual, expected, rtol=tolerance, atol=0.0)
     for mode in (0, 1):
-        parameters = dict(record["parameters"])
+        parameters = dict(record["parameters"], c1rho=0.0134)
         parameters["power_mode"] = mode
         actual = physical_model.ia(
             sides=sides,
@@ -311,7 +311,7 @@ def test_analytic_source_kernel_and_nla_power(compiled):
                                atol=1.0e-25)
     ell = np.asarray([150.0, 510.0])
     parameters = {"a1": 0.6, "eta1": 0.0}
-    c1 = -0.6 * 0.0134 * inputs["omega_m"] * (1.0 + radial["z"])
+    c1 = -0.6 * 0.01389 * inputs["omega_m"] * (1.0 + radial["z"])
     # The historical NLA grid starts at the positive LOS lower boundary.
     # Its sampled source normalization therefore omits [0,zmin].
     normalization = 1.0 - (radial["z"][0] / maximum) ** 2

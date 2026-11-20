@@ -13,7 +13,7 @@ The wide-range comparison uses direct physical values as its reference;
 the tolerance is an interpolation check for these controlled spectra.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
 import pytest

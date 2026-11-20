@@ -24,7 +24,7 @@ source:
   extension: nz_source
   nbin: 4
 physics:
-  tables: ../runs/y6_physics.npz
+  tables: ../chains/y6_physics.npz
   cosmology_mode: camb
   kernel_nz: 201
   k:
@@ -72,7 +72,7 @@ ia:
   bta: 1
   ct: 0
   zpivot: 0.62
-  c1rho: 0.0134
+  c1rho: 0.01389
   power_mode: 0
   ct_mode: 0
   fb: 0
@@ -140,12 +140,12 @@ mean:
     pair_weight: uniform_area
   two_point:
     mode: core_tatt
-    directory: ../../des_y3/interface
-    module: cosmolike_des_y3_interface
+    directory: ../interface
+    module: cosmolike_des_3pcf_interface
     interpolation_type: 0
 covariance:
   mode: analytic
-  path: ../runs/y6_full_filter_covariance.npz
+  path: ../chains/y6_full_filter_covariance.npz
   ia_covariance: gravitational_only
   neutrino_model: single_fluid_effective_growth
   noise:
@@ -239,5 +239,5 @@ fisher:
   precision:
     mode: inverse
 outputs:
-  evaluate: ../runs/y6_full_filter_mean.npz
-  fisher: ../runs/y6_full_filter_fisher.npz
+  evaluate: ../chains/y6_full_filter_mean.npz
+  fisher: ../chains/y6_full_filter_fisher.npz

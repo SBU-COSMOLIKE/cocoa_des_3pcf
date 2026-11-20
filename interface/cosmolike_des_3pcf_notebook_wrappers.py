@@ -12,7 +12,7 @@ import sys
 
 PROJECT = Path(__file__).resolve().parents[1]
 CORE = PROJECT.parents[1] / "external_modules/code/cosmolike_core"
-sys.path.insert(0, str(PROJECT / "python"))
+sys.path.insert(0, str(PROJECT / "scripts"))
 sys.path.insert(0, str(CORE))
 
 from des3pcf.comparison import comparison_status

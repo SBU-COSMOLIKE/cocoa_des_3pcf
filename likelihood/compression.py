@@ -18,21 +18,19 @@ from pathlib import Path
 import numpy as np
 from scipy.linalg import solve_triangular
 
-from .forecast import symmetric_matrix
-from .ownership import PreparedGeometry
+from cosmolike_notebook_utils.fisher import symmetric_matrix
 
 
-class CompressedRows(PreparedGeometry):
+class CompressedRows:
     """Label numerical modes without assigning fictitious angles or bin indices."""
 
     def __init__(self, labels, values):
         """Own mode labels and their one-dimensional measured values."""
-        self.labels = np.asarray(labels, dtype=str)
-        self.values = np.asarray(values, dtype=float)
-        self._seal_geometry()
+        self.labels = np.array(labels, dtype=str, copy=True)
+        self.values = np.array(values, dtype=float, copy=True)
 
 
-class LinearCompression(PreparedGeometry):
+class LinearCompression:
     """Own a fixed transformation and the exact input row identities.
 
     Arguments:
@@ -67,11 +65,10 @@ class LinearCompression(PreparedGeometry):
         if not isinstance(metadata, dict) or not metadata:
             raise ValueError("Compression requires explicit training/source metadata.")
         self.metadata_json = json.dumps(metadata, allow_nan=False, sort_keys=True)
-        self.matrix = matrix
-        self.input_labels = original
-        self.output_labels = output
-        self.metadata = metadata
-        self._seal_geometry()
+        self.matrix = matrix.copy()
+        self.input_labels = original.copy()
+        self.output_labels = output.copy()
+        self.metadata = json.loads(self.metadata_json)
 
     def check_labels(self, labels):
         """Require exact input ordering before multiplying any data or model."""

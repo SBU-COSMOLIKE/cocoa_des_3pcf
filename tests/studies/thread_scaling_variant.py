@@ -58,7 +58,8 @@ def prepare_batch_variant(job, directory, batch_size, environment):
       Writes configuration, table metadata and a preparation log. The child
       verifies reuse through the project's preparation entry point.
     """
-    sys.path.insert(0, str(PROJECT / "python"))
+    sys.path.insert(0, str(PROJECT / "scripts"))
+    sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
     from des3pcf.scaling_threepcf import _configuration, threepcf_point_bank
 
     _, config, source_path, _ = _configuration(

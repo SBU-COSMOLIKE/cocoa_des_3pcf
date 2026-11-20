@@ -154,10 +154,10 @@ native samples are not the untouched upstream file.
 
 ## Execution record <a name="record"></a>
 
-The versioned records are under [`results/`](results/):
+The versioned records are under [`results/`](results):
 `projection_stretched_diagnostic.npz`, `residual_mean_diagnostic.npz`,
 `multipole_mixed_diagnostic.npz` and `projection_mean_convergence/`.
-A regeneration writes its working copies under the local `runs/`
+A regeneration writes its working copies under the local `chains/`
 directory, which Git ignores.
 Tests and models used no more than four OpenMP workers and serial BLAS,
 and no new timing trial ran. The corrected native code passed the strict

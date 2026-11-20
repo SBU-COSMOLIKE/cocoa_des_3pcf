@@ -9,15 +9,15 @@ the prepared redshift interpolant, including both sides of a grid join.
 from test_bihalofit_python import retired_matter
 
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
 import pytest
 
 from test_physics_model import physical_inputs
 from test_bihalofit_python import evaluate, query_triangles
-from des3pcf.bihalofit import BiHalofit
-from des3pcf.inputs import uniform_segments
+from theory.bihalofit.model import BiHalofit
+from theory.bihalofit.model import uniform_segments
 
 
 def piecewise_inputs(refinement):

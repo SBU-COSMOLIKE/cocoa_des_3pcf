@@ -13,7 +13,7 @@ import sys
 import numpy as np
 import pytest
 
-from des3pcf.variance import ReferenceVariance
+from theory.bihalofit.variance import ReferenceVariance
 from data_vector.test_physics_model import physical_inputs
 from test_supplied_baseline import install_bridge, baseline_input
 
@@ -130,8 +130,9 @@ def test_inconsistent_fraction_is_refused(compiled, case):
     project = Path(__file__).resolve().parents[1]
     environment = dict(os.environ)
     environment["PYTHONPATH"] = os.pathsep.join([
+        str(project.parents[1] / "external_modules/code/cosmolike_core"),
         str(project / "interface"),
-        str(project / "python"),
+        str(project / "scripts"),
         str(project / "tests"),
         str(project / "tests/data_vector"),
     ])
@@ -141,7 +142,7 @@ import numpy as np
 import cosmolike_des_3pcf_interface as compiled
 from test_physics_model import physical_inputs
 from test_supplied_baseline import install_bridge, baseline_input
-from des3pcf.variance import ReferenceVariance
+from theory.bihalofit.variance import ReferenceVariance
 inputs = physical_inputs()
 case = sys.argv[1]
 if case in ("stale", "massive"):

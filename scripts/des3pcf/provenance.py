@@ -37,7 +37,7 @@ def bacco_identity():
     local edit. No missing data are downloaded by this check.
     """
     import importlib.util
-    from .baryon_scenarios import installed_bacco_weights
+    from theory.bacco_bispectrum.emulator import installed_bacco_weights
 
     specification = importlib.util.find_spec("baccoemu")
     if specification is None:
@@ -59,12 +59,12 @@ def implementation_identity(
     """Reuse the same physical-code fingerprint for inference and forecasts.
 
     Arguments:
-      project = project root containing python/, interface/, and scripts/.
+      project = project root containing interface/, likelihood/, and scripts/.
       three_point_path, two_point_path = actual extension paths; the second
           is omitted when the declared calculation uses no ordinary core.
       use_camb = whether displaced cosmologies can produce new CAMB tables.
       extra_scripts = additional project-relative script names, such as the
-          sampler driver. run_3pcf.py is always part of the physical workflow.
+          sampler driver. All scripts and likelihood modules are also recorded.
     Returns:
       JSON-compatible hashes. No physical model is constructed.
     """
@@ -82,14 +82,26 @@ def implementation_identity(
             "path": str(second),
             "sha256": file_digest(path=second),
         }
-    implementation = list((project / "python" / "des3pcf").glob("*.py"))
-    implementation.append(project / "scripts" / "run_3pcf.py")
+    implementation = list((project / "scripts").rglob("*.py"))
+    implementation.extend((project / "likelihood").glob("*.py"))
     for name in extra_scripts:
         implementation.append(project / name)
     result["python_implementation_sha256"] = {}
     for filename in sorted(set(implementation)):
         relative = filename.relative_to(project).as_posix()
         result["python_implementation_sha256"][relative] = file_digest(path=filename)
+    # Moving the reusable calculations out of the project must not stop
+    # fingerprints from detecting a change to those calculations.
+    core = project.parents[1] / "external_modules/code/cosmolike_core"
+    shared_files = []
+    shared_files.extend((core / "theory" / "bihalofit").glob("*.py"))
+    shared_files.extend((core / "theory" / "bacco_bispectrum").glob("*.py"))
+    shared_files.append(core / "cosmolike_notebook_utils" / "fisher.py")
+    shared_files.append(core / "cosmolike_notebook_utils" / "covariance" / "precision.py")
+    result["shared_python_sha256"] = {}
+    for filename in sorted(shared_files):
+        relative = filename.relative_to(core).as_posix()
+        result["shared_python_sha256"][relative] = file_digest(path=filename)
     if use_camb:
         import camb
         from camb import baseconfig

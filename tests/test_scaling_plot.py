@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pytest
 
-from des3pcf.scaling_plot import plot_thread_scaling
+from cosmolike_notebook_utils.plot_thread_scaling import plot_thread_scaling
 
 
 def controlled_records(workload_count=2):

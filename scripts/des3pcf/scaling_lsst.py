@@ -422,6 +422,8 @@ def _table_metadata(settings, point):
 
 def _validate_tables(bundle):
     """Check dimensions and finite values before the fatal C boundary."""
+    from copy import deepcopy
+
     import numpy as np
 
     if set(bundle) != {"metadata", "arrays"}:

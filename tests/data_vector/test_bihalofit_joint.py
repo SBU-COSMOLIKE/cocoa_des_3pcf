@@ -7,7 +7,7 @@ stricter than the group's 0.2 route-comparison ceiling. This is a controlled
 four-row integration regression, not a DES convergence declaration.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import hashlib
 import json
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
-from des3pcf.bihalofit import BiHalofitProducer, input_hashes
+from theory.bihalofit.model import BiHalofitProducer, input_hashes
 
 
 REFERENCE_DIRECTORY = Path(__file__).with_name("reference_bihalofit")
@@ -90,8 +90,8 @@ def test_supplied_full_mean_in_fixed_joint_covariance(compiled, tmp_path):
         inputs = dict(native)
         for unused in ("omega_de", "w0", "wa", "ns"):
             del inputs[unused]
-        inputs["omega_m_z"] = baseline.background_omega_m_z
-        inputs["baseline"] = dict(baseline.native)
+        inputs["omega_m_z"] = baseline["background_omega_m_z"]
+        inputs["baseline"] = dict(baseline["native"])
         model = reference_physics_model(factory=compiled.production.PhysicsModelWithBispectrum, **inputs)
         mean, unused_terms = compiled.production.physical_covariance(
             model=model, inputs=covariance_input)
@@ -104,7 +104,7 @@ def test_supplied_full_mean_in_fixed_joint_covariance(compiled, tmp_path):
         report["cases"].append({
             "coarse_counts": list(counts),
             "delta_chi2": error,
-            "baseline": baseline.record(),
+            "baseline": baseline["metadata"],
         })
     (tmp_path / "comparison.json").write_text(
         json.dumps(report, indent=2, allow_nan=False) + "\n")

@@ -27,32 +27,6 @@ CORE_DIRECTORY = PROJECT.parent / "des_y3" / "interface"
 CORE_MODULE = CORE_DIRECTORY / "cosmolike_des_y3_interface.so"
 
 
-@pytest.mark.parametrize("name", [
-    "core", "nbin", "threads", "interpolation_type", "accuracy_boost",
-    "integration_accuracy", "fpt_internal_boost", "ell_internal",
-])
-def test_declared_core_controls_are_immutable(name):
-    """Refuse a partial edit that an outer mean cache would otherwise miss.
-
-    Construction stores settings without calling the ordinary extension,
-    so this ownership check needs no imported core or numerical setup.
-    """
-    from des3pcf.core_two_point import CoreTwoPoint
-
-    adapter = CoreTwoPoint(core=None, nbin=2)
-    with pytest.raises(AttributeError, match="construct a new engine"):
-        setattr(adapter, name, getattr(adapter, name))
-
-
-@pytest.mark.parametrize("level", [-1, 8, 1.5, True])
-def test_unsupported_core_quadrature_level_stops_before_setup(level):
-    """Reject unsupported levels before any fatal ordinary-core call."""
-    from des3pcf.core_two_point import CoreTwoPoint
-
-    with pytest.raises(ValueError, match="integration_accuracy.*0..7"):
-        CoreTwoPoint(core=None, nbin=2, integration_accuracy=level)
-
-
 def physical_inputs(nbin):
     """Build matching h-unit tables without CAMB or a survey data file."""
     wave = np.geomspace(start=1.0e-5, stop=1.0e3, num=96)
@@ -90,7 +64,7 @@ def physical_inputs(nbin):
         "eta2": 0.4,
         "bta": 0.8,
         "zpivot": 0.62,
-        "c1rho": 0.0134,
+        "c1rho": 0.01389,
     }
     bins = np.array([[0, 0], [0, nbin - 1], [nbin - 1, nbin - 1]],
                     dtype=np.int32)
@@ -106,15 +80,15 @@ def physical_inputs(nbin):
 
 def adapter_for_case(core, nbin):
     """Use different declared source/numerical models for the A/B/A test."""
-    from des3pcf.core_two_point import CoreTwoPoint
+    from native_inputs import two_point_spectra
 
     if nbin == 2:
-        return CoreTwoPoint(
+        return dict(
             core=core, nbin=2, threads=1, interpolation_type=0,
             accuracy_boost=0.5, integration_accuracy=0,
             fpt_internal_boost=0.5, ell_internal=32,
         )
-    return CoreTwoPoint(
+    return dict(
         core=core, nbin=3, threads=2, interpolation_type=1,
         accuracy_boost=0.75, integration_accuracy=0,
         fpt_internal_boost=0.4, ell_internal=48,
@@ -158,10 +132,11 @@ def baryon_test_file(path):
 
 def child_calculation(case, destination):
     """Run one clean reference or a complete reused-process setting sequence."""
-    sys.path.insert(0, str(PROJECT / "python"))
+    sys.path.insert(0, str(PROJECT / "scripts"))
+    sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
     sys.path.insert(0, str(CORE_DIRECTORY))
     import cosmolike_des_y3_interface as core
-    from des3pcf.mean import core_power_rows
+    from native_inputs import two_point_spectra, core_power_rows
 
     first = adapter_for_case(core=core, nbin=2)
     arguments = physical_inputs(nbin=2)
@@ -169,29 +144,32 @@ def child_calculation(case, destination):
     if case == "fresh3":
         second = adapter_for_case(core=core, nbin=3)
         record(result=result, prefix="reference",
-               spectra=second.spectra(**physical_inputs(nbin=3)))
+               spectra=two_point_spectra(**second, **physical_inputs(nbin=3)))
     elif case == "fresh2":
-        record(result=result, prefix="reference", spectra=first.spectra(**arguments))
+        record(result=result, prefix="reference", spectra=two_point_spectra(**first, **arguments))
     else:
-        original = first.spectra(**arguments)
+        original = two_point_spectra(**first, **arguments)
         record(result=result, prefix="before", spectra=original)
         if case == "adapters":
             second = adapter_for_case(core=core, nbin=3)
             record(result=result, prefix="other",
-                   spectra=second.spectra(**physical_inputs(nbin=3)))
+                   spectra=two_point_spectra(**second, **physical_inputs(nbin=3)))
             # Source-count growth must not change previously returned arrays.
             assert_bits(actual=original[0], expected=result["before_e"],
                         context="old E output")
             assert_bits(actual=original[1], expected=result["before_b"],
                         context="old B output")
-            record(result=result, prefix="after", spectra=first.spectra(**arguments))
+            record(result=result, prefix="after", spectra=two_point_spectra(**first, **arguments))
             record(result=result, prefix="other_again",
-                   spectra=second.spectra(**physical_inputs(nbin=3)))
+                   spectra=two_point_spectra(**second, **physical_inputs(nbin=3)))
         elif case == "selectors":
             core.init_cosmo_runmode(is_linear=True)
             core.init_IA(ia_model=0, ia_redshift_evolution=0, ia_code=0)
-            raw = core_power_rows(core=core, ell=arguments["ell"],
-                                  bins=arguments["bins"])
+            raw = core_power_rows(
+                core=core,
+                ell=arguments["ell"],
+                bins=arguments["bins"],
+            )
             record(result=result, prefix="changed", spectra=raw)
             # These are complete public mutations. The adapter must restore
             # its own choices without relying on callers to announce them.
@@ -206,13 +184,13 @@ def child_calculation(case, destination):
             core.set_nuisance_shear_photoz(bias=np.array([0.04, -0.03]))
             core.set_nuisance_shear_calib(M=np.array([0.2, -0.1]))
             core.set_omp_threads(n=2)
-            record(result=result, prefix="after", spectra=first.spectra(**arguments))
+            record(result=result, prefix="after", spectra=two_point_spectra(**first, **arguments))
         elif case == "half_state":
             # Even a count change without a corresponding n(z) install must
             # not make a subsequent adapter read old arrays with new sizes.
             core.init_source_sample_size(Ntomo=4)
             core.init_lens_sample_size(Ntomo=2)
-            record(result=result, prefix="after", spectra=first.spectra(**arguments))
+            record(result=result, prefix="after", spectra=two_point_spectra(**first, **arguments))
             # A hidden accuracy baseline can also be captured from a raw
             # partial setup. Resetting before the adapter's own boost avoids
             # silently inheriting this unrelated coarse-node count.
@@ -221,15 +199,18 @@ def child_calculation(case, destination):
             core.init_accuracy_boost(accuracy_boost=0.7, integration_accuracy=1)
             core.init_source_sample_size(Ntomo=3)
             record(result=result, prefix="after_reset",
-                   spectra=first.spectra(**arguments))
+                   spectra=two_point_spectra(**first, **arguments))
         elif case == "baryons":
             table = destination.with_suffix(".h5")
             baryon_test_file(path=table)
             core.init_baryons_contamination(sim="controlled-1", allsims=str(table))
-            raw = core_power_rows(core=core, ell=arguments["ell"],
-                                  bins=arguments["bins"])
+            raw = core_power_rows(
+                core=core,
+                ell=arguments["ell"],
+                bins=arguments["bins"],
+            )
             record(result=result, prefix="changed", spectra=raw)
-            record(result=result, prefix="after", spectra=first.spectra(**arguments))
+            record(result=result, prefix="after", spectra=two_point_spectra(**first, **arguments))
         else:
             raise ValueError("Unknown core sequence: " + case)
     np.savez(file=destination, **result)

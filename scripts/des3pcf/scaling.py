@@ -613,7 +613,7 @@ def plot_study(path):
 
     matplotlib.use("Agg")
     from matplotlib import pyplot as plt
-    from .scaling_plot import plot_thread_scaling
+    from cosmolike_notebook_utils.plot_thread_scaling import plot_thread_scaling
 
     config = load_configuration(path)
     output = Path(config["output"])

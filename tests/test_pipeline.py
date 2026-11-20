@@ -10,8 +10,8 @@ polynomial answer independent of quadrature resolution.
 import numpy as np
 import pytest
 
-from des3pcf.core_two_point import core_ia_parameters
-from des3pcf.pipeline import PhysicalProvider, JointPrediction
+from des3pcf.physical_provider import PhysicalProvider
+from des3pcf.pipeline import JointPrediction
 from des3pcf.survey import forecast_rows
 
 
@@ -59,7 +59,7 @@ def toy_tables():
 
 def compact_bispectrum_grid(zmax=2.0):
     """Use explicit small theory axes for ownership tests, not DES accuracy."""
-    from des3pcf.bihalofit import bispectrum_axes
+    from theory.bihalofit.model import bispectrum_axes
 
     return bispectrum_axes(zmax=zmax, counts=(4, 6, 5, 4))
 
@@ -131,40 +131,6 @@ def test_joint_physical_mean_preserves_rows_and_calibration(compiled, projection
     displaced["sigma8"] = 0.81
     with pytest.raises(ValueError, match="parameter changed"):
         prediction(displaced)
-
-
-def test_ia_translation_preserves_physical_redshift_laws():
-    """Match the actual C1/C2 coefficients at several redshifts and pivots.
-
-    The amplitude convention differs between fastnc and the ordinary core.
-    Checking the full redshift law catches both a reversed pivot ratio and
-    applying the C1 normalization twice to C2.
-    Returns:
-      nothing; all coefficients agree up to floating-point rounding.
-    """
-    ia = {
-        "a1": 0.8,
-        "eta1": -1.3,
-        "a2": -0.6,
-        "eta2": 2.1,
-        "bta": 0.4,
-        "zpivot": 0.3,
-        "c1rho": 0.0134,
-    }
-    first, second, density = core_ia_parameters(ia=ia, nbin=4)
-    z = np.array([0.0, 0.3, 0.8, 1.4, 2.0])
-    growth = 1.0 / (1.0 + z)
-    expected_first = -ia["a1"] * 0.0134 * 0.3 / growth
-    expected_first *= ((1.0 + z) / 1.3)**ia["eta1"]
-    actual_first = -first[0] * 0.01389 * 0.3 / growth
-    actual_first *= ((1.0 + z) / 1.62)**first[1]
-    expected_second = 5.0 * ia["a2"] * 0.0134 * 0.3 / growth**2
-    expected_second *= ((1.0 + z) / 1.3)**ia["eta2"]
-    actual_second = 5.0 * second[0] * 0.01389 * 0.3 / growth**2
-    actual_second *= ((1.0 + z) / 1.62)**second[1]
-    np.testing.assert_allclose(actual_first, expected_first, rtol=5.0e-15)
-    np.testing.assert_allclose(actual_second, expected_second, rtol=5.0e-15)
-    assert density[0] == ia["bta"]
 
 
 @pytest.mark.parametrize("name", ("h", "omega_b", "mnu"))

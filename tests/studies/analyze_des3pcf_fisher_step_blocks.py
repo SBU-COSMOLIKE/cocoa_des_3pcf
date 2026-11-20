@@ -85,7 +85,7 @@ def main():
     limit = threadpool_limits(limits=1, user_api="blas")
     report = {}
     for model in ("nla", "tatt"):
-        path = project/"runs"/f"y3_{model}_measured_edge_demo_fisher.npz"
+        path = project/"chains"/f"y3_{model}_measured_edge_demo_fisher.npz"
         arrays, input_record = read_arrays(path=path)
         result = inspect_blocks(arrays=arrays)
         result["input"] = input_record

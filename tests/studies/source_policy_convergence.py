@@ -24,6 +24,7 @@ also contribute. A small fourth difference does not certify a derivative,
 and a large one must not automatically be called independent random noise.
 """
 
+
 import argparse
 from copy import deepcopy
 import hashlib
@@ -72,6 +73,9 @@ OFFSETS = np.asarray(
     [0.0, -0.002, 0.002, -0.001, 0.001, -0.0005, 0.0005,
      -0.00025, 0.00025], dtype=np.float64,
 )
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def digest(path):
@@ -138,7 +142,8 @@ def source_archive(config, case, directory, original):
       path of the independent source archive. Supplied native FITS edges
       are retained even for the linear case so provenance remains complete.
     """
-    from des3pcf.inputs import load_tables, reconstructed_sources, save_tables
+    from des3pcf.physical_provider import load_tables, save_tables
+    from des3pcf.survey import reconstructed_sources
     from des3pcf.survey import read_source_distributions
 
     method, padding, count, _, _ = CASES[case]
@@ -255,7 +260,7 @@ def run_case(driver, project, model_name, case, original_config, origin,
     File identities are checked again after each mean to avoid associating
     a changed binary or input with the initial dependency record.
     """
-    from des3pcf.accuracy import accuracy_settings
+
     from des3pcf.provenance import prediction_identity
 
     directory.mkdir(parents=True, exist_ok=True)
@@ -271,7 +276,7 @@ def run_case(driver, project, model_name, case, original_config, origin,
     config["physics"]["source_nz"] = source_count
     config["physics"]["kernel_nz"] = kernel_count
     config["threads"] = threads
-    config["accuracy"] = accuracy_settings(value={"chi_boost": chi_boost}).record()
+    config["accuracy"] = ci.init_3pcf_accuracy(value={"chi_boost": chi_boost})
     projection = config["mean"]["aperture_settings"]["projection_settings"]
     projection.update({
         "signed_baseline": 1,
@@ -355,12 +360,12 @@ def run_case(driver, project, model_name, case, original_config, origin,
         compiled=compiled, config=config, path=config_path, rows=rows,
         provider=provider,
     )
-    controls = accuracy_settings(value=config["accuracy"])
+    controls = ci.init_3pcf_accuracy(value=config["accuracy"])
     resolved = {
-        "source_nz": controls.count(
+        "source_nz": ci.accuracy_count(accuracy=controls,
             baseline=source_count, stage="source_boost", endpoints=True,
         ),
-        "model": controls.model_settings(
+        "model": ci.accuracy_model_settings(accuracy=controls,
             kernel_nz=kernel_count,
             table_boost=config["physics"].get("table_boost", 8),
             fit_nz=config["physics"].get("fit_nz", 33),
@@ -368,7 +373,7 @@ def run_case(driver, project, model_name, case, original_config, origin,
         "projection": dict(prediction.map_engine.projection_settings),
         "fft_ell_count": int(prediction.map_engine.ell.size),
         "fft_ell_bounds": prediction.map_engine.ell[[0, -1]].tolist(),
-        "xi_ell_count": int(prediction.xi_engine.ell.size),
+        "xi_ell_count": int(prediction.xi_ell.size),
     }
     save_json(path=directory / "resolved_numerics.json", record=resolved)
     points = []
@@ -587,8 +592,10 @@ def main():
     if (len(set(args.models)) != len(args.models)
             or len(set(args.cases)) != len(args.cases)):
         raise ValueError("Select each model and case only once.")
-    sys.path.insert(0, str(project / "python"))
     sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
+    sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import run_3pcf as driver
 
     configs = {}

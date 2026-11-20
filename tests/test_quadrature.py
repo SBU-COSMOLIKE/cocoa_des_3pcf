@@ -4,7 +4,7 @@ import numpy as np
 from numpy.polynomial.legendre import leggauss
 import pytest
 
-from des3pcf.covariance import quadrature
+from cosmolike_des_3pcf_interface import quadrature
 
 
 @pytest.mark.parametrize("count", [8, 64, 256])

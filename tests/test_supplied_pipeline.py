@@ -6,15 +6,18 @@ grid convergence. The observable comparison and its covariance-weighted
 accuracy test use separately recorded grids and fixed scientific inputs.
 """
 
+
 import numpy as np
 import pytest
+from native_inputs import check_bispectrum
 
-from des3pcf.accuracy import Accuracy
-from des3pcf.bihalofit import BaselineBispectrum
-from des3pcf.inputs import load_tables, save_tables
-from des3pcf.mean import physics_model
-from des3pcf.pipeline import PhysicalProvider
+from des3pcf.physical_provider import load_tables, save_tables
+from theory_inputs import physics_model
+from des3pcf.physical_provider import PhysicalProvider
 from test_pipeline import toy_tables
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def supplied_tables():
@@ -146,18 +149,18 @@ def test_source_and_accuracy_changes_preserve_baseline_ownership(compiled):
         returned.projected(sides=angular_sides, bins=bins, parameters={"a1": 0.0}),
         original_projection,
     )
-    provider.accuracy = Accuracy(accuracy_boost=2.0)
+    provider.accuracy = dict(accuracy_boost=2.0)
     provider.get(parameters=parameters)
     refined = provider._active_baseline
     assert refined is not baseline
     for name in ("z", "logk", "logu", "v"):
-        assert refined.native[name].size == 2 * (baseline.native[name].size - 1) + 1
-    assert refined.native["boost"] == baseline.native["boost"]
-    assert refined.record()["controls"]["fit_nz"] == 15
+        assert refined["native"][name].size == 2 * (baseline["native"][name].size - 1) + 1
+    assert refined["native"]["boost"] == baseline["native"]["boost"]
+    assert refined["metadata"]["controls"]["fit_nz"] == 15
     np.testing.assert_array_equal(
         initial.matter(sides=sides, redshifts=redshifts), original,
     )
-    provider.accuracy = Accuracy()
+    provider.accuracy = dict()
     restored, _, _ = provider.get(parameters=parameters)
     np.testing.assert_array_equal(
         restored.matter(sides=sides, redshifts=redshifts), original,
@@ -165,7 +168,7 @@ def test_source_and_accuracy_changes_preserve_baseline_ownership(compiled):
 
 
 @pytest.mark.parametrize("changed", ["z", "omega_m_z"])
-def test_direct_factory_refuses_mismatched_recorded_background(compiled, changed):
+def test_likelihood_refuses_mismatched_recorded_background(changed):
     """A valid table shape does not establish that B and the background match."""
     tables, _ = supplied_tables()
     axes = grid()
@@ -176,12 +179,14 @@ def test_direct_factory_refuses_mismatched_recorded_background(compiled, changed
         background_z[1] += 0.001
     else:
         density[1] += 0.001
-    baseline = BaselineBispectrum(
-        **axes,
-        log_bispectrum=np.zeros(shape=shape),
-        metadata={"test": "constant positive B"},
-        background_z=background_z,
-        background_omega_m_z=density,
-    )
+    native = dict(axes)
+    native["log_bispectrum"] = np.zeros(shape=shape).ravel()
+    native["boost"] = 2
+    native["clamp"] = 0
+    baseline = {
+        "native": native,
+        "background_z": background_z,
+        "background_omega_m_z": density,
+    }
     with pytest.raises(ValueError, match="different background"):
-        physics_model(compiled=compiled, tables=tables, baseline=baseline)
+        check_bispectrum(baseline=baseline, tables=tables)

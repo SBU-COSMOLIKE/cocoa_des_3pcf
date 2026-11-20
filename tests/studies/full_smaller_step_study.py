@@ -18,8 +18,8 @@ angular-order, source-model or physical-model convergence.
 
 From the project directory, inspect the proposed coordinates first:
   python tests/studies/full_smaller_step_study.py \
-    runs/nla_accuracy/triangle_1p5.json --output runs/nla_full_h4 \
-    --reuse-step-study runs/nla_triangle_step_study
+    chains/nla_accuracy/triangle_1p5.json --output chains/nla_full_h4 \
+    --reuse-step-study chains/nla_triangle_step_study
 
 Repeat with --execute only when physical work is authorized and the
 numerical queue is available. Each calculated point receives a separate
@@ -80,7 +80,7 @@ def project_directory(requested):
             Path.cwd() / "Cocoa/projects/des_3pcf",
         ]
     for candidate in candidates:
-        if (candidate / "python/des3pcf/forecast.py").is_file():
+        if (candidate / "scripts/run_3pcf.py").is_file():
             return candidate.resolve()
     raise ValueError("Pass --project with the des_3pcf project directory.")
 
@@ -237,7 +237,7 @@ def reconstruct_derivatives(bank, reference, steps, bounds, arrays):
       The lookup refuses any point absent from the recorded bank; this
       function cannot make a physical prediction.
     """
-    from des3pcf.forecast import differentiate
+    from cosmolike_notebook_utils.fisher import differentiate
 
     def lookup(parameters):
         """Return only an exactly recorded physical coordinate, as an owned array."""
@@ -448,13 +448,13 @@ def run(configuration, output, project, reuse_step_study=None, execute=False):
         project / "tests/studies",
         project / "interface",
         project / "scripts",
-        project / "python",
+        project / "scripts",
     ):
         sys.path.insert(0, str(directory))
     import run_3pcf as driver
     from des3pcf.provenance import file_digest, prediction_identity
     from des3pcf.provenance import verify_prediction_identity
-    from des3pcf.fisher_comparison import compare_information, marginalized_errors
+    from cosmolike_notebook_utils.fisher import compare_information, marginalized_errors
     from full_triangle_report import information_summary, derivative_changes, json_default
     from threadpoolctl import threadpool_limits
 
@@ -694,7 +694,7 @@ def run(configuration, output, project, reuse_step_study=None, execute=False):
         )
         third_extension = Path(compiled.__file__)
         if prediction.two_point_core is not None:
-            second_extension = Path(prediction.two_point_core.core.__file__)
+            second_extension = Path(prediction.compiled.__file__)
         verify_prediction_identity(recorded=beginning, current=snapshot(),
                                    description="Loaded smaller-step engine")
     evaluated = 0

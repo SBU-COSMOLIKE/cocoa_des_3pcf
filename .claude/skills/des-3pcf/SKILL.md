@@ -70,15 +70,19 @@ are insufficient.
 - `interface/` contains the project bindings and notebook wrappers.
 - `scripts/` contains DES-specific preparation, comparison and run scripts.
   Do not create a top-level `python/` package.
-- Reusable numerical helpers belong in core's `cosmolike_3pcf/` package;
-  reusable plotting functions belong in `cosmolike_notebook_utils/`.
-  Neither may silently select a particular survey's compiled interface.
+- There is no `cosmolike_3pcf/` Python package. Numerical preparation and
+  evaluation belong in the existing C++ interfaces under `cosmolike/3pcf/`.
+  This includes fixed quadrature, aperture row grouping and IA decomposition.
+  Extend existing interfaces; do not add Python owner or adapter layers.
+- Survey/FITS/source/pixel readers belong in `scripts/des3pcf/`.
+  Reusable plots and statistical algebra belong in `cosmolike_notebook_utils/`.
 - General Fisher algebra belongs in the existing
   `cosmolike_notebook_utils/fisher.py`, not in a 3PCF-specific duplicate.
   DES saved-file handling stays in project scripts.
 - Matter-bispectrum prescriptions belong in `cosmolike_core/theory/`.
-  BiHalofit and BACCO are separate theory blocks that can be connected through
-  Cobaya's provider dependencies. Do not fold BACCO into the existing `bfmt`
+  BiHalofit supplies the `matter_bispectrum` provider result. BACCO response
+  machinery is separate under `theory/bacco_bispectrum/`; its current offline
+  routines are not yet a registered chained Cobaya Theory class. Do not fold BACCO into the existing `bfmt`
   block. Follow Cocoa's installation keys and start/stop symlink conventions.
 - Supplied theory arrays use ordinary dictionaries. Keep basic shape, grid
   and background checks in the project likelihood base; do not introduce
@@ -110,10 +114,9 @@ are observed or synthetic. Priors belong in the Cobaya parameter block and
 must enter the posterior exactly once.
 
 The native projection consumes a supplied matter bispectrum. BiHalofit is
-one theory producer, not a definition of the project. The current physical
-adapter calls CAMB and that producer directly; do not describe it as a fully
-interchangeable Cobaya theory dependency graph until that graph is wired
-and tested. A matching file layout does not establish scientific agreement
+one theory producer, not a definition of the project. The evaluation and Nautilus YAMLs configure CAMB and a separate
+bispectrum theory block. The likelihood reads both through `self.provider`;
+never call CAMB or a model-specific producer inside the likelihood. A matching file layout does not establish scientific agreement
 with a paper's estimator or likelihood.
 
 ## Writing and validation

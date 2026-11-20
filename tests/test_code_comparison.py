@@ -1,7 +1,6 @@
 """Check source identity, isolated execution and comparison reach.
 
-Live-source checks require the explicit checkouts named by the example
-YAML. They skip with a named reason when those external files are absent;
+Live-source checks use independent copies in Cocoa/external_modules/code/. They skip with a named reason when those external files are absent;
 the configuration and provenance checks remain runnable independently.
 No test downloads source code or installs a dependency.
 """
@@ -14,7 +13,7 @@ import yaml
 
 from des3pcf.comparison import BLAS_VARIABLES, FORMAT
 from des3pcf.comparison import _worker_environment
-from des3pcf.comparison import comparison_status, load_comparison_config
+from des3pcf.comparison import comparison_status, validate_comparison_settings
 from des3pcf.comparison import load_comparison_case, run_code_comparison
 
 
@@ -22,28 +21,31 @@ PROJECT = Path(__file__).resolve().parents[1]
 
 
 def small_configuration(tmp_path):
-    """Copy settings, retaining explicit absolute source locations."""
-    original = PROJECT / "EXAMPLE_COMPARE_CODES.yaml"
-    settings = load_comparison_config(path=original)
-    settings.pop("configuration")
-    settings["output"] = str(tmp_path / "results")
-    settings["nfft"] = 16
-    settings["lmax"] = 2
-    settings["mmax"] = 3
-    settings["phi_count"] = 5
-    path = tmp_path / "compare.yaml"
-    path.write_text(yaml.safe_dump(settings, sort_keys=False))
-    return path
+    """Use the notebook's source locations with a smaller test grid."""
+    external = PROJECT.parents[1] / "external_modules" / "code"
+    return {
+        "format": FORMAT,
+        "sources": {
+            "tatt": external / "fastnc_tatt",
+            "main": external / "fastnc_main",
+            "integrator": external / "3pcf_integrator",
+        },
+        "output": tmp_path / "results",
+        "threads": 1,
+        "nfft": 16,
+        "lmax": 2,
+        "mmax": 3,
+        "phi_count": 5,
+        "frozen_physics": True,
+    }
 
 
 def test_missing_sources_are_named_without_execution(tmp_path):
     """Missing source locations cannot silently select an installed version."""
-    path = small_configuration(tmp_path=tmp_path)
-    settings = yaml.safe_load(path.read_text())
+    settings = small_configuration(tmp_path=tmp_path)
     for name in settings["sources"]:
         settings["sources"][name] = None
-    path.write_text(yaml.safe_dump(settings, sort_keys=False))
-    report = comparison_status(path=path)
+    report = comparison_status(settings=settings)
     assert report["format"] == FORMAT
     for record in report["sources"].values():
         assert record["status"] == "unavailable"
@@ -53,15 +55,13 @@ def test_missing_sources_are_named_without_execution(tmp_path):
 
 def test_modified_source_is_not_accepted(tmp_path):
     """A declared pin is insufficient when the source bytes differ."""
-    path = small_configuration(tmp_path=tmp_path)
-    settings = yaml.safe_load(path.read_text())
+    settings = small_configuration(tmp_path=tmp_path)
     checkout = tmp_path / "modified"
     source = checkout / "python/fast_map3.py"
     source.parent.mkdir(parents=True)
     source.write_text("raise RuntimeError('must not execute')\n")
     settings["sources"]["integrator"] = str(checkout)
-    path.write_text(yaml.safe_dump(settings, sort_keys=False))
-    report = comparison_status(path=path)
+    report = comparison_status(settings=settings)
     record = report["sources"]["integrator"]
     assert record["status"] == "unavailable"
     assert record["problems"] == ["SHA256 differs: python/fast_map3.py"]
@@ -69,12 +69,10 @@ def test_modified_source_is_not_accepted(tmp_path):
 
 def test_comparison_limits_and_child_environment(tmp_path):
     """Guard small grids and set all BLAS vendors before child imports."""
-    path = small_configuration(tmp_path=tmp_path)
-    settings = yaml.safe_load(path.read_text())
+    settings = small_configuration(tmp_path=tmp_path)
     settings["threads"] = 5
-    path.write_text(yaml.safe_dump(settings, sort_keys=False))
     with pytest.raises(ValueError, match="threads"):
-        load_comparison_config(path=path)
+        validate_comparison_settings(settings=settings)
     environment = _worker_environment(threads=4)
     for name in BLAS_VARIABLES:
         assert environment[name] == "1"
@@ -84,8 +82,8 @@ def test_comparison_limits_and_child_environment(tmp_path):
 
 def test_live_original_codes_and_frozen_labels(tmp_path):
     """Check live outputs, matching FFT modes and the filter discrepancy."""
-    path = small_configuration(tmp_path=tmp_path)
-    preflight = comparison_status(path=path)
+    settings = small_configuration(tmp_path=tmp_path)
+    preflight = comparison_status(settings=settings)
     for name, source in preflight["sources"].items():
         if source["status"] != "verified":
             pytest.skip(
@@ -94,7 +92,7 @@ def test_live_original_codes_and_frozen_labels(tmp_path):
     for name in ("numpy", "scipy", "astropy", "pandas", "mpi4py"):
         if not preflight["dependencies"][name]:
             pytest.skip(f"The original TATT package requires {name}.")
-    report = run_code_comparison(path=path)
+    report = run_code_comparison(settings=settings)
     cases = {}
     for case in report["cases"]:
         assert case["status"] == "completed", case

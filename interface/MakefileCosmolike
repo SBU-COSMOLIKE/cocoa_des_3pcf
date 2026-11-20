@@ -1,6 +1,7 @@
-# This target compiles only the shared 3pcf kernels and their adapters.
+# Compile the joint shear two-point and three-point native interface.
 # ROOTDIR is Cocoa/, and CONDA_PREFIX selects the existing environment.
 # No package installation or network access is part of this Makefile.
+.DEFAULT_GOAL := all
 ROOTDIR ?= $(abspath ../../..)
 PYTHON ?= python3
 ifneq ($(strip $(C_COMPILER)),)
@@ -67,8 +68,64 @@ OBJECTS += $(BUILD)/transform_3pcf.o
 OBJECTS += $(BUILD)/transform_wrapper.o $(BUILD)/transform_interface.o
 OBJECTS += $(BUILD)/covariance_physics_3pcf.o
 OBJECTS += $(BUILD)/covariance_wrapper.o $(BUILD)/covariance_interface.o
+OBJECTS += $(BUILD)/basics.o $(BUILD)/structs.o $(BUILD)/log.o
+OBJECTS += $(BUILD)/threepcf_core_bridge.o
 OBJECTS += $(BUILD)/halo_profile.o $(BUILD)/cosmo3D.o $(BUILD)/baryons.o
 OBJECTS += $(BUILD)/interface.o
+
+
+# The ordinary two-point prediction uses the same native state.
+OBJECTS += $(BUILD)/bias.o $(BUILD)/cosmo2D.o $(BUILD)/cosmo2D_scuts.o
+OBJECTS += $(BUILD)/halo.o $(BUILD)/IA.o $(BUILD)/radial_weights.o
+OBJECTS += $(BUILD)/redshift_spline.o $(BUILD)/pt_cfastpt.o
+OBJECTS += $(BUILD)/generic_interface.o $(BUILD)/cosmo2D_wrapper.o
+OBJECTS += $(BUILD)/cosmo2D_scuts_wrapper.o $(BUILD)/halo_wrapper.o
+OBJECTS += $(BUILD)/cfastpt.o $(BUILD)/utils_cfastpt.o $(BUILD)/utils_complex_cfastpt.o
+
+$(BUILD)/bias.o: $(CORE)/cosmolike/bias.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/cosmo2D.o: $(CORE)/cosmolike/cosmo2D.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/cosmo2D_scuts.o: $(CORE)/cosmolike/cosmo2D_scuts.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/halo.o: $(CORE)/cosmolike/halo.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/IA.o: $(CORE)/cosmolike/IA.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/radial_weights.o: $(CORE)/cosmolike/radial_weights.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/redshift_spline.o: $(CORE)/cosmolike/redshift_spline.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/pt_cfastpt.o: $(CORE)/cosmolike/pt_cfastpt.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/generic_interface.o: $(CORE)/cosmolike/generic_interface.cpp | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/cosmo2D_wrapper.o: $(CORE)/cosmolike/cosmo2D_wrapper.cpp | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/cosmo2D_scuts_wrapper.o: $(CORE)/cosmolike/cosmo2D_scuts_wrapper.cpp | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/halo_wrapper.o: $(CORE)/cosmolike/halo_wrapper.cpp | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/cfastpt.o: $(ROOTDIR)/external_modules/code/cfastpt/cfastpt.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/utils_cfastpt.o: $(ROOTDIR)/external_modules/code/cfastpt/utils_cfastpt.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/utils_complex_cfastpt.o: $(ROOTDIR)/external_modules/code/cfastpt/utils_complex_cfastpt.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
 .PHONY: all clean FORCE
 all: $(TARGET)
@@ -88,6 +145,19 @@ $(BUILD)/%.o: $(SOURCE)/%.cpp | $(BUILD)
 
 $(BUILD)/interface.o: interface.cpp | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+# Core translation units outside the 3pcf directory: basics.c carries the
+# shared allocators, log.c the shared error reporter, and structs.c the
+# globals basics.c references (the module loader needs every data symbol
+# resolved). All compile with the same strict flags as the sources above.
+$(BUILD)/basics.o: $(CORE)/cosmolike/basics.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/structs.o: $(CORE)/cosmolike/structs.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILD)/log.o: $(CORE)/log.c/src/log.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # The shared NFW and variance readers resolve inside this extension.
 # cosmo3D also references the baryon reader, whose file input uses HDF5.

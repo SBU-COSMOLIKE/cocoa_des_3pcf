@@ -26,13 +26,12 @@ from scipy.linalg import solve_triangular
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "python"))
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 import run_3pcf as driver
-from des3pcf.mean import physics_model
-from des3pcf.fisher_comparison import compare_information
-from des3pcf.forecast import parameter_covariance, symmetric_matrix
+from cosmolike_notebook_utils.fisher import compare_information
+from cosmolike_notebook_utils.fisher import parameter_covariance, symmetric_matrix
 from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 from des3pcf.survey import ARCMIN_TO_RADIAN, read_source_distributions
@@ -320,7 +319,7 @@ def controlled_ia_response(power_mode=2, threads=1):
         raise ValueError("Use threads1..4 and power_mode0,1 or2.")
     compiled = importlib.import_module(name="cosmolike_des_3pcf_interface")
     compiled.set_omp_threads(nthreads=int(threads))
-    from des3pcf.bihalofit import bispectrum_axes, prepare_reference_bispectrum
+    from theory.bihalofit.model import bispectrum_axes, prepare_reference_bispectrum
 
     tables = controlled_tables()
     # The toy provider derives its pressureless fraction from its own H(z).
@@ -332,7 +331,32 @@ def controlled_ia_response(power_mode=2, threads=1):
         tables=tables,
         axes=bispectrum_axes(zmax=tables["z"][-1], counts=(9, 65, 33, 17)),
     )
-    model = physics_model(compiled=compiled, tables=tables, baseline=baseline)
+    resolved_model = compiled.accuracy_model_settings(
+        accuracy={},
+        kernel_nz=101,
+        table_boost=8,
+        fit_nz=33,
+    )
+    model = compiled.production.PhysicsModelWithBispectrum(
+        k=tables["k"],
+        p_linear0=tables["p_linear0"],
+        z=tables["z"],
+        p_nonlinear=tables["p_nonlinear"],
+        chi=tables["chi"],
+        dz_dchi=tables["dz_dchi"],
+        growth=tables["growth"],
+        sources=tables["sources"],
+        omega_m=tables["omega_m"],
+        sigma8=tables["sigma8"],
+        omega_m_z=tables["omega_m_z"],
+        source_z=tables.get("source_z"),
+        los_z=compiled.accuracy_los_nodes(accuracy={}, baseline=tables["los_z"]),
+        baseline=baseline["native"],
+        kernel_nz=resolved_model["kernel_nz"],
+        table_boost=resolved_model["table_boost"],
+        fit_nz=resolved_model["fit_nz"],
+        source_readers=False,
+    )
     ell = np.geomspace(start=30.0, stop=3000.0, num=12)
     sides = np.ascontiguousarray(np.repeat(ell[:, None], repeats=3, axis=1))
     triplets = np.array([[0, 0, 0], [1, 1, 1]], dtype=np.int32)
@@ -467,7 +491,7 @@ def ia_sign_workflows(workflow):
     )
     if config["mean"]["two_point"]["mode"] != "core_tatt":
         raise ValueError("The sign comparison requires the core TATT model.")
-    directory = PROJECT / "runs" / "ia_response"
+    directory = PROJECT / "chains" / "ia_response"
     cases = (
         ("negative_a1", -0.2, 0.4),
         ("positive_a1", 0.2, -0.4),
@@ -1092,7 +1116,7 @@ def ia_figure9_workflows(workflow):
       uses the same no-IA reference. The existing plot's scaled residual
       uses max(abs(reference)); it is not a pointwise percentage.
     Side effects:
-      Writes at most five explicit JSON configurations under runs/ia_response.
+      Writes at most five explicit JSON configurations under chains/ia_response.
       The two TATT files use the exact names and contents already produced
       by ia_sign_workflows; their saved predictions can be reused. Only
       no_ia and the two NLA choices require additional mean predictions.
@@ -1118,7 +1142,7 @@ def ia_figure9_workflows(workflow):
             "The joint comparison requires ct=fb=0; neither has a complete "
             "shared two-point and three-point response here."
         )
-    directory = PROJECT / "runs" / "ia_response"
+    directory = PROJECT / "chains" / "ia_response"
     cases = (
         {
             "tag": "no_ia",

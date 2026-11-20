@@ -15,12 +15,13 @@ same row definitions to evaluate model derivatives.
 from dataclasses import dataclass
 from pathlib import Path
 
+from copy import deepcopy
+
 import numpy as np
 from astropy.io import fits
 from itertools import combinations_with_replacement
 
-from .forecast import symmetric_matrix
-from .ownership import immutable_copy
+from cosmolike_notebook_utils.fisher import symmetric_matrix
 
 
 # One arcminute in radians; every compiled angular calculation uses radians.
@@ -55,7 +56,7 @@ class SurveyRows:
         """
         for name in ("kind", "bins", "angles", "values", "labels"):
             values = np.asarray(getattr(self, name))
-            object.__setattr__(self, name, immutable_copy(value=values))
+            object.__setattr__(self, name, deepcopy(x=values))
 
     def select(self, indices):
         """Keep exactly the requested rows in their requested order.
@@ -379,3 +380,228 @@ def forecast_rows(nbin, aperture_radii, xi_edges=None):
         values=np.zeros(len(kinds), dtype=np.float64),
         labels=np.asarray(labels),
     )
+
+
+def _source_edge_arrays(native_z, native_low, native_high):
+    """Check supplied cell edges without inferring widths from midpoint spacing.
+
+    The DES input includes a zero-valued observer row whose cell overlaps
+    the next cell. Preserve these supplied edges; they set outer support,
+    not a new histogram integration or cell-probability reconstruction.
+    """
+    low = np.asarray(native_low, dtype=np.float64)
+    high = np.asarray(native_high, dtype=np.float64)
+    if (low.shape != native_z.shape or high.shape != native_z.shape
+            or not np.all(np.isfinite(low)) or not np.all(np.isfinite(high))
+            or np.any(np.diff(low) <= 0.0) or np.any(np.diff(high) <= 0.0)
+            or np.any(low >= high) or np.any(native_z < low)
+            or np.any(native_z > high)):
+        raise ValueError("Source edges must bracket their increasing native midpoints.")
+    return low, high
+
+
+def shifted_sources(z, sources, shifts):
+    """Apply n_i(z-delta_z_i) and normalize each shifted distribution.
+
+    Positive delta_z moves galaxies toward larger redshift. Values beyond
+    the supplied support are zero. Normalizing after the shift makes the
+    treatment of support loss explicit; increase the grid if that loss
+    matters for a derivative. The original arrays are never changed.
+
+    Arguments:
+      z = increasing 1D redshift grid.
+      sources = nonnegative [nbin,nz] densities per unit redshift.
+      shifts = finite [nbin] redshift biases.
+    Returns:
+      C-contiguous float64 [nbin,nz] densities with unit trapezoidal integrals.
+    Raises:
+      ValueError for malformed inputs or a shift removing all source support.
+    """
+    z = np.asarray(z, dtype=np.float64)
+    sources = np.asarray(sources, dtype=np.float64)
+    shifts = np.asarray(shifts, dtype=np.float64)
+    if (z.ndim != 1 or z.size < 2 or np.any(np.diff(z) <= 0.0)
+            or sources.ndim != 2 or sources.shape[1] != z.size
+            or shifts.shape != (sources.shape[0],)):
+        raise ValueError("Photo-z inputs require z[nz], sources[nbin,nz], shifts[nbin].")
+    if (not np.all(np.isfinite(z)) or not np.all(np.isfinite(sources))
+            or not np.all(np.isfinite(shifts)) or np.any(sources < 0.0)):
+        raise ValueError(
+            "Photo-z inputs must be finite and source densities nonnegative."
+        )
+    output = np.empty_like(sources, order="C")
+    for index in range(sources.shape[0]):
+        output[index] = np.interp(
+            z - shifts[index], z, sources[index], left=0.0, right=0.0,
+        )
+        # A shifted curve is defined only at positive source distance. Pin
+        # its observer endpoint before normalization, also for negative
+        # shifts. A finite grid interpolates over this first cell; refine
+        # the source grid if appreciable probability reaches that cell.
+        if z[0] == 0.0:
+            output[index, 0] = 0.0
+        normalization = np.trapz(output[index], x=z)
+        if normalization <= 0.0:
+            raise ValueError(f"Photo-z shift removes all sources in bin {index + 1}.")
+        output[index] /= normalization
+    return output
+
+
+def reconstructed_sources(
+    native_z, native_sources, source_z, shifts,
+    reconstruction="linear_midpoint", padding="zero_outside_native",
+    native_low=None, native_high=None,
+):
+    """Shift the original source curve onto a fixed independent uniform grid.
+
+    PCHIP is a declared positive, shape-preserving cubic reconstruction of
+    the midpoint samples, not an accuracy boost or a new calibration. Its
+    padding choice adds zero-valued endpoint samples and is recorded
+    explicitly. zero_at_measured_edges uses the supplied outer FITS edges,
+    intersected with z>=0, and a zero plateau to the background upper bound.
+    This preserves that support, not each histogram cell's probability.
+    The linear choice preserves zero outside the original midpoint range.
+
+    Arguments:
+      native_z = original increasing midpoint coordinates [nnative].
+      native_sources = original nonnegative densities [nbin,nnative].
+      source_z = fixed uniform grid [nsource], starting at the observer zero.
+      shifts = absolute photo-z shifts [nbin]; positive moves sources upward.
+      reconstruction = linear_midpoint or explicitly selected pchip_midpoint.
+      padding = zero_outside_native for linear, or the explicit PCHIP policy
+                zero_at_observer_and_background_edge or zero_at_measured_edges.
+      native_low, native_high = original Z_LOW/Z_HIGH [nnative], required
+                for measured-edge padding; never inferred from midpoints.
+    Returns:
+      normalized sources [nbin,nsource] and a source preparation record.
+      Norms are fixed-grid trapezoidal integrals before renormalization;
+      they expose support loss and quadrature changes, not exact probabilities.
+    The observer sample is zero even when a negative shift carries density
+    there. Surviving support is normalized after each shift. Input arrays
+    are never changed, and no previously shifted curve is used as input.
+    Nonnegative source samples do not guarantee that the C model's later
+    cubic interpolation of a divided IA kernel is nonnegative. That
+    separate finite-grid interpolation still needs a convergence check.
+    """
+    native_z = np.asarray(native_z, dtype=np.float64)
+    native = np.asarray(native_sources, dtype=np.float64)
+    nodes = np.asarray(source_z, dtype=np.float64)
+    offsets = np.asarray(shifts, dtype=np.float64)
+    if (native_z.ndim != 1 or native_z.size < 2 or native_z[0] < 0.0
+            or not np.all(np.isfinite(native_z)) or np.any(np.diff(native_z) <= 0.0)
+            or native.ndim != 2 or native.shape[0] == 0
+            or native.shape[1] != native_z.size
+            or not np.all(np.isfinite(native)) or np.any(native < 0.0)
+            or offsets.shape != (native.shape[0],)
+            or not np.all(np.isfinite(offsets))):
+        raise ValueError("Native source axes, densities and shifts are inconsistent.")
+    if (nodes.ndim != 1 or nodes.size < 4 or nodes[0] != 0.0
+            or not np.all(np.isfinite(nodes)) or np.any(np.diff(nodes) <= 0.0)):
+        raise ValueError("Independent source grid needs >=4 increasing nodes from zero.")
+    expected = np.linspace(start=0.0, stop=nodes[-1], num=nodes.size)
+    if not np.allclose(nodes, expected, rtol=0.0,
+                       atol=32.0 * np.finfo(float).eps * nodes[-1]):
+        raise ValueError(
+            "Prepared source_z must be uniform for the ordinary-core bridge."
+        )
+    if np.any(native[:, native_z > nodes[-1]] != 0.0):
+        raise ValueError("Nonzero native source support exceeds the background edge.")
+    support = (0.0, float(nodes[-1]))
+    if reconstruction == "linear_midpoint":
+        if padding != "zero_outside_native":
+            raise ValueError(
+                "Linear midpoint sources require zero_outside_native padding."
+            )
+        curve = None
+    elif reconstruction == "pchip_midpoint":
+        if padding not in ("zero_at_observer_and_background_edge",
+                           "zero_at_measured_edges"):
+            raise ValueError("PCHIP requires explicit zero endpoint padding.")
+        from scipy.interpolate import PchipInterpolator
+
+        if padding == "zero_at_measured_edges":
+            low, high = _source_edge_arrays(
+                native_z=native_z, native_low=native_low, native_high=native_high,
+            )
+            support = (max(0.0, float(low[0])), float(high[-1]))
+            if not 0.0 <= support[0] < support[1] < nodes[-1]:
+                raise ValueError(
+                    "Measured-edge PCHIP needs background beyond the source upper edge "
+                    "for its explicit zero plateau."
+                )
+        inside = (native_z >= support[0]) & (native_z <= support[1])
+        if np.any(native[:, ~inside] != 0.0):
+            raise ValueError(
+                "Positive native samples lie outside the selected source support."
+            )
+        knots = native_z[inside].copy()
+        values = native[:, inside].copy()
+        if knots.size < 2:
+            raise ValueError(
+                "PCHIP needs at least two native samples inside the background."
+            )
+        if knots[0] > support[0]:
+            knots = np.concatenate((np.asarray([support[0]]), knots))
+            values = np.column_stack((np.zeros(native.shape[0]), values))
+        elif np.any(values[:, 0] != 0.0):
+            raise ValueError(
+                "PCHIP lower padding cannot replace a nonzero native sample."
+            )
+        if knots[-1] < support[1]:
+            knots = np.concatenate((knots, np.asarray([support[1]])))
+            values = np.column_stack((values, np.zeros(native.shape[0])))
+        elif np.any(values[:, -1] != 0.0):
+            raise ValueError(
+                "A nonzero native sample occupies the selected upper support edge; "
+                "choose a different explicit support policy rather than overwrite it."
+            )
+        # The extra zero segment makes the derivative at the measured upper
+        # edge zero in PCHIP. It adds no sources beyond the declared support.
+        # A physical observer edge at zero need not have a zero derivative:
+        # low-z truncation and renormalization still need their own h tests.
+        if support[0] > 0.0:
+            knots = np.concatenate((np.zeros(1), knots))
+            values = np.column_stack((np.zeros(native.shape[0]), values))
+        if support[1] < nodes[-1]:
+            knots = np.concatenate((knots, nodes[-1:]))
+            values = np.column_stack((values, np.zeros(native.shape[0])))
+        curve = PchipInterpolator(x=knots, y=values, axis=1, extrapolate=False)
+    else:
+        raise ValueError("Choose linear_midpoint or pchip_midpoint reconstruction.")
+    output = np.zeros(shape=(native.shape[0], nodes.size), dtype=np.float64)
+    normalizations = np.empty(shape=native.shape[0])
+    for index in range(native.shape[0]):
+        coordinates = nodes - offsets[index]
+        if curve is None:
+            output[index] = np.interp(
+                x=coordinates, xp=native_z, fp=native[index], left=0.0, right=0.0,
+            )
+        else:
+            inside = (coordinates > support[0]) & (coordinates < support[1])
+            output[index, inside] = curve(coordinates[inside])[index]
+        output[index, 0] = 0.0
+        if not np.all(np.isfinite(output[index])) or np.any(output[index] < 0.0):
+            raise ValueError(
+                "Source reconstruction produced invalid density; no clipping."
+            )
+        normalization = np.trapz(output[index], x=nodes)
+        if not np.isfinite(normalization) or normalization <= 0.0:
+            raise ValueError(f"Photo-z shift removes sources in bin {index + 1}.")
+        normalizations[index] = normalization
+        output[index] /= normalization
+    record = {
+        "source_reconstruction": reconstruction,
+        "source_padding": padding,
+        "source_nz": int(nodes.size),
+        "source_shift_normalizations": normalizations.tolist(),
+        "source_shifts": offsets.tolist(),
+        "source_normalization": "unit fixed-grid trapezoidal area after each shift",
+        "source_observer_value": "zero at actual z=0",
+    }
+    if padding == "zero_at_measured_edges":
+        record["source_unshifted_support"] = list(support)
+        record["source_support_convention"] = (
+            "unshifted outer Z_LOW/Z_HIGH intersected with nonnegative redshift; "
+            "PCHIP preserves support, not individual histogram cell areas"
+        )
+    return output, record

@@ -6,7 +6,7 @@ Separate tests use resolved quadrature and analytic or independently
 integrated references for the halo and xi transforms. No timing is measured.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 from pathlib import Path
 import subprocess

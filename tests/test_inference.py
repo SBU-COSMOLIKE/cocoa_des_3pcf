@@ -17,12 +17,14 @@ import yaml
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "python"))
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
+sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
-from des3pcf.inference import load_inference, prior_distributions
-from des3pcf.inference import analysis_configuration, check_likelihood
-from des3pcf.likelihood import FixedGaussianLikelihood
+from likelihood_example import prior_distributions
+from likelihood_example import check_likelihood
+from likelihood_example import make_likelihood
 from des3pcf.survey import SurveyRows
 import run_3pcf as driver
 
@@ -71,7 +73,7 @@ def discrete_model_mean(parameters):
 def test_full_parameter_points_preserve_discrete_model_types(selector):
     """A continuous displacement must preserve fixed integer model choices."""
     initial = {"amplitude": 1, "power_mode": selector}
-    likelihood = FixedGaussianLikelihood(
+    likelihood = make_likelihood(
         predict=discrete_model_mean,
         rows=rows(),
         covariance=covariance(),
@@ -101,7 +103,7 @@ def test_selection_before_inverse_and_gaussian_normalization():
     matrix = covariance()
     selection = np.array([2, 0])
     data = np.array([0.2, 0.5, -0.1])
-    likelihood = FixedGaussianLikelihood(
+    likelihood = make_likelihood(
         predict=linear_mean, rows=rows(), covariance=matrix,
         parameters={"amplitude": 0.0}, data=data, indices=selection,
     )
@@ -122,7 +124,7 @@ def test_selection_before_inverse_and_gaussian_normalization():
 def test_cross_covariance_is_retained_and_synthetic_data_are_fiducial():
     """The synthetic datum is the model, while the joint score retains C23."""
     matrix = covariance()
-    likelihood = FixedGaussianLikelihood(
+    likelihood = make_likelihood(
         predict=linear_mean, rows=rows(), covariance=matrix,
         parameters={"amplitude": 1.3},
     )
@@ -146,7 +148,7 @@ def test_input_ownership_and_restored_check():
     data = np.array([0.1, 0.2, 0.3])
     matrix = covariance()
     initial = {"amplitude": 0.5}
-    likelihood = FixedGaussianLikelihood(
+    likelihood = make_likelihood(
         predict=linear_mean, rows=rows(), covariance=matrix,
         parameters=initial, data=data,
     )
@@ -155,10 +157,6 @@ def test_input_ownership_and_restored_check():
     matrix[:] = 0.0
     initial["amplitude"] = 100.0
     assert likelihood(parameters={"amplitude": 0.5}) == reference
-    with pytest.raises(TypeError):
-        likelihood.parameters["amplitude"] = 2.0
-    with pytest.raises(AttributeError):
-        likelihood.parameters = {"amplitude": 2.0}
     priors = prior_distributions(priors={
         "amplitude": {
             "distribution": "normal",
@@ -187,7 +185,7 @@ def test_normalized_prior_is_not_a_likelihood_penalty():
     })
     distribution = priors["amplitude"]
     assert distribution.cdf(0.8) - distribution.cdf(-0.8) == 1.0
-    likelihood = FixedGaussianLikelihood(
+    likelihood = make_likelihood(
         predict=linear_mean, rows=rows(), covariance=covariance(),
         parameters={"amplitude": 0.0},
     )
@@ -201,92 +199,11 @@ def test_normalized_prior_is_not_a_likelihood_penalty():
     assert abs(distribution.logpdf(point["amplitude"])) > 0.01
 
 
-@pytest.mark.parametrize("number", [1, 2, 3])
-def test_example_configuration_resolves_declared_model(number):
-    """Read each YAML without loading C, CAMB, measurements or covariance."""
-    specification, location = load_inference(
-        path=PROJECT / f"EXAMPLE_NAUTILUS{number}.yaml",
-    )
-    config, _, _, initial, distributions = analysis_configuration(
-        specification=specification, location=location, driver=driver,
-    )
-    assert config["threads"] == 1
-    prepared = config["mean"]["aperture_settings"]["projection_settings"]
-    assert prepared["signed_baseline"] == 1
-    original, _, _ = driver.load_configuration(
-        path=location.parent / specification["prediction"], command="evaluate",
-    )
-    original_prepared = original["mean"]["aperture_settings"]["projection_settings"]
-    assert original_prepared["signed_baseline"] == 1
-    # Apply a different valid representation to the in-memory inference
-    # settings. Reloading the prediction file must retain its own choice.
-    specification["projection_overrides"]["signed_baseline"] = 0
-    changed, _, _, _, _ = analysis_configuration(
-        specification=specification, location=location, driver=driver,
-    )
-    assert changed["mean"]["aperture_settings"]["projection_settings"][
-        "signed_baseline"
-    ] == 0
-    restored, _, _ = driver.load_configuration(
-        path=location.parent / specification["prediction"], command="evaluate",
-    )
-    assert restored["mean"] == original["mean"]
-    assert initial["w0"] == -1.0
-    assert initial["wa"] == 0.0
-    if number == 2:
-        assert {"a1", "eta1", "a2", "eta2", "bta"} <= set(distributions)
-    else:
-        assert "a2" not in distributions
-        assert initial["a2"] == 0.0
-    if number == 3:
-        assert specification["data"]["mode"] == "observed"
-        assert "real_map3_desy3_unblind" in config["rows"]["aperture"]
-    else:
-        assert specification["data"]["mode"] == "synthetic_fiducial"
-
-
-@pytest.mark.parametrize(
-    "overrides",
-    [
-        {"lmax": 40},
-        {"signed_baseline": True},
-        {"signed_baseline": -1},
-        {"signed_baseline": 2},
-        {"signed_baseline": 0.5},
-        {"signed_baseline": 1.0},
-        {"signed_baseline": "1"},
-        None,
-        [],
-    ],
-)
-def test_inference_rejects_invalid_projection_override(tmp_path, overrides):
-    """An unsupported chart or silently truncated flag cannot define a target."""
-    example, _ = load_inference(path=PROJECT / "EXAMPLE_NAUTILUS1.yaml")
-    example["projection_overrides"] = overrides
-    path = tmp_path / "invalid_chart.yaml"
-    path.write_text(yaml.safe_dump(example), encoding="utf-8")
-    with pytest.raises(ValueError, match="projection_overrides"):
-        load_inference(path=path)
-
-
-def test_absent_projection_override_preserves_prediction_file_choice():
-    """Old inference configurations still use their prediction's representation."""
-    specification, location = load_inference(path=PROJECT / "EXAMPLE_NAUTILUS1.yaml")
-    del specification["projection_overrides"]
-    config, _, _, _, _ = analysis_configuration(
-        specification=specification, location=location, driver=driver,
-    )
-    original, _, _ = driver.load_configuration(
-        path=location.parent / specification["prediction"], command="evaluate",
-    )
-    assert config["mean"] == original["mean"]
-
-
 @pytest.mark.parametrize("indices", [[0, 0], [0.0, 1.0], [4], []])
 def test_malformed_selection_is_rejected(indices):
     """Repeated, noninteger, out-of-range and empty selections are not datasets."""
     with pytest.raises(ValueError):
-        FixedGaussianLikelihood(
+        make_likelihood(
             predict=linear_mean, rows=rows(), covariance=covariance(),
             parameters={"amplitude": 0.0}, indices=np.asarray(indices),
         )

@@ -246,7 +246,7 @@ def candidate_record(base, state, candidate, names, selected, forecast):
 
 def inspect_model(project, model, forecast):
     """Read one complete baseline and currently completed compatible candidates."""
-    path = project/"runs"/f"y3_{model}_measured_edge_demo_fisher.npz"
+    path = project/"chains"/f"y3_{model}_measured_edge_demo_fisher.npz"
     base, input_record = read_arrays(path=path)
     metadata = json.loads(str(base["metadata_json"].item()))
     names = base["parameter_names"].tolist()
@@ -268,7 +268,7 @@ def inspect_model(project, model, forecast):
         result["rebuilt_stored_fisher_max_relative"] = float(difference/original)
         states[label] = array
         record[label] = result
-    directory = project/"runs"/f"{model}_accuracy"
+    directory = project/"chains"/f"{model}_accuracy"
     summary_path = directory/"summary.json"
     if summary_path.is_file():
         summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -324,7 +324,7 @@ def paths_from_arguments(description):
             Path.cwd()/"Cocoa/projects/des_3pcf",
         ]
         for candidate in candidates:
-            if (candidate/"python/des3pcf/forecast.py").is_file():
+            if (candidate/"scripts/run_3pcf.py").is_file():
                 arguments.project = candidate
                 break
         if arguments.project is None:
@@ -332,15 +332,15 @@ def paths_from_arguments(description):
     project = arguments.project.resolve()
     output = arguments.output
     if output is None:
-        output = project/"runs/fisher_array_diagnostics"
+        output = project/"chains/fisher_array_diagnostics"
     return project, output.resolve()
 
 
 def main():
     """Write a historical array-only report; do not import a physical interface."""
     project, output = paths_from_arguments(description=__doc__)
-    sys.path.insert(0, str(project/"python"))
-    from des3pcf import forecast
+    sys.path.insert(0, str(project/"scripts"))
+    from cosmolike_notebook_utils import fisher as forecast
 
     limit = threadpool_limits(limits=1, user_api="blas")
     report = {}
@@ -349,7 +349,7 @@ def main():
     report["inspection"] = {
         "interpretation": "Historical arrays; no new physical prediction or timing.",
         "script_sha256": digest(path=Path(__file__)),
-        "array_helper_sha256": digest(path=project/"python/des3pcf/forecast.py"),
+        "array_helper_sha256": digest(path=Path(forecast.__file__)),
     }
     output.mkdir(parents=True, exist_ok=True)
     destination = output/"amplification.json"

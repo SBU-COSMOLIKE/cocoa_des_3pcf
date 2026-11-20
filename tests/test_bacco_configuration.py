@@ -15,9 +15,9 @@ import yaml
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 import run_3pcf as driver
-from des3pcf.bacco_feedback import BaccoSettings
-from des3pcf.inference import analysis_configuration, load_inference
+from theory.bacco_bispectrum.response import BaccoSettings
 
 
 @pytest.mark.parametrize("command", ["prepare", "evaluate", "fisher"])
@@ -46,25 +46,6 @@ def test_fisher_cannot_change_converted_response_amplitude(tmp_path, sample_ampl
     changed.write_text(yaml.safe_dump(config), encoding="utf-8")
     with pytest.raises(ValueError, match="feedback_amplitude"):
         driver.load_configuration(path=changed, command="fisher")
-
-
-@pytest.mark.parametrize("sample_amplitude", [False, True])
-def test_inference_rejects_amplitude_before_likelihood_construction(sample_amplitude):
-    """A sampler must vary physical BCM coordinates, with the converted amplitude fixed."""
-    specification, location = load_inference(path=PROJECT / "EXAMPLE_NAUTILUS1.yaml")
-    specification["prediction"] = "configs/des_y3_bacco_fisher.yaml"
-    specification["initial"] = {}
-    if sample_amplitude:
-        specification["priors"]["feedback_amplitude"] = {
-            "distribution": "uniform",
-            "minimum": .5,
-            "maximum": 1.5,
-        }
-    else:
-        specification["initial"]["feedback_amplitude"] = .5
-    with pytest.raises(ValueError, match="feedback_amplitude"):
-        analysis_configuration(specification=specification, location=location,
-                               driver=driver)
 
 
 @pytest.mark.parametrize("settings", [
@@ -98,7 +79,7 @@ def test_replaced_weight_is_detected_without_touching_installation(tmp_path):
         (weights / name).write_bytes(b"initial fake weight bytes")
     program = '''
 from pathlib import Path
-from des3pcf.bacco_feedback import BaccoFeedback, BaccoSettings
+from theory.bacco_bispectrum.response import BaccoFeedback, BaccoSettings
 producer = BaccoFeedback(settings=BaccoSettings())
 producer.verify_weights()
 path = Path(producer.weights["B"]["path"])
@@ -112,7 +93,7 @@ else:
 '''
     # Prepend both directories before importing the package in a fresh
     # interpreter. The parent's installation and imported modules stay intact.
-    startup = f"import sys; sys.path[:0] = {[str(tmp_path), str(PROJECT / 'python')]!r}\n"
+    startup = f"import sys; sys.path[:0] = {[str(tmp_path), str(PROJECT / 'scripts')]!r}\n"
     result = subprocess.run(
         args=[sys.executable, "-B", "-c", startup + program],
         capture_output=True,

@@ -5,7 +5,7 @@ compared with an evolving notebook-style session. The small fixed rules
 test state ownership and rebuilding, not integration accuracy or speed.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 from pathlib import Path
 import subprocess

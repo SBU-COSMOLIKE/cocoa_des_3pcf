@@ -17,10 +17,10 @@ import pytest
 PROJECT = Path(__file__).resolve().parents[1]  # Owns interface/ and tests/.
 CORE = PROJECT.parents[1] / "external_modules" / "code" / "cosmolike_core"
 sys.path.insert(0, str(PROJECT / "interface"))
-sys.path.insert(0, str(PROJECT / "python"))
+sys.path.insert(0, str(PROJECT / "scripts"))
 # Standalone refusal/state workers import the same explicit reference-input
 # adapter. Child interpreters do not inherit this process's sys.path edits.
-python_paths = [str(PROJECT / "python")]
+python_paths = [str(PROJECT / "interface"), str(PROJECT / "scripts"), str(CORE)]
 if os.environ.get("PYTHONPATH"):
     python_paths.append(os.environ["PYTHONPATH"])
 os.environ["PYTHONPATH"] = os.pathsep.join(python_paths)

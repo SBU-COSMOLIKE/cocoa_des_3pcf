@@ -8,8 +8,8 @@ series; it never mistakes a finite Taylor polynomial for the exact inverse.
 import numpy as np
 import pytest
 
-from des3pcf.precision import component_precision_expansion
-from des3pcf.precision import precision_expansion
+from cosmolike_notebook_utils.covariance.precision import component_precision_expansion
+from cosmolike_notebook_utils.covariance.precision import precision_expansion
 
 
 def component_example():

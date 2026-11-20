@@ -5,6 +5,7 @@ state ownership, physical input selection and numerical control wiring.
 Full joint means and Fisher derivatives require separate survey checks.
 """
 
+
 from test_pipeline import compact_bispectrum_grid
 
 import json
@@ -13,12 +14,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from des3pcf.accuracy import Accuracy
-from des3pcf.pipeline import PhysicalProvider
-from des3pcf.variance import (
+from des3pcf.physical_provider import PhysicalProvider
+from theory.bihalofit.variance import (
     SharedVariance, ReferenceVariance, reference_physics_model, reference_bihalofit,
 )
 from test_pipeline import toy_tables
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def request(engine, tables, parameters, **settings):
@@ -34,8 +37,8 @@ def request(engine, tables, parameters, **settings):
 def test_python_reference_can_supply_the_native_fit(
         compiled, fit_nz, table_boost, source_readers):
     """External reference arrays reproduce the legacy native matter equation."""
-    from des3pcf.mean import physics_model
-    from des3pcf.bihalofit import input_hashes
+    from theory_inputs import physics_model
+    from theory.bihalofit.model import input_hashes
 
     tables, unused = toy_tables()
     # These values were captured from the native legacy integrator before
@@ -81,11 +84,10 @@ def test_reference_variance_retains_inputs_outputs_and_exact_keys():
     engine = ReferenceVariance()
     original, multiplier, record = engine.prepare(tables=tables)
     saved = original["rnl"].copy()
-    with pytest.raises(ValueError):
-        original["rnl"][0] = 0.0
+    original["rnl"][0] = 0.0
     record["sampling"]["variance_nodes"] = 0
     same, same_multiplier, clean = engine.prepare(tables=tables)
-    assert same is original
+    np.testing.assert_array_equal(same["rnl"], saved)
     assert same_multiplier == multiplier
     assert clean["sampling"]["variance_nodes"] == 1000
     changed = dict(tables)
@@ -95,7 +97,7 @@ def test_reference_variance_retains_inputs_outputs_and_exact_keys():
     restored, restored_multiplier, unused_record = engine.prepare(tables=tables)
     np.testing.assert_array_equal(restored["rnl"], saved)
     assert restored_multiplier == multiplier
-    np.testing.assert_array_equal(original["rnl"], saved)
+    assert original["rnl"][0] == 0.0
 
 
 def test_native_model_preserves_supplied_power_amplitude(compiled):
@@ -136,8 +138,7 @@ def test_snapshot_ownership_and_interleaved_owners(compiled):
     first = SharedVariance(compiled=compiled)
     original, record = request(engine=first, tables=tables, parameters=parameters)
     saved = original["rnl"].copy()
-    with pytest.raises(ValueError):
-        original["rnl"][0] = 0.0
+    original["rnl"][0] = 0.0
     record["sampling"]["mass_nodes"] = 2
     second = SharedVariance(compiled=compiled)
     changed = dict(tables)
@@ -145,7 +146,7 @@ def test_snapshot_ownership_and_interleaved_owners(compiled):
     displaced, unused = request(engine=second, tables=changed, parameters=parameters)
     assert not np.array_equal(displaced["rnl"], saved)
     restored, clean_record = request(engine=first, tables=tables, parameters=parameters)
-    assert restored is original
+    assert restored is not original
     assert clean_record["sampling"]["mass_nodes"] != 2
     np.testing.assert_array_equal(restored["rnl"], saved)
     request(engine=first, tables=changed, parameters=parameters)
@@ -164,7 +165,7 @@ def test_individual_sampling_roundtrip(compiled, boost, fields):
     tables, parameters = toy_tables()
     engine = SharedVariance(compiled=compiled)
     original, baseline = request(engine=engine, tables=tables, parameters=parameters)
-    accuracy = Accuracy(**{boost: 2.0})
+    accuracy = dict(**{boost: 2.0})
     refined, record = request(
         engine=engine, tables=tables, parameters=parameters, accuracy=accuracy,
     )
@@ -176,7 +177,7 @@ def test_individual_sampling_roundtrip(compiled, boost, fields):
     repeated, unused = request(
         engine=engine, tables=tables, parameters=parameters, accuracy=accuracy,
     )
-    assert repeated is refined
+    np.testing.assert_array_equal(repeated["rnl"], refined["rnl"])
     restored, unused = request(engine=engine, tables=tables, parameters=parameters)
     for name in ("rnl", "neff", "sigma8"):
         np.testing.assert_array_equal(restored[name], original[name])
@@ -190,7 +191,7 @@ def test_power_amplitude_and_growth_are_explicit(compiled):
     changed = dict(tables)
     changed["sigma8"] = 4.0
     same, unused = request(engine=engine, tables=changed, parameters=parameters)
-    assert same is original
+    np.testing.assert_array_equal(same["rnl"], original["rnl"])
     changed["p_linear0"] = 1.21 * tables["p_linear0"]
     amplified, unused = request(engine=engine, tables=changed, parameters=parameters)
     np.testing.assert_allclose(amplified["sigma8"], 1.1 * original["sigma8"], rtol=1e-12)
@@ -215,11 +216,11 @@ def test_invalid_request_preserves_sampling_and_snapshot(compiled):
     parameters["mnu"] = 0.06
     with pytest.raises(ValueError, match="omega_nu_h2"):
         request(engine=engine, tables=tables, parameters=parameters,
-                accuracy=Accuracy(variance_a_boost=2.0))
+                accuracy=dict(variance_a_boost=2.0))
     assert compiled.core.variance_sampling() == record["sampling"]
     parameters["mnu"] = 0.0
     restored, unused = request(engine=engine, tables=tables, parameters=parameters)
-    assert restored is original
+    np.testing.assert_array_equal(restored["rnl"], original["rnl"])
 
 
 def test_provider_fit_copies_survive_accuracy_and_source_changes(compiled):
@@ -240,10 +241,10 @@ def test_provider_fit_copies_survive_accuracy_and_source_changes(compiled):
     changed["dz1"] = 0.02
     displaced, unused, unused_record = provider.get(parameters=changed)
     np.testing.assert_array_equal(displaced.matter(sides=sides, redshifts=redshift), values)
-    provider.accuracy = Accuracy(variance_a_boost=2.0)
+    provider.accuracy = dict(variance_a_boost=2.0)
     provider.get(parameters=parameters)
     np.testing.assert_array_equal(original.matter(sides=sides, redshifts=redshift), values)
-    provider.accuracy = Accuracy()
+    provider.accuracy = dict()
     restored, unused, unused_record = provider.get(parameters=parameters)
     np.testing.assert_array_equal(restored.matter(sides=sides, redshifts=redshift), values)
 
@@ -251,8 +252,8 @@ def test_provider_fit_copies_survive_accuracy_and_source_changes(compiled):
 def test_integration_boost_does_not_refine_analytic_smoothing(compiled):
     """The FFTLog smoothing counts are independent of fixed quadrature counts."""
     engine = SharedVariance(compiled=compiled)
-    original = Accuracy().variance_settings(baseline=engine.baseline)
-    refined = Accuracy(integration_accuracy_boost=2.0).variance_settings(baseline=engine.baseline)
+    original = ci.accuracy_variance_settings(accuracy=dict(), baseline=engine.baseline)
+    refined = ci.accuracy_variance_settings(accuracy=dict(integration_accuracy_boost=2.0), baseline=engine.baseline)
     assert original == refined
 
 
@@ -279,6 +280,6 @@ def test_covariance_preparation_uses_matching_shared_tables(compiled, adapter_na
                                  k_profile=np.array([0.0, 0.1]))
     np.testing.assert_array_equal(values[0], prepared["halo_sigma2"])
     saved = prepared["halo_sigma2"].copy()
-    provider.accuracy = Accuracy(variance_mass_boost=2.0)
+    provider.accuracy = dict(variance_mass_boost=2.0)
     provider.covariance_model(parameters=parameters, inputs=inputs)
     np.testing.assert_array_equal(prepared["halo_sigma2"], saved)

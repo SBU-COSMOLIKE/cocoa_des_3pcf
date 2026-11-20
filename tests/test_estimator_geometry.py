@@ -9,18 +9,29 @@ the transform. This catches flattened-axis and cut-placement mistakes.
 import numpy as np
 import pytest
 
-from des3pcf.mean import Map3Engine
+from cosmolike_des_3pcf_interface.production import TransformPlan
 from des3pcf.survey import forecast_rows
 
 
 def engine(compiled, side_keep=None, rule="geometric", offset=0.):
     """Prepare three radial bins and one aperture at inexpensive angular order."""
     rows = forecast_rows(nbin=1, aperture_radii=[.003], xi_edges=None)
-    return Map3Engine(
-        compiled=compiled, rows=rows, theta_lower=.001 * np.exp(.3 * np.arange(3)),
-        phi=(np.arange(4) + .5) * np.pi / 4, dlnt=.3, dphi=np.pi / 4,
-        ell_min=20., ell_max=3000., minimum_size=64, lmax=0, mmax=0, nmu=4,
-        side_keep=side_keep, representative_rule=rule, representative_offset=offset,
+    return TransformPlan.for_aperture(
+        bins=np.ascontiguousarray(rows.bins, dtype=np.int32),
+        filters=np.ascontiguousarray(rows.angles),
+        theta_lower=.001 * np.exp(.3 * np.arange(3)),
+        phi=(np.arange(4) + .5) * np.pi / 4,
+        dlnt=.3,
+        dphi=np.pi / 4,
+        ell_min=20.,
+        ell_max=3000.,
+        minimum_size=64,
+        lmax=0,
+        mmax=0,
+        nmu=4,
+        side_keep=side_keep,
+        representative_rule=rule,
+        representative_offset=offset,
         transform_options={"npsi": 20},
     )
 

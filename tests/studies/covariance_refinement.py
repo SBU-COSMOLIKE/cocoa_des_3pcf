@@ -357,7 +357,8 @@ def main():
     os.environ["OMP_DYNAMIC"] = "FALSE"
     project = args.project.resolve(strict=True)
     sys.path.insert(0, str(project / "tests" / "studies"))
-    sys.path.insert(0, str(project / "python"))
+    sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import covariance_scaling as helper
 
     all_cases = case_settings(helper=helper, include_bounds=args.include_bounds)
@@ -416,8 +417,8 @@ def main():
 
     with threadpool_limits(limits=1, user_api="blas"):
         import numpy as np
-        from des3pcf.inputs import load_tables
-        from des3pcf.mean import physics_model
+        from des3pcf.physical_provider import load_tables
+        from theory_inputs import physics_model
 
         sys.path.insert(0, str(Path(extension["path"]).parent))
         compiled = importlib.import_module(name=helper.EXTENSION_NAME)
@@ -444,7 +445,7 @@ def main():
             current["los_z"] = np.linspace(
                 start=lower, stop=upper, num=settings["counts"]["nlos"]
             )
-            from des3pcf.bihalofit import bispectrum_axes, prepare_reference_bispectrum
+            from theory.bihalofit.model import bispectrum_axes, prepare_reference_bispectrum
 
             model_tables, baseline = prepare_reference_bispectrum(
                 tables=current, axes=bispectrum_axes(zmax=current["z"][-1]),

@@ -10,7 +10,7 @@ Run from the project directory with its existing compiled modules:
   python tests/studies/xi_refinement.py configs/des_y3_tatt_demo_fisher.yaml
 
 The declared physical table must already exist. The study writes arrays and
-resolved settings below runs/xi_refinement; it does not change a configuration
+resolved settings below chains/xi_refinement; it does not change a configuration
 or select an accuracy threshold on behalf of a forecast.
 """
 
@@ -32,6 +32,7 @@ from scipy.linalg import solve_triangular
 
 PROJECT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 import run_3pcf as driver
 
 
@@ -125,7 +126,7 @@ def main():
     """Read the declared configuration and run the bounded serial ladder."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("configuration", type=Path)
-    parser.add_argument("--output", type=Path, default=PROJECT / "runs/xi_refinement")
+    parser.add_argument("--output", type=Path, default=PROJECT / "chains/xi_refinement")
     arguments = parser.parse_args()
     report = run(configuration=arguments.configuration, output=arguments.output)
     print(json.dumps(report, indent=2))

@@ -12,10 +12,10 @@ import numpy as np
 import pytest
 from scipy.stats import multivariate_t
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from des3pcf.compression import LinearCompression, fit_compression, load_compression
-from des3pcf.likelihood import FixedGaussianLikelihood, FiniteSimulationLikelihood
+from cobaya.likelihoods.des_3pcf.compression import LinearCompression, fit_compression, load_compression
+from likelihood_example import make_likelihood
 from des3pcf.survey import SurveyRows
 
 
@@ -112,8 +112,6 @@ def test_owned_matrix_serialization_and_row_identity(tmp_path):
         transform.save(path=path)
     with pytest.raises(ValueError, match="labels differ"):
         transform.check_labels(labels=["b", "a", "c"])
-    with pytest.raises(ValueError):
-        transform.matrix.setflags(write=True)
 
 
 @pytest.mark.parametrize("scale", [1.e-200, 1.e200])
@@ -144,7 +142,7 @@ def test_compressed_likelihood_transforms_data_model_and_covariance():
         derivatives=derivatives[selection], labels=selected_rows.labels,
         kind=selected_rows.kind, mode="conditional_xi", metadata={"source": "test"},
     )
-    likelihood = FixedGaussianLikelihood(
+    likelihood = make_likelihood(
         predict=linear_mean, rows=rows, covariance=covariance,
         parameters={"amplitude": 0.}, data=np.array([.2, -.1, .4]),
         indices=selection, compression=transform,
@@ -172,7 +170,7 @@ def test_percival_matches_independent_multivariate_t(compressed):
             covariance=covariance, derivatives=derivatives, labels=rows.labels,
             kind=rows.kind, mode="conditional_xi", metadata={"source": "analytic"},
         )
-    likelihood = FiniteSimulationLikelihood(
+    likelihood = make_likelihood(
         predict=linear_mean, rows=rows, covariance=covariance,
         parameters={"amplitude": 0.}, data=rows.values, compression=transform,
         mock_count=50, parameter_count=1, assumptions=assumptions(),
@@ -200,7 +198,7 @@ def test_percival_rejects_incompatible_covariance_and_invalid_normalization():
         declared = assumptions()
         declared[field] = value
         with pytest.raises(ValueError):
-            FiniteSimulationLikelihood(
+            make_likelihood(
                 predict=linear_mean, rows=rows, covariance=covariance,
                 parameters={"amplitude": 0.}, mock_count=50, parameter_count=1,
                 assumptions=declared, data=rows.values,
@@ -213,7 +211,7 @@ def test_percival_rejects_incompatible_covariance_and_invalid_normalization():
         labels=np.array([f"m{index}" for index in range(30)]),
     )
     with pytest.raises(ValueError, match="normalized density"):
-        FiniteSimulationLikelihood(
+        make_likelihood(
             predict=linear_mean, rows=large, covariance=np.eye(30),
             parameters={"amplitude": 0.}, mock_count=40, parameter_count=1,
             assumptions=assumptions(), data=large.values,
@@ -225,8 +223,9 @@ def test_percival_tends_to_gaussian_for_many_independent_mocks():
     covariance, _, rows = example()
     arguments = dict(predict=linear_mean, rows=rows, covariance=covariance,
                      parameters={"amplitude": 0.}, data=rows.values)
-    finite = FiniteSimulationLikelihood(**arguments, mock_count=1000000,
+    finite = make_likelihood(**arguments, mock_count=1000000,
                                        parameter_count=1, assumptions=assumptions())
-    gaussian = FixedGaussianLikelihood(**arguments)
-    np.testing.assert_allclose(actual=finite(parameters={"amplitude": 1.}),
+    finite_score = finite(parameters={"amplitude": 1.})
+    gaussian = make_likelihood(**arguments)
+    np.testing.assert_allclose(actual=finite_score,
                               desired=gaussian(parameters={"amplitude": 1.}), atol=2.e-5)

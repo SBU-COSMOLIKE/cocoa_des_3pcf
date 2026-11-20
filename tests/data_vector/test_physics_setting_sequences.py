@@ -15,7 +15,7 @@ reset operation is release of the Python owner, which frees its C arrays. The
 fresh-worker comparison remains the same as the existing data-vector tests.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import argparse
 import copy

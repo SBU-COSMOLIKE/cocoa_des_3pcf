@@ -11,10 +11,11 @@ they are not counted here.
 1. [Executed totals](#totals)
 2. [Reproducing the totals](#commands)
 3. [What the totals do not establish](#limits)
+4. [Native interfaces and Cobaya provider validation](#native_provider)
 
 ## Executed totals <a name="totals"></a>
 
-The strict collection ran on 2026-11-18 using Darwin arm64, Clang 19.1.7,
+The earlier strict collection ran on 2026-11-18 using Darwin arm64, Clang 19.1.7,
 Python 3.11.12 and NumPy 1.26.3, at project commit `b821e2d` with core
 commit `3b7ec85`. Compilation used one worker. BLAS used one thread
 throughout. Ordinary calculations used one OpenMP worker; thread
@@ -22,13 +23,14 @@ comparisons used at most four. One test process ran at a time.
 
 | Build mode | Most recent full collection |
 |---|---|
-| Strict (`-O3`, native instruction selection, the core's strict floating-point flags) | 684 passed, exit 0 (2026-11-18) |
+| Strict (`-O3`, native instruction selection, the core's strict floating-point flags) | 883 passed, exit 0 (2026-11-19; details below) |
 | Debug (`-O0`, undefined-behavior and floating-point-division sanitizers) | 502 passed, no sanitizer diagnostic (core checkpoint `6a7eae7`) |
 
-The checks added after that debug checkpoint are Python-only; their
-affected groups also ran with the debug extension: the 44 source, survey,
+The Python checks added between that debug checkpoint and the November 18
+strict run also ran with the debug extension: the 44 source, survey,
 CLI and provenance checks, and the 48 checks affected by the BACCO
-neutrino and continuation change. There is no AddressSanitizer result in
+neutrino and continuation change. The November 19 native migration has
+not had a new sanitizer run. There is no AddressSanitizer result in
 this record. Linux and other processor architectures remain untested.
 
 ## Reproducing the totals <a name="commands"></a>
@@ -79,7 +81,7 @@ questions from agreement between shared numerical kernels.
 ## Input layout and shared Nautilus driver, 19 November 2026
 
 Generated theory tables, artificial feedback responses and trained compression
-matrices use `runs/`. Released measurements, mock inputs, sources and covariances
+matrices use `chains/`. Released measurements, mock inputs, sources and covariances
 use `data/`; frozen numerical comparisons use `tests/`. All 25 released files
 match their recorded source hashes. The processed source matches its YAML hash.
 The 26 relocated timing records, arrays and figures retain their exact bytes.
@@ -111,3 +113,49 @@ counts. No notebook, refreeze, survey posterior or timing study was rerun.
 The edited Markdown pages render with tables; their local links and anchors
 resolve. Shared algorithms are documented in the core READMEs, while the
 project top directory contains only its README and linked appendices.
+
+## Native interfaces and Cobaya provider validation <a name="native_provider"></a>
+
+On 19 November 2026 the full collection passed **883 tests in 309.71 s**
+with the strict extension built against core `0b476c1`. BLAS used one
+worker, OpenMP used at most six, and numerical jobs ran sequentially.
+The project now uses one extension for xi and Map3, native numerical
+preparation and IA decomposition, and the ordinary Cobaya likelihood
+method sequence. CAMB and the matter bispectrum are YAML theory components.
+
+The previous collection had three failures: two fine Gauss-Legendre
+rules exceeded the existing constant-integral tolerance, and a preflight
+test still expected no native import. The native rule now uses GSL's
+fixed Legendre workspace; the 4096- and 8192-node checks pass without
+loosening their tolerances. Preflight may import numerical initializers,
+but still runs neither CAMB nor physical model integration.
+
+The [real Cobaya check](studies/cobaya_joint_check.py) then loaded
+`EXAMPLE_NAUTILUS1.yaml` and `EXAMPLE_NAUTILUS2.yaml` at their production
+sampling, without starting a sampler. The covariance-weighted difference
+from each fixed synthetic input was:
+
+| Model | Reference residual Δχ² |
+|---|---|
+| NLA | 5.89046386112555104e-08 |
+| TATT | 5.53610663043381469e-08 |
+
+In both models, separate changes of A1 by 0.01, the first source shift
+by 0.001 and Ωm by 0.003 changed the vector and retained finite posterior
+values. Every return to the fiducial restored the prediction bitwise.
+These are regression and state-restoration checks against synthetic data,
+not accuracy bounds or a reproduction of the measured DES posterior.
+
+After correcting remaining CLI provenance references to the removed
+two-point adapter, **26 CLI tests passed in 36.25 s**. This includes one
+new test collected after the full run: a joint TATT mean and calibration
+Fisher calculation through the real CLI. It checks finite results, row
+ordering and that both probes record the same compiled extension. Thus
+884 distinct tests passed across the full run and this targeted rerun;
+the complete 884-test collection was not rerun as a single job.
+
+Static checks parse 29 project Python files and 72 notebook code cells
+after IPython's normal input transformation. Notebook structures validate;
+nbformat warns about existing cells without IDs. Markdown rendering and
+local links also pass. Notebook outputs are retained from their earlier
+runs. No notebook, refreeze, sampler or timing study ran during this check.

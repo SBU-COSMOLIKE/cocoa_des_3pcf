@@ -20,7 +20,7 @@ source:
   extension: nz_source
   nbin: 4
 physics:
-  tables: ../runs/y3_demo_pchip9601_physics.npz
+  tables: ../chains/y3_demo_pchip9601_physics.npz
   cosmology_mode: camb
   kernel_nz: 401
   k:
@@ -72,7 +72,7 @@ ia:
   bta: 0.91
   ct: 0
   zpivot: 0.62
-  c1rho: 0.0134
+  c1rho: 0.01389
   power_mode: 2
   ct_mode: 0
   fb: 0
@@ -145,8 +145,8 @@ mean:
     pair_weight: uniform_area
   two_point:
     mode: core_tatt
-    directory: ../../des_y3/interface
-    module: cosmolike_des_y3_interface
+    directory: ../interface
+    module: cosmolike_des_3pcf_interface
     interpolation_type: 1
     accuracy_boost: 1.0
     integration_accuracy: 0
@@ -221,8 +221,8 @@ fisher:
   precision:
     mode: inverse
 outputs:
-  evaluate: ../runs/y3_archived_geometry_mean.npz
-  fisher: ../runs/y3_archived_geometry_fisher.npz
+  evaluate: ../chains/y3_archived_geometry_mean.npz
+  fisher: ../chains/y3_archived_geometry_fisher.npz
 pixel_window:
   path: ../data/upstream_healpix/pixel_window_n1024.fits
   nside: 1024

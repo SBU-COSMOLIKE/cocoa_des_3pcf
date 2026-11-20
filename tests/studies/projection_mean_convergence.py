@@ -39,6 +39,7 @@ def main():
     destination.mkdir(parents=True, exist_ok=False)
     project = Path.cwd()
     sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import run_3pcf as driver
 
     report = {"scope": "fixed-source aperture-mean interpolation", "models": {}}

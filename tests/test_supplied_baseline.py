@@ -7,7 +7,7 @@ retain P and IA while replacing B, test ownership after input mutation,
 and follow the core bridge through replacement, clearing and resetting.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import gc
 import os

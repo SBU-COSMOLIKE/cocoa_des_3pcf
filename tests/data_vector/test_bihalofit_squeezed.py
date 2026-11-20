@@ -11,7 +11,7 @@ the measured power difference through that same physical equation.
 from test_bihalofit_python import retired_matter
 
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 from decimal import Decimal, localcontext
 import hashlib
@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from des3pcf.bihalofit import BiHalofit
+from theory.bihalofit.model import BiHalofit
 from studies.bihalofit_refinement import pin_inputs
 from test_bihalofit_python import comparison_inputs
 

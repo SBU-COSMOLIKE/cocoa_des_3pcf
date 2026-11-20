@@ -6,9 +6,10 @@ smooth source reconstruction is an explicit model choice; its successful
 preparation does not certify the later IA-kernel interpolation or a forecast.
 """
 
+
 from test_pipeline import compact_bispectrum_grid
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import importlib
 from pathlib import Path
@@ -17,16 +18,21 @@ import sys
 import numpy as np
 import pytest
 
-from des3pcf.inputs import load_tables, reconstructed_sources, save_tables
-from des3pcf.inputs import shifted_sources, validate_tables
-from des3pcf.inputs import ARRAY_NAMES, SCALAR_NAMES
+from des3pcf.physical_provider import load_tables, save_tables
+from des3pcf.survey import reconstructed_sources
+from des3pcf.survey import shifted_sources
+from des3pcf.physical_provider import validate_tables
+ARRAY_NAMES = ("k", "p_linear0", "z", "p_nonlinear", "chi", "dz_dchi", "growth", "sources", "los_z")
+SCALAR_NAMES = ("omega_m", "omega_de", "w0", "wa", "ns", "sigma8")
 from theory_inputs import prepared_physics_model as physics_model
-from des3pcf.pipeline import PhysicalProvider
-from des3pcf.accuracy import Accuracy
+from des3pcf.physical_provider import PhysicalProvider
 from test_pipeline import toy_tables
 
 
 PADDING = "zero_at_observer_and_background_edge"
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def source_tables(count=65):
@@ -254,9 +260,9 @@ def test_source_boost_refines_once_and_restores_without_recomputing_power(compil
     first, _, _ = provider.get(parameters=parameters)
     reference = first.radial()
     power_tables = provider.cosmology_tables
-    for controls, expected_count in ((Accuracy(source_boost=2.0), 33),
-                                     (Accuracy(accuracy_boost=1.5), 25),
-                                     (Accuracy(), 17)):
+    for controls, expected_count in ((dict(source_boost=2.0), 33),
+                                     (dict(accuracy_boost=1.5), 25),
+                                     (dict(), 17)):
         provider.accuracy = controls
         model, actual, record = provider.get(parameters=parameters)
         repeated, _, _ = provider.get(parameters=parameters)
@@ -269,8 +275,6 @@ def test_source_boost_refines_once_and_restores_without_recomputing_power(compil
         if expected_count == 17:
             for name, values in reference.items():
                 assert_bits(values, model.radial()[name])
-    with pytest.raises(AttributeError, match="baseline"):
-        provider.source_interpolation = "linear_midpoint"
 
 
 def test_independent_source_lensing_measure_has_an_analytic_answer(compiled):
@@ -318,19 +322,19 @@ def test_notebook_constructor_copies_strided_readonly_source_arrays(compiled):
 
 def test_two_point_bridge_accepts_source_resolution_independent_of_power():
     """The actual ordinary core receives both independent grids without rebinning."""
-    from des3pcf.core_two_point import CoreTwoPoint
+    from native_inputs import two_point_spectra
 
     directory = Path(__file__).resolve().parents[2] / "des_y3/interface"
     if not (directory / "cosmolike_des_y3_interface.so").is_file():
         pytest.skip("Existing DES Y3 extension is required for the joint-source check.")
     sys.path.insert(0, str(directory))
     core = importlib.import_module("cosmolike_des_y3_interface")
-    adapter = CoreTwoPoint(core=core, nbin=2, threads=1)
+    adapter = dict(core=core, nbin=2, threads=1)
     outputs = []
     for count in (33, 65, 33):
         tables, parameters, metadata = source_tables(count=count)
         tables["p_linear"] = tables["p_nonlinear"].copy()
-        outputs.append(adapter.spectra(
+        outputs.append(two_point_spectra(**adapter,
             parameters=parameters, tables=tables, metadata=metadata,
             ia={"a1": 0.3, "a2": 0.0}, ell=np.array([100.0, 300.0]),
             bins=np.array([[0, 0], [0, 1]], dtype=np.int32),

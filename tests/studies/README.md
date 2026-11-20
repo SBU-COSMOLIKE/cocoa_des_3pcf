@@ -6,7 +6,7 @@ Optional studies explore how numerical settings and modeling choices
 affect predictions; they can be expensive, so they run separately from
 the [routine tests](../README.md#running). Each study below has a
 tracked page with its measurements and limits, a driver script where one
-exists, and saved records under [`results/`](results/).
+exists, and saved records under [`results/`](results).
 [`results/MANIFEST.json`](results/MANIFEST.json) pins every record with
 its SHA-256 hash, the study it belongs to, and what it holds; the BACCO
 records carry their own hashes in
@@ -22,7 +22,7 @@ which holds the input hashes and scope of the executed
 Every command below runs from `Cocoa/projects/des_3pcf` with the
 [test environment](../README.md#running) set: serial BLAS, at most four
 OpenMP workers, and one study process at a time. Regeneration commands
-write under the local `runs/` directory, which Git ignores; the files in
+write under the local `chains/` directory, which Git ignores; the files in
 `results/` are the versioned evidence. A deliberate update replaces the
 record in `results/` and its manifest entry together, with the reason in
 the study page; do not overwrite a saved record to make a changed number
@@ -38,6 +38,24 @@ pass.
 8. [Joint IA conventions](#ia_conventions)
 9. [Stretched-edge conditioning](#stretched_edge)
 10. [Shared-variance acceptance](#shared_variance)
+11. [Cobaya provider and state restoration](#cobaya_state)
+
+## Cobaya provider and state restoration <a name="cobaya_state"></a>
+
+The [joint check](cobaya_joint_check.py) loads the NLA and TATT example
+YAMLs with their CAMB and bispectrum theory components. It compares the
+result with the fixed synthetic input, then changes the IA amplitude,
+source redshift shift and matter density separately. Each change must
+affect the prediction, and restoring the parameters must restore its
+bytes. This checks provider wiring and stale state; it does not establish
+numerical convergence or agreement with observed DES measurements.
+
+```bash
+python tests/studies/cobaya_joint_check.py --threads 4
+```
+
+The run starts no sampler and writes `chains/cobaya_joint_check.txt`.
+Completed validation is recorded in [VALIDATION.md](../VALIDATION.md).
 
 ## Angular orders <a name="angular"></a>
 
@@ -56,7 +74,7 @@ launched:
 
 ```bash
 python tests/studies/angular_order_study.py \
-  runs/nla_accuracy/triangle_1p5.json --output runs/nla_angular_orders --execute
+  chains/nla_accuracy/triangle_1p5.json --output chains/nla_angular_orders --execute
 ```
 
 Saved records:
@@ -90,14 +108,14 @@ physical means; their commands and refusal rules are the execution steps
 of [the accuracy record](fisher_accuracy_validation.md).
 
 Saved records: the array diagnostics in
-[results/fisher_array_diagnostics/](results/fisher_array_diagnostics/)
+[results/fisher_array_diagnostics/](results/fisher_array_diagnostics)
 (`full_triangle.json`, `amplification.json`, `step_blocks.json`), the
 two-column step studies in
-[results/nla_triangle_step_study/](results/nla_triangle_step_study/) and
-[results/tatt_triangle_step_study/](results/tatt_triangle_step_study/),
+[results/nla_triangle_step_study/](results/nla_triangle_step_study) and
+[results/tatt_triangle_step_study/](results/tatt_triangle_step_study),
 the full quarter-step results in
-[results/nla_full_h4/](results/nla_full_h4/) and
-[results/tatt_full_h4/](results/tatt_full_h4/), and the baseline
+[results/nla_full_h4/](results/nla_full_h4) and
+[results/tatt_full_h4/](results/tatt_full_h4), and the baseline
 equality record
 [results/baseline_refresh_comparison.json](results/baseline_refresh_comparison.json),
 which records that the refreshed NLA and TATT baseline runs reproduce
@@ -115,8 +133,11 @@ are in [the interpolation record](interpolation_validation.md).
 Two drivers reproduce its tables without a CAMB run:
 
 ```bash
-python tests/studies/multipole_stage2_diagnostic.py --output runs/multipole_stage2_diagnostic
-python tests/studies/projection_mean_convergence.py --output runs/projection_mean_convergence
+python tests/studies/multipole_stage2_diagnostic.py --output chains/multipole_stage2_diagnostic
+```
+
+```bash
+python tests/studies/projection_mean_convergence.py --output chains/projection_mean_convergence
 ```
 
 Saved records:
@@ -124,7 +145,7 @@ Saved records:
 [results/residual_mean_diagnostic.npz](results/residual_mean_diagnostic.npz),
 [results/multipole_mixed_diagnostic.npz](results/multipole_mixed_diagnostic.npz)
 and the aperture-row means in
-[results/projection_mean_convergence/](results/projection_mean_convergence/).
+[results/projection_mean_convergence/](results/projection_mean_convergence).
 
 ## Source reconstruction and photo-z derivatives <a name="sources"></a>
 
@@ -137,13 +158,13 @@ measurements are in [the source record](source_policy_validation.md).
 
 ```bash
 python tests/studies/source_policy_convergence.py --project . \
-  --output runs/source_policy_convergence
+  --output chains/source_policy_convergence
 ```
 
 Saved records: the six-case comparison in
-[results/source_policy_convergence/](results/source_policy_convergence/)
+[results/source_policy_convergence/](results/source_policy_convergence)
 and the combined follow-up in
-[results/source_combined_convergence/](results/source_combined_convergence/),
+[results/source_combined_convergence/](results/source_combined_convergence),
 with each case's `summary.json`, `manifest.json`,
 `resolved_numerics.json`, `diagnostics.npz` and `point_*.npz`, plus each
 model's cross-case `case_comparisons.json`.
@@ -158,7 +179,7 @@ and interpolation prescriptions. The measurements are in
 [example commands](../../README.md#feedback) run its notebook and off-grid
 interpolation check.
 
-Saved records in [results/bacco/](results/bacco/): `execution.json`,
+Saved records in [results/bacco/](results/bacco): `execution.json`,
 `fisher_summary.json`, `interpolation_summary.json`,
 `interpolation_samples.npz` and the exported figures.
 

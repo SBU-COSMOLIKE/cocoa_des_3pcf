@@ -7,7 +7,7 @@ arithmetic loses for a triangle with one side a billion times shorter.
 All inputs to the reference are the exact binary doubles supplied to C.
 """
 
-from des3pcf.variance import reference_physics_model, reference_bihalofit
+from theory.bihalofit.variance import reference_physics_model, reference_bihalofit
 
 from decimal import Decimal, localcontext
 import json
@@ -244,6 +244,7 @@ def test_squeezed_all_shape_components(squeezed_model, remove_alignment):
     sides = squeezed_triangles()
     redshifts = np.zeros(shape=sides.shape[0], dtype=np.float64)
     parameters = {
+        "c1rho": 0.0134,  # This independent formula uses the upstream convention.
         "a1": 0.8,
         "a2": -1.1,
         "bta": 0.9,

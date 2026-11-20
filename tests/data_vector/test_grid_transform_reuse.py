@@ -15,7 +15,7 @@ include every float64 bit, and ordinary tests request at most four OpenMP
 workers with serial BLAS.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import os
 from pathlib import Path

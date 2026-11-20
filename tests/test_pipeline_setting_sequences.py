@@ -11,6 +11,7 @@ or a performance measurement. Each numerical change has a reach check on
 the effective radial count, provider key or evaluated vector.
 """
 
+
 from test_pipeline import compact_bispectrum_grid
 
 import os
@@ -24,15 +25,18 @@ import pytest
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT / "interface"))
-sys.path.insert(0, str(PROJECT / "python"))
+sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
-from des3pcf.accuracy import Accuracy
-from des3pcf.forecast import ExactMeanCache
+from cosmolike_notebook_utils.fisher import ExactMeanCache
 from theory_inputs import prepared_physics_model as physics_model
-from des3pcf.mean import XiEngine
-from des3pcf.pipeline import PhysicalProvider, JointPrediction
+from des3pcf.physical_provider import PhysicalProvider
+from des3pcf.pipeline import JointPrediction
 from des3pcf.survey import forecast_rows
 from test_pipeline import toy_tables
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def make_prediction(compiled):
@@ -82,7 +86,7 @@ def apply_case(provider, parameters, case):
     provider.table_boost = 2
     provider.fit_nz = 9
     provider.source_readers = False
-    provider.accuracy = Accuracy()
+    provider.accuracy = dict()
     point = dict(parameters)
     expected_los = 4
     if case == "kernel_grow":
@@ -96,20 +100,20 @@ def apply_case(provider, parameters, case):
     elif case == "upstream_readers":
         provider.source_readers = True
     elif case == "global_sampling":
-        provider.accuracy = Accuracy(accuracy_boost=2.0)
+        provider.accuracy = dict(accuracy_boost=2.0)
         expected_los = 7
     elif case == "global_integration":
-        provider.accuracy = Accuracy(integration_accuracy_boost=2.0)
+        provider.accuracy = dict(integration_accuracy_boost=2.0)
         expected_los = 7
     elif case == "chi_only":
-        provider.accuracy = Accuracy(chi_boost=3.0)
+        provider.accuracy = dict(chi_boost=3.0)
         expected_los = 13
     elif case == "kernel_only":
-        provider.accuracy = Accuracy(kernel_boost=2.0)
+        provider.accuracy = dict(kernel_boost=2.0)
     elif case == "power_only":
-        provider.accuracy = Accuracy(power_table_boost=2.0)
+        provider.accuracy = dict(power_table_boost=2.0)
     elif case == "fit_only":
-        provider.accuracy = Accuracy(fit_z_boost=2.0)
+        provider.accuracy = dict(fit_z_boost=2.0)
     elif case == "photoz_positive":
         point["dz1"] = 0.035
     elif case == "photoz_negative":
@@ -209,22 +213,6 @@ def test_provider_and_mean_ownership_and_refusals(compiled):
     tables["sources"][:] = 0.0
     tables["p_nonlinear"] *= 3.0
     np.testing.assert_array_equal(cache(parameters=parameters), baseline)
-    for array in (provider.base["k"], provider.model_tables["sources"],
-                  prediction.rows.angles, prediction.ell, cache(parameters=parameters)):
-        with pytest.raises(ValueError):
-            array.setflags(write=True)
-        with pytest.raises(ValueError):
-            array.flat[0] = 0.0
-    with pytest.raises(TypeError):
-        provider.model_tables["sources"] = tables["sources"]
-    with pytest.raises(AttributeError, match="construct a new provider"):
-        provider.base = tables
-    with pytest.raises(AttributeError, match="construct a new engine"):
-        prediction.ell = prediction.ell.copy()
-    with pytest.raises(TypeError):
-        prediction.projection_settings["nr"] = 12
-    with pytest.raises(TypeError):
-        prediction.ia_defaults["a1"] = 0.8
     # A previously cached valid point cannot hide an invalid new control.
     provider.table_boost = True
     with pytest.raises(ValueError, match="table_boost"):
@@ -244,31 +232,40 @@ def test_provider_and_mean_ownership_and_refusals(compiled):
 def test_boosted_model_factory_resolves_both_bindings(compiled, adapter):
     """The notebook constructor receives the same resolved physical arrays."""
     tables, _ = toy_tables()
-    controls = Accuracy(chi_boost=2.0, kernel_boost=2.0)
+    controls = dict(chi_boost=2.0, kernel_boost=2.0)
     model = physics_model(compiled=compiled, tables=tables, kernel_nz=9,
                           table_boost=2, fit_nz=9, accuracy=controls, adapter=adapter)
     np.testing.assert_array_equal(model.radial()["z"][::2], tables["los_z"])
     assert model.radial()["z"].size == 7
 
 
-def test_xi_geometry_copies_inputs_and_refuses_partial_changes(compiled):
-    """An ell edit must not separate a Bessel grid from its retained quadrature."""
+def test_xi_quadrature_changes_and_restores_without_retained_state(compiled):
+    """The native integral consumes each supplied grid, including A/B/A edits."""
     rows = forecast_rows(nbin=2, aperture_radii=[], xi_edges=[0.001, 0.002])
     ell = np.array([30.0, 100.0, 500.0])
     weights = np.array([20.0, 80.0, 300.0])
-    engine = XiEngine(compiled=compiled, rows=rows, ell=ell, dell=weights,
-                      theta_count=3, pair_weight="uniform_area")
-    spectra = np.ones((rows.values.size, ell.size)) * 1.0e-8
-    baseline = engine.evaluate_spectra(spectra_e=spectra, spectra_b=spectra * 0.0)
-    ell *= 2.0
-    weights *= 0.5
-    np.testing.assert_array_equal(
-        engine.evaluate_spectra(spectra_e=spectra, spectra_b=spectra * 0.0), baseline,
+    theta, theta_weight = compiled.xi_bin_weights(
+        kind=rows.kind.tolist(),
+        angles=np.ascontiguousarray(rows.angles),
+        count=3,
+        pair_weight="uniform_area",
     )
-    with pytest.raises(ValueError):
-        engine.ell.setflags(write=True)
-    with pytest.raises(AttributeError, match="construct a new engine"):
-        engine.theta = engine.theta.copy()
+    spectra = np.ones((rows.values.size, ell.size)) * 1.0e-8
+    arguments = dict(
+        ell=ell,
+        dell=weights,
+        theta=theta,
+        theta_weight=theta_weight,
+        sign=np.where(rows.kind == "xim", -1, 1).astype(np.int32),
+        spectra_e=spectra,
+        spectra_b=np.zeros_like(spectra),
+    )
+    baseline = compiled.production.xi_from_power(**arguments)
+    changed = compiled.production.xi_from_power(**dict(arguments, ell=2.0*ell))
+    assert not np.array_equal(changed, baseline)
+    np.testing.assert_array_equal(
+        compiled.production.xi_from_power(**arguments), baseline,
+    )
 
 
 if __name__ == "__main__":

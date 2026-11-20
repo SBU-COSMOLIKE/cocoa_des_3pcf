@@ -200,7 +200,7 @@ def project_directory(requested):
     Arguments:
       requested = explicit project path, or None to inspect known locations.
     Returns:
-      Absolute path to a project containing python/des3pcf/forecast.py.
+      Absolute path to a project containing scripts/run_3pcf.py.
     Raises:
       ValueError when none of the declared locations contains that project.
     """
@@ -213,7 +213,7 @@ def project_directory(requested):
             Path(__file__).resolve().parents[2],
         ]
     for candidate in candidates:
-        if (candidate / "python/des3pcf/forecast.py").is_file():
+        if (candidate / "scripts/run_3pcf.py").is_file():
             return candidate.resolve()
     raise ValueError("Pass --project with the des_3pcf project directory.")
 
@@ -238,14 +238,16 @@ def run(configuration, output, project, larger_step=False, execute=False):
       saves the new vectors. The baseline and physical implementation stay fixed.
     """
     sys.path.insert(0, str(project / "scripts"))
-    sys.path.insert(0, str(project / "python"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
+    sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     core = project.parents[1] / "external_modules/code/cosmolike_core"
     sys.path.insert(0, str(core))
     import run_3pcf as driver
     from des3pcf.provenance import file_digest, prediction_identity
     from des3pcf.provenance import verify_prediction_identity
-    from des3pcf.fisher_accuracy import retained_stencil_noise, predict_fom_noise
-    from des3pcf.forecast import fisher_matrix, figure_of_merit
+    from cosmolike_notebook_utils.fisher import retained_stencil_noise, predict_fom_noise
+    from cosmolike_notebook_utils.fisher import fisher_matrix, figure_of_merit
     from scipy.linalg import solve_triangular
     from threadpoolctl import threadpool_limits
 
@@ -366,7 +368,7 @@ def run(configuration, output, project, larger_step=False, execute=False):
     )
     third_extension = Path(compiled.__file__)
     if prediction.two_point_core is not None:
-        second_extension = Path(prediction.two_point_core.core.__file__)
+        second_extension = Path(prediction.compiled.__file__)
     verify_prediction_identity(
         recorded=beginning,
         current=snapshot(),

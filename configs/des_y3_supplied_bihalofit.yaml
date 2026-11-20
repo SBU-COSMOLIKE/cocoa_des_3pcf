@@ -1,4 +1,4 @@
-# Optional supplied baseline; see ../python/des3pcf/README.md.
+# Optional supplied baseline; see ../scripts/des3pcf/README.md.
 format: cosmolike-3pcf-run-v1
 description: Demonstration DES Y3 joint xi± + Map3 forecast using a supplied Python BiHalofit
   baseline.
@@ -55,7 +55,7 @@ source:
   extension: nz_source
   nbin: 4
 physics:
-  tables: ../runs/y3_supplied_bihalofit_physics.npz
+  tables: ../chains/y3_supplied_bihalofit_physics.npz
   cosmology_mode: camb
   kernel_nz: 401
   k:
@@ -126,7 +126,7 @@ ia:
   bta: 0.0
   ct: 0
   zpivot: 0.62
-  c1rho: 0.0134
+  c1rho: 0.01389
   power_mode: 2
   ct_mode: 0
   fb: 0
@@ -196,8 +196,8 @@ mean:
     pair_weight: uniform_area
   two_point:
     mode: core_tatt
-    directory: ../../des_y3/interface
-    module: cosmolike_des_y3_interface
+    directory: ../interface
+    module: cosmolike_des_3pcf_interface
     interpolation_type: 1
     accuracy_boost: 1.0
     integration_accuracy: 0
@@ -269,5 +269,5 @@ fisher:
   precision:
     mode: inverse
 outputs:
-  evaluate: ../runs/y3_supplied_bihalofit_mean.npz
-  fisher: ../runs/y3_supplied_bihalofit_fisher.npz
+  evaluate: ../chains/y3_supplied_bihalofit_mean.npz
+  fisher: ../chains/y3_supplied_bihalofit_fisher.npz

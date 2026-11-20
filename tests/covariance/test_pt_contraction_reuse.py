@@ -13,7 +13,7 @@ test_physical_covariance.py. All grids here are small fixed rules used
 to test reuse and ownership, not survey accuracy or execution time.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
 import pytest

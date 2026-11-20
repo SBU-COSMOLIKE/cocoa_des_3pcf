@@ -5,7 +5,7 @@ examples. They describe the versions that produced the recorded results;
 commands and file locations in a measurement history are not a replacement
 for the current [project instructions](../../README.md). No study was rerun
 as part of the documentation reorganization. Saved numerical arrays remain
-in [results/](results/).
+in [results/](results).
 
 ## Accuracy measurements <a name="accuracy"></a>
 
@@ -13,12 +13,12 @@ in [results/](results/).
 
 | Study | What it measures |
 |---|---|
-| [Interpolation validation](../../tests/studies/interpolation_validation.md) | Projection-table comparisons against direct projected values and the full 80-row aperture-mean refinement |
-| [Source and photo-z policy](../../tests/studies/source_policy_validation.md) | Source-model choices separated from source, kernel and radial resolution |
-| [Fisher accuracy record](../../tests/studies/fisher_accuracy_validation.md) | Full NLA/TATT derivative bases, individually refined derivative columns, and coherent changes that the fourth-difference noise estimate misses |
-| [Finite-window E/B study](../../tests/studies/finite_window_eb.md) | Why refinement of the E-only mean cannot measure leakage from omitted single-B bispectra after triangle cuts |
-| [Fiducial angular-order study](../../tests/studies/angular_order_results.md) | Legendre and Fourier truncation orders separated from angular sampling and coupling interpolation; ten NLA/TATT fiducial mean comparisons and their distinction from derivative convergence |
-| [BACCO response study](../../tests/studies/bacco_validation.md) | Direct emulator values, native interpolation, response-grid refinement and finite-difference steps, separated from neutrino and continuation choices |
+| [Interpolation validation](interpolation_validation.md) | Projection-table comparisons against direct projected values and the full 80-row aperture-mean refinement |
+| [Source and photo-z policy](source_policy_validation.md) | Source-model choices separated from source, kernel and radial resolution |
+| [Fisher accuracy record](fisher_accuracy_validation.md) | Full NLA/TATT derivative bases, individually refined derivative columns, and coherent changes that the fourth-difference noise estimate misses |
+| [Finite-window E/B study](finite_window_eb.md) | Why refinement of the E-only mean cannot measure leakage from omitted single-B bispectra after triangle cuts |
+| [Fiducial angular-order study](angular_order_results.md) | Legendre and Fourier truncation orders separated from angular sampling and coupling interpolation; ten NLA/TATT fiducial mean comparisons and their distinction from derivative convergence |
+| [BACCO response study](bacco_validation.md) | Direct emulator values, native interpolation, response-grid refinement and finite-difference steps, separated from neutrino and continuation choices |
 
 
 ## bihalofit python <a name="bihalofit_python"></a>
@@ -36,7 +36,7 @@ arithmetic in this controlled comparison; it is not an allowed survey
 prediction error.
 
 The separate study
-[bihalofit_refinement.py](../../tests/studies/bihalofit_refinement.py) writes and
+[bihalofit_refinement.py](bihalofit_refinement.py) writes and
 reloads every input before evaluating a four-row joint example containing
 Map3, xi+, xi- and Map2. It fixes the full summed covariance, including the
 two/three-point cross terms, and measures
@@ -54,7 +54,7 @@ route; it does not establish DES convergence. A survey run must repeat the
 test with its actual binning, scale cuts, covariance and parameter points,
 then check derivatives and Fisher-information stability.
 
-The [saved measurement](../../tests/studies/results/bihalofit_refinement.json)
+The [saved measurement](results/bihalofit_refinement.json)
 uses 41 matched fit/background redshifts, fixed coefficient-reader boost
 8, and full-table dense boost 2. The measured table errors are:
 
@@ -66,10 +66,10 @@ uses 41 matched fit/background redshifts, fixed coefficient-reader boost
 
 Every number in the last column is the squared residual norm defined
 above. The two-point rows remain byte-identical. The permanent
-[joint test](../../tests/data_vector/test_bihalofit_joint.py) requires the fine
+[joint test](../data_vector/test_bihalofit_joint.py) requires the fine
 grid to improve on the medium grid and to stay below 0.00005, about three
 times the measured fine-grid error. Its
-[committed fixture manifest](../../tests/data_vector/reference_bihalofit/manifest.json)
+[committed fixture manifest](../data_vector/reference_bihalofit/manifest.json)
 checks compressed inputs, synthetic data, full covariance and mask by
 SHA-256 before the test reads them. The permanent test does not rebuild its
 metric from mutable helper fixtures. This is a tighter test for this fixture
@@ -85,7 +85,7 @@ bispectrum changes, not covariance-weighted observable errors. Tightening
 the root is therefore a distinct refinement from increasing the new
 four-dimensional table.
 
-The [squeezed stress test](../../tests/data_vector/test_bihalofit_squeezed.py)
+The [squeezed stress test](../data_vector/test_bihalofit_squeezed.py)
 also samples short/middle ratios of one part in 10 billion and one part in
 100 billion, with nonzero gaps between the longer sides. In this regime
 the tree formula combines large terms with opposite signs. Small rounding
@@ -105,7 +105,7 @@ not a reason to ignore errors merely because a triangle is squeezed.
 
 ### A 480-row DES Y3 mean comparison
 
-The [joint DES Y3 record](../../tests/studies/results/bihalofit_joint_y3.json)
+The [joint DES Y3 record](results/bihalofit_joint_y3.json)
 uses 400 two-point shear-correlation entries and 80 third-order aperture
 entries, with the full fixed public simulation covariance. Every row is
 retained by an all-one mask, including the two/three-point cross-covariance.
@@ -237,7 +237,7 @@ error budget.
 [EXAMPLE_COMPARE_CODES.ipynb](../../EXAMPLE_COMPARE_CODES.ipynb) keeps these
 cells with their outputs, including all five figures. The runner also
 writes a matching execution copy and the individual PNG files under
-`outputs/code_comparison/`. Rerunning the notebook against the YAML
+`chains/code_comparison/`. Rerunning the notebook against the YAML
 beside it reproduces the table and the figures.
 
 ### Credits and checks <a name="comparison-credits"></a>
@@ -383,7 +383,7 @@ instead of comparing feedback constraints from two and three points.
 The [paired-response guide](../../../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md#paired-feedback) supplies a shared amplitude for
 independently specified matter-power and matter-bispectrum responses,
 with the quadratic IA terms and the covariance kept at DMO. The
-[BACCO guide](../../python/des3pcf/README.md#bacco) connects the installed Burger2025 emulators to
+[BACCO guide](../../../../external_modules/code/cosmolike_core/theory/bacco_bispectrum/README.md#bacco) connects the installed Burger2025 emulators to
 the joint mean with five physical feedback coordinates. The older
 bispectrum-only `fb` remains unsuitable as a joint feedback parameter.
 

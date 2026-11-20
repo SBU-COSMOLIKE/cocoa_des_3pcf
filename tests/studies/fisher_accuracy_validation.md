@@ -403,7 +403,7 @@ export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4 \
 algebra.
 
 The saved-array reports use serial BLAS, write under
-`runs/fisher_array_diagnostics`, and evaluate no physical model.
+`chains/fisher_array_diagnostics`, and evaluate no physical model.
 
 ```bash
 python tests/studies/analyze_des3pcf_fisher_amplification.py
@@ -444,7 +444,7 @@ executed study already occupies the chosen path.
 ```bash
 python tests/studies/cosmology_step_study.py \
   configs/des_y3_nla_demo_fisher.yaml \
-  --output runs/nla_step_followup --larger-step
+  --output chains/nla_step_followup --larger-step
 ```
 
 **Step :seven:**: Calculate the eight additional physical means.
@@ -455,7 +455,7 @@ YAML's four-worker OpenMP setting. Run one physical study at a time.
 ```bash
 python tests/studies/cosmology_step_study.py \
   configs/des_y3_nla_demo_fisher.yaml \
-  --output runs/nla_step_followup --larger-step --execute
+  --output chains/nla_step_followup --larger-step --execute
 ```
 
 The script verifies the saved baseline, row order, covariance and
@@ -474,24 +474,24 @@ two-column study cannot supply points for a triangle-refined calculation.
 
 ```bash
 python tests/studies/full_smaller_step_study.py \
-  runs/nla_accuracy/triangle_1p5.json --output runs/nla_full_h4 \
-  --reuse-step-study runs/nla_triangle_step_study
+  chains/nla_accuracy/triangle_1p5.json --output chains/nla_full_h4 \
+  --reuse-step-study chains/nla_triangle_step_study
 ```
 
 **Step :nine:**: Calculate or verify the full NLA smaller-step result.
 
 ```bash
 python tests/studies/full_smaller_step_study.py \
-  runs/nla_accuracy/triangle_1p5.json --output runs/nla_full_h4 \
-  --reuse-step-study runs/nla_triangle_step_study --execute
+  chains/nla_accuracy/triangle_1p5.json --output chains/nla_full_h4 \
+  --reuse-step-study chains/nla_triangle_step_study --execute
 ```
 
 **Step :one::zero:**: Run the corresponding TATT calculation separately.
 
 ```bash
 python tests/studies/full_smaller_step_study.py \
-  runs/tatt_accuracy/triangle_1p5.json --output runs/tatt_full_h4 \
-  --reuse-step-study runs/tatt_triangle_step_study --execute
+  chains/tatt_accuracy/triangle_1p5.json --output chains/tatt_full_h4 \
+  --reuse-step-study chains/tatt_triangle_step_study --execute
 ```
 
 Each completed point has an immutable receipt. A matching completed study

@@ -1,11 +1,9 @@
-# Standard Cobaya model, sampled by EXAMPLE_NAUTILUS3.py.
-# The dataset identifies local inputs, numerical settings and the fixed covariance.
-# Priors are defined here and enter Nautilus exactly once.
+# CAMB and the matter bispectrum are separate Cobaya theory blocks.
 timing: true
 debug: false
 stop_at_error: true
 likelihood:
-  des3pcf.cobaya_likelihood.JointShear:
+  des_3pcf.joint_shear:
     data_file: des_y3_joint3.dataset
 params:
   omega_m:
@@ -14,18 +12,21 @@ params:
       max: 0.5
     ref: 0.289
     latex: \Omega_{\rm m}
+    drop: true
   omega_b:
     prior:
       min: 0.03
       max: 0.07
     ref: 0.0463
     latex: \Omega_{\rm b}
+    drop: true
   h:
     prior:
       min: 0.55
       max: 0.91
     ref: 0.722
     latex: h
+    drop: true
   ns:
     prior:
       min: 0.87
@@ -125,18 +126,20 @@ params:
   a2: 0.0
   eta2: 0.0
   bta: 0.0
-  ct: 0
-  zpivot: 0.62
-  c1rho: 0.0134
-  power_mode: 2
-  ct_mode: 0
-  fb: 0
-  suppress_only: 1
-  w0: -1.0
+  w0:
+    value: -1.0
+    drop: true
   wa: 0.0
   mnu: 0.06
-  num_massive_neutrinos: 3
   nnu: 3.046
+  H0:
+    value: 'lambda h: 100*h'
+  omegabh2:
+    value: 'lambda omega_b, h: omega_b*h**2'
+  omegach2:
+    value: 'lambda omega_m, omega_b, mnu, h: (omega_m-omega_b)*h**2-(mnu*(3.046/3)**0.75)/94.0708'
+  w:
+    value: 'lambda w0: w0'
 sampler:
   evaluate:
     override:
@@ -155,3 +158,17 @@ sampler:
       dz2: 0
       dz3: 0
       dz4: 0
+theory:
+  camb:
+    path: ./external_modules/code/CAMB
+    stop_at_error: true
+    use_renames: true
+    extra_args:
+      halofit_version: takahashi
+      dark_energy_model: ppf
+      num_massive_neutrinos: 3
+      neutrino_hierarchy: degenerate
+      kmax: 5.0
+      k_per_logint: 0
+      WantCls: false
+  bihalofit: {}

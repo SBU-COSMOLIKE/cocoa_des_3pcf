@@ -16,12 +16,13 @@ Run from the project directory after activating Cocoa:
   python tests/studies/check_bacco_interpolation.py
 
 The default configuration is configs/des_y3_bacco_fisher.yaml and its saved
-CAMB input is runs/y3_bacco_physics.npz. No CAMB solve, projection, Fisher
+CAMB input is chains/y3_bacco_physics.npz. No CAMB solve, projection, Fisher
 calculation or timing runs here. Cases execute sequentially with one OpenMP
 worker and one BLAS worker. Arrays and a JSON summary are written under
-runs/bacco_interpolation; an existing result is refused. Relative response
+chains/bacco_interpolation; an existing result is refused. Relative response
 errors do not by themselves establish the accuracy of a projected observable.
 """
+
 
 import argparse
 import json
@@ -50,10 +51,10 @@ from scipy.interpolate import RectBivariateSpline
 
 PROJECT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 import run_3pcf as driver
 
-from des3pcf.accuracy import accuracy_settings
-from des3pcf.bacco_feedback import (
+from theory.bacco_bispectrum.response import (
     BaccoFeedback,
     BaccoSettings,
     _cold_weights,
@@ -62,10 +63,13 @@ from des3pcf.bacco_feedback import (
     total_bispectrum_response,
     total_power_response,
 )
-from des3pcf.baryon_scenarios import BaccoColdResponses
-from des3pcf.inputs import load_tables
-from des3pcf.mean import physics_model
+from theory.bacco_bispectrum.emulator import BaccoColdResponses
+from des3pcf.physical_provider import load_tables
+from theory_inputs import physics_model
 from des3pcf.provenance import bacco_identity, file_digest, implementation_identity
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def sample_points(settings, maximum_z):
@@ -239,7 +243,7 @@ def run(configuration, output):
     )
     tables, metadata = load_tables(path=table_path)
     settings = BaccoSettings(**config["feedback"]["settings"])
-    baseline = accuracy_settings(value=config["accuracy"])
+    baseline = ci.init_3pcf_accuracy(value=config["accuracy"])
     sides, redshifts, regimes = sample_points(
         settings=settings, maximum_z=float(tables["z"][-1]),
     )
@@ -247,13 +251,13 @@ def run(configuration, output):
     # exactly one factor relative to the same baseline configuration.
     cases = {"baseline": baseline}
     for coordinate in ("z", "k", "u", "v", "table"):
-        changed = baseline.record()
+        changed = baseline["metadata"]
         name = f"feedback_{coordinate}_boost"
         multiplier = 2.0
         if coordinate == "table":
             multiplier = 1.5
         changed[name] *= multiplier
-        cases[coordinate] = accuracy_settings(value=changed)
+        cases[coordinate] = ci.init_3pcf_accuracy(value=changed)
     config["threads"] = 1
     compiled = driver.compiled_extension(config=config)
     dependency_paths = {
@@ -291,7 +295,7 @@ def run(configuration, output):
                 sides=sides, redshifts=redshifts,
             )
         physical = config["physics"]
-        from des3pcf.bihalofit import bispectrum_axes, prepare_reference_bispectrum
+        from theory.bihalofit.model import bispectrum_axes, prepare_reference_bispectrum
 
         model_tables, baseline = prepare_reference_bispectrum(
             tables=tables, axes=bispectrum_axes(zmax=tables["z"][-1]),
@@ -316,9 +320,9 @@ def run(configuration, output):
         del pair
         records.append({
             "name": name,
-            "accuracy": controls.record(),
+            "accuracy": controls,
             "counts": response_record["counts"],
-            "native_boost": controls.count(
+            "native_boost": ci.accuracy_count(accuracy=controls,
                 baseline=settings.boost, stage="feedback_table_boost",
             ),
             "power_relative_error": error_summary(
@@ -392,7 +396,7 @@ def main():
         default=PROJECT / "configs/des_y3_bacco_fisher.yaml",
     )
     parser.add_argument(
-        "--output", type=Path, default=PROJECT / "runs/bacco_interpolation",
+        "--output", type=Path, default=PROJECT / "chains/bacco_interpolation",
     )
     arguments = parser.parse_args()
     run(configuration=arguments.configuration, output=arguments.output)

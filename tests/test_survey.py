@@ -11,8 +11,8 @@ import pytest
 from astropy.io import fits
 
 from des3pcf.survey import read_survey, read_joint_covariance, ARCMIN_TO_RADIAN
-from des3pcf.covariance import quadrature, shape_noise, xi_bin_weights
-from des3pcf.mean import aligned_fft_grid
+from cosmolike_des_3pcf_interface import quadrature, shape_noise, xi_bin_weights
+from cosmolike_des_3pcf_interface import aligned_fft_grid
 
 
 def test_unequal_aperture_labels_and_covariance_order(tmp_path):

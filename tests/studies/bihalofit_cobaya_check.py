@@ -16,11 +16,11 @@ import sys
 
 def consume_baseline(_self):
     """Request products through the real provider, using no patched methods."""
-    baseline = _self.provider.get_bihalofit_baseline()
-    background = _self.provider.get_bihalofit_background()
-    if baseline.background_z.shape != background["z"].shape:
+    baseline = _self.provider.get_matter_bispectrum()
+    background = _self.provider.get_matter_bispectrum_background()
+    if baseline["background_z"].shape != background["z"].shape:
         raise ValueError("The provider returned different background axes.")
-    if len(baseline.native["log_bispectrum"]) != 4**4:
+    if len(baseline["native"]["log_bispectrum"]) != 4**4:
         raise ValueError("The test consumer expected its declared small table.")
     return 0.0
 
@@ -37,12 +37,13 @@ def run(output, threads):
     os.environ["COBAYA_NOMPI"] = "1"
     project = Path(__file__).resolve().parents[2]
     cocoa = project.parents[1]
-    sys.path.insert(0, str(project / "python"))
+    sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import numpy as np
     from cobaya.model import get_model
-    from des3pcf import bihalofit, bihalofit_theory
+    from theory.bihalofit import model as bihalofit, bihalofit as bihalofit_theory
 
-    component = "des3pcf.bihalofit_theory.BiHalofitTheory"
+    component = "bihalofit"
     settings = {
         "baseline_z": np.linspace(start=0.0, stop=1.5, num=4).tolist(),
         "baseline_logk": np.linspace(start=-4.0, stop=2.0, num=4).tolist(),
@@ -80,8 +81,8 @@ def run(output, threads):
             "baseline_consumer": {
                 "external": consume_baseline,
                 "requires": {
-                    "bihalofit_baseline": None,
-                    "bihalofit_background": None,
+                    "matter_bispectrum": None,
+                    "matter_bispectrum_background": None,
                 },
             },
         },
@@ -102,28 +103,28 @@ def run(output, threads):
             loglike = model.loglike(params_values={"As": amplitude},
                                     return_derived=False)
             assert loglike == 0.0
-            baseline = model.provider.get_bihalofit_baseline()
+            baseline = model.provider.get_matter_bispectrum()
             if label == "A":
                 first = baseline
             elif label == "A_cached":
                 assert baseline is old
             elif label == "B":
                 assert baseline is not old
-                assert not np.array_equal(baseline.native["log_bispectrum"],
-                                          old.native["log_bispectrum"])
+                assert not np.array_equal(baseline["native"]["log_bispectrum"],
+                                          old["native"]["log_bispectrum"])
             else:
                 np.testing.assert_array_equal(
-                    baseline.native["log_bispectrum"],
-                    first.native["log_bispectrum"])
-            for name, value in baseline.native.items():
+                    baseline["native"]["log_bispectrum"],
+                    first["native"]["log_bispectrum"])
+            for name, value in baseline["native"].items():
                 arrays[label + "__" + name] = value
-            arrays[label + "__background_z"] = baseline.background_z
-            arrays[label + "__omega_m_z"] = baseline.background_omega_m_z
+            arrays[label + "__background_z"] = baseline["background_z"]
+            arrays[label + "__omega_m_z"] = baseline["background_omega_m_z"]
             records.append({
                 "label": label,
                 "As": amplitude,
                 "loglike": float(loglike),
-                "baseline": baseline.record(),
+                "baseline": baseline["metadata"],
             })
             old = baseline
         wave, redshift, power = model.theory["camb"].get_Pk_grid(

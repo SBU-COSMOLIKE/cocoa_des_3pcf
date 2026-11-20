@@ -3,7 +3,7 @@
 Run from the DES 3pcf project directory after compiling the optional residual
 scaling mode. For example, use the Cocoa Python executable with
   /tmp/des3pcf_residual_scaling/multipole_stage2_diagnostic.py
-  --output runs/multipole_stage2_diagnostic.npz
+  --output chains/multipole_stage2_diagnostic.npz
 The existing demonstration configuration selects the stored physical tables;
 this script does not request CAMB or change any source-preparation policy.
 
@@ -190,6 +190,7 @@ def main():
     if not (project / "scripts/run_3pcf.py").is_file():
         raise ValueError("Run this script from Cocoa/projects/des_3pcf.")
     sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import run_3pcf as driver
 
     threadpool_limits(limits=1, user_api="blas")

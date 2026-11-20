@@ -1,4 +1,4 @@
-# Read PAPER_TARGETS.md and EXAMPLE_FISHER_IA.ipynb before interpreting results.
+# Read README.md (estimator appendix) and EXAMPLE_FISHER_IA.ipynb before interpreting results.
 # Paths are relative to this YAML. No production calculation has been run.
 format: cosmolike-3pcf-run-v1
 description: DES Y3 joint xi± + Map3 TATT Fisher design using all 480 public rows; estimator
@@ -33,7 +33,7 @@ source:
   extension: nz_source
   nbin: 4
 physics:
-  tables: ../runs/y3_tatt_physics.npz
+  tables: ../chains/y3_tatt_physics.npz
   cosmology_mode: camb
   kernel_nz: 201
   k:
@@ -81,7 +81,7 @@ ia:
   bta: 0.91
   ct: 0
   zpivot: 0.62
-  c1rho: 0.0134
+  c1rho: 0.01389
   power_mode: 2
   ct_mode: 0
   fb: 0
@@ -151,8 +151,8 @@ mean:
     pair_weight: uniform_area
   two_point:
     mode: core_tatt
-    directory: ../../des_y3/interface
-    module: cosmolike_des_y3_interface
+    directory: ../interface
+    module: cosmolike_des_3pcf_interface
     interpolation_type: 1
     accuracy_boost: 1.0
     integration_accuracy: 0
@@ -217,5 +217,5 @@ fisher:
   precision:
     mode: inverse
 outputs:
-  evaluate: ../runs/y3_tatt_mean.npz
-  fisher: ../runs/y3_tatt_fisher.npz
+  evaluate: ../chains/y3_tatt_mean.npz
+  fisher: ../chains/y3_tatt_fisher.npz

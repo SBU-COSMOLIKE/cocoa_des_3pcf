@@ -17,11 +17,12 @@ from scipy.linalg import solve_triangular
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "python"))
+sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
-from des3pcf.precision import component_precision_expansion
-from des3pcf.precision import precision_expansion, split_precision_expansion
-from des3pcf.precision import whiten_covariance
+from cosmolike_notebook_utils.covariance.precision import component_precision_expansion
+from cosmolike_notebook_utils.covariance.precision import precision_expansion, split_precision_expansion
+from cosmolike_notebook_utils.covariance.precision import whiten_covariance
 
 
 def controlled_joint_covariance(ndata=24):

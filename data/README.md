@@ -38,7 +38,7 @@ a covariance correction.
 ## Generated theory tables and forecasts <a name="generated"></a>
 
 We assume Cocoa is activated and the shell is in `Cocoa/`. Generated files
-are written under the project's ignored `runs/` directory. Each configuration
+are written under the project's ignored `chains/` directory. Each configuration
 sets its destination in `physics.tables` and `outputs`.
 
 **Step :one:**: prepare the fiducial tables shared by the NLA and TATT examples.
@@ -48,7 +48,7 @@ python projects/des_3pcf/scripts/run_3pcf.py prepare \
   projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml
 ```
 
-This writes `runs/y3_demo_pchip9601_physics.npz`. A likelihood varying
+This writes `chains/y3_demo_pchip9601_physics.npz`. A likelihood varying
 cosmology recomputes its prediction; this saved fiducial table is not a
 substitute for that calculation. Existing files require explicit
 `--overwrite`. Recompute dependent results after changing the inputs or
@@ -61,21 +61,21 @@ python projects/des_3pcf/scripts/run_3pcf.py prepare \
   projects/des_3pcf/configs/des_y3_bacco_fisher.yaml
 ```
 
-This writes `runs/y3_bacco_physics.npz`. The [BACCO guide](../python/des3pcf/README.md#bacco)
+This writes `chains/y3_bacco_physics.npz`. The [BACCO guide](../../../external_modules/code/cosmolike_core/theory/bacco_bispectrum/README.md#bacco)
 describes its emulator inputs and physical assumptions.
 
 | Generated file | How to create it |
 |---|---|
-| `runs/paired_feedback_demo.npz` | Run the response-construction cell in [EXAMPLE_JOINT_FEEDBACK.ipynb](../EXAMPLE_JOINT_FEEDBACK.ipynb) |
-| `runs/y3_tatt_measured_edge_demo_fisher.npz` | Run `run_3pcf.py fisher` with `configs/des_y3_tatt_demo_fisher.yaml` after preparation |
-| `runs/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) after generating its TATT Fisher input |
+| `chains/paired_feedback_demo.npz` | Run the response-construction cell in [EXAMPLE_JOINT_FEEDBACK.ipynb](../EXAMPLE_JOINT_FEEDBACK.ipynb) |
+| `chains/y3_tatt_measured_edge_demo_fisher.npz` | Run `run_3pcf.py fisher` with `configs/des_y3_tatt_demo_fisher.yaml` after preparation |
+| `chains/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) after generating its TATT Fisher input |
 
 The artificial feedback response illustrates the calculation; it is not a
 hydrodynamic calibration. The compression matrix is trained from the chosen
 derivatives using an independent teaching covariance; it is not the
-published compression. Both are generated calculations and stay in `runs/`.
+published compression. Both are generated calculations and stay in `chains/`.
 Frozen numerical comparisons, including timing vectors, stay in `tests/`.
-Figures use `outputs/`; sampler chains use their configured chain directory.
+Figures use `chains/`; sampler chains use their configured chain directory.
 
 ## Demonstration source processing <a name="sources"></a>
 
@@ -91,11 +91,11 @@ To reproduce the processing without modifying the input data:
 ```bash
 python projects/des_3pcf/scripts/prepare_demo_sources.py \
   --input projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits \
-  --output projects/des_3pcf/runs/y3_demo_sources.fits \
+  --output projects/des_3pcf/chains/y3_demo_sources.fits \
   --extension nz_source --nbin 4
 ```
 
-The command writes a FITS file and YAML record under `runs/`. The included
+The command writes a FITS file and YAML record under `chains/`. The included
 processed distribution remains the examples' declared input. To adopt a
 different source model, change `source.path` explicitly and prepare new
 theory tables.

@@ -17,9 +17,36 @@ import pytest
 import yaml
 
 from cocoa_hybrid_sampling import load_model, parser_for
+from cobaya.input import update_info
 
 
 PROJECT = Path(__file__).resolve().parents[1]
+
+
+@pytest.mark.parametrize("example", [
+    "EXAMPLE_EVALUATE1.yaml",
+    "EXAMPLE_NAUTILUS1.yaml",
+    "EXAMPLE_NAUTILUS2.yaml",
+    "EXAMPLE_NAUTILUS3.yaml",
+    "EXAMPLE_NAUTILUS4.yaml",
+])
+def test_cobaya_loads_project_likelihood_defaults(example):
+    """Resolve the installed likelihood and its defaults without a prediction.
+
+    Cobaya rejects duplicate Python/YAML defaults and unknown likelihood
+    names before a model is constructed. Exercise that actual loader for
+    every shipped example, including the plain evaluate entry point.
+
+    Arguments:
+      example = project YAML filename.
+    Returns:
+      nothing; asserts that the resolved component retains its dataset.
+    """
+    settings = yaml.safe_load((PROJECT / example).read_text(encoding="utf-8"))
+    updated = update_info(info=settings)
+    component = "des_3pcf.joint_shear"
+    data_file = updated["likelihood"][component]["data_file"]
+    assert (PROJECT / "data" / data_file).is_file()
 
 
 def gaussian_loglike(x, y):
@@ -68,7 +95,7 @@ def run_example(number, configuration, root, options):
     environment = dict(os.environ)
     environment["PYTHONPATH"] = os.pathsep.join([
         str(PROJECT / "tests"),
-        str(PROJECT / "python"),
+        str(PROJECT / "scripts"),
         environment.get("PYTHONPATH", ""),
     ])
     environment["OMP_NUM_THREADS"] = "1"

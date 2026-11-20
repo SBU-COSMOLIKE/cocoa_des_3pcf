@@ -6,7 +6,7 @@ labels. The same physical triplet is also moved between SIMD lanes and a
 scalar tail; adding an unrequested output must not change its bits.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
 import pytest

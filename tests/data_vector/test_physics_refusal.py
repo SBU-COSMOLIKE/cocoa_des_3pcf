@@ -1,6 +1,6 @@
 """Refuse unsupported geometry and labels before lossy conversions."""
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import argparse
 import re

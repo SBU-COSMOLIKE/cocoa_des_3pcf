@@ -6,7 +6,7 @@ the finite source-kernel splines and signed interpolation. Small grids test
 algebra and state ownership; they are not survey accuracy settings.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
 import pytest
@@ -24,8 +24,8 @@ def test_equilateral_operators(compiled, adapter):
     redshift = np.array([0.0])
     parameters = {"a1": 0.7, "a2": 0.8, "bta": 0.4, "zpivot": 0.0}
     power = model.power(k=np.array([0.2]), z=redshift, mode=1)[0]
-    c1 = -0.7 * 0.0134 * 0.3
-    c2 = 0.8 * 5.0 * 0.0134 * 0.3
+    c1 = -0.7 * 0.01389 * 0.3
+    c2 = 0.8 * 5.0 * 0.01389 * 0.3
     expected = {2: -0.4 * c1 / 2.0, 3: -c2 / 6.0}
     evaluate = model.ia
     if adapter == "notebook":
@@ -144,3 +144,52 @@ def test_ordered_legs_and_nla_limits(compiled):
     repeated = model.projected(sides=sides, bins=bins, parameters=parameters)
     np.testing.assert_array_equal(repeated, original)
 
+
+
+@pytest.mark.parametrize("mode", ["direct", "prepared"])
+def test_native_aperture_decomposition_closure_and_restoration(compiled, mode):
+    """Native row grouping preserves signed terms, calibration and A/B/A state.
+
+    Two radii share a source triplet. Summing the independently selected
+    operators must recover each ordinary aperture prediction, including
+    the repeated-bin shear calibration. Small grids test this algebra;
+    they do not measure survey integration accuracy.
+    """
+    model = reference_physics_model(factory=compiled.PhysicsModel, **physical_inputs())
+    bins = np.array([[0, 1, 0], [0, 1, 0]], dtype=np.int32)
+    plan = compiled.production.TransformPlan.for_aperture(
+        bins=bins,
+        filters=np.array([[.003, .003, .003], [.003, .004, .005]]),
+        theta_lower=.001*np.exp(.3*np.arange(3)),
+        phi=(np.arange(4)+.5)*np.pi/4,
+        dlnt=.3,
+        dphi=np.pi/4,
+        ell_min=20.0,
+        ell_max=3000.0,
+        minimum_size=64,
+        lmax=2,
+        mmax=2,
+        nmu=8,
+        transform_options={"npsi": 20},
+        projection_mode=mode,
+        projection_settings={
+            "nr": 8, "nu": 8, "nv": 8, "np": 8, "nshape": 8,
+            # Include the auxiliary squeezed-triangle preparation nodes.
+            "ell_min": .001, "ell_max": 300000.,
+            "signed_baseline": 1,
+        },
+    )
+    ia = {"a1": .4, "a2": .5, "bta": .6, "ct": .1}
+    calibration = np.array([.02, -.01])
+    total = plan.aperture_vector(model=model, ia=ia)
+    result = plan.aperture_components(model=model, ia=ia, calibration=calibration)
+    expected = total*(1.02**2)*.99
+    np.testing.assert_allclose(result["total"], expected, rtol=3.e-15)
+    np.testing.assert_allclose(
+        np.sum(result["values"], axis=(0, 1)), expected, rtol=2.e-11, atol=1.e-28,
+    )
+    changed = plan.aperture_vector(model=model, ia=dict(ia, a2=.8))
+    assert not np.array_equal(changed, total)
+    np.testing.assert_array_equal(plan.aperture_vector(model=model, ia=ia), total)
+    with pytest.raises(ValueError, match="full IA"):
+        plan.aperture_components(model=model, ia=dict(ia, operator_component=2))

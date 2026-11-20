@@ -14,10 +14,11 @@ and velocity-shear parameters to zero, preserving every shared cosmology,
 linear-alignment, calibration and source-redshift draw.
 
 This module contains no timers. Its preflight and point-bank functions
-read inputs and draw small parameter arrays; neither imports the compiled
-interface nor calls CAMB. Preparation and initialization are explicit
+read inputs and draw small parameter arrays. They load the native interface
+for numerical preparation but never call CAMB or a physical projection. Preparation and initialization are explicit
 actions for the controller to invoke when the machine is available.
 """
+
 
 import hashlib
 import importlib
@@ -26,16 +27,17 @@ from itertools import combinations_with_replacement
 from pathlib import Path
 import sys
 
+from copy import deepcopy
+
 import numpy as np
 
-from .accuracy import accuracy_settings
-from .inputs import camb_tables, load_tables, save_tables, shifted_sources
-from .inputs import camb_accuracy_settings
-from .inputs import _camb_power_limits
-from .mean import aligned_fft_grid, physics_model
-from .ownership import immutable_copy
-from .pipeline import COSMOLOGY_NAMES, IA_NAMES
-from .survey import ARCMIN_TO_RADIAN, read_source_distributions, read_survey
+from des3pcf.physical_provider import camb_tables, load_tables, save_tables
+from des3pcf.survey import shifted_sources
+from des3pcf.physical_provider import camb_accuracy_settings
+from des3pcf.physical_provider import _camb_power_limits
+from cosmolike_des_3pcf_interface import aligned_fft_grid
+from des3pcf.pipeline import COSMOLOGY_NAMES, IA_NAMES
+from des3pcf.survey import ARCMIN_TO_RADIAN, read_source_distributions, read_survey
 
 
 PROJECT = Path(__file__).resolve().parents[2]
@@ -56,6 +58,9 @@ NLA_INACTIVE = (
     "bta",
     "ct",
 )
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def _ia_model(config):
@@ -454,11 +459,11 @@ def preflight_threepcf(config_path):
     widths = np.diff(np.log(edges))
     if not np.allclose(widths, widths[0], rtol=1.0e-12, atol=1.0e-14):
         raise ValueError("Finite-SAS side bins must have equal logarithmic widths.")
-    controls = accuracy_settings(value=config["accuracy"])
+    controls = ci.init_3pcf_accuracy(value=config["accuracy"])
     ell, _ = aligned_fft_grid(
         theta_lower=edges[:-1] * ARCMIN_TO_RADIAN, dlnt=float(widths[0]),
         ell_min=settings["ell_min"], ell_max=settings["ell_max"],
-        minimum_size=controls.count(settings["minimum_size"], stage="fft_boost"),
+        minimum_size=ci.accuracy_count(accuracy=controls, baseline=settings["minimum_size"], stage="fft_boost"),
     )
     projection = settings.get("projection_settings", {})
     if settings.get("projection_mode", "prepared") == "prepared":
@@ -701,8 +706,8 @@ def load_threepcf_tables(path):
     tables, metadata = load_tables(path=path)
     if metadata.get("scaling_format") != FORMAT or "scaling_point" not in metadata:
         raise ValueError("Table file lacks the complete scaling-point provenance.")
-    return {"tables": immutable_copy(value=tables),
-            "metadata": immutable_copy(value=metadata)}
+    return {"tables": deepcopy(x=tables),
+            "metadata": deepcopy(x=metadata)}
 
 
 class ThreePointWorkload:
@@ -713,16 +718,16 @@ class ThreePointWorkload:
 
         # Resolve the flat control dictionary before freezing nested config
         # mappings. Accuracy itself is immutable and accepted by both engines.
-        self._accuracy = accuracy_settings(value=config["accuracy"])
+        self._accuracy = ci.init_3pcf_accuracy(value=config["accuracy"])
         axes = driver.supplied_bispectrum_settings(physics=config["physics"])
         for name in ("z", "logk", "logu", "v"):
             original = axes[name]
-            count = self._accuracy.count(
+            count = ci.accuracy_count(accuracy=self._accuracy,
                 baseline=len(original), stage="bispectrum_boost", endpoints=True,
             )
             axes[name] = np.linspace(start=original[0], stop=original[-1], num=count)
-        self._bispectrum_axes = immutable_copy(value=axes)
-        self._config = immutable_copy(value=config)
+        self._bispectrum_axes = deepcopy(x=axes)
+        self._config = deepcopy(x=config)
         self._digest = digest
         self._compiled = compiled
         # Limit any BLAS library already loaded in this process. Changing
@@ -761,9 +766,9 @@ class ThreePointWorkload:
                 "Tables were prepared for a different complete physical point."
             )
         settings = self._config["physics"]
-        from .bihalofit import prepare_reference_bispectrum
+        from theory.bihalofit.model import prepare_reference_bispectrum
 
-        resolved = self._accuracy.model_settings(
+        resolved = ci.accuracy_model_settings(accuracy=self._accuracy,
             kernel_nz=settings["kernel_nz"],
             table_boost=settings.get("table_boost", 8),
             fit_nz=settings.get("fit_nz", 33),
@@ -776,19 +781,38 @@ class ThreePointWorkload:
             fit_nz=resolved["fit_nz"], table_boost=resolved["table_boost"],
             source_readers=settings.get("source_readers", False),
         )
-        model = physics_model(
-            compiled=self._compiled, tables=tables, baseline=baseline,
-            kernel_nz=settings["kernel_nz"],
-            source_readers=settings.get("source_readers", False),
-            table_boost=settings.get("table_boost", 8), fit_nz=settings.get("fit_nz", 33),
+        resolved_model = self._compiled.accuracy_model_settings(
             accuracy=self._accuracy,
+            kernel_nz=settings["kernel_nz"],
+            table_boost=settings.get("table_boost", 8),
+            fit_nz=settings.get("fit_nz", 33),
+        )
+        model = self._compiled.production.PhysicsModelWithBispectrum(
+            k=tables["k"],
+            p_linear0=tables["p_linear0"],
+            z=tables["z"],
+            p_nonlinear=tables["p_nonlinear"],
+            chi=tables["chi"],
+            dz_dchi=tables["dz_dchi"],
+            growth=tables["growth"],
+            sources=tables["sources"],
+            omega_m=tables["omega_m"],
+            sigma8=tables["sigma8"],
+            omega_m_z=tables["omega_m_z"],
+            source_z=tables.get("source_z"),
+            los_z=self._compiled.accuracy_los_nodes(accuracy=self._accuracy, baseline=tables["los_z"]),
+            baseline=baseline["native"],
+            kernel_nz=resolved_model["kernel_nz"],
+            table_boost=resolved_model["table_boost"],
+            fit_nz=resolved_model["fit_nz"],
+            source_readers=settings.get("source_readers", False),
         )
         ia = {}
         for name in IA_NAMES:
             if name in parameters:
                 ia[name] = parameters[name]
         calibration = np.array([parameters[f"m{i}"] for i in range(1, 5)])
-        return self._engine.evaluate(model=model, ia=ia, calibration=calibration)
+        return self._engine.aperture_vector(model=model, ia=ia, calibration=calibration)
 
 
 def initialize_threepcf(config_path, threads, extension_path=None):

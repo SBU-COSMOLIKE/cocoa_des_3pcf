@@ -13,11 +13,10 @@ import numpy as np
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "python"))
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 import run_3pcf as driver
-from des3pcf.ia_components import map3_components
 
 
 def aperture_components(configuration, triplets, velocity_shear=0.0):
@@ -62,7 +61,10 @@ def aperture_components(configuration, triplets, velocity_shear=0.0):
     )
     model, tables, resolved_metadata = provider.get(parameters=config["parameters"])
     ia = dict(config["ia"], ct=float(velocity_shear), ct_mode=0)
-    components = map3_components(engine=prediction.map_engine, model=model, ia=ia)
+    components = prediction.map_engine.aperture_components(
+        model=model,
+        ia=ia,
+    )
     return {
         "components": components,
         "rows": rows,

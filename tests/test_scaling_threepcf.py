@@ -14,7 +14,7 @@ from des3pcf.scaling_threepcf import preflight_threepcf, threepcf_point_bank
 from des3pcf.scaling_threepcf import _clip_timing_sources, TIMING_SOURCE_POLICY
 from des3pcf.scaling_threepcf import _ia_model, _reuse_tables, _table_request
 from des3pcf.scaling_threepcf import _point_parameters, _configuration
-from des3pcf.inputs import save_tables
+from des3pcf.physical_provider import save_tables
 
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -59,8 +59,8 @@ def test_invalid_bank_count_or_seed_is_refused(npoints, seed):
         threepcf_point_bank(config_path=CONFIGURATION, npoints=npoints, seed=seed)
 
 
-def test_preflight_imports_neither_camb_nor_compiled_interface():
-    """A fresh child inspects known inputs without activating either model engine."""
+def test_preflight_uses_native_preparation_without_camb():
+    """A fresh child resolves native settings without starting Boltzmann physics."""
     script = """
 import json
 from pathlib import Path
@@ -69,12 +69,12 @@ sys.path.insert(0, sys.argv[1])
 from des3pcf.scaling_threepcf import preflight_threepcf
 report = preflight_threepcf(config_path=Path(sys.argv[2]))
 assert 'camb' not in sys.modules
-assert 'cosmolike_des_3pcf_interface' not in sys.modules
+assert 'cosmolike_des_3pcf_interface' in sys.modules
 print(json.dumps(report, allow_nan=False))
 """
     execution = subprocess.run(
         args=[sys.executable, "-B", "-c", script,
-              str(PROJECT / "python"), str(CONFIGURATION)],
+              str(PROJECT / "scripts"), str(CONFIGURATION)],
         capture_output=True, text=True, check=False, timeout=15,
     )
     assert execution.returncode == 0, execution.stderr

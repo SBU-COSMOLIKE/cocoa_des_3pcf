@@ -61,9 +61,9 @@ labeled alternative; the driver never inserts it silently.
 ## Physical preparation keys <a name="physics"></a>
 
 `source.path` names an input in `data/`. `physics.tables` names a generated
-file in `runs/`; create it with `run_3pcf.py prepare` before evaluating that
+file in `chains/`; create it with `run_3pcf.py prepare` before evaluating that
 configuration. Output means, covariances and Fisher matrices also go in
-`runs/`. The [data guide](../data/README.md) lists the preparation commands
+`chains/`. The [data guide](../data/README.md) lists the preparation commands
 and distinguishes generated results from the frozen comparisons in `tests/`.
 
 `prepare` reads source-redshift midpoint curves from a FITS table and
@@ -116,7 +116,7 @@ plus an optional integer `boost` for dense C preparation. For sorted sides
 $`a\leq b\leq c`$, these coordinates mean redshift, $`\ln b`$,
 $`\ln(a/b)`$ and $`(c-b)/a`$. The logarithmic coordinates already contain
 logarithms, so their grid objects use ordinary linear spacing. The
-[BiHalofit guide](../python/des3pcf/README.md) explains the fit and its controls.
+[BiHalofit guide](../../../external_modules/code/cosmolike_core/theory/bihalofit/README.md) explains the fit and its controls.
 
 Run `prepare` for the supplied example before evaluating it: its physical
 file must contain CAMB's `omega_m_z` array. An internal-route file lacking

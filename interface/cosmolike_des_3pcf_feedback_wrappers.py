@@ -17,11 +17,12 @@ import yaml
 
 
 PROJECT = Path(__file__).resolve().parents[1]  # Owns notebook/configs/runs.
-sys.path.insert(0, str(PROJECT / "python"))
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 import run_3pcf as driver
-from des3pcf.baryon_scenarios import BaccoColdResponses, bfmt_power_response
+from theory.bacco_bispectrum.emulator import BaccoColdResponses
+from des3pcf.baryon_scenarios import bfmt_power_response
 
 
 def _two_point_mean(prediction, tables, metadata, parameters, ia):
@@ -35,16 +36,87 @@ def _two_point_mean(prediction, tables, metadata, parameters, ia):
       xi+[theta,bin-pair] and xi- values in the supplied row order.
       The adapter reinstalls core state on every call, including restoration.
     """
-    even, odd = prediction.two_point_core.spectra(
-        parameters=parameters, tables=tables, metadata=metadata, ia=ia,
-        ell=prediction.xi_engine.ell, bins=prediction.xi_engine.rows.bins[:, :2],
+    core = prediction.compiled
+    checked = tables
+    nbin = prediction.provider.nbin
+    threads = prediction.two_point_core["threads"]
+    h = float(parameters["h"])
+    omega_b = float(parameters["omega_b"])
+    omega_nu = float(metadata.get("omega_nu_h2", 0.0))
+    if parameters.get("mnu", 0.0) > 0.0 and "omega_nu_h2" not in metadata:
+        raise ValueError("Massive-neutrino tables require recorded omega_nu_h2.")
+    if omega_nu > 0.0 and "p_linear_cb" not in checked:
+        raise ValueError(
+            "Massive-neutrino core preparation requires linear P_cb[z,k]."
+        )
+    # The YAML uses the ordinary core convention directly. There is no
+    # amplitude or pivot conversion in the production likelihood.
+    first = np.zeros(nbin, dtype=np.float64)
+    second = np.zeros(nbin, dtype=np.float64)
+    density = np.zeros(nbin, dtype=np.float64)
+    first[:2] = [ia.get("a1", 0.0), ia.get("eta1", 0.0)]
+    second[:2] = [ia.get("a2", 0.0), ia.get("eta2", 0.0)]
+    density[0] = ia.get("bta", 0.0)
+    source_z = checked.get("source_z", checked["z"])
+    # The ordinary midpoint reader reconstructs uniform coordinates
+    # from the endpoint spacing. Refuse an irregular independent axis
+    # instead of silently passing coordinates that reader would move.
+    uniform = np.linspace(start=source_z[0], stop=source_z[-1],
+                          num=source_z.size)
+    tolerance = 32.0 * np.finfo(float).eps * source_z[-1]
+    if not np.allclose(source_z, uniform, rtol=0.0, atol=tolerance):
+        raise ValueError("The two-point bridge requires a uniform source_z grid.")
+    source_table = np.column_stack((source_z, checked["sources"].T))
+    lens_table = source_table[:, :2].copy()
+    core.set_source_sample(nofz=source_table)
+    core.set_lens_sample(nofz=lens_table)
+    core.init_ntomo_powerspectra()
+    cold = []
+    if "p_linear_cb" in checked:
+        cold = np.log(checked["p_linear_cb"]).flatten(order="F")
+    # The old core stores [k,z], whereas the new tables store [z,k].
+    # Fortran flattening of the latter gives exactly the former order.
+    core.set_cosmology(
+        omegam=checked["omega_m"],
+        H0=100.0 * h,
+        log10k_2D=np.log10(checked["k"]),
+        z_2D=checked["z"],
+        lnP_linear=np.log(checked["p_linear"]).flatten(order="F"),
+        lnP_nonlinear=np.log(checked["p_nonlinear"]).flatten(order="F"),
+        G=checked["growth"] * (1.0 + checked["z"]),
+        z_1D=checked["z"],
+        chi=checked["chi"],
+        omegab=omega_b,
+        z_G=checked["z"],
+        omegan2=omega_nu,
+        lnP_linear_cb=cold,
+    )
+    core.set_nuisance_shear_photoz(bias=np.zeros(nbin))
+    core.set_nuisance_shear_calib(M=np.zeros(nbin))
+    core.set_nuisance_ia(
+        A1=first,
+        A2=second,
+        B_TA=density,
+    )
+    core.set_omp_threads(n=threads)
+    even, odd = core.shear_power_rows(
+        ell=prediction.xi_ell,
+        bins=np.ascontiguousarray(prediction.xi_rows.bins[:, :2], dtype=np.int32),
     )
     calibration = np.asarray([
         parameters.get(f"m{index + 1}", 0.0)
-        for index in range(prediction.provider.nbin)
+        for index in range(nbin)
     ])
-    return prediction.xi_engine.evaluate_spectra(
-        spectra_e=even, spectra_b=odd, calibration=calibration,
+    return core.production.xi_from_power(
+        ell=prediction.xi_ell,
+        dell=prediction.xi_dell,
+        theta=prediction.xi_theta,
+        theta_weight=prediction.xi_weight,
+        sign=prediction.xi_sign,
+        spectra_e=even,
+        spectra_b=odd,
+        bins=np.ascontiguousarray(prediction.xi_rows.bins[:, :2], dtype=np.int32),
+        calibration=calibration,
     )
 
 
@@ -207,7 +279,7 @@ def save_scenarios(result, paired, destination):
 
     Arguments:
       result, paired = outputs of run_scenarios and bacco_diagnostic.
-      destination = notebook-owned NPZ under runs/; reruns replace this output.
+      destination = notebook-owned NPZ under chains/; reruns replace this output.
     Returns:
       resolved output path. Source inputs and emulator weights are untouched.
     """

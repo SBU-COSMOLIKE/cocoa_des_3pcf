@@ -12,17 +12,17 @@ integral for comparison with catalogue measurements. They are never
 identified merely because their rows have the same aperture-radius labels.
 """
 
+import json
+from pathlib import Path
+
 import numpy as np
+from des3pcf.survey import shifted_sources, reconstructed_sources, _source_edge_arrays
+from theory.bihalofit.model import uniform_segments
 from copy import deepcopy
 
-from .inputs import validate_tables, shifted_sources, camb_tables, _camb_power_limits
-from .inputs import reconstructed_sources, camb_accuracy_settings
-from .mean import physics_model, Map3Engine, XiEngine
-from .feedback import FeedbackPair, feedback_power_tables
-from .bacco_feedback import BaccoFeedback, BACCO_PARAMETERS
-from .covariance import quadrature
-from .accuracy import accuracy_settings
-from .ownership import immutable_copy, PreparedGeometry
+from theory.bacco_bispectrum.response import FeedbackPair
+from theory.bacco_bispectrum.response import BaccoFeedback, BACCO_PARAMETERS
+
 
 
 # Only these parameters require a new Boltzmann calculation. Shape and
@@ -139,7 +139,7 @@ class PhysicalProvider:
         self._variance_engine = None
         self._reference_variance_engine = None
         self._active_variance = None
-        from .bihalofit import BiHalofitProducer, bispectrum_axes
+        from theory.bihalofit.model import BiHalofitProducer, bispectrum_axes
 
         if bispectrum_table is None:
             bispectrum_table = bispectrum_axes(zmax=reference_tables["z"][-1])
@@ -153,7 +153,7 @@ class PhysicalProvider:
             )
         BiHalofitProducer(**bispectrum_table)
         self.bispectrum_source = bispectrum_source
-        self.bispectrum_table = immutable_copy(value=bispectrum_table)
+        self.bispectrum_table = deepcopy(x=bispectrum_table)
         self._baseline_producer = None
         self._baseline_resolution = None
         self.compiled = compiled
@@ -165,8 +165,8 @@ class PhysicalProvider:
         if pixel_window is not None:
             from .pixel_window import checked_window
 
-            self.pixel_window = immutable_copy(value=checked_window(values=pixel_window))
-        self.base = immutable_copy(value=validate_tables(tables=reference_tables))
+            self.pixel_window = deepcopy(x=checked_window(values=pixel_window))
+        self.base = deepcopy(x=validate_tables(tables=reference_tables))
         if "omega_m_z" not in self.base:
             raise ValueError(
                 "The supplied baseline requires provider omega_m_z; regenerate "
@@ -178,7 +178,7 @@ class PhysicalProvider:
                     "Massive-neutrino tables require provider omega_m_z; "
                     "regenerate with include_bispectrum_background=True."
                 )
-        self.base_metadata = immutable_copy(value=reference_metadata)
+        self.base_metadata = deepcopy(x=reference_metadata)
         recorded_source = reference_metadata.get(
             "source_reconstruction", "linear_midpoint",
         )
@@ -221,7 +221,7 @@ class PhysicalProvider:
         if source_interpolation == "pchip_midpoint" and source_nz is None:
             raise ValueError("PCHIP preparation requires an independent source_nz count.")
         self.source_nz = source_nz
-        self.accuracy = accuracy_settings(value=accuracy)
+        self.accuracy = self.compiled.init_3pcf_accuracy(value=accuracy)
         self.mode = cosmology_mode
         if int(kernel_nz) != kernel_nz or kernel_nz < 4:
             raise ValueError("kernel_nz must be an integer of at least four.")
@@ -247,7 +247,7 @@ class PhysicalProvider:
         self.reference_cosmology_key = parameter_key(
             self.reference, names=COSMOLOGY_NAMES,
         )
-        self.reference = immutable_copy(value=self.reference)
+        self.reference = deepcopy(x=self.reference)
         self.reference_producer_settings = self._producer_settings(
             parameters=self.reference,
         )
@@ -325,32 +325,6 @@ class PhysicalProvider:
         self.model_tables = None
         self.model_metadata = None
         self._active_baseline = None
-        self._reference_locked = True
-
-    def __setattr__(self, name, value):
-        """Protect the physical baseline while keeping numerical controls changeable.
-
-        Replacing tables, source-bin counts or the source reconstruction
-        requires a new provider, which can coexist with the old one in this
-        kernel. Source sampling count source_nz is a mutable numerical control.
-        """
-        reference_names = (
-            "base", "base_metadata", "reference", "reference_cosmology_key",
-            "reference_halofit", "nbin", "compiled",
-            "reference_producer_settings", "reference_producer_verified",
-            "source_interpolation", "source_padding",
-            "feedback", "pixel_window",
-            "bispectrum_source", "bispectrum_table",
-            "variance_source", "variance_growth",
-        )
-        if getattr(self, "_reference_locked", False) and name in reference_names:
-            raise AttributeError(
-                f"PhysicalProvider.{name} defines its baseline; construct a new "
-                "provider with the replacement tables in this kernel."
-            )
-        if name == "accuracy":
-            value = accuracy_settings(value=value)
-        object.__setattr__(self, name, value)
 
     def _producer_settings(self, parameters):
         """Resolve and validate both physical wavenumber limits for one cosmology.
@@ -405,20 +379,20 @@ class PhysicalProvider:
                 raise ValueError("source_nz must be an integer from four to INT_MAX.")
         elif "source_z" in self.base or self.source_interpolation == "pchip_midpoint":
             raise ValueError("An independent source model requires a source_nz count.")
-        controls = accuracy_settings(value=self.accuracy)
+        controls = self.compiled.init_3pcf_accuracy(value=self.accuracy)
         if self.variance_source == "local":
             for name in ("variance_mass_boost", "variance_a_boost",
                          "variance_radius_boost", "variance_inverse_boost"):
-                if getattr(controls, name) != 1.0:
+                if controls[name] != 1.0:
                     raise ValueError(f"{name} requires variance_source='shared'.")
-        if self.source_nz is None and controls.source_boost != 1.0:
+        if self.source_nz is None and controls["source_boost"] != 1.0:
             raise ValueError("source_boost requires an explicit independent source_nz.")
         self._producer_settings(parameters=self.reference)
         if isinstance(self.feedback, BaccoFeedback):
             self.feedback.verify_weights()
         return (
             self.kernel_nz, self.source_readers, self.table_boost, self.fit_nz,
-            accuracy_settings(value=self.accuracy),
+            self.compiled.init_3pcf_accuracy(value=self.accuracy),
             self.kmax_boltzmann, self.extrap_kmax,
             self.camb_accuracy_boost, self.camb_k_per_logint,
             self.source_nz, self.source_interpolation, self.source_padding,
@@ -433,13 +407,13 @@ class PhysicalProvider:
         """
         if self.variance_source == "local":
             return None, None
-        from .bihalofit import fit_redshifts
-        from .variance import SharedVariance
+        from theory.bihalofit.model import fit_redshifts
+        from theory.bihalofit.variance import SharedVariance
 
         if self._variance_engine is None:
             self._variance_engine = SharedVariance(compiled=self.compiled)
-        controls = accuracy_settings(value=self.accuracy)
-        settings = controls.model_settings(
+        controls = self.compiled.init_3pcf_accuracy(value=self.accuracy)
+        settings = self.compiled.accuracy_model_settings(accuracy=controls,
             kernel_nz=self.kernel_nz, table_boost=self.table_boost,
             fit_nz=self.fit_nz,
         )
@@ -454,7 +428,7 @@ class PhysicalProvider:
         fit = {}
         for name in ("z", "rnl", "neff", "sigma8"):
             fit[name] = snapshot[name]
-        return immutable_copy(value=fit), record
+        return deepcopy(x=fit), record
 
     def reference_variance(self):
         """Prepare the explicit legacy reference once per spectrum/resolution.
@@ -463,12 +437,12 @@ class PhysicalProvider:
         Its multiplier applies only to the three-point model's linear power;
         the ordinary two-point prediction retains the original provider arrays.
         """
-        from .variance import ReferenceVariance
+        from theory.bihalofit.variance import ReferenceVariance
 
         if self._reference_variance_engine is None:
             self._reference_variance_engine = ReferenceVariance()
-        controls = accuracy_settings(value=self.accuracy)
-        settings = controls.model_settings(
+        controls = self.compiled.init_3pcf_accuracy(value=self.accuracy)
+        settings = self.compiled.accuracy_model_settings(accuracy=controls,
             kernel_nz=self.kernel_nz, table_boost=self.table_boost,
             fit_nz=self.fit_nz,
         )
@@ -488,17 +462,17 @@ class PhysicalProvider:
         valid when the provider replaces its latest model.
 
         Returns:
-          an immutable BaselineBispectrum prepared by the theory producer.
+          a dictionary containing the bispectrum arrays and theory metadata.
         """
-        from .bihalofit import BiHalofitProducer
+        from theory.bihalofit.model import BiHalofitProducer
 
-        controls = accuracy_settings(value=self.accuracy)
-        resolution = (controls.accuracy_boost, controls.bispectrum_boost)
+        controls = self.compiled.init_3pcf_accuracy(value=self.accuracy)
+        resolution = (controls["accuracy_boost"], controls["bispectrum_boost"])
         if resolution != self._baseline_resolution:
             axes = {}
             for name in ("z", "logk", "logu", "v"):
                 original = self.bispectrum_table[name]
-                count = controls.count(
+                count = self.compiled.accuracy_count(accuracy=controls,
                     baseline=len(original), stage="bispectrum_boost", endpoints=True,
                 )
                 axes[name] = np.linspace(
@@ -507,7 +481,7 @@ class PhysicalProvider:
             axes["boost"] = self.bispectrum_table.get("boost", 2)
             self._baseline_producer = BiHalofitProducer(**axes)
             self._baseline_resolution = resolution
-        settings = controls.model_settings(
+        settings = self.compiled.accuracy_model_settings(accuracy=controls,
             kernel_nz=self.kernel_nz, table_boost=self.table_boost,
             fit_nz=self.fit_nz,
         )
@@ -531,6 +505,7 @@ class PhysicalProvider:
         Side effects:
           Replaces the latest owned model when a physical input changes.
         """
+        self.accuracy = self.compiled.init_3pcf_accuracy(value=self.accuracy)
         numerical_key = self.numerical_key()
         cosmology = dict(self.reference)
         for name in COSMOLOGY_NAMES:
@@ -573,8 +548,8 @@ class PhysicalProvider:
                     source_z=self.base.get("source_z"),
                     include_bispectrum_background=True,
                 )
-            self.cosmology_tables = immutable_copy(value=tables)
-            self.cosmology_metadata = immutable_copy(value=metadata)
+            self.cosmology_tables = deepcopy(x=tables)
+            self.cosmology_metadata = deepcopy(x=metadata)
             self.cosmology_key = key
             self.producer_key = producer_key
         shifts = np.zeros(self.nbin, dtype=np.float64)
@@ -608,7 +583,7 @@ class PhysicalProvider:
                 metadata["variance"] = variance_record
             if baseline is not None:
                 metadata["bispectrum_source"] = "supplied"
-                metadata["baseline_bispectrum"] = baseline.record()
+                metadata["baseline_bispectrum"] = baseline["metadata"]
             if active_feedback is not None:
                 # A plain JSON copy records the response of this point,
                 # rather than exposing the producer's next cached table.
@@ -621,7 +596,7 @@ class PhysicalProvider:
                     z=self.base["z"], sources=self.base["sources"], shifts=shifts,
                 )
             else:
-                count = self.accuracy.count(
+                count = self.compiled.accuracy_count(accuracy=self.accuracy,
                     baseline=self.source_nz, stage="source_boost", endpoints=True,
                 )
                 nodes = np.linspace(start=0.0, stop=self.base["z"][-1],
@@ -644,18 +619,44 @@ class PhysicalProvider:
             model_tables["sources"] = tables["sources"]
             if "source_z" in tables:
                 model_tables["source_z"] = tables["source_z"]
-            self.model = physics_model(
-                compiled=self.compiled, tables=model_tables, kernel_nz=self.kernel_nz,
-                source_readers=self.source_readers, table_boost=self.table_boost,
-                fit_nz=self.fit_nz,
+            resolved_model = self.compiled.accuracy_model_settings(
                 accuracy=self.accuracy,
-                feedback=active_feedback,
-                pixel_window=self.pixel_window,
-                baseline=baseline,
-                variance=variance,
+                kernel_nz=self.kernel_nz,
+                table_boost=self.table_boost,
+                fit_nz=self.fit_nz,
             )
-            self.model_tables = immutable_copy(value=tables)
-            self.model_metadata = immutable_copy(value=metadata)
+            response = {}
+            if active_feedback is not None:
+                response = dict(active_feedback.native)
+                response["boost"] = self.compiled.accuracy_count(
+                    accuracy=self.accuracy,
+                    baseline=response["boost"],
+                    stage="feedback_table_boost",
+                )
+            self.model = self.compiled.production.PhysicsModelWithBispectrum(
+                k=model_tables["k"],
+                p_linear0=model_tables["p_linear0"],
+                z=model_tables["z"],
+                p_nonlinear=model_tables["p_nonlinear"],
+                chi=model_tables["chi"],
+                dz_dchi=model_tables["dz_dchi"],
+                growth=model_tables["growth"],
+                sources=model_tables["sources"],
+                omega_m=model_tables["omega_m"],
+                sigma8=model_tables["sigma8"],
+                omega_m_z=model_tables["omega_m_z"],
+                source_z=model_tables.get("source_z"),
+                los_z=self.compiled.accuracy_los_nodes(accuracy=self.accuracy, baseline=model_tables["los_z"]),
+                baseline=baseline["native"],
+                kernel_nz=resolved_model["kernel_nz"],
+                table_boost=resolved_model["table_boost"],
+                fit_nz=resolved_model["fit_nz"],
+                source_readers=self.source_readers,
+                feedback=response,
+                pixel_window=self.pixel_window,
+            )
+            self.model_tables = deepcopy(x=tables)
+            self.model_metadata = deepcopy(x=metadata)
             self.model_key = combined
             self._active_feedback = active_feedback
             self._active_baseline = baseline
@@ -702,294 +703,449 @@ class PhysicalProvider:
         return model, prepared, record
 
 
-class JointPrediction(PreparedGeometry):
-    """Evaluate all selected xi± and Map3 rows in their original order.
+
+
+def load_tables(path):
+    """Read a numerical NPZ file without executing serialized Python objects.
 
     Arguments:
-      compiled = project extension.
-      rows = explicit full or selected SurveyRows.
-      provider = PhysicalProvider supplying cosmology and source tables.
-      ia_defaults = explicit physical IA choices, overridden by named parameters.
-      aperture_estimator = 'full_filter' or 'finite_sas'.
-      aperture_settings = full_filter ell/phi quadrature dictionaries, or
-          finite_sas keyword arguments for Map3Engine.
-      xi_settings = ell quadrature dictionary, theta_count, pair_weight.
-      two_point_core = optional CoreTwoPoint for the unchanged CFASTPT model.
-      accuracy = geometry and quadrature boosts, resolved from baseline settings.
-          Construct another prediction to change these prepared settings.
-    Side effects:
-      Retains geometry plans; uses the provider's exact physical-input cache.
+      path = file written by save_tables or following the same schema.
+    Returns:
+      validated table dictionary and JSON metadata dictionary.
+    Raises:
+      ValueError for a wrong format version or inconsistent physical arrays.
+      OSError when the file cannot be read.
     """
+    with np.load(Path(path), allow_pickle=False) as archive:
+        metadata = json.loads(str(archive["metadata_json"].item()))
+        if metadata.get("format") != "cosmolike-3pcf-tables-v1":
+            raise ValueError("Unknown physics-table format; supply the v1 NPZ schema.")
+        tables = {}
+        for name in ('k', 'p_linear0', 'z', 'p_nonlinear', 'chi', 'dz_dchi', 'growth', 'sources', 'los_z'):
+            tables[name] = archive[name]
+        for name in ('omega_m', 'omega_de', 'w0', 'wa', 'ns', 'sigma8'):
+            tables[name] = metadata[name]
+        for name in ('p_linear', 'p_linear_cb', 'p_linear_nu') + ('source_z', 'source_native_z', 'source_native', 'source_native_low', 'source_native_high') + ('omega_m_z',):
+            if name in archive.files:
+                tables[name] = archive[name]
+        validated = validate_tables(tables=tables)
+    return validated, metadata
 
-    def __init__(
-        self, compiled, rows, provider, ia_defaults, aperture_estimator,
-        aperture_settings, xi_settings=None, two_point_core=None,
-        accuracy=None,
-    ):
-        """Prepare fixed geometry separately from all varied physical parameters.
 
-        Arguments:
-          All arguments follow the class contract; no data compression occurs.
-        Returns:
-          nothing; only finite_sas mode constructs FFT plans at this point.
-        Raises:
-          ValueError for an unsupported estimator or missing xi settings.
-        """
-        if aperture_estimator not in ("full_filter", "finite_sas"):
-            raise ValueError("Aperture estimator must be full_filter or finite_sas.")
-        self.compiled = compiled
-        # Own the row definition used by the retained geometry and mean.
-        # Editing the caller's arrays must not change only half of a plan.
-        self.rows = rows.select(indices=np.arange(rows.values.size, dtype=np.int64))
-        self.provider = provider
-        self.ia_defaults = dict(ia_defaults)
-        self.estimator = aperture_estimator
-        self.two_point_core = two_point_core
-        self.accuracy = accuracy_settings(value=accuracy)
-        self.map_indices = np.flatnonzero(rows.kind == "map3")
-        self.xi_indices = np.flatnonzero(rows.kind != "map3")
-        self.map_engine = None
-        self.xi_engine = None
-        self.groups = {}
-        self._cached_model = None
-        self._cached_ia_key = None
-        self._cached_mean = None
-        aperture_settings = deepcopy(aperture_settings)
-        if aperture_estimator == "full_filter":
-            projection = aperture_settings.get("projection_settings", {})
-            aperture_settings["projection_settings"] = self.accuracy.projection_settings(
-                baseline=projection,
-            )
-        if self.map_indices.size:
-            self.map_rows = rows.select(indices=self.map_indices)
-            if aperture_estimator == "finite_sas":
-                self.map_engine = Map3Engine(
-                    compiled=compiled, rows=self.map_rows, **aperture_settings,
-                    accuracy=self.accuracy,
-                )
-            else:
-                ell_settings = self.accuracy.quadrature_settings(
-                    baseline=aperture_settings["ell"], stage="aperture_ell_boost",
-                )
-                phi_settings = self.accuracy.quadrature_settings(
-                    baseline=aperture_settings["phi"], stage="aperture_phi_boost",
-                )
-                self.ell, self.dell = quadrature(**ell_settings)
-                self.phi, self.dphi = quadrature(**phi_settings)
-                self.projection_mode = aperture_settings.get(
-                    "projection_mode", "prepared",
-                )
-                if self.projection_mode not in ("prepared", "direct"):
-                    raise ValueError("Projection mode must be prepared or direct.")
-                batch_size = aperture_settings.get("projection_batch_size", 4)
-                if int(batch_size) != batch_size or batch_size < 1:
-                    raise ValueError("projection_batch_size must be a positive integer.")
-                self.projection_batch_size = int(batch_size)
-                self.projection_settings = dict(
-                    aperture_settings.get("projection_settings", {}),
-                )
-                self.projection_settings.setdefault(
-                    "ell_min", float(aperture_settings["ell"]["lower"]),
-                )
-                self.projection_settings.setdefault(
-                    "ell_max", float(aperture_settings["ell"]["upper"]),
-                )
-                self.projection_settings.setdefault("prepare_multipoles", 0)
-                if self.projection_settings["prepare_multipoles"] != 0:
-                    raise ValueError(
-                        "Full-filter projection does not require multipole tables."
-                    )
-                for row in range(self.map_rows.values.size):
-                    triplet = tuple(int(value) for value in self.map_rows.bins[row])
-                    if triplet not in self.groups:
-                        self.groups[triplet] = []
-                    self.groups[triplet].append(row)
-        if self.xi_indices.size:
-            if xi_settings is None:
-                raise ValueError(
-                    "Xi rows require explicit Fourier and angular-bin quadratures."
-                )
-            selected = rows.select(indices=self.xi_indices)
-            ell_settings = self.accuracy.quadrature_settings(
-                baseline=xi_settings["ell"], stage="xi_ell_boost",
-            )
-            ell, dell = quadrature(**ell_settings)
-            theta_count = self.accuracy.count(
-                xi_settings["theta_count"], stage="xi_theta_boost", integration=True,
-            )
-            if (theta_count != xi_settings["theta_count"]
-                    and not isinstance(xi_settings["pair_weight"], str)):
-                raise ValueError(
-                    "Refining xi theta nodes requires new measured pair weights; "
-                    "supply them at the desired baseline count or use uniform_area."
-                )
-            self.xi_engine = XiEngine(
-                compiled=compiled, rows=selected, ell=ell, dell=dell,
-                theta_count=theta_count,
-                pair_weight=xi_settings["pair_weight"],
-            )
-        self._seal_geometry()
+def save_tables(path, tables, metadata, overwrite=False):
+    """Write validated physics tables and their preparation choices together.
 
-    def cache_token(self):
-        """Identify the mutable numerical choices before an outer mean-cache read.
+    Arguments:
+      path = destination ending in .npz.
+      tables = physical arrays and scalars in the documented h units.
+      metadata = JSON-compatible preparation settings and source information.
+      overwrite = explicitly permit replacing an existing output.
+    Returns:
+      absolute output Path.
+    Raises:
+      ValueError for an invalid destination or input tables.
+      FileExistsError when overwrite is False and output already exists.
+    Side effects:
+      Writes the requested file, after all validation succeeds.
+    """
+    destination = Path(path).resolve()
+    if destination.suffix != ".npz":
+        raise ValueError("Physics-table output must end in .npz.")
+    if destination.exists() and not overwrite:
+        raise FileExistsError(f"Output exists: {destination}; choose another path.")
+    checked = validate_tables(tables=tables)
+    record = dict(metadata)
+    record["format"] = "cosmolike-3pcf-tables-v1"
+    arrays = {}
+    for name in ('k', 'p_linear0', 'z', 'p_nonlinear', 'chi', 'dz_dchi', 'growth', 'sources', 'los_z'):
+        arrays[name] = checked[name]
+    for name in ('omega_m', 'omega_de', 'w0', 'wa', 'ns', 'sigma8'):
+        record[name] = checked[name]
+    for name in ('p_linear', 'p_linear_cb', 'p_linear_nu') + ('source_z', 'source_native_z', 'source_native', 'source_native_low', 'source_native_high') + ('omega_m_z',):
+        if name in checked:
+            arrays[name] = checked[name]
+    arrays["metadata_json"] = np.array(json.dumps(record, sort_keys=True))
+    # An open file prevents NumPy from silently appending another suffix.
+    mode = "wb" if overwrite else "xb"
+    with destination.open(mode=mode) as stream:
+        np.savez_compressed(stream, **arrays)
+    return destination
 
-        Physical parameter values belong to the outer cache's parameter key.
-        This token adds settings that a notebook can change independently.
-        Geometry, reference tables and default IA values are immutable owned
-        inputs, so their owning object's identity is sufficient here.
-        """
-        provider = self.provider
-        return (
-            id(self), provider.mode, provider.halofit_version,
-            provider.numerical_key(),
+
+def _camb_power_limits(k, h, kmax_boltzmann, extrap_kmax):
+    """Separate the solved transfer range from the spectrum's extrapolated tail.
+
+    The output k array uses h/Mpc, while both limits use physical 1/Mpc,
+    matching the LSST likelihood. For example k=1000 h/Mpc at h=0.7 is a
+    query at 700/Mpc, not a request to integrate Boltzmann modes to 700/Mpc.
+    The default solver cutoff is supplied independently by the caller.
+    """
+    if (isinstance(kmax_boltzmann, (bool, np.bool_)) or not np.isfinite(kmax_boltzmann)
+            or kmax_boltzmann <= 0.0):
+        raise ValueError("kmax_boltzmann must be positive finite in 1/Mpc.")
+    required = float(k[-1] * h)
+    if extrap_kmax is None:
+        extrap_kmax = max(250.0, 1.01 * required)
+    if (isinstance(extrap_kmax, (bool, np.bool_)) or not np.isfinite(extrap_kmax)
+            or extrap_kmax < required):
+        raise ValueError(
+            f"extrap_kmax must cover the table's {required} 1/Mpc endpoint; "
+            "increase this interpolation limit, not the Boltzmann cutoff."
         )
+    return float(kmax_boltzmann), float(extrap_kmax)
 
-    def __call__(self, parameters):
-        """Evaluate the mean used by exact-key derivatives and Fisher forecasts.
 
-        Arguments:
-          parameters = cosmology, IA and optional m1..mN/dz1..dzN values.
-        Returns:
-          dimensionless [nrow] joint vector, with all selected two-point entries.
-        Raises:
-          ValueError for unknown parameter names or unavailable physical models.
-        Side effects:
-          May prepare new physical tables and the ordinary two-point core.
-        """
-        allowed = set(COSMOLOGY_NAMES + IA_NAMES)
-        if isinstance(self.provider.feedback, BaccoFeedback):
-            allowed.update(BACCO_PARAMETERS)
-        for index in range(self.provider.nbin):
-            allowed.add(f"m{index + 1}")
-            allowed.add(f"dz{index + 1}")
-        for name in parameters:
-            if name not in allowed:
+def camb_accuracy_settings(accuracy_boost=1.0, k_per_logint=0):
+    """Validate CAMB's independent integration and transfer-sampling controls.
+
+    Increasing output-table density cannot repair an inaccurate transfer
+    solution. These controls act inside CAMB; they do not enlarge its
+    maximum solved wavenumber or multiply the CosmoLike accuracy controls.
+
+    Arguments:
+      accuracy_boost = finite CAMB AccuracyBoost, at least one.
+      k_per_logint = integer transfer samples per log-k interval; zero uses
+          CAMB's existing automatic sampling, not zero transfer samples.
+    Returns:
+      float boost and integer sampling count suitable for exact cache keys.
+    Raises:
+      ValueError for Boolean, nonfinite or out-of-domain controls.
+    """
+    if (isinstance(accuracy_boost, (bool, np.bool_))
+            or not isinstance(accuracy_boost, (int, float, np.integer, np.floating))
+            or not np.isfinite(accuracy_boost) or accuracy_boost < 1.0):
+        raise ValueError("camb_accuracy_boost must be finite and at least one.")
+    if (isinstance(k_per_logint, (bool, np.bool_))
+            or not isinstance(k_per_logint, (int, float, np.integer, np.floating))
+            or not np.isfinite(k_per_logint)
+            or int(k_per_logint) != k_per_logint or k_per_logint < 0
+            or k_per_logint > np.iinfo(np.int32).max):
+        raise ValueError("camb_k_per_logint must be an integer from zero to INT_MAX.")
+    return float(accuracy_boost), int(k_per_logint)
+
+
+def camb_tables(
+    parameters, k, z, sources, los_z, halofit_version="takahashi",
+    kmax_boltzmann=5.0, extrap_kmax=None, source_z=None,
+    include_bispectrum_background=True,
+    camb_accuracy_boost=1.0, camb_k_per_logint=0,
+):
+    """Calculate the physical tables with the installed CAMB library.
+
+    The requested amplitude is sigma8. An initial linear calculation fixes
+    As. The matter transfer functions are then reused to calculate power
+    at that As, including its nonlinear correction; a second Boltzmann
+    evolution is unnecessary because the background and spectral shape
+    did not change. D(z)=sigma8_linear(z)/sigma8_linear(0)
+    supplies the scale-independent growth used by the port. With massive
+    neutrinos this is a chosen effective growth, not a replacement for
+    scale-dependent transfer functions. The full supplied nonlinear power
+    retains CAMB's neutrino dependence; the IA prescription and BiHalofit
+    still inherit their stated scale-independent-growth approximation.
+
+    Arguments:
+      parameters = omega_m, omega_b, h, ns, sigma8, w0, wa; optional mnu=0
+          in eV, num_massive_neutrinos=1 and nnu=3.046.
+      k = positive increasing output nodes in h/Mpc, including extrapolated tails.
+      z = increasing nodes beginning at zero, at most 150 transfer redshifts.
+      sources = [nbin,nsource] densities per unit redshift.
+      source_z = optional source nodes, independent of the <=150 power nodes.
+      los_z = positive integration nodes within the z range.
+      halofit_version = an installed CAMB nonlinear model name.
+      kmax_boltzmann = largest solved transfer wavenumber in 1/Mpc; default 5.
+      extrap_kmax = interpolation tail endpoint in 1/Mpc. None covers at least
+          250/Mpc and 1.01 times the output table's physical endpoint.
+      include_bispectrum_background = also save CAMB's Omega_m(z), defined
+          by CDM, baryons and massive neutrinos relative to critical density.
+          The supplied-bispectrum route requires this provider quantity;
+          the required bispectrum producer and halo covariance use this background.
+      camb_accuracy_boost = CAMB integration accuracy, independent of the
+          CosmoLike controls; default one preserves existing calculations.
+      camb_k_per_logint = CAMB transfer sampling per log-k interval; default
+          zero preserves its automatic grid. Output k is a separate grid.
+    Returns:
+      validated physical tables and metadata recording CAMB and model choices.
+    Raises:
+      ValueError for unavailable cosmology choices or invalid grids.
+      ImportError when CAMB is absent from the selected environment.
+    Side effects:
+      Runs CAMB serially; does not write files or alter an existing core state.
+    """
+    import camb
+
+    camb_accuracy_boost, camb_k_per_logint = camb_accuracy_settings(
+        accuracy_boost=camb_accuracy_boost, k_per_logint=camb_k_per_logint,
+    )
+    if not isinstance(include_bispectrum_background, (bool, np.bool_)):
+        raise ValueError("include_bispectrum_background must be a Boolean.")
+    required = ("omega_m", "omega_b", "h", "ns", "sigma8", "w0", "wa")
+    for name in required:
+        if name not in parameters or not np.isfinite(parameters[name]):
+            raise ValueError(f"CAMB input requires finite {name}.")
+    neutrino_mass = float(parameters.get("mnu", 0.0))
+    neutrino_count = int(parameters.get("num_massive_neutrinos", 1))
+    nnu = float(parameters.get("nnu", 3.046))
+    if not np.isfinite(neutrino_mass) or neutrino_mass < 0.0 or neutrino_count < 1:
+        raise ValueError(
+            "Require finite mnu>=0 and at least one massive-neutrino species."
+        )
+    h = float(parameters["h"])
+    omega_m = float(parameters["omega_m"])
+    omega_b = float(parameters["omega_b"])
+    if not 0.0 < omega_b < omega_m < 1.0 or h <= 0.0:
+        raise ValueError("CAMB producer requires 0<omega_b<omega_m<1 and h>0.")
+    k = np.asarray(k, dtype=np.float64)
+    z = np.asarray(z, dtype=np.float64)
+    if (k.ndim != 1 or k.size < 2 or k[0] <= 0.0 or np.any(np.diff(k) <= 0.0)
+            or z.ndim != 1 or z.size < 2 or z.size > 150 or z[0] != 0.0
+            or np.any(np.diff(z) <= 0.0) or not np.all(np.isfinite(k))
+            or not np.all(np.isfinite(z)) or parameters["sigma8"] <= 0.0):
+        raise ValueError(
+            "Require increasing positive k and 2..150 z nodes beginning at 0."
+        )
+    requested_extrapolation = extrap_kmax
+    kmax_boltzmann, extrap_kmax = _camb_power_limits(
+        k=k, h=h, kmax_boltzmann=kmax_boltzmann, extrap_kmax=extrap_kmax,
+    )
+    settings = camb.CAMBparams()
+    settings.set_cosmology(
+        H0=100.0 * h, ombh2=omega_b * h**2,
+        omch2=(omega_m - omega_b) * h**2, mnu=neutrino_mass, omk=0.0,
+        num_massive_neutrinos=neutrino_count, nnu=nnu,
+    )
+    # CAMB computes Omega_nu h^2 from its temperature/species convention.
+    # Subtract that exact value so omega_m includes neutrinos only once.
+    settings.omch2 = (omega_m - omega_b) * h**2 - settings.omnuh2
+    if settings.omch2 <= 0.0:
+        raise ValueError(
+            "The requested matter density leaves no positive cold dark matter."
+        )
+    settings.set_dark_energy(
+        w=parameters["w0"], wa=parameters["wa"], dark_energy_model="ppf",
+    )
+    # This seed amplitude is rescaled to the requested measured sigma8.
+    amplitude_seed = 2.1e-9
+    settings.InitPower.set_params(As=amplitude_seed, ns=parameters["ns"])
+    settings.WantCls = False
+    # Like the LSST likelihood, solve a bounded transfer range and let the
+    # power interpolator extend its high-k tail. Output table resolution and
+    # extent must not silently enlarge the Boltzmann differential equations.
+    if camb_accuracy_boost != 1.0:
+        settings.set_accuracy(AccuracyBoost=camb_accuracy_boost)
+    settings.set_matter_power(redshifts=z[::-1], kmax=kmax_boltzmann,
+                              k_per_logint=camb_k_per_logint, silent=True)
+    # Keep the same transfer sampling in both calls. Switching the nonlinear
+    # mode only after the amplitude calibration changes CAMB's k sampling
+    # and shifts its numerical sigma8 even though the linear scaling is exact.
+    settings.NonLinearModel.set_params(halofit_version=halofit_version)
+    settings.NonLinear = camb.model.NonLinear_both
+    first = camb.get_results(params=settings)
+    initial_sigma8 = float(first.get_sigma8()[-1])
+    amplitude = amplitude_seed * (parameters["sigma8"] / initial_sigma8)**2
+    settings.InitPower.set_params(As=amplitude, ns=parameters["ns"])
+    # This matter-only calculation has WantCls=False. CAMB can recalculate
+    # primordial powers, sigma8 and nonlinear corrections from the retained
+    # transfers; multiplying nonlinear P by an amplitude ratio would be wrong.
+    first.power_spectra_from_transfer(initial_power_params=settings.InitPower)
+    results = first
+    # Keep both CAMB interpolation limits in physical 1/Mpc. Convert queries
+    # and returned powers explicitly at the boundary, as in the LSST helper.
+    physical_k = k * h
+    power_conversion = h**3
+    linear = results.get_matter_power_interpolator(
+        nonlinear=False, hubble_units=False, k_hunit=False, extrap_kmax=extrap_kmax,
+    )
+    nonlinear = results.get_matter_power_interpolator(
+        nonlinear=True, hubble_units=False, k_hunit=False, extrap_kmax=extrap_kmax,
+    )
+    cold_linear = results.get_matter_power_interpolator(
+        nonlinear=False, var1="delta_nonu", var2="delta_nonu",
+        hubble_units=False, k_hunit=False, extrap_kmax=extrap_kmax,
+    )
+    sigma_z = np.asarray(results.get_sigma8(), dtype=np.float64)[::-1]
+    tables = {
+        "k": k,
+        "p_linear0": linear.P(z=0.0, kh=physical_k) * power_conversion,
+        "z": z,
+        "p_nonlinear": nonlinear.P(z=z, kh=physical_k) * power_conversion,
+        "p_linear": linear.P(z=z, kh=physical_k) * power_conversion,
+        "p_linear_cb": cold_linear.P(z=z, kh=physical_k) * power_conversion,
+        "chi": results.comoving_radial_distance(z=z) * h,
+        "dz_dchi": results.hubble_parameter(z=z) / (299792.458 * h),
+        "growth": sigma_z / sigma_z[0],
+        "sources": sources,
+        "los_z": los_z,
+        "omega_m": omega_m,
+        "omega_de": 1.0 - omega_m,
+        "w0": parameters["w0"],
+        "wa": parameters["wa"],
+        "ns": parameters["ns"],
+        "sigma8": float(sigma_z[0]),
+    }
+    if source_z is not None:
+        tables["source_z"] = source_z
+    if neutrino_mass > 0.0:
+        # The optional response conversion uses linear neutrino auto-power.
+        # Keep it explicitly: inferring a tiny neutrino transfer
+        # by subtracting two nearly equal cold/total amplitudes loses accuracy.
+        neutrino_linear = results.get_matter_power_interpolator(
+            nonlinear=False, var1="delta_nu", var2="delta_nu",
+            hubble_units=False, k_hunit=False, extrap_kmax=extrap_kmax,
+        )
+        tables["p_linear_nu"] = (
+            neutrino_linear.P(z=z, kh=physical_k) * power_conversion
+        )
+    # 299792.458 above is c in km/s; chi carries the extra h conversion.
+    metadata = {
+        "producer": "CAMB",
+        "camb_version": camb.__version__,
+        "halofit_version": halofit_version,
+        "kmax_boltzmann": kmax_boltzmann,
+        "camb_accuracy_boost": camb_accuracy_boost,
+        "camb_k_per_logint": camb_k_per_logint,
+        "extrap_kmax": extrap_kmax,
+        "extrap_kmax_requested": requested_extrapolation,
+        "camb_wavenumber_limit_units": "1/Mpc",
+        "power_extrapolation": "CAMB log-power tail",
+        "amplitude_method": "reuse_matter_transfers",
+        "parameters": dict(parameters),
+        "As": float(amplitude),
+        "omega_nu_h2": float(settings.omnuh2),
+        "sigma8_cb": float(np.asarray(results.get_sigmaR(
+            R=8.0, z_indices=-1, var1="delta_nonu", var2="delta_nonu",
+            hubble_units=True,
+        )).item()),
+        "sigma8_cb_definition": "CAMB linear delta_nonu top-hat R=8 Mpc/h at z=0",
+        "growth_definition": "linear sigma8(z)/sigma8(0)",
+        "massive_neutrino_effective_growth": neutrino_mass > 0.0,
+        "flat_background": True,
+    }
+    if include_bispectrum_background:
+        # Read each density from this CAMB solution. In particular, the
+        # neutrino background is not replaced with a pressureless a^-3 law.
+        matter = results.get_Omega(var="cdm", z=z)
+        matter = matter + results.get_Omega(var="baryon", z=z)
+        matter = matter + results.get_Omega(var="nu", z=z)
+        tables["omega_m_z"] = np.asarray(matter, dtype=np.float64)
+        metadata["omega_m_z_definition"] = (
+            "CAMB Omega_cdm(z)+Omega_baryon(z)+Omega_nu_massive(z)"
+        )
+    return validate_tables(tables=tables), metadata
+
+
+
+def validate_tables(tables):
+    """Copy and check the unit-specific arrays needed by PhysicsModel.
+
+    Rejecting a mismatched axis here prevents a Python exception from
+    becoming a fatal C validation message. The C++ layer repeats its own
+    checks because callers can also use the extension directly.
+
+    Arguments:
+      tables = dictionary containing ('k', 'p_linear0', 'z', 'p_nonlinear', 'chi', 'dz_dchi', 'growth', 'sources', 'los_z') and ('omega_m', 'omega_de', 'w0', 'wa', 'ns', 'sigma8').
+    Returns:
+      independent C-contiguous float64 arrays and scalar values.
+    Raises:
+      ValueError for missing fields, shapes, domains or normalization.
+    """
+    result = {}
+    for name in ('k', 'p_linear0', 'z', 'p_nonlinear', 'chi', 'dz_dchi', 'growth', 'sources', 'los_z'):
+        if name not in tables:
+            raise ValueError(f"Physics tables lack {name}; regenerate the input file.")
+        array = np.array(tables[name], dtype=np.float64, order="C", copy=True)
+        if array.size == 0 or not np.all(np.isfinite(array)):
+            raise ValueError(f"Physics table {name} must be nonempty and finite.")
+        result[name] = array
+    for name in ('omega_m', 'omega_de', 'w0', 'wa', 'ns', 'sigma8'):
+        if name not in tables or not np.isfinite(tables[name]):
+            raise ValueError(f"Physics metadata requires finite scalar {name}.")
+        result[name] = float(tables[name])
+    for name in ("k", "z", "los_z"):
+        axis = result[name]
+        if axis.ndim != 1 or axis.size < 2 or np.any(np.diff(axis) <= 0.0):
+            raise ValueError(f"{name} must be a strictly increasing 1D grid.")
+    k = result["k"]
+    z = result["z"]
+    if k[0] <= 0.0 or z[0] != 0.0:
+        raise ValueError(
+            "k must be positive and the physical redshift grid must start at 0."
+        )
+    log10k = np.log10(k)
+    uniform_segments(coordinates=log10k, name="log10(k)", maximum=1)
+    uniform_segments(coordinates=z, name="background z")
+    if result["los_z"][0] <= 0.0 or result["los_z"][-1] > z[-1]:
+        raise ValueError("LOS nodes must lie within 0<z<=the physical table maximum.")
+    for name in ("chi", "dz_dchi", "growth"):
+        if result[name].shape != z.shape:
+            raise ValueError(f"{name} must have one value per redshift node.")
+    if result["p_linear0"].shape != k.shape:
+        raise ValueError("p_linear0 must have one value per k node.")
+    if result["p_nonlinear"].shape != (z.size, k.size):
+        raise ValueError("p_nonlinear must have shape [nz,nk], with k contiguous.")
+    for name in ('source_z', 'source_native_z', 'source_native', 'source_native_low', 'source_native_high'):
+        if name in tables:
+            array = np.array(tables[name], dtype=np.float64, order="C", copy=True)
+            if array.size == 0 or not np.all(np.isfinite(array)):
+                raise ValueError(f"Source table {name} must be nonempty and finite.")
+            result[name] = array
+    source_z = result.get("source_z", z)
+    if (source_z.ndim != 1 or source_z.size < 2
+            or np.any(np.diff(source_z) <= 0.0) or source_z[0] < 0.0
+            or source_z[-1] > z[-1]):
+        raise ValueError("source_z requires increasing nodes within the background.")
+    uniform_segments(coordinates=source_z, name="source z")
+    source = result["sources"]
+    if source.ndim != 2 or source.shape[1] != source_z.size:
+        raise ValueError("sources must have shape [nbin,nsource] on source_z (or z).")
+    for name in ("p_linear0", "p_nonlinear", "dz_dchi", "growth"):
+        if np.any(result[name] <= 0.0):
+            raise ValueError(f"{name} must contain strictly positive values.")
+    if (result["chi"][0] != 0.0 or np.any(np.diff(result["chi"]) <= 0.0)
+            or abs(result["growth"][0] - 1.0) > 1.0e-12):
+        raise ValueError("Require increasing chi with chi(0)=0 and D(0)=1.")
+    if np.any(source < 0.0) or np.any(np.trapz(source, x=source_z, axis=1) <= 0.0):
+        raise ValueError("Each n(z) must be nonnegative with positive integral.")
+    if source_z[0] == 0.0 and np.any(source[:, 0] != 0.0):
+        raise ValueError("Each source curve must have n(0)=0 at the observer.")
+    native_fields = ("source_native_z" in result, "source_native" in result)
+    if native_fields[0] != native_fields[1]:
+        raise ValueError("Native sources require both source_native_z and source_native.")
+    if native_fields[0]:
+        native_z = result["source_native_z"]
+        native = result["source_native"]
+        if (native_z.ndim != 1 or native_z.size < 2 or native_z[0] < 0.0
+                or np.any(np.diff(native_z) <= 0.0)
+                or native.shape != (source.shape[0], native_z.size)
+                or np.any(native < 0.0)
+                or np.any(np.trapz(native, x=native_z, axis=1) <= 0.0)):
+            raise ValueError(
+                "Native source samples need increasing z and positive areas."
+            )
+    edge_fields = ("source_native_low" in result, "source_native_high" in result)
+    if edge_fields[0] != edge_fields[1] or (edge_fields[0] and not native_fields[0]):
+        raise ValueError(
+            "Native source edges require both edges and native midpoint arrays."
+        )
+    if edge_fields[0]:
+        _source_edge_arrays(native_z=result["source_native_z"],
+                            native_low=result["source_native_low"],
+                            native_high=result["source_native_high"])
+    if result["omega_m"] <= 0.0 or result["sigma8"] <= 0.0:
+        raise ValueError("omega_m and sigma8 must be positive.")
+    for name in ('p_linear', 'p_linear_cb', 'p_linear_nu'):
+        if name in tables:
+            values = np.array(tables[name], dtype=np.float64, order="C", copy=True)
+            if (values.shape != (z.size, k.size) or np.any(values <= 0.0)
+                    or not np.all(np.isfinite(values))):
+                raise ValueError(f"Optional {name} must be positive finite [nz,nk].")
+            result[name] = values
+    for name in ('omega_m_z',):
+        if name in tables:
+            values = np.array(tables[name], dtype=np.float64, order="C", copy=True)
+            if (values.shape != z.shape or np.any(values <= 0.0)
+                    or not np.all(np.isfinite(values))):
                 raise ValueError(
-                    f"Unknown prediction parameter {name}; check its spelling."
+                    f"Optional {name} must be positive finite [nz] on the background z grid."
                 )
-        ia = dict(self.ia_defaults)
-        for name in IA_NAMES:
-            if name in parameters:
-                ia[name] = parameters[name]
-        feedback_amplitude = ia.get("feedback_amplitude", 0.0)
-        if not np.isfinite(feedback_amplitude):
-            raise ValueError("feedback_amplitude must be finite.")
-        if feedback_amplitude != 0.0:
-            if self.provider.feedback is None:
-                raise ValueError("Nonzero feedback_amplitude needs paired response tables.")
-            if ia.get("fb", 0.0) != 0.0:
-                raise ValueError("Paired feedback cannot be combined with legacy fb.")
-        if isinstance(self.provider.feedback, BaccoFeedback) and feedback_amplitude != 1.0:
-            raise ValueError("Dynamic BACCO requires fixed feedback_amplitude=1.")
-        model, tables, metadata = self.provider.get(parameters=parameters)
-        calibration = np.zeros(self.provider.nbin, dtype=np.float64)
-        for index in range(self.provider.nbin):
-            calibration[index] = parameters.get(f"m{index + 1}", 0.0)
-        if not np.all(np.isfinite(calibration)):
-            raise ValueError("Shear calibration values must be finite.")
-        ia_key = parameter_key(parameters=ia, names=sorted(ia))
-        # The C model owns immutable copies of its cosmology and n(z).
-        # Object identity is sufficient only under that ownership contract;
-        # all mutable IA choices are compared by exact numerical value.
-        if self._cached_model is model and self._cached_ia_key == ia_key:
-            return self.calibrated_mean(values=self._cached_mean, calibration=calibration)
-        result = np.empty(self.rows.values.size, dtype=np.float64)
-        if self.map_indices.size:
-            if self.estimator == "finite_sas":
-                aperture = self.map_engine.evaluate(
-                    model=model, ia=ia,
-                )
-            else:
-                aperture = self.full_aperture_mean(model=model, ia=ia)
-            result[self.map_indices] = aperture
-        if self.xi_indices.size:
-            if self.two_point_core is None:
-                xi = self.xi_engine.evaluate(model=model, ia=ia)
-            else:
-                physical_parameters = dict(self.provider.reference)
-                physical_parameters.update(parameters)
-                two_point_metadata = dict(metadata)
-                two_point_metadata["paired_feedback_amplitude"] = feedback_amplitude
-                even, odd = self.two_point_core.spectra(
-                    parameters=physical_parameters,
-                    tables=feedback_power_tables(
-                        model=model, tables=tables, amplitude=feedback_amplitude,
-                    ),
-                    metadata=two_point_metadata, ia=ia,
-                    ell=self.xi_engine.ell, bins=self.xi_engine.rows.bins[:, :2],
-                )
-                xi = self.xi_engine.evaluate_spectra(
-                    spectra_e=even, spectra_b=odd,
-                )
-            result[self.xi_indices] = xi
-        if not np.all(np.isfinite(result)):
-            raise ValueError("Joint prediction contains a nonfinite value.")
-        self._cached_model = model
-        self._cached_ia_key = ia_key
-        self._cached_mean = immutable_copy(value=result)
-        return self.calibrated_mean(values=result, calibration=calibration)
-
-    def full_aperture_mean(self, model, ia):
-        """Integrate full Fourier filters with bounded batches of source tables.
-
-        Arguments:
-          model = immutable physical C model for this cosmology and sources.
-          ia = exact intrinsic-alignment and matter-response choices.
-        Returns:
-          uncalibrated aperture rows in their declared order.
-        Side effects:
-          Prepared mode allocates at most projection_batch_size projected
-          tables together; fixed Fourier quadrature then uses linear reads.
-          Direct mode evaluates every line-of-sight integral as a reference.
-        """
-        aperture = np.empty(self.map_indices.size, dtype=np.float64)
-        triplets = list(self.groups)
-        for start in range(0, len(triplets), self.projection_batch_size):
-            batch = triplets[start:start + self.projection_batch_size]
-            grids = None
-            if self.projection_mode == "prepared":
-                grids = model.projection_grids(
-                    bins=np.ascontiguousarray(batch, dtype=np.int32),
-                    parameters=ia, settings=dict(self.projection_settings),
-                )
-            for index, triplet in enumerate(batch):
-                indices = self.groups[triplet]
-                # The retained group is an immutable tuple. A list selects
-                # rows; a tuple would instead index separate NumPy axes.
-                filters = np.ascontiguousarray(self.map_rows.angles[list(indices)])
-                arguments = {
-                    "ell": self.ell, "dell": self.dell, "phi": self.phi,
-                    "dphi": self.dphi, "filters": filters,
-                }
-                if grids is None:
-                    values = model.aperture_full(
-                        **arguments, bins=np.ascontiguousarray(triplet, dtype=np.int32),
-                        parameters=ia,
-                    )
-                else:
-                    values = grids[index].aperture_full(**arguments)
-                aperture[list(indices)] = values
-            grids = None
-        return aperture
-
-    def calibrated_mean(self, values, calibration):
-        """Apply one multiplicative factor for every observed shear field.
-
-        A (1,1,2) aperture row contains two fields from sample 1, so its
-        factor is (1+m1)^2(1+m2). Calibration does not change any physical
-        projection or Fourier transform. Retaining their uncalibrated
-        result avoids repeating those calculations in calibration-only
-        Fisher displacements.
-
-        Arguments:
-          values = retained, uncalibrated [nrow] prediction.
-          calibration = finite [nbin] shear offsets.
-        Returns:
-          an owned [nrow] vector; the retained prediction is unchanged.
-        """
-        result = values.copy()
-        for row in range(result.size):
-            for source in self.rows.bins[row]:
-                if source >= 0:
-                    result[row] *= 1.0 + calibration[source]
-        return result
+            result[name] = values
+    return result

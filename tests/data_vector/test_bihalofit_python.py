@@ -1,4 +1,4 @@
-"""Check the Python BiHalofit equation, supplied inputs and immutable tables.
+"""Check the Python BiHalofit equation, supplied inputs and retained tables.
 
 The C comparison uses a saved copy of every input array and scalar. The
 background-density samples in that comparison deliberately reproduce the
@@ -7,7 +7,8 @@ provider-background change cannot be mistaken for a port error. No survey
 data vector, covariance or mask is read by these equation-level tests.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
+from native_inputs import check_bispectrum
 
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
@@ -19,8 +20,7 @@ import numpy as np
 import pytest
 from scipy.integrate import quad, simpson
 
-from des3pcf.bihalofit import (
-    BaselineBispectrum,
+from theory.bihalofit.model import (
     BiHalofit,
     BiHalofitProducer,
     _simpson_uniform,
@@ -28,7 +28,7 @@ from des3pcf.bihalofit import (
     fit_redshifts,
     input_hashes,
 )
-from des3pcf.bihalofit_theory import BiHalofitTheory
+from theory.bihalofit.bihalofit import bihalofit
 from test_physics_model import physical_inputs
 
 
@@ -181,7 +181,7 @@ def test_shared_variance_python_and_c_equations(compiled, source_readers):
     independent smoothing quadratures or a second sigma8 normalization.
     The existing equation tolerance covers library arithmetic only.
     """
-    from des3pcf.variance import SharedVariance
+    from theory.bihalofit.variance import SharedVariance
 
     native, supplied = comparison_inputs(source_readers=source_readers)
     engine = SharedVariance(compiled=compiled)
@@ -305,12 +305,12 @@ def test_table_matches_direct_nodes_and_block_sizes():
     one_block = make_producer(block_size=10000)
     first = small_blocks.prepare(tables=supplied)
     second = one_block.prepare(tables=supplied)
-    np.testing.assert_array_equal(first.native["log_bispectrum"],
-                                  second.native["log_bispectrum"])
+    np.testing.assert_array_equal(first["native"]["log_bispectrum"],
+                                  second["native"]["log_bispectrum"])
     shape = (small_blocks.z.size, small_blocks.logk.size,
              small_blocks.logu.size, small_blocks.v.size)
     model = BiHalofit(**supplied)
-    logarithm = first.native["log_bispectrum"].reshape(shape)
+    logarithm = first["native"]["log_bispectrum"].reshape(shape)
     for iz, ik, iu, iv in ((0, 0, 0, 0), (1, 2, 3, 1), (3, 4, 2, 3)):
         middle = np.exp(small_blocks.logk[ik])
         short = middle * np.exp(small_blocks.logu[iu])
@@ -319,9 +319,9 @@ def test_table_matches_direct_nodes_and_block_sizes():
                                z=small_blocks.z[iz])
         np.testing.assert_allclose(logarithm[iz, ik, iu, iv], np.log(value),
                                    rtol=0.0, atol=0.0)
-    assert set(first.native) == {
+    assert set(first["native"]) == {
         "z", "logk", "logu", "v", "log_bispectrum", "boost", "clamp"}
-    assert first.native["clamp"] == 0
+    assert first["native"]["clamp"] == 0
 
 
 @pytest.mark.parametrize("changed", [
@@ -335,7 +335,7 @@ def test_cache_keys_and_retained_old_outputs(changed):
     unused, supplied = comparison_inputs()
     producer = make_producer()
     original = producer.prepare(tables=supplied)
-    saved = original.native["log_bispectrum"].copy()
+    saved = original["native"]["log_bispectrum"].copy()
     assert producer.prepare(tables=supplied) is original
     replacement = dict(supplied)
     controls = {}
@@ -369,14 +369,10 @@ def test_cache_keys_and_retained_old_outputs(changed):
         controls[changed] = choices[changed]
     updated = producer.prepare(tables=replacement, **controls)
     assert updated is not original
-    assert updated.record()["input_sha256"] != original.record()["input_sha256"]
+    assert updated["metadata"]["input_sha256"] != original["metadata"]["input_sha256"]
     restored = producer.prepare(tables=supplied)
-    np.testing.assert_array_equal(restored.native["log_bispectrum"], saved)
-    np.testing.assert_array_equal(original.native["log_bispectrum"], saved)
-    with pytest.raises(ValueError):
-        original.native["log_bispectrum"].setflags(write=True)
-    with pytest.raises(AttributeError):
-        producer.z = np.linspace(start=0.0, stop=3.0, num=4)
+    np.testing.assert_array_equal(restored["native"]["log_bispectrum"], saved)
+    np.testing.assert_array_equal(original["native"]["log_bispectrum"], saved)
 
 
 def test_failure_preserves_last_valid_cache():
@@ -389,9 +385,6 @@ def test_failure_preserves_last_valid_cache():
     with pytest.raises(ValueError, match="positive"):
         producer.prepare(tables=bad)
     assert producer.prepare(tables=supplied) is original
-    record = original.record()
-    record["model"] = "caller edit"
-    assert original.record()["model"] != "caller edit"
 
 
 def test_matching_background_preserves_supplied_bytes():
@@ -400,13 +393,11 @@ def test_matching_background_preserves_supplied_bytes():
     supplied["omega_m_redshift"] = supplied["z"].copy()
     supplied["omega_m_z"] = 0.3 + 0.1 * supplied["z"]
     baseline = make_producer().prepare(tables=supplied)
-    assert baseline.background_omega_m_z.tobytes() == (
+    assert baseline["background_omega_m_z"].tobytes() == (
         supplied["omega_m_z"].tobytes())
-    saved = baseline.background_omega_m_z.copy()
+    saved = baseline["background_omega_m_z"].copy()
     supplied["omega_m_z"][:] = 0.8
-    np.testing.assert_array_equal(baseline.background_omega_m_z, saved)
-    with pytest.raises(ValueError):
-        baseline.background_omega_m_z.setflags(write=True)
+    np.testing.assert_array_equal(baseline["background_omega_m_z"], saved)
 
 
 def test_shared_producer_never_pairs_one_key_with_another_result():
@@ -428,13 +419,13 @@ def test_shared_producer_never_pairs_one_key_with_another_result():
             for index, future in enumerate(futures):
                 actual = future.result()
                 np.testing.assert_array_equal(
-                    actual.native["log_bispectrum"],
-                    expected[index].native["log_bispectrum"])
+                    actual["native"]["log_bispectrum"],
+                    expected[index]["native"]["log_bispectrum"])
         for index, tables in enumerate(inputs):
             actual = producer.prepare(tables=tables)
             np.testing.assert_array_equal(
-                actual.native["log_bispectrum"],
-                expected[index].native["log_bispectrum"])
+                actual["native"]["log_bispectrum"],
+                expected[index]["native"]["log_bispectrum"])
 
 
 @pytest.mark.parametrize("bad", ["shape", "irregular", "nonfinite"])
@@ -450,8 +441,15 @@ def test_invalid_baseline_is_rejected_before_native_construction(bad):
     else:
         values[0, 0, 0, 0] = np.nan
     with pytest.raises(ValueError):
-        BaselineBispectrum(z=redshift, logk=axis, logu=axis - 1.0,
-                           v=axis, log_bispectrum=values, metadata={})
+        check_bispectrum(baseline={"native": {
+            "z": redshift,
+            "logk": axis,
+            "logu": axis - 1.0,
+            "v": axis,
+            "log_bispectrum": values.ravel(),
+            "boost": 2,
+            "clamp": 0,
+        }})
 
 
 def test_invalid_physical_queries_are_explicit():
@@ -523,7 +521,7 @@ class ArrayProvider:
 def test_actual_theory_base_and_provider_contract(variance_source, variance_growth):
     """Exercise Cobaya's real Theory state management with explicit arrays."""
     background = np.linspace(start=0.0, stop=2.0, num=5)
-    theory = BiHalofitTheory(info={
+    theory = bihalofit(info={
         "baseline_z": np.linspace(start=0.0, stop=2.0, num=4).tolist(),
         "baseline_logk": np.linspace(start=-4.0, stop=2.0, num=4).tolist(),
         "baseline_logu": np.linspace(start=-5.0, stop=0.0, num=4).tolist(),
@@ -532,6 +530,7 @@ def test_actual_theory_base_and_provider_contract(variance_source, variance_grow
         "power_k": np.geomspace(start=1.0e-5, stop=1.0e3, num=96).tolist(),
         "stop_at_error": True,
         "variance_source": variance_source,
+        "variance_module": "cosmolike_des_3pcf_interface",
         "variance_growth": variance_growth,
     })
     provider = ArrayProvider()
@@ -542,25 +541,25 @@ def test_actual_theory_base_and_provider_contract(variance_source, variance_grow
     assert "Omega_nu_massive" in requirements
     assert theory.check_cache_and_compute(params_values_dict={},
                                           dependency_params=[provider.sigma8])
-    baseline = theory.get_bihalofit_baseline()
-    sampled = theory.get_bihalofit_background()
+    baseline = theory.get_matter_bispectrum()
+    sampled = theory.get_matter_bispectrum_background()
     expected = (provider.get_Omega_b(z=background)
                 + provider.get_Omega_cdm(z=background)
                 + provider.get_Omega_nu_massive(z=background))
     np.testing.assert_allclose(sampled["omega_m_z"], expected, rtol=2.0e-15)
     assert theory.check_cache_and_compute(params_values_dict={},
                                           dependency_params=[provider.sigma8])
-    assert theory.get_bihalofit_baseline() is baseline
+    assert theory.get_matter_bispectrum() is baseline
     provider.sigma8 = 0.82
     assert theory.check_cache_and_compute(params_values_dict={},
                                           dependency_params=[provider.sigma8])
-    changed = theory.get_bihalofit_baseline()
+    changed = theory.get_matter_bispectrum()
     assert changed is not baseline
     if variance_source == "shared":
         # This explicit provider changes only its sigma8 scalar. Its P and
         # normalized growth stay fixed, so shared smoothing keeps B fixed.
-        np.testing.assert_array_equal(changed.native["log_bispectrum"],
-                                      baseline.native["log_bispectrum"])
+        np.testing.assert_array_equal(changed["native"]["log_bispectrum"],
+                                      baseline["native"]["log_bispectrum"])
         assert theory.current_state["bihalofit_variance_record"]["growth_mode"] == variance_growth
     assert provider.pk_requests[0]["extrap_kmax"] > 700.0
     assert provider.pk_requests[0]["var_pair"] == ("delta_tot", "delta_tot")
@@ -569,8 +568,11 @@ def test_actual_theory_base_and_provider_contract(variance_source, variance_grow
     raw_power = provider.get_Pk_interpolator(
         nonlinear=False).P(z=0.0, k=provider.little_h * theory._power_k)
     raw_power *= provider.little_h**3
-    raw_hash = input_hashes(arrays={"p_linear0": raw_power}, settings={})
-    actual_hash = changed.record()["input_sha256"]["p_linear0"]
+    normalization = changed["metadata"]["linear_power_normalization"]
+    raw_hash = input_hashes(
+        arrays={"p_linear0": raw_power * normalization}, settings={},
+    )
+    actual_hash = changed["metadata"]["input_sha256"]["p_linear0"]
     assert actual_hash == raw_hash["p_linear0"]
     table = {
         "k": theory._power_k,
@@ -585,6 +587,16 @@ def test_actual_theory_base_and_provider_contract(variance_source, variance_grow
         "sigma8": provider.sigma8,
     }
     variance = None
+    if variance_source == "local":
+        from theory.bihalofit.variance import ReferenceVariance
+        variance, independent_normalization, unused = ReferenceVariance().prepare(
+            tables=table,
+            fit_nz=theory.fit_nz,
+            table_boost=theory.table_boost,
+            source_readers=theory.source_readers,
+        )
+        assert independent_normalization == normalization
+        table["p_linear0"] = table["p_linear0"] * normalization
     if variance_source == "shared":
         table["omega_m"] = float(table["omega_m_z"][0])
         table["p_linear"] = table["growth"][:, None]**2 * table["p_linear0"][None, :]
@@ -597,6 +609,6 @@ def test_actual_theory_base_and_provider_contract(variance_source, variance_grow
         for name in ("z", "rnl", "neff", "sigma8"):
             variance[name] = snapshot[name]
     expected_owner = theory._producer.prepare(tables=table, variance=variance)
-    np.testing.assert_allclose(changed.native["log_bispectrum"],
-                               expected_owner.native["log_bispectrum"],
+    np.testing.assert_allclose(changed["native"]["log_bispectrum"],
+                               expected_owner["native"]["log_bispectrum"],
                                rtol=2.0e-14, atol=2.0e-14)

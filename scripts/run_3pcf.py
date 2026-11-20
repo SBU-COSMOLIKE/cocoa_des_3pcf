@@ -5,8 +5,8 @@ Example, from this project directory:
 
 Absolute paths also work from another directory. Every path in the
 JSON or YAML file is relative to that file. ``--validate-config`` reads the
-configuration and reports missing inputs without importing an extension,
-running CAMB, or evaluating a physical integral.
+configuration and reports missing inputs. Native code resolves numerical
+settings; no CAMB solve or physical integral runs.
 
 The four commands separate expensive physical-table preparation, repeated
 mean predictions, one fiducial covariance, and parameter derivatives. The
@@ -15,6 +15,7 @@ and power tables. Output NPZ files retain
 the full row labels, input choices and named arrays; no data compression or
 unannounced scale selection occurs.
 """
+
 
 import argparse
 from dataclasses import asdict
@@ -44,26 +45,27 @@ import numpy as np
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "python"))
+sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
-from des3pcf.inputs import camb_tables, load_tables, save_tables, camb_accuracy_settings
-from des3pcf.inputs import shifted_sources, reconstructed_sources
+from des3pcf.physical_provider import camb_tables, load_tables, save_tables, camb_accuracy_settings
+from des3pcf.survey import shifted_sources
+from des3pcf.survey import reconstructed_sources
 from des3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows, read_survey
 from des3pcf.survey import read_joint_covariance, read_source_distributions
-from des3pcf.pipeline import PhysicalProvider, JointPrediction
+from des3pcf.physical_provider import PhysicalProvider
+from des3pcf.pipeline import JointPrediction
 from des3pcf.pipeline import COSMOLOGY_NAMES, IA_NAMES
 from des3pcf.feedback import load_feedback
-from des3pcf.bacco_feedback import BaccoFeedback, BaccoSettings, BACCO_PARAMETERS
-from des3pcf.baryon_scenarios import installed_bacco_weights
+from theory.bacco_bispectrum.response import BaccoFeedback, BaccoSettings, BACCO_PARAMETERS
+from theory.bacco_bispectrum.emulator import installed_bacco_weights
 from des3pcf.pixel_window import load_healpix_window
-from des3pcf.core_two_point import CoreTwoPoint
-from des3pcf.covariance import covariance_inputs, shape_noise
-from des3pcf.accuracy import accuracy_settings
-from des3pcf.forecast import ExactMeanCache, differentiate, fisher_matrix
-from des3pcf.forecast import parameter_covariance, figure_of_merit
-from des3pcf.forecast import symmetric_matrix
-from des3pcf.fisher_comparison import compare_information, marginalized_errors
-from des3pcf.precision import precision_expansion
+from cosmolike_des_3pcf_interface import covariance_inputs, shape_noise
+from cosmolike_notebook_utils.fisher import ExactMeanCache, differentiate, fisher_matrix
+from cosmolike_notebook_utils.fisher import parameter_covariance, figure_of_merit
+from cosmolike_notebook_utils.fisher import symmetric_matrix
+from cosmolike_notebook_utils.fisher import compare_information, marginalized_errors
+from cosmolike_notebook_utils.covariance.precision import precision_expansion
 from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 
@@ -77,6 +79,9 @@ TERM_NAMES = (
     "connected_one_halo",
     "halo_abundance_response",
 )
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def checked_fields(mapping, allowed, required, name):
@@ -114,7 +119,7 @@ def grid_values(settings):
     optional logarithmic spacing. Its endpoints are included. For a positive
     logarithmic grid, include_zero adds one initial zero node; count remains
     the number of positive nodes. Quadrature settings are passed separately
-    to des3pcf.covariance.quadrature.
+    to the native covariance quadrature.
     """
     if isinstance(settings, list):
         values = np.asarray(settings, dtype=np.float64)
@@ -163,7 +168,7 @@ def grid_values(settings):
 
 
 def load_configuration(path, command):
-    """Read the v1 schema and check choices before any extension import."""
+    """Read the v1 schema and check choices before preparing a physical model."""
     configuration_path = Path(path).resolve()
     content = configuration_path.read_text(encoding="utf-8")
     if configuration_path.suffix.lower() in (".yaml", ".yml"):
@@ -201,7 +206,7 @@ def load_configuration(path, command):
     )
     # Save all factors, including defaults, so reopening a result cannot
     # substitute a newer code default for its numerical preparation.
-    config["accuracy"] = accuracy_settings(value=config.get("accuracy")).record()
+    config["accuracy"] = ci.init_3pcf_accuracy(value=config.get("accuracy"))
     if "pixel_window" in config:
         checked_fields(mapping=config["pixel_window"],
                        allowed={"path", "nside", "sha256"},
@@ -420,16 +425,6 @@ def load_configuration(path, command):
         for name in ("directory", "module"):
             if name not in two_point:
                 raise ValueError(f"core_tatt requires two_point.{name}.")
-        # Construction checks every numerical control without touching the
-        # ordinary core. The actual module is installed only for evaluation.
-        CoreTwoPoint(
-            core=None, nbin=nbin, threads=config["threads"],
-            interpolation_type=two_point.get("interpolation_type", 0),
-            accuracy_boost=two_point.get("accuracy_boost", 1.0),
-            integration_accuracy=two_point.get("integration_accuracy", 0),
-            fpt_internal_boost=two_point.get("fpt_internal_boost", 0.5),
-            ell_internal=two_point.get("ell_internal", 192),
-        )
     has_xi = rows.get("xi_edges_arcmin") is not None
     if rows["mode"] == "measurement":
         has_xi = rows.get("two_point") is not None
@@ -781,7 +776,7 @@ def supplied_bispectrum_settings(physics):
         if "z" not in physics:
             # Fixed-table jobs resolve the endpoint from the loaded background.
             return None
-        from des3pcf.bihalofit import bispectrum_axes
+        from theory.bihalofit.model import bispectrum_axes
 
         return bispectrum_axes(zmax=float(grid_values(settings=physics["z"])[-1]))
     table = physics["bispectrum_table"]
@@ -795,7 +790,7 @@ def supplied_bispectrum_settings(physics):
     for name in ("z", "logk", "logu", "v"):
         axes[name] = grid_values(settings=table[name])
     axes["boost"] = table.get("boost", 2)
-    from des3pcf.bihalofit import BiHalofitProducer
+    from theory.bihalofit.model import BiHalofitProducer
 
     BiHalofitProducer(**axes)
     return axes
@@ -893,11 +888,8 @@ def prediction_for_run(compiled, config, path, rows, provider):
     core_adapter = None
     core = mean["two_point"]
     if core["mode"] == "core_tatt" and np.any(rows.kind != "map3"):
-        directory = resolve_path(path, core["directory"])
-        sys.path.insert(0, str(directory))
-        imported = importlib.import_module(name=core["module"])
-        core_adapter = CoreTwoPoint(
-            core=imported, nbin=config["source"]["nbin"],
+        core_adapter = dict(
+            core=compiled, nbin=config["source"]["nbin"],
             threads=config["threads"],
             interpolation_type=core.get("interpolation_type", 0),
             accuracy_boost=core.get("accuracy_boost", 1.0),
@@ -947,7 +939,7 @@ def evaluate(compiled, config, path, metadata, rows, provider, overwrite):
                                     rows=rows, provider=provider)
     second_extension = None
     if prediction.two_point_core is not None:
-        second_extension = prediction.two_point_core.core.__file__
+        second_extension = prediction.compiled.__file__
     metadata["prediction_identity"] = prediction_identity(
         config=config,
         configuration_path=path,
@@ -957,7 +949,7 @@ def evaluate(compiled, config, path, metadata, rows, provider, overwrite):
     )
     vector = prediction(parameters=config["parameters"])
     if provider._active_baseline is not None:
-        metadata["baseline_bispectrum"] = provider._active_baseline.record()
+        metadata["baseline_bispectrum"] = provider._active_baseline["metadata"]
     if provider._active_feedback is not None:
         metadata["feedback_reference"] = provider._active_feedback.record()
     arrays = {"mean": vector}
@@ -1013,7 +1005,12 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
     grids = dict(settings["grids"])
     grids["profile_radius"] = grid_values(settings=grids["profile_radius"])
     inputs = covariance_inputs(
-        rows=rows, noise=noise, grids=grids, physical=settings["physical"],
+        kind=rows.kind.tolist(),
+        bins=rows.bins,
+        angles=rows.angles,
+        noise=noise,
+        grids=grids,
+        physical=settings["physical"],
         theta_count=settings["theta_count"],
         pair_weight=settings["pair_weight"],
         accuracy=config["accuracy"],
@@ -1028,7 +1025,7 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
             copied["input_sha256"] = dict(copied["input_sha256"])
             metadata[name] = copied
     if provider._active_baseline is not None:
-        metadata["baseline_bispectrum"] = provider._active_baseline.record()
+        metadata["baseline_bispectrum"] = provider._active_baseline["metadata"]
     if provider._active_feedback is not None:
         metadata["feedback_reference"] = provider._active_feedback.record()
     model_mean, terms = compiled.production.physical_covariance(
@@ -1100,7 +1097,7 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
                                     rows=rows, provider=provider)
     two_point_path = None
     if prediction.two_point_core is not None:
-        two_point_path = prediction.two_point_core.core.__file__
+        two_point_path = prediction.compiled.__file__
     metadata["prediction_identity"] = prediction_identity(
         config=config,
         configuration_path=path,
@@ -1115,7 +1112,7 @@ def fisher(compiled, config, path, metadata, rows, provider, overwrite):
     # the provider at a displaced point. ExactMeanCache reuses this center.
     cached(parameters=reference)
     if provider._active_baseline is not None:
-        metadata["baseline_bispectrum"] = provider._active_baseline.record()
+        metadata["baseline_bispectrum"] = provider._active_baseline["metadata"]
     if provider._active_feedback is not None:
         metadata["feedback_reference"] = provider._active_feedback.record()
     names, mean, derivative, refined = differentiate(

@@ -17,12 +17,12 @@ from scipy.linalg import solve_triangular
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "python"))
 sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 import run_3pcf as driver
-from des3pcf.forecast import ExactMeanCache, differentiate, figure_of_merit
-from des3pcf.fisher_comparison import compare_information, marginalized_errors
+from cosmolike_notebook_utils.fisher import ExactMeanCache, differentiate, figure_of_merit
+from cosmolike_notebook_utils.fisher import compare_information, marginalized_errors
 from des3pcf.provenance import file_digest, prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 
@@ -57,7 +57,7 @@ def _identity(config, path, compiled, prediction):
     identity = prediction_identity(
         config=config, configuration_path=path, project=PROJECT,
         three_point_path=compiled.__file__,
-        two_point_path=prediction.two_point_core.core.__file__,
+        two_point_path=prediction.compiled.__file__,
     )
     identity["study_driver_sha256"] = file_digest(path=__file__)
     identity["resolved_configuration"] = config

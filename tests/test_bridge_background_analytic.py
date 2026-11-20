@@ -280,7 +280,7 @@ def background_baseline(compiled, inputs):
     accuracy experiment. Use the Python fit with shared variance, as the
     former internal bridge did, and compare identical B in both projectors.
     """
-    from des3pcf.bihalofit import BiHalofitProducer, bispectrum_axes
+    from theory.bihalofit.model import BiHalofitProducer, bispectrum_axes
 
     snapshot = compiled.core.variance_snapshot(
         z=np.linspace(start=0.0, stop=inputs["z"][-1], num=33),
@@ -292,7 +292,7 @@ def background_baseline(compiled, inputs):
         zmax=inputs["z"][-1], counts=(9, 65, 33, 17),
     ))
     return dict(producer.prepare(tables=tables, variance=fit,
-                                 source_readers=True).native)
+                                 source_readers=True)["native"])
 
 
 def install_background(*, compiled, inputs, construct_model=True):

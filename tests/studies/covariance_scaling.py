@@ -3,8 +3,8 @@ r"""Measure controlled Map3 covariance calculations in separate CLI processes.
 Example, from the project directory:
   python -B tests/studies/covariance_scaling.py run \
     --extension /path/to/cosmolike_des_3pcf_interface.so \
-    --tables outputs/openmp_scaling_ia_extrapolated/tables/threepcf_nla \
-    --output outputs/covariance_pilot --threads 1 --points 1
+    --tables chains/openmp_scaling_ia_extrapolated/tables/threepcf_nla \
+    --output chains/covariance_pilot --threads 1 --points 1
 
 The table bank supplies one warmup and changed physical cosmologies. No CAMB
 calculation runs here. Four source bins and four equal aperture radii give
@@ -27,6 +27,7 @@ process; it checks all saved output bits against the first thread count and,
 when requested, a prior study. A pilot uses --threads 1 --points 1. Increase
 individual --nell, --nradius or other grid counts for a larger workload.
 """
+
 
 import argparse
 import hashlib
@@ -63,6 +64,9 @@ TERM_NAMES = (
     "connected_one_halo",
     "halo_abundance_response",
 )
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def save_json(path, value):
@@ -282,7 +286,7 @@ def build_inputs(settings):
       ValueError if the shared quadrature or survey-row checks reject inputs.
     """
     import numpy as np
-    from des3pcf.covariance import covariance_inputs
+    from cosmolike_des_3pcf_interface import covariance_inputs
     from des3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows
 
     radii = np.asarray(settings["aperture_radii_arcmin"])
@@ -366,7 +370,12 @@ def build_inputs(settings):
         physical[name] = settings[name]
     noise = np.eye(4) * settings["diagonal_noise_steradian"]
     inputs = covariance_inputs(
-        rows=rows, noise=noise, grids=grids, physical=physical,
+        kind=rows.kind.tolist(),
+        bins=rows.bins,
+        angles=rows.angles,
+        noise=noise,
+        grids=grids,
+        physical=physical,
         theta_count=settings["theta_count"],
         pair_weight=settings["pair_weight"],
     )
@@ -480,8 +489,8 @@ def run_worker(job_path):
       missing physical families or a prediction unaffected by changed inputs.
     """
     import numpy as np
-    from des3pcf.inputs import load_tables
-    from des3pcf.mean import physics_model
+    from des3pcf.physical_provider import load_tables
+    from theory_inputs import physics_model
     from des3pcf.scaling import _runtime_check
 
     job_file = Path(job_path)
@@ -536,7 +545,7 @@ def run_worker(job_path):
         tables["los_z"] = np.linspace(
             start=lower, stop=upper, num=settings["counts"]["nlos"],
         )
-        from des3pcf.bihalofit import bispectrum_axes, prepare_reference_bispectrum
+        from theory.bihalofit.model import bispectrum_axes, prepare_reference_bispectrum
 
         model_tables, baseline = prepare_reference_bispectrum(
             tables=tables, axes=bispectrum_axes(zmax=tables["z"][-1]),
@@ -718,7 +727,7 @@ def run_controller(args):
         "survey",
         "accuracy",
     ):
-        source = PROJECT / "python" / "des3pcf" / f"{name}.py"
+        source = PROJECT / "scripts" / "des3pcf" / f"{name}.py"
         source_record = identity(path=source)
         definition["python_source_sha256"][name] = source_record["sha256"]
     baseline = None
@@ -911,7 +920,8 @@ def main():
     args = parser.parse_args()
     if args.command == "run" and args.timeout_seconds <= 0:
         parser.error("--timeout-seconds must be positive.")
-    sys.path.insert(0, str(PROJECT / "python"))
+    sys.path.insert(0, str(PROJECT / "scripts"))
+    sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
     from threadpoolctl import threadpool_limits
 
     # The environment limits libraries loaded later. This context also fixes

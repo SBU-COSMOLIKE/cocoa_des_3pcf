@@ -151,10 +151,10 @@ establish survey-level convergence of these grids or a published forecast.
 
 Dated records under `benchmarks/` keep the measured times, figures,
 binary identities and saved vectors; this guide does not repeat their
-numbers. The [repeated-work comparison](../../tests/timing/2026-11-18/README.md)
+numbers. The [repeated-work comparison](2026-11-18/README.md)
 measures the implementation this project builds, for both the mean
 prediction and the covariance workload. The
-[Apple M2 Pro record](../../tests/timing/2026-11-17/README.md) measures the
+[Apple M2 Pro record](2026-11-17/README.md) measures the
 original implementation on the same ten points and machine, with LSST Y1
 as the control calculation. Each record names its resolution and the work
 inside its intervals; neither times the accuracy-tested Fisher settings.

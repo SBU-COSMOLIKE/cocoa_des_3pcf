@@ -9,13 +9,14 @@ These are fiducial mean checks, not derivative or FoM convergence tests.
 
 Example from the project directory, after the baseline Fisher has finished:
   python tests/studies/angular_order_study.py \
-    runs/tatt_accuracy/triangle_1p5.json --output runs/tatt_angular_orders
+    chains/tatt_accuracy/triangle_1p5.json --output chains/tatt_angular_orders
 Repeat the same command with --execute to request physical calculations.
 The installed script discovers its project from tests/studies/. An explicit
 --project overrides that location. The default explanatory note is its
 sibling angular_order_results.md. Use a separate output directory and
 baseline configuration for NLA. Every invocation defaults to preflight.
 """
+
 
 import argparse
 from copy import deepcopy
@@ -91,6 +92,9 @@ ROW_KEYS = (
 )
 
 
+import cosmolike_des_3pcf_interface as ci
+
+
 def project_directory(requested):
     """Find the installed project, or validate an explicit project directory.
 
@@ -108,7 +112,7 @@ def project_directory(requested):
         ]
     for candidate in candidates:
         if ((candidate / "scripts/run_3pcf.py").is_file()
-                and (candidate / "python/des3pcf/provenance.py").is_file()):
+                and (candidate / "scripts/run_3pcf.py").is_file()):
             return candidate.resolve()
     raise ValueError("Pass --project with the des_3pcf project directory.")
 
@@ -211,11 +215,13 @@ def run(configuration, project, output, plan_note, execute=False):
     if not (project / "scripts/run_3pcf.py").is_file():
         raise ValueError("--project must name the des_3pcf project directory.")
     sys.path.insert(0, str(project / "scripts"))
-    sys.path.insert(0, str(project / "python"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
+    sys.path.insert(0, str(project / "scripts"))
+    sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import run_3pcf as driver
     from run_fisher_accuracy import absolute_configuration
-    from des3pcf.accuracy import accuracy_settings
-    from des3pcf.mean import aligned_fft_grid
+
+    from cosmolike_des_3pcf_interface import aligned_fft_grid
     from des3pcf.provenance import file_digest, prediction_identity
     from des3pcf.provenance import verify_prediction_identity
     from scipy.linalg import solve_triangular
@@ -242,13 +248,13 @@ def run(configuration, project, output, plan_note, execute=False):
             or options.get("npsi", 200) != 200
             or not options.get("ordered_legs", True)):
         raise ValueError("This plan requires prepared L20/M20, 63-point ordered SAS.")
-    accuracy = accuracy_settings(value=config["accuracy"])
+    accuracy = ci.init_3pcf_accuracy(value=config["accuracy"])
     edges = driver.grid_values(settings=aperture["theta_edges_arcmin"])
     ell, indices = aligned_fft_grid(
         theta_lower=edges[:-1] * driver.ARCMIN_TO_RADIAN,
         dlnt=float(np.log(edges[1] / edges[0])),
         ell_min=aperture["ell_min"], ell_max=aperture["ell_max"],
-        minimum_size=accuracy.count(
+        minimum_size=ci.accuracy_count(accuracy=accuracy,
             baseline=aperture["minimum_size"], stage="fft_boost",
         ),
     )
@@ -328,11 +334,11 @@ def run(configuration, project, output, plan_note, execute=False):
         )
         content = json_bytes(record=candidate)
         candidate_path = output / (name + ".json")
-        candidate_accuracy = accuracy_settings(value=candidate["accuracy"])
-        resolved = candidate_accuracy.projection_settings(
+        candidate_accuracy = ci.init_3pcf_accuracy(value=candidate["accuracy"])
+        resolved = ci.accuracy_projection_settings(accuracy=candidate_accuracy,
             baseline=candidate["mean"]["aperture_settings"]["projection_settings"],
         )
-        direct_nmu = candidate_accuracy.count(
+        direct_nmu = ci.accuracy_count(accuracy=candidate_accuracy,
             baseline=aperture["nmu"], stage="angular_boost", integration=True,
         )
         if direct_nmu <= lmax:

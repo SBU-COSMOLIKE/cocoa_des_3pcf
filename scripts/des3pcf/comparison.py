@@ -8,7 +8,7 @@ implied by these finite-operator checks. All physical arrays use radians
 and the conventions named in each result.
 """
 
-from des3pcf.variance import reference_physics_model, reference_bihalofit
+from theory.bihalofit.variance import reference_physics_model, reference_bihalofit
 
 import argparse
 import hashlib
@@ -35,26 +35,25 @@ BLAS_VARIABLES = (
 )
 
 
-def load_comparison_config(path):
-    """Read YAML and resolve source/output paths beside that file.
+def validate_comparison_settings(settings):
+    """Check explicit notebook settings without reading a configuration file.
 
     Arguments:
-      path = a YAML filename with explicit source checkout locations.
+      settings = source locations, output location and small-grid controls.
+        Paths must be absolute; the notebook constructs them from its project
+        directory. None marks an unavailable original library.
     Returns:
-      a plain dictionary with absolute paths and validated small-grid knobs.
+      an owned dictionary with normalized string paths for child processes.
     Raises:
-      ValueError for unknown fields or unsafe grid/thread settings.
+      ValueError for unknown fields, relative paths or invalid grid/thread counts.
     """
-    import yaml
-
-    configuration_path = Path(path).expanduser().resolve()
-    settings = yaml.safe_load(configuration_path.read_text())
     required = {"format", "sources", "output", "threads", "nfft",
                 "lmax", "mmax", "phi_count", "frozen_physics"}
     if not isinstance(settings, dict) or set(settings) != required:
         raise ValueError(
-            f"Comparison YAML must contain exactly {sorted(required)}."
+            f"Comparison settings must contain exactly {sorted(required)}."
         )
+    settings = dict(settings)
     if settings["format"] != FORMAT:
         raise ValueError(f"Comparison format must be {FORMAT}.")
     limits = {
@@ -83,22 +82,25 @@ def load_comparison_config(path):
     for name, value in settings["sources"].items():
         if value is None:
             sources[name] = None
-        elif isinstance(value, str) and value.strip():
-            sources[name] = str((configuration_path.parent / value).resolve())
+        elif isinstance(value, (str, Path)) and str(value).strip():
+            source = Path(value).expanduser()
+            if not source.is_absolute():
+                raise ValueError(f"Source {name} must be an absolute path.")
+            sources[name] = str(source.resolve())
         else:
             raise ValueError(f"Source {name} needs a path or null.")
-    if (not isinstance(settings["output"], str)
-            or not settings["output"].strip()):
+    if (not isinstance(settings["output"], (str, Path))
+            or not str(settings["output"]).strip()):
         raise ValueError("output must name a writable result directory.")
+    output = Path(settings["output"]).expanduser()
+    if not output.is_absolute():
+        raise ValueError("output must be an absolute path.")
     settings["sources"] = sources
-    settings["output"] = str(
-        (configuration_path.parent / settings["output"]).resolve()
-    )
-    settings["configuration"] = str(configuration_path)
+    settings["output"] = str(output.resolve())
     return settings
 
 
-def comparison_status(path):
+def comparison_status(settings):
     """Check source hashes and dependency availability without scientific work.
 
     An unavailable or modified checkout is reported explicitly. The runner
@@ -106,7 +108,7 @@ def comparison_status(path):
     A commit label is supplemented by hashes of every imported TATT Python
     file and of the individual main/integrator files used here.
     """
-    settings = load_comparison_config(path=path)
+    settings = validate_comparison_settings(settings=settings)
     manifest = yaml.safe_load(MANIFEST.read_text())
     report = {"format": FORMAT, "sources": {}, "dependencies": {}}
     for package in ("numpy", "scipy", "astropy", "pandas", "mpi4py",
@@ -151,7 +153,10 @@ def _worker_environment(threads):
     environment["OMP_DYNAMIC"] = "FALSE"
     environment["MKL_DYNAMIC"] = "FALSE"
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
-    environment["PYTHONPATH"] = str(PROJECT / "python")
+    environment["PYTHONPATH"] = os.pathsep.join([
+        str(PROJECT / "scripts"),
+        str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"),
+    ])
     if sys.platform == "darwin":
         environment["OMP_PROC_BIND"] = "disabled"
     else:
@@ -159,11 +164,11 @@ def _worker_environment(threads):
     return environment
 
 
-def run_code_comparison(path):
+def run_code_comparison(settings):
     """Run available comparisons serially and save arrays plus provenance.
 
     Arguments:
-      path = comparison YAML filename.
+      settings = explicit source paths, output path and numerical controls.
     Returns:
       report dictionary containing source/dependency status and case records.
       A case's NPZ file contains complete port/reference outputs and a small
@@ -173,8 +178,8 @@ def run_code_comparison(path):
       Writes only the configured output directory, starts one child at a
       time, and sets every BLAS vendor to one thread in those children.
     """
-    settings = load_comparison_config(path=path)
-    report = comparison_status(path=path)
+    settings = validate_comparison_settings(settings=settings)
+    report = comparison_status(settings=settings)
     output = Path(settings["output"])
     output.mkdir(parents=True, exist_ok=True)
     report["configuration"] = settings
@@ -597,7 +602,7 @@ def _frozen_physics(settings, compiled):
               "matter comparison tolerance; the tree has a tighter test."),
     )]
     for mode in (0, 1):
-        parameters = dict(record["parameters"])
+        parameters = dict(record["parameters"], c1rho=0.0134)
         parameters["power_mode"] = mode
         actual = model.ia(
             sides=sides, redshifts=redshift, parameters=parameters

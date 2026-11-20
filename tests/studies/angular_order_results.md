@@ -121,7 +121,7 @@ and the same radial positions. Higher M raises the largest Bessel order
 to M+3; the transform permits that order without certifying its
 Fourier-boundary or FFT accuracy, which is why an FFT-density check
 appears in the remaining-checks list below.
-[Aligned radial grid](../../python/des3pcf/mean.py),
+[Aligned radial grid](../../../../external_modules/code/cosmolike_core/cosmolike/3pcf/transform_interface.cpp),
 [Bessel orders](https://github.com/SBU-COSMOLIKE/cocoa-cosmolike-core/blob/lowrank_fftlog/cosmolike/3pcf/transform_3pcf.c#L418)
 
 ## Memory budget <a name="memory"></a>
@@ -285,7 +285,7 @@ records the full configurations, input and implementation identities,
 every 480-row vector and a receipt for each completed case. The committed
 summaries are `results/nla_angular_orders/summary.json` and
 `results/tatt_angular_orders/summary.json`; a run writes its working
-copies, including the vectors, under the local `runs/` directory, which
+copies, including the vectors, under the local `chains/` directory, which
 Git ignores. A
 resumed invocation accepts only a verified prefix of earlier results and
 refuses conflicting files, and no numerical result is relabeled with a
@@ -331,7 +331,7 @@ launching predictions.
 
 ```bash
 python tests/studies/angular_order_study.py \
-  runs/nla_accuracy/triangle_1p5.json --output runs/nla_angular_orders
+  chains/nla_accuracy/triangle_1p5.json --output chains/nla_angular_orders
 ```
 
 **Step :three:**: Execute or verify the five sequential NLA mean
@@ -339,7 +339,7 @@ predictions.
 
 ```bash
 python tests/studies/angular_order_study.py \
-  runs/nla_accuracy/triangle_1p5.json --output runs/nla_angular_orders --execute
+  chains/nla_accuracy/triangle_1p5.json --output chains/nla_angular_orders --execute
 ```
 
 **Step :four:**: Execute or verify TATT separately, after the NLA
@@ -347,7 +347,7 @@ calculation finishes.
 
 ```bash
 python tests/studies/angular_order_study.py \
-  runs/tatt_accuracy/triangle_1p5.json --output runs/tatt_angular_orders --execute
+  chains/tatt_accuracy/triangle_1p5.json --output chains/tatt_angular_orders --execute
 ```
 
 The baseline argument names the completed `triangle_1p5` Fisher

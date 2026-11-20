@@ -11,7 +11,7 @@ calculations and keep their own convergence and model checks.
 
 This page records a source inspection; it ran no build, timing or
 physical evaluation. File names below belong to the project's
-`python/des3pcf/` package and `tests/`, and to the CosmoLike core's
+`scripts/des3pcf/` package and `tests/`, and to the CosmoLike core's
 `cosmolike/` sources, including its `3pcf/` subdirectory.
 
 1. [The physical coefficients and the adapter](#adapter)

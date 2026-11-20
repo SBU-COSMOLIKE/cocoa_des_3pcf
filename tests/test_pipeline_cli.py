@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 import yaml
 
-from des3pcf.inputs import save_tables
+from des3pcf.physical_provider import save_tables
 from des3pcf.survey import forecast_rows, ARCMIN_TO_RADIAN
 
 
@@ -421,24 +421,19 @@ def test_yaml_and_json_resolve_the_same_scientific_configuration(toy_configurati
     assert result.returncode == 0, result.stderr
 
 
-def test_core_controls_are_checked_without_importing_a_compiled_module(
-    toy_configuration,
-):
-    """A mistyped CFASTPT control fails before physical preparation or C state."""
-    path, config, _ = toy_configuration
-    config["mean"]["two_point"] = {
-        "mode": "core_tatt",
-        "directory": "missing/interface",
-        "module": "missing_core",
-        "accuracy_boost": 1.0,
-        "integration_accuracy": 8,
-        "fpt_internal_boost": 0.5,
-        "ell_internal": 192,
-    }
-    path.write_text(json.dumps(config), encoding="utf-8")
-    result = run_driver(command="evaluate", config=path, validate=True)
-    assert result.returncode == 2
-    assert "integration_accuracy" in result.stderr
+def test_core_controls_are_checked_by_native_initialization():
+    """An unsupported integration level fails at the same native entry as LSST."""
+    result = subprocess.run(
+        args=[sys.executable, "-c",
+              "import cosmolike_des_3pcf_interface as ci; "
+              "ci.initial_setup(); "
+              "ci.init_accuracy_boost(accuracy_boost=1., integration_accuracy=8)"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "integration_accuracy" in result.stdout + result.stderr
 
 
 def test_joint_cli_saves_conditional_information_and_checks_result_identity(
@@ -488,10 +483,62 @@ def test_joint_cli_saves_conditional_information_and_checks_result_identity(
 
 
 def test_internal_bispectrum_selector_is_retired(toy_configuration):
-    """An explicit old selector fails before an extension or CAMB is loaded."""
+    """An explicit old selector fails before CAMB or model integration runs."""
     path, config, unused = toy_configuration
     config["physics"]["bispectrum_source"] = "internal"
     path.write_text(json.dumps(config), encoding="utf-8")
     result = run_driver(command="evaluate", config=path, validate=True)
     assert result.returncode == 2
     assert "bispectrum_source must be supplied" in result.stderr
+
+
+def test_joint_tatt_cli_uses_one_extension_for_mean_and_fisher(toy_configuration):
+    """Exercise the real CLI's TATT xi/Map3 paths and shared-library record.
+
+    Two smooth bins and small quadratures isolate the interface wiring.
+    The Gaussian covariance and calibration-only Fisher are controlled
+    test inputs; their errors are not survey forecasts.
+    """
+    path, config, _ = toy_configuration
+    table_path = path.parent / "physics.npz"
+    from des3pcf.physical_provider import load_tables
+
+    tables, metadata = load_tables(path=table_path)
+    tables["p_linear"] = tables["growth"][:, None]**2 * tables["p_linear0"]
+    save_tables(path=table_path, tables=tables, metadata=metadata, overwrite=True)
+    config["rows"]["xi_edges_arcmin"] = [4.0, 8.0]
+    rows = forecast_rows(
+        nbin=2,
+        aperture_radii=np.array([7.0, 14.0])*ARCMIN_TO_RADIAN,
+        xi_edges=np.array([4.0, 8.0])*ARCMIN_TO_RADIAN,
+    )
+    np.savez(
+        file=path.parent / "covariance.npz",
+        covariance=np.eye(rows.values.size)*1.e-14,
+        row_labels=rows.labels,
+    )
+    config["ia"].update(a1=.2, a2=.3, bta=.5)
+    config["mean"]["two_point"] = {
+        "mode": "core_tatt",
+        "directory": str(PROJECT / "interface"),
+        "module": "cosmolike_des_3pcf_interface",
+        "accuracy_boost": .5,
+        "fpt_internal_boost": .5,
+        "ell_internal": 32,
+    }
+    config["mean"]["xi_settings"] = {
+        "ell": {"lower": 30.0, "upper": 2000.0, "count": 24,
+                "logarithmic": True},
+        "theta_count": 3,
+        "pair_weight": "uniform_area",
+    }
+    path.write_text(json.dumps(config), encoding="utf-8")
+    for command in ("evaluate", "fisher"):
+        result = run_driver(command=command, config=path)
+        assert result.returncode == 0, result.stdout + result.stderr
+        with np.load(path.parent / config["outputs"][command]) as saved:
+            record = json.loads(str(saved["metadata_json"]))
+            identity = record["prediction_identity"]["implementation"]
+            assert identity["two_point_extension"] == identity["three_point_extension"]
+            np.testing.assert_array_equal(saved["row_labels"], rows.labels)
+            assert np.all(np.isfinite(saved["mean"]))

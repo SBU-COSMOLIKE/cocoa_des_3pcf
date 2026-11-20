@@ -1,0 +1,88 @@
+# Numerical settings for the joint shear projection. Theory is selected in the example YAML.
+path: null
+data_file: des_y3_joint1.dataset
+omp_threads: 1
+accuracyboost: 1.0
+integration_accuracy: 0
+fpt_internal_boost: 0.5
+ell_internal: 192
+interpolation_type: 1
+threepcf_accuracy: null
+zmax: 3.1
+power_nz: 125
+power_nk: 256
+log10k_min: -5.0
+log10k_max: 3.0
+kmax_boltzmann: 5.0
+source_nz: 9601
+kernel_nz: 401
+los_zmin: 0.005
+los_nz: 129
+table_boost: 8
+fit_nz: 33
+source_interpolation: pchip_midpoint
+source_padding: zero_at_measured_edges
+theta_min_arcmin: 8.0
+theta_max_arcmin: 80.0
+ntheta: 10
+phi_bins: 63
+map_ell_min: 0.01
+map_ell_max: 100000
+minimum_fft_size: 512
+map_lmax: 20
+map_mmax: 20
+map_nmu: 64
+transform_options:
+  projection: centroid
+  window: false
+  npsi: 200
+  ordered_legs: true
+  padding: 0
+projection_settings:
+  ell_min: 0.001
+  ell_max: 300000
+  epmu: 0.0001
+  nr: 32
+  nu: 24
+  nv: 24
+  np: 32
+  npu_log: 24
+  npu_linear: 24
+  nell: 64
+  npsi_log: 32
+  npsi_linear: 32
+  nmu_log: 32
+  nmu_linear: 32
+  lmax: 20
+  reference_mode: false
+  table_boost: 2
+  multipole_boost: 2
+  npsi: 80
+  nshape: 160
+  shape_stretch: 10.1062201
+  signed_baseline: 1
+  residual_scaling: 1
+  psi_scale: 0.02
+  prepare_multipoles: 1
+projection_batch_size: 20
+xi_ell:
+  lower: 1
+  upper: 40000
+  count: 4096
+  logarithmic: true
+xi_theta_count: 32
+power_mode: 2
+input_params:
+- a1
+- eta1
+- a2
+- eta2
+- bta
+- m1
+- m2
+- m3
+- m4
+- dz1
+- dz2
+- dz3
+- dz4

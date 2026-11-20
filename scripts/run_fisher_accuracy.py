@@ -8,13 +8,14 @@ absolute parameter steps, exact caches and saved provenance.
 
 Example from the project directory:
   python scripts/run_fisher_accuracy.py configs/des_y3_tatt_demo_fisher.yaml \
-    --plan configs/des_y3_fisher_accuracy.yaml --output runs/tatt_accuracy
+    --plan configs/des_y3_fisher_accuracy.yaml --output chains/tatt_accuracy
 
 The baseline Fisher result and physical tables must already exist. A saved
 candidate is reused only when its baseline, resolved settings and compiled
 module agree. Full derivative checks use the generated candidate YAML with
 the ordinary run_3pcf.py fisher command. No timing experiment is performed.
 """
+
 
 import argparse
 from copy import deepcopy
@@ -35,20 +36,23 @@ import yaml
 
 PROJECT = Path(__file__).resolve().parents[1]
 CORE = PROJECT.parents[1] / "external_modules/code/cosmolike_core"
-sys.path.insert(0, str(PROJECT / "python"))
+sys.path.insert(0, str(PROJECT / "scripts"))
+sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 sys.path.insert(0, str(CORE))
 import run_3pcf as driver
-from des3pcf.accuracy import accuracy_settings
-from des3pcf.forecast import ExactMeanCache, figure_of_merit, parameter_covariance
-from des3pcf.forecast import fisher_matrix
-from des3pcf.fisher_accuracy import retained_stencil_noise, make_offset_predictor
-from des3pcf.fisher_accuracy import get_fom_noise_weights, get_stencil_noise
-from des3pcf.fisher_accuracy import predict_fom_noise
+from cosmolike_notebook_utils.fisher import ExactMeanCache, figure_of_merit, parameter_covariance
+from cosmolike_notebook_utils.fisher import fisher_matrix
+from cosmolike_notebook_utils.fisher import retained_stencil_noise, make_offset_predictor
+from cosmolike_notebook_utils.fisher import get_fom_noise_weights, get_stencil_noise
+from cosmolike_notebook_utils.fisher import predict_fom_noise
 from des3pcf.fisher_accuracy import accuracy_cases_for_request
 from des3pcf.fisher_accuracy import load_retained_noise_case
 from des3pcf.fisher_accuracy import current_noise_case_identity
 from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def digest_file(path):
@@ -285,7 +289,7 @@ def run(configuration, plan_path, output, only=None):
         case = absolute_configuration(config=config, path=path)
         controls = dict(config["accuracy"])
         controls.update(candidate.get("accuracy", {}))
-        case["accuracy"] = accuracy_settings(value=controls).record()
+        case["accuracy"] = ci.init_3pcf_accuracy(value=controls)
         case["mean"]["two_point"].update(candidate.get("two_point", {}))
         case["outputs"]["fisher"] = str(output / f"{name}_full_fisher.npz")
         case["outputs"]["evaluate"] = str(output / f"{name}_mean.npz")
@@ -341,7 +345,7 @@ def run(configuration, plan_path, output, only=None):
             evaluation_count = len(cached.values)
             second_extension = None
             if prediction.two_point_core is not None:
-                second_extension = prediction.two_point_core.core.__file__
+                second_extension = prediction.compiled.__file__
             completed_identity = current_noise_case_identity(
                 config=case,
                 configuration_path=case_path,

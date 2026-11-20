@@ -6,28 +6,28 @@ integration limits, estimator bins and angular truncations remain separate
 physical/numerical choices and must never be changed by an implicit boost.
 """
 
-from dataclasses import FrozenInstanceError
+
 
 import numpy as np
 import pytest
 
-from des3pcf.accuracy import Accuracy, accuracy_settings
-from des3pcf.covariance import covariance_inputs
+from cosmolike_des_3pcf_interface import covariance_inputs
 from des3pcf.survey import forecast_rows
+
+
+import cosmolike_des_3pcf_interface as ci
 
 
 def test_nested_los_refinement_preserves_nodes_and_baseline():
     """Refining twice from one baseline must not compound or move old nodes."""
     baseline = np.array([0.03, 0.12, 0.57, 1.8])
-    controls = Accuracy(accuracy_boost=1.1, chi_boost=1.5)
-    first = controls.los_nodes(baseline=baseline)
-    second = controls.los_nodes(baseline=baseline)
+    controls = dict(accuracy_boost=1.1, chi_boost=1.5)
+    first = ci.accuracy_los_nodes(accuracy=controls, baseline=baseline)
+    second = ci.accuracy_los_nodes(accuracy=controls, baseline=baseline)
     np.testing.assert_array_equal(first, second)
     np.testing.assert_array_equal(first[::2], baseline)
-    np.testing.assert_array_equal(Accuracy().los_nodes(baseline=baseline), baseline)
+    np.testing.assert_array_equal(ci.accuracy_los_nodes(accuracy=dict(), baseline=baseline), baseline)
     assert first.size == 7
-    with pytest.raises(FrozenInstanceError):
-        controls.chi_boost = 2.0
 
 
 @pytest.mark.parametrize("name", [
@@ -40,26 +40,26 @@ def test_nested_los_refinement_preserves_nodes_and_baseline():
 ])
 def test_individual_controls_do_not_change_unrelated_counts(name):
     """Every stage-only knob must leave all other stage multipliers at one."""
-    controls = accuracy_settings(value={name: 2.0})
-    for other, value in controls.record().items():
+    controls = ci.init_3pcf_accuracy(value={name: 2.0})
+    for other, value in controls.items():
         if other == name:
             assert value == 2.0
         else:
             assert value == 1.0
-    assert controls.count(9, stage=name, endpoints=True) == 17
-    assert controls.count(9, stage=name, integration=True) == 18
+    assert ci.accuracy_count(accuracy=controls, baseline=9, stage=name, endpoints=True) == 17
+    assert ci.accuracy_count(accuracy=controls, baseline=9, stage=name, integration=True) == 18
 
 
 def test_global_integration_and_sampling_have_distinct_effects():
     """Separate interpolation density from fixed-rule node counts."""
-    sampling = Accuracy(accuracy_boost=2.0)
-    integration = Accuracy(integration_accuracy_boost=3.0)
-    assert sampling.count(9, stage="triangle_boost", endpoints=True) == 17
-    assert sampling.count(9, stage="angular_boost", integration=True) == 9
-    assert integration.count(9, stage="triangle_boost", endpoints=True) == 9
-    assert integration.count(9, stage="angular_boost", integration=True) == 27
+    sampling = dict(accuracy_boost=2.0)
+    integration = dict(integration_accuracy_boost=3.0)
+    assert ci.accuracy_count(accuracy=sampling, baseline=9, stage="triangle_boost", endpoints=True) == 17
+    assert ci.accuracy_count(accuracy=sampling, baseline=9, stage="angular_boost", integration=True) == 9
+    assert ci.accuracy_count(accuracy=integration, baseline=9, stage="triangle_boost", endpoints=True) == 9
+    assert ci.accuracy_count(accuracy=integration, baseline=9, stage="angular_boost", integration=True) == 27
     baseline = {"lmax": 3, "ell_min": 20.0, "ell_max": 3000.0}
-    resolved = integration.projection_settings(baseline=baseline)
+    resolved = ci.accuracy_projection_settings(accuracy=integration, baseline=baseline)
     assert resolved["lmax"] == 3
     assert resolved["ell_min"] == 20.0
     assert resolved["ell_max"] == 3000.0
@@ -71,9 +71,9 @@ def test_global_integration_and_sampling_have_distinct_effects():
 def test_bad_boost_refused_before_preparation(value):
     """Count controls have a named failure before any C allocation can occur."""
     with pytest.raises(ValueError, match="accuracy_boost"):
-        Accuracy(accuracy_boost=value)
+        ci.init_3pcf_accuracy(value={"accuracy_boost": value})
     with pytest.raises(ValueError, match="Unknown accuracy"):
-        accuracy_settings(value={"chi_bost": 2.0})
+        ci.init_3pcf_accuracy(value={"chi_bost": 2.0})
 
 
 def test_covariance_controls_refine_only_declared_integrals():
@@ -84,7 +84,9 @@ def test_covariance_controls_refine_only_declared_integrals():
         grids[name] = {"lower": 0.1, "upper": 2.0, "count": 3}
     grids["profile_radius"] = np.array([0.0, 0.01, 0.03, 0.1])
     arguments = {
-        "rows": rows,
+        "kind": rows.kind.tolist(),
+        "bins": rows.bins,
+        "angles": rows.angles,
         "noise": np.eye(2),
         "grids": grids,
         "physical": {"large_area": 1, "noise_mode": 1},
@@ -114,7 +116,13 @@ def test_measured_pair_weights_cannot_be_silently_resampled():
     grids["profile_radius"] = np.array([0.0, 0.01, 0.03, 0.1])
     with pytest.raises(ValueError, match="new measured pair weights"):
         covariance_inputs(
-            rows=rows, noise=np.eye(2), grids=grids, physical={}, theta_count=3,
+            kind=rows.kind.tolist(),
+            bins=rows.bins,
+            angles=rows.angles,
+            noise=np.eye(2),
+            grids=grids,
+            physical={},
+            theta_count=3,
             pair_weight=np.ones((rows.values.size, 3)),
             accuracy={"xi_theta_boost": 2.0},
         )

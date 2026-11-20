@@ -6,7 +6,7 @@ the other checks. No method is replaced and no production state is shared
 between the child process and its caller.
 """
 
-from des3pcf.variance import reference_physics_model
+from theory.bihalofit.variance import reference_physics_model
 
 from pathlib import Path
 import sys

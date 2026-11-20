@@ -1,4 +1,4 @@
-audit_path: /Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.json
+audit_path: /Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/chains/y3_demo_sources.json
 bins:
 - column: BIN1
   negative_area_fraction_of_positive: 0.0004101922963981577
@@ -60,7 +60,7 @@ limitations:
 nbin: 4
 output:
   bytes: 23040
-  path: /Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/runs/y3_demo_sources.fits
+  path: /Users/vivianmiranda/data/COCOA/november2026/sbu_cosmolike/cocoa/Cocoa/projects/des_3pcf/chains/y3_demo_sources.fits
   sha256: 2e76b22550191e38e0641b36dc68ff46cdecf7ce50c9d8c202dc10c89ca9a231
 policy: 'Demonstration Fisher forecast only: replace negative BIN midpoint samples
   by zero, then divide each bin by the trapezoidal integral of its clipped curve over

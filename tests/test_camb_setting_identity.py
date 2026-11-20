@@ -1,4 +1,4 @@
-"""Check CAMB settings and saved identities without running CAMB or native C.
+"""Check CAMB settings and saved identities without running CAMB or projections.
 
 The controlled arrays only supply a schema-valid reference. Provider creation,
 configuration validation and rejected setting changes perform no prediction.
@@ -12,7 +12,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from des3pcf.pipeline import PhysicalProvider
+import cosmolike_des_3pcf_interface as ci
+from des3pcf.physical_provider import PhysicalProvider
 from des3pcf.scaling_threepcf import _configuration, preflight_threepcf
 from test_pipeline import toy_tables
 
@@ -22,10 +23,9 @@ PROJECT = Path(__file__).resolve().parents[1]
 
 def make_provider(kmax_boltzmann=5.0, extrap_kmax=1000.0, mode="camb",
                   camb_accuracy_boost=1.0, camb_k_per_logint=0):
-    """Construct a provider with declared reference provenance and no C interface.
+    """Construct a provider using native accuracy settings and declared provenance.
 
-    A native call would fail because compiled=None. The tests exercise only
-    identity comparisons and refusals that must precede any native calculation.
+    No physical calculation runs; native code resolves the accuracy controls.
     """
     tables, parameters = toy_tables()
     metadata = {
@@ -36,7 +36,7 @@ def make_provider(kmax_boltzmann=5.0, extrap_kmax=1000.0, mode="camb",
     }
     return PhysicalProvider(
         bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
-        compiled=None, reference_tables=tables, reference_metadata=metadata,
+        compiled=ci, reference_tables=tables, reference_metadata=metadata,
         reference_parameters=parameters, cosmology_mode=mode,
         kmax_boltzmann=kmax_boltzmann, extrap_kmax=extrap_kmax,
         camb_accuracy_boost=camb_accuracy_boost,
@@ -75,7 +75,7 @@ def test_camb_reference_requires_limit_provenance_but_fixed_arrays_do_not():
     tables, parameters = toy_tables()
     for mode in ("fixed_tables", "camb"):
         arguments = {
-            "compiled": None,
+            "compiled": ci,
             "reference_tables": tables,
             "reference_metadata": {},
             "reference_parameters": parameters,
