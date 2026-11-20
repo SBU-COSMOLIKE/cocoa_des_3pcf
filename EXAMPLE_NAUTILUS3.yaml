@@ -5,7 +5,18 @@ stop_at_error: true
 likelihood:
   des_3pcf.joint_shear:
     data_file: des_y3_joint3.dataset
+    # Uncomment with the BACCO theory block and its five parameters.
+    # external_baryon_response: true
 params:
+  # Optional BACCO feedback: uncomment these five log10 coordinates together
+  # with the theory block and external_baryon_response in this file.
+  # These are fixed example values; sampling needs priors inside the emulator
+  # domain, including Omega_cold, Omega_b and sigma8_cold (see the theory guide).
+  # M_c_baccoemu: 14.0
+  # eta_baccoemu: -0.3
+  # beta_baccoemu: -0.22
+  # M1_z0_cen_baccoemu: 10.5
+  # theta_inn_baccoemu: -0.86
   omega_m:
     prior:
       min: 0.1
@@ -171,4 +182,26 @@ theory:
       kmax: 5.0
       k_per_logint: 0
       WantCls: false
+  # BiHalofit supplies the gravity-only matter bispectrum B_DMO.
   bihalofit: {}
+  # Optional baryonic feedback: keep BiHalofit and uncomment this block,
+  # the five BACCO parameters, and external_baryon_response in the likelihood.
+  # BACCO supplies ratios: P_hydro = R_P * P_DMO and B_hydro = R_B * B_DMO.
+  # It does not supply an absolute B. Do not also apply the power-only bfmt.
+  # Both blocks read the YAML's CAMB result; neither runs a private CAMB.
+  # The neutrino conversion and continuation below are model assumptions.
+  # The fixed simulation covariance and quadratic IA retain their DMO model.
+  # bacco_bispectrum:
+  #   response_settings:
+  #     neutrino_model: coherent_linear_neutrinos
+  #     low_k_anchor: 0.02      # h/Mpc; low-k responses approach unity.
+  #     high_k_anchor: 10.0     # h/Mpc; rescale triangles beyond this anchor.
+  #     high_k_mode: shape_preserving
+  #     high_z_mode: hold      # Hold the z=3 response above the training range.
+  #     nz: 17                 # Coarse response grid, separate from CAMB sampling.
+  #     nk: 97
+  #     nu: 33
+  #     nv: 9
+  #     boost: 2               # Native cubic preparation, then linear reads.
+  #   zmax: 3.1                # Must cover the likelihood redshift grid.
+  #   kmax_boltzmann: 5.0      # Actual CAMB transfer limit, in 1/Mpc.

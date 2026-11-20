@@ -202,7 +202,7 @@ class _cosmolike_prototype_base(DataSetLikelihood):
 
     def get_requirements(self):
         """Ask Cobaya for theory products on the declared sampling grids."""
-        return {
+        requirements = {
             "matter_bispectrum": None,
             "Hubble": {"z": self.z_interp_2D},
             "comoving_radial_distance": {"z": self.z_interp_2D},
@@ -218,6 +218,9 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                                ("delta_nonu", "delta_nonu")],
             },
         }
+        if self.external_baryon_response:
+            requirements["baryon_response"] = None
+        return requirements
 
     def set_cosmo_related(self):
         """Pass the current provider arrays to the native cosmology setters.
@@ -280,6 +283,17 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         # A supplied B uses (Mpc/h)^6 on z, ln(k), ln(short/middle), v.
         if "native" not in self.baseline:
             raise ValueError("matter_bispectrum must supply its native B table.")
+        self.feedback = {}
+        if self.external_baryon_response:
+            response = self.provider.get_result("baryon_response")
+            self.feedback = dict(response["native"])
+            if self.feedback["z"][-1] < self.z_interp_2D[-1]:
+                raise ValueError("The baryon-response zmax must cover the likelihood.")
+            self.feedback["boost"] = ci.accuracy_count(
+                accuracy=self.accuracy,
+                baseline=self.feedback["boost"],
+                stage="feedback_table_boost",
+            )
         ci.set_cosmology(
             omegam=float(self.omega_m_z[0]),
             H0=100.0 * self.h,
@@ -343,6 +357,7 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             "power_mode": self.power_mode,
             "ct": 0.0,
             "fb": 0.0,
+            "feedback_amplitude": float(self.external_baryon_response),
         }
         # One supplied spectrum normalization belongs to the legacy
         # bispectrum producer's IA convention. Other producers may omit
@@ -375,7 +390,29 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             table_boost=settings["table_boost"],
             fit_nz=settings["fit_nz"],
             source_readers=False,
+            feedback=self.feedback,
         )
+        if self.external_baryon_response:
+            # The 3pcf model retains DMO power for its quadratic IA terms
+            # and applies R_B to the matter/NLA bispectrum. The ordinary
+            # two-point core instead receives P_DMO * R_P. Query the same
+            # native response reader here, so both probes use its uniform
+            # cubic preparation and linear reads. Linear TATT power stays
+            # DMO. Each call starts from the provider's fresh DMO array.
+            wave, redshift = np.meshgrid(
+                10.0**self.log10k_interp_2D,
+                self.z_interp_2D,
+            )
+            power_response = self.model.power_response(
+                k=wave.ravel(),
+                z=redshift.ravel(),
+                amplitude=1.0,
+            ).reshape(self.p_nonlinear.shape)
+            ci.set_non_linear_power_spectrum(
+                log10k=self.log10k_interp_2D,
+                z=self.z_interp_2D,
+                lnP=np.log(self.p_nonlinear * power_response).flatten(order="F"),
+            )
 
     def compute_logp(self, datavector):
         """Evaluate the native joint density; Cobaya adds the parameter priors.

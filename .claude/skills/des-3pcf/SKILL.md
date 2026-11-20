@@ -48,6 +48,10 @@ quantity.
   likelihoods, theory, parameters and priors. Only sampler settings and
   output prefixes differ. Cases 1–4 currently use simulation covariances;
   do not replace them with analytical covariances as a sampler change.
+- Teach optional theory choices inside the numbered examples as commented
+  YAML blocks, following LSST Y1's FAST-PT/bfmt examples. Include the matching
+  commented parameters and likelihood switch. Do not create named variants
+  such as EXAMPLE_EVALUATE_BACCO.yaml for these choices.
 
 ## Consistency comes first
 
@@ -89,8 +93,11 @@ are insufficient.
   DES saved-file handling stays in project scripts.
 - Matter-bispectrum prescriptions belong in `cosmolike_core/theory/`.
   BiHalofit supplies the `matter_bispectrum` provider result. BACCO response
-  machinery is separate under `theory/bacco_bispectrum/`; its current offline
-  routines are not yet a registered chained Cobaya Theory class. Do not fold BACCO into the existing `bfmt`
+  machinery is separate under `theory/bacco_bispectrum/`; its Cobaya
+  component supplies `baryon_response` through the same producer as offline
+  studies. Use it alongside an absolute matter-bispectrum producer; set
+  `external_baryon_response: true` in the likelihood. It reads solved CAMB
+  products, including cold sigma8, and never runs private CAMB. Do not fold BACCO into the existing `bfmt`
   block. Follow Cocoa's installation keys and start/stop symlink conventions.
 - Supplied theory arrays use ordinary dictionaries. Keep basic shape, grid
   and background checks in the project likelihood base; do not introduce

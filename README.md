@@ -344,6 +344,20 @@ cut from one full sky also require an independence assessment.
 
 ## Appendix: feedback and BACCO <a name="feedback"></a>
 
+The numbered evaluate, MCMC and Nautilus YAMLs contain an optional,
+commented BACCO setup, like LSST Y1's optional theory blocks. In
+[EXAMPLE_EVALUATE1.yaml](EXAMPLE_EVALUATE1.yaml), uncomment
+`external_baryon_response: true`, the five BACCO parameters, and the
+`bacco_bispectrum` theory block together. Keep `bihalofit` enabled: it
+supplies the absolute gravity-only bispectrum, while BACCO supplies the
+paired power/bispectrum ratios. CAMB supplies their common cosmology.
+
+The existing simulation covariance is retained. The supplied fiducial point
+is inside the emulator domain; before sampling, restrict the cosmological
+and feedback priors to that domain. Do not also apply the power-only `bfmt`
+response. The [BACCO theory guide](../../external_modules/code/cosmolike_core/theory/bacco_bispectrum/README.md#cobaya)
+explains registration, parameter bounds and refinement controls.
+
 A joint feedback model needs separate responses $`R_P=P_H/P_D`$ and
 $`R_B=B_H/B_D`$ from compatible hydro and gravity-only models. A power
 response alone does not determine the bispectrum response. The artificial

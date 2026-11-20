@@ -109,6 +109,17 @@ PYBIND11_MODULE(cosmolike_des_3pcf_interface, module)
     "Set the number of power spectra"
   );
 
+  // Install the feedback-corrected nonlinear spectrum after the owned
+  // 3pcf model has copied its DMO inputs. The shared setter performs the
+  // same validation and cache invalidation as set_cosmology below.
+  module.def("set_non_linear_power_spectrum",
+      &cosmolike_interface::set_non_linear_power_spectrum,
+      "Set ln P_nonlinear on the current log10(k), z grid in Fortran order",
+      py::arg("log10k"),
+      py::arg("z"),
+      py::arg("lnP")
+    );
+
   module.def("set_cosmology",
       [](const double omega_matter,
          const double hubble,

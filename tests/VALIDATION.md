@@ -209,3 +209,70 @@ The HTML, screenshots and browser diagnostics are generated review artifacts
 under ignored `chains/notebook_prose_review/`. Saved notebook results still
 come from their earlier numerical runs. Neither notebook execution nor
 refreezes resumed during this prose review.
+
+## BACCO Cobaya integration, 19 November 2026
+
+The registered `bacco_bispectrum` component reuses the existing paired
+response producer and reads the solved CAMB state, including cold sigma8 at
+8 Mpc/h. It supplies `baryon_response` alongside the absolute DMO
+`matter_bispectrum`. The DES likelihood requests it only when
+`external_baryon_response` is true. Numbered evaluate, MCMC and Nautilus
+examples teach the option with commented entries in the likelihood,
+parameters and theory sections. Their active science mappings are unchanged.
+
+The project interface was rebuilt with the strict Makefile, one compilation
+worker. The response/provider, configuration, native-feedback, sampler-example
+and inference collection passed **78 tests in 11.73 s**. The collection
+includes actual installed-network evaluations, independent offline/provider
+comparison, the massless-neutrino limit, changes in all five feedback
+coordinates and As/H0/neutrino mass, bitwise restoration, and retained-array
+checks. Feedback-only changes reuse the CAMB state. Registration tests source
+the actual new start/stop blocks in an isolated tree, checking enabled,
+disabled and repeated calls, plus removal of the installation key.
+
+```bash
+python -m pytest -q projects/des_3pcf/tests/test_bacco_cobaya.py \
+  projects/des_3pcf/tests/test_bacco_configuration.py \
+  projects/des_3pcf/tests/data_vector/test_bacco_feedback.py \
+  projects/des_3pcf/tests/data_vector/test_feedback.py \
+  projects/des_3pcf/tests/test_nautilus_examples.py \
+  projects/des_3pcf/tests/test_inference.py
+```
+
+The full joint check enables the commented setup in numbered example 2 and
+uses its production sampling. NLA and TATT each change both xi and Map3
+when eta_baccoemu, sigma8 or dz1 changes, and restore bitwise. The DMO
+bispectrum remains unchanged by feedback-only changes. Reinstalling
+P_DMO times the native R_P reproduces the current shear spectra exactly;
+installing R_P squared instead changes them. Repeated likelihood calls do
+not accumulate suppression. The final normalized log likelihoods were
+7101.4805999763785 (NLA) and 7103.5167954646022 (TATT); these are integration
+checks against fixed demonstration inputs, not posterior results.
+
+```bash
+python projects/des_3pcf/tests/studies/bacco_cobaya_joint_check.py
+```
+
+The numerical adapter is per-evaluation Python; its initialization and
+registration are setup paths. The likelihood adds one native power-response
+read and calls the existing nonlinear-power setter; no numerical C kernel
+was changed. No timing improvement or new convergence bound is claimed.
+BLAS used one worker and OpenMP at most six, with numerical jobs run in
+sequence. The final checks select CPU JAX and single-worker Eigen/TensorFlow
+settings. No notebook, refreeze, Fisher forecast or sampler was run.
+The plain-text run records remain under ignored `chains/`.
+
+The ordinary gravity-only check also completed after the pause: NLA and
+TATT reference residuals were respectively 5.89046386007120215e-08 and
+5.53751267227229527e-08 in delta chi-squared. Changes in a1, dz1 and Omega_m
+restored the original prediction bitwise in both cases.
+
+```bash
+python projects/des_3pcf/tests/studies/cobaya_joint_check.py --threads 6 \
+  --output projects/des_3pcf/chains/bacco_dmo_regression.txt
+```
+
+Python syntax, shell syntax and local Markdown links pass. All nine
+notebooks remain identical to their committed versions, including outputs.
+The current work ran the targeted collection above, not a new full test
+collection or sanitizer build.

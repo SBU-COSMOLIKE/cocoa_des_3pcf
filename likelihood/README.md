@@ -21,6 +21,15 @@ starts a private CAMB calculation. BiHalofit reads CAMB products through
 Cobaya and supplies `matter_bispectrum`. A different theory block can
 supply that same product. The likelihood has no BiHalofit import.
 
+For paired feedback, keep the absolute bispectrum producer and add
+`bacco_bispectrum` in the theory section. Set `external_baryon_response: true`
+in this likelihood. Its `baryon_response` product supplies both ratios:
+$`P_H=R_P P_D`$ and $`B_H=R_B B_D`$. The three-point model retains DMO power
+for quadratic IA; the two-point core receives the once-corrected nonlinear
+power through its existing setter. Linear TATT power and the fixed covariance
+stay unchanged. No BACCO module is imported by this likelihood. See
+[the commented setup in example 1](../EXAMPLE_EVALUATE1.yaml).
+
 `joint_shear.py` selects the probe. `_cosmolike_prototype_base.py` follows
 LSST Y1: `initialize` reads the dataset and configures the native library;
 `get_requirements` requests theory products; `set_cosmo_related` and
