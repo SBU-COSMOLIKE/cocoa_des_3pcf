@@ -187,3 +187,25 @@ evaluated once, without starting MCMC: their fiducial log likelihoods were
 These are normalized densities and regression checks, not posterior results.
 No DES chain, notebook or refreeze was run. BLAS stayed at one worker and
 OpenMP at most six; numerical jobs ran sequentially.
+
+## Notebook prose and rendering review, 19 November 2026
+
+All nine notebooks received a second reading of their explanations, notation,
+input descriptions and instructions. Six needed small prose corrections;
+their structure and scientific results were retained. Corrections include
+the methods-paper reference for compression, the current dataset-based
+compression loading, the Python matter/native IA distinction, the Y3 IA
+fiducial label and the smooth fourth-derivative contribution to the noise
+diagnostic.
+
+The nine notebooks exported to HTML without executing cells. Headless Chrome
+rendered all 84 Markdown cells and 532 mathematical expressions without a
+MathJax error. Page screenshots were inspected at 1440 pixels wide; the
+table and displayed-equation width checks reported no overflow. The local
+Markdown links resolved. Code-cell hashes, including outputs and execution
+counts, remained identical across all nine notebooks.
+
+The HTML, screenshots and browser diagnostics are generated review artifacts
+under ignored `chains/notebook_prose_review/`. Saved notebook results still
+come from their earlier numerical runs. Neither notebook execution nor
+refreezes resumed during this prose review.
