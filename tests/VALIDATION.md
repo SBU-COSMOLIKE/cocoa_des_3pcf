@@ -159,3 +159,31 @@ after IPython's normal input transformation. Notebook structures validate;
 nbformat warns about existing cells without IDs. Markdown rendering and
 local links also pass. Notebook outputs are retained from their earlier
 runs. No notebook, refreeze, sampler or timing study ran during this check.
+
+## LSST Y1 consistency review and matched sampler examples, 19 November 2026
+
+The likelihood was compared directly with LSST Y1's base and probe subclass,
+and all four launchers with `EXAMPLE_EMUL2_NAUTILUS1.py`. The follow-up removed
+the Python compression object from likelihood initialization, a repeated
+native reset and separate native-function aliases. Native calls now use
+`ci` explicitly. Survey rows retain ordinary owned arrays without a frozen
+dataclass or reflective assignment loop. Numerical physics code was unchanged.
+
+`EXAMPLE_EVALUATE1–4.yaml` and `EXAMPLE_MCMC1–4.yaml` match the corresponding
+Nautilus case's likelihood, theory, parameters and priors. They use the same
+simulation covariance, including the compressed Percival choice in case 4.
+The MCMC controls follow LSST Y1, with speed measurement enabled instead of
+copying LSST's parameter blocking.
+
+The focused survey, geometry, sampler, compression and native-likelihood
+collection passed **55 tests in 11.87 s**. The actual NLA and TATT provider
+checks also passed: reference residual Δχ² was respectively
+`5.89046386007120215e-08` and `5.53751267227229527e-08`, with bitwise
+restoration after each cosmology, IA and source-shift displacement.
+The MCMC3 and MCMC4 science configurations were loaded through Cobaya and
+evaluated once, without starting MCMC: their fiducial log likelihoods were
+`6398.3498025582367` and `1810.5690753417277`.
+
+These are normalized densities and regression checks, not posterior results.
+No DES chain, notebook or refreeze was run. BLAS stayed at one worker and
+OpenMP at most six; numerical jobs ran sequentially.

@@ -46,7 +46,9 @@ of that covariance. The supplied footprint mocks do not by themselves
 establish all of those assumptions. Example 4 requires a separately
 prepared pilot compression and is a methodological demonstration.
 
-`compression.py` constructs optional fixed linear transformations. Native
+`compression.py` constructs optional fixed linear transformations for the
+compression study. The production likelihood reads its saved matrix and
+row labels directly; it does not construct a Python compression object. Native
 initialization applies the same transformation to data and both covariance
 axes; subsequent predictions receive it before scoring. Compression is
 not required for a joint forecast.

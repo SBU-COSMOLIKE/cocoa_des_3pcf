@@ -40,6 +40,14 @@ quantity.
   upstream convention belongs only to the explicit code-comparison notebook.
 - Repeated code is acceptable. Do not move an unwanted abstraction to
   another file and call that consistency. Implement the established pattern.
+- Keep native calls visibly under `ci`, as in LSST Y1. Load optional
+  compression matrices and check their input row labels directly in
+  `initialize`; native initialization validates and applies the matrix.
+  Compression-training utilities are not a runtime likelihood layer.
+- Numbered evaluate, MCMC and Nautilus examples must select identical
+  likelihoods, theory, parameters and priors. Only sampler settings and
+  output prefixes differ. Cases 1–4 currently use simulation covariances;
+  do not replace them with analytical covariances as a sampler change.
 
 ## Consistency comes first
 

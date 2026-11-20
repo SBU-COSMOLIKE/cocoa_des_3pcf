@@ -117,7 +117,21 @@ cobaya-run projects/des_3pcf/EXAMPLE_EVALUATE1.yaml
 ```
 
 The example uses synthetic data and writes its evaluation to `chains/`.
-The same likelihood name is used in all four Nautilus YAMLs.
+`EXAMPLE_EVALUATE1–4.yaml`, `EXAMPLE_MCMC1–4.yaml` and the four Nautilus
+examples use the same numbered cases in the table below. Changing sampler
+does not change the data, covariance, theory or priors.
+
+For ordinary Cobaya MCMC, as in LSST Y1:
+
+```bash
+cobaya-run projects/des_3pcf/EXAMPLE_MCMC1.yaml
+```
+
+Replace 1 with 2, 3 or 4 to select another case. Each YAML writes to its
+own `chains/EXAMPLE_MCMC<number>` prefix. Proposal learning and convergence
+settings follow LSST Y1; Cobaya measures the joint model's speeds instead
+of using LSST's parameter blocking. A single evaluation does not establish
+chain convergence.
 
 ## Run Nautilus <a name="sampling"></a>
 
@@ -126,12 +140,19 @@ The four launchers follow `lsst_y1/EXAMPLE_EMUL2_NAUTILUS1.py`: import
 example number. DES sets `hybrid=False` to use physical theory. The
 sampler, priors, command-line options and MPI pool are shared with LSST.
 
-| Example | IA model | Fitted data |
-|---|---|---|
-| `EXAMPLE_NAUTILUS1.py` | NLA | Synthetic fiducial mean |
-| `EXAMPLE_NAUTILUS2.py` | TATT | Synthetic fiducial mean |
-| `EXAMPLE_NAUTILUS3.py` | NLA | Released observed Y3 measurements |
-| `EXAMPLE_NAUTILUS4.py` | TATT | Synthetic mean, optional compression and Percival likelihood |
+| Case number | IA model | Fitted data | Likelihood |
+|---|---|---|---|
+| 1 | NLA | Synthetic fiducial mean | Fixed Gaussian |
+| 2 | TATT | Synthetic fiducial mean | Fixed Gaussian |
+| 3 | NLA | Released observed Y3 measurements | Fixed Gaussian |
+| 4 | TATT | Synthetic mean with independently trained compression | Percival |
+
+All four use the supplied **simulation-estimated covariance**, including
+its two-/three-point cross terms. Cases 1–3 treat that matrix as fixed;
+case 4 uses the finite-simulation likelihood and requires its independent
+pilot compression file. These examples exercise the methods associated
+with Rafael's analyses; matching their published posterior is still subject
+to the estimator, scale-cut and prior differences described below.
 
 Each matching YAML defines Cobaya `params` and
 `sampler.evaluate.override`. Its likelihood selects a `.dataset` in

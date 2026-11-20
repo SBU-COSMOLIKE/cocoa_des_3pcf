@@ -1,4 +1,5 @@
-# CAMB and the matter bispectrum are separate Cobaya theory blocks.
+# Case 1 matches EXAMPLE_NAUTILUS1.yaml: same data, priors and simulation covariance.
+# Case 4 requires chains/independent_pilot_compression.npz.
 timing: true
 debug: false
 stop_at_error: true
@@ -140,6 +141,20 @@ params:
     value: 'lambda omega_m, omega_b, mnu, h: (omega_m-omega_b)*h**2-(mnu*(3.046/3)**0.75)/94.0708'
   w:
     value: 'lambda w0: w0'
+theory:
+  camb:
+    path: ./external_modules/code/CAMB
+    stop_at_error: true
+    use_renames: true
+    extra_args:
+      halofit_version: takahashi
+      dark_energy_model: ppf
+      num_massive_neutrinos: 3
+      neutrino_hierarchy: degenerate
+      kmax: 5.0
+      k_per_logint: 0
+      WantCls: false
+  bihalofit: {}
 sampler:
   evaluate:
     override:
@@ -159,17 +174,3 @@ sampler:
       dz3: 0
       dz4: 0
 output: ./projects/des_3pcf/chains/EXAMPLE_EVALUATE1
-theory:
-  camb:
-    path: ./external_modules/code/CAMB
-    stop_at_error: true
-    use_renames: true
-    extra_args:
-      halofit_version: takahashi
-      dark_energy_model: ppf
-      num_massive_neutrinos: 3
-      neutrino_hierarchy: degenerate
-      kmax: 5.0
-      k_per_logint: 0
-      WantCls: false
-  bihalofit: {}

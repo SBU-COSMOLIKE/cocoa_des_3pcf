@@ -25,6 +25,13 @@ PROJECT = Path(__file__).resolve().parents[1]
 
 @pytest.mark.parametrize("example", [
     "EXAMPLE_EVALUATE1.yaml",
+    "EXAMPLE_EVALUATE2.yaml",
+    "EXAMPLE_EVALUATE3.yaml",
+    "EXAMPLE_EVALUATE4.yaml",
+    "EXAMPLE_MCMC1.yaml",
+    "EXAMPLE_MCMC2.yaml",
+    "EXAMPLE_MCMC3.yaml",
+    "EXAMPLE_MCMC4.yaml",
     "EXAMPLE_NAUTILUS1.yaml",
     "EXAMPLE_NAUTILUS2.yaml",
     "EXAMPLE_NAUTILUS3.yaml",
@@ -47,6 +54,27 @@ def test_cobaya_loads_project_likelihood_defaults(example):
     component = "des_3pcf.joint_shear"
     data_file = updated["likelihood"][component]["data_file"]
     assert (PROJECT / "data" / data_file).is_file()
+
+
+@pytest.mark.parametrize("number", [1, 2, 3, 4])
+def test_evaluate_mcmc_and_nautilus_use_the_same_science(number):
+    """Changing samplers must preserve data, theory, parameters and priors."""
+    reference = yaml.safe_load(
+        (PROJECT / f"EXAMPLE_NAUTILUS{number}.yaml").read_text(encoding="utf-8"),
+    )
+    for sampler in ("EVALUATE", "MCMC"):
+        settings = yaml.safe_load(
+            (PROJECT / f"EXAMPLE_{sampler}{number}.yaml").read_text(encoding="utf-8"),
+        )
+        for key in ("likelihood", "theory", "params", "prior"):
+            assert settings.get(key) == reference.get(key)
+        assert settings["output"] == (
+            f"./projects/des_3pcf/chains/EXAMPLE_{sampler}{number}"
+        )
+        if sampler == "EVALUATE":
+            assert settings["sampler"] == reference["sampler"]
+        else:
+            assert set(settings["sampler"]) == {"mcmc"}
 
 
 def gaussian_loglike(x, y):

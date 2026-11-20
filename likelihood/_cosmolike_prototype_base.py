@@ -7,7 +7,6 @@ It neither starts CAMB nor selects a matter-bispectrum fitting formula.
 """
 
 from pathlib import Path
-import os
 import sys
 
 import numpy as np
@@ -22,13 +21,11 @@ sys.path.insert(0, str(CORE))
 
 import cosmolike_des_3pcf_interface as ci
 from des3pcf.survey import (
-    read_survey, read_joint_covariance, read_source_distributions,
+    read_survey,
+    read_joint_covariance,
+    read_source_distributions,
     reconstructed_sources,
 )
-from cosmolike_des_3pcf_interface.production import TransformPlan
-from cosmolike_des_3pcf_interface import shear_power_rows
-from cosmolike_des_3pcf_interface import quadrature
-from .compression import load_compression
 
 
 class _cosmolike_prototype_base(DataSetLikelihood):
@@ -60,15 +57,21 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             indices = np.flatnonzero(mask)
         compression = np.empty((0, 0), dtype=np.float64)
         if ini.string("compression_file", ""):
-            compression = load_compression(
-                path=ini.relativeFileName("compression_file"),
-            )
-            compression.check_labels(labels=self.rows.labels[indices])
-            compression = compression.matrix
+            # Labels fix the input ordering. Numerical matrix checks and
+            # application to data/covariance belong to init_joint_data.
+            with np.load(
+                file=ini.relativeFileName("compression_file"),
+                allow_pickle=False,
+            ) as saved:
+                if not np.array_equal(
+                    a1=saved["input_labels"],
+                    a2=self.rows.labels[indices],
+                ):
+                    raise ValueError("Compression input labels differ from selected rows.")
+                compression = saved["matrix"]
 
         ci.initial_setup()
-        ci.reset_joint_data()
-        ci.set_omp_threads(nthreads=self.omp_threads)
+        ci.set_omp_threads(n=self.omp_threads)
         ci.init_accuracy_boost(
             accuracy_boost=self.accuracyboost,
             integration_accuracy=self.integration_accuracy,
@@ -147,9 +150,13 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             num=self.ntheta + 1,
         )) * np.pi / (180.0 * 60.0)
         dphi = np.pi / self.phi_bins
-        self.map_engine = TransformPlan.for_aperture(
-            bins=np.ascontiguousarray(self.rows.select(indices=self.map_indices).bins, dtype=np.int32),
-            filters=np.ascontiguousarray(self.rows.select(indices=self.map_indices).angles),
+        map_rows = self.rows.select(indices=self.map_indices)
+        self.map_engine = ci.production.TransformPlan.for_aperture(
+            bins=np.ascontiguousarray(
+                a=map_rows.bins,
+                dtype=np.int32,
+            ),
+            filters=np.ascontiguousarray(a=map_rows.angles),
             theta_lower=theta_edges[:-1],
             phi=(np.arange(self.phi_bins) + 0.5) * dphi,
             dlnt=float(np.log(theta_edges[1] / theta_edges[0])),
@@ -171,7 +178,12 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             baseline=self.xi_ell,
             stage="xi_ell_boost",
         )
-        ell, dell = quadrature(**ell_settings)
+        ell, dell = ci.quadrature(
+            lower=ell_settings["lower"],
+            upper=ell_settings["upper"],
+            count=ell_settings["count"],
+            logarithmic=ell_settings.get("logarithmic", False),
+        )
         self.xi_rows = self.rows.select(indices=self.xi_indices)
         self.xi_ell = np.array(ell, copy=True)
         self.xi_dell = np.array(dell, copy=True)
@@ -187,7 +199,6 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             pair_weight="uniform_area",
         )
         self.xi_sign = np.where(self.xi_rows.kind == "xim", -1, 1).astype(np.int32)
-        self.model = None
 
     def get_requirements(self):
         """Ask Cobaya for theory products on the declared sampling grids."""
@@ -216,7 +227,7 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         CAMB transfer limit stays at kmax_boltzmann; its interpolator extends
         the supplied spectrum to the much larger projection-grid endpoint.
         """
-        ci.set_omp_threads(nthreads=self.omp_threads)
+        ci.set_omp_threads(n=self.omp_threads)
         hubble = self.provider.get_Hubble(
             z=self.z_interp_2D,
             units="km/s/Mpc",
@@ -241,9 +252,18 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             extrap_kmin=float(k[0]),
             extrap_kmax=max(self.kmax_boltzmann, 1.01 * float(k[-1])),
         )
-        self.p_linear = linear.P(z=self.z_interp_2D, k=k) * self.h**3
-        self.p_nonlinear = nonlinear.P(z=self.z_interp_2D, k=k) * self.h**3
-        p_linear_cb = cold.P(z=self.z_interp_2D, k=k) * self.h**3
+        self.p_linear = linear.P(
+            z=self.z_interp_2D,
+            k=k,
+        ) * self.h**3
+        self.p_nonlinear = nonlinear.P(
+            z=self.z_interp_2D,
+            k=k,
+        ) * self.h**3
+        p_linear_cb = cold.P(
+            z=self.z_interp_2D,
+            k=k,
+        ) * self.h**3
         self.chi = self.provider.get_comoving_radial_distance(
             z=self.z_interp_2D,
         ) * self.h
@@ -313,11 +333,16 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             B_TA=bta,
         )
         self.ia = {
-            "a1": a1[0], "eta1": a1[1],
-            "a2": a2[0], "eta2": a2[1], "bta": bta[0],
-            "c1rho": 0.01389, "zpivot": 0.62,
+            "a1": a1[0],
+            "eta1": a1[1],
+            "a2": a2[0],
+            "eta2": a2[1],
+            "bta": bta[0],
+            "c1rho": 0.01389,
+            "zpivot": 0.62,
             "power_mode": self.power_mode,
-            "ct": 0.0, "fb": 0.0,
+            "ct": 0.0,
+            "fb": 0.0,
         }
         # One supplied spectrum normalization belongs to the legacy
         # bispectrum producer's IA convention. Other producers may omit
@@ -373,9 +398,9 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         """Set physical inputs, project both probes and assemble the full vector."""
         self.set_cosmo_related()
         self.set_source_related(**params)
-        ci.set_omp_threads(nthreads=self.omp_threads)
+        ci.set_omp_threads(n=self.omp_threads)
         result = np.empty(self.rows.values.size)
-        even, odd = shear_power_rows(
+        even, odd = ci.shear_power_rows(
             ell=self.xi_ell,
             bins=self.xi_rows.bins[:, :2],
         )

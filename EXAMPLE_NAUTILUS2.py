@@ -30,4 +30,9 @@ from cocoa_hybrid_sampling import run
 
 # Physical theory uses the same sampler, with no hybrid-emulator restrictions.
 if __name__ == "__main__":
-    run(mode="nautilus", project=project, example=2, hybrid=False)
+    run(
+        mode="nautilus",
+        project=project,
+        example=2,
+        hybrid=False,
+    )

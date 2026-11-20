@@ -12,10 +12,7 @@ values can be used for comparisons, while Fisher calculations use the
 same row definitions to evaluate model derivatives.
 """
 
-from dataclasses import dataclass
 from pathlib import Path
-
-from copy import deepcopy
 
 import numpy as np
 from astropy.io import fits
@@ -28,7 +25,6 @@ from cosmolike_notebook_utils.fisher import symmetric_matrix
 ARCMIN_TO_RADIAN = np.pi / (180.0 * 60.0)
 
 
-@dataclass(frozen=True)
 class SurveyRows:
     """Hold the explicit observable definition and optional measured values.
 
@@ -42,21 +38,17 @@ class SurveyRows:
       a record; construction through read_survey validates and owns its arrays.
     """
 
-    kind: np.ndarray
-    bins: np.ndarray
-    angles: np.ndarray
-    values: np.ndarray
-    labels: np.ndarray
+    def __init__(self, kind, bins, angles, values, labels):
+        """Copy the five measurement columns into ordinary public arrays.
 
-    def __post_init__(self):
-        """Own read-only rows so retained weights cannot outlive their definition.
-
-        Construct a new SurveyRows to change bins, angles or measurements.
-        The dataclass also refuses rebinding these arrays after construction.
+        Changing rows after native initialization requires reinitializing
+        its weights and covariance, as with other Cocoa input arrays.
         """
-        for name in ("kind", "bins", "angles", "values", "labels"):
-            values = np.asarray(getattr(self, name))
-            object.__setattr__(self, name, deepcopy(x=values))
+        self.kind = np.array(object=kind, copy=True)
+        self.bins = np.array(object=bins, copy=True)
+        self.angles = np.array(object=angles, copy=True)
+        self.values = np.array(object=values, copy=True)
+        self.labels = np.array(object=labels, copy=True)
 
     def select(self, indices):
         """Keep exactly the requested rows in their requested order.
