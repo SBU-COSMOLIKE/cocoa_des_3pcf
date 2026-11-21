@@ -388,3 +388,16 @@ reduced elapsed time by about 6.7% in both orders. Record numerical identity
 for common GPU seeds, noiseless agreement, and timing in
 `tests/gptg_pilot/gpu_sht/scheduling/`. Defaults stay sequential unless the
 flag is selected; preserve the production arithmetic-history entry.
+
+
+### Forty-thousand-map extension
+
+User authorized 30000 comparison + 10000 validation maps on 21 November.
+Retain chains/gptg_ensemble_15000/ and both original seed starts. MPI flags
+--comparison-count 30000 --validation-count 10000 set the enlarged target;
+keep --gpu-workers 1 --gpu-pipeline --threads 3, five ranks, BLAS=1.
+The verifier reads counts/seeds from ensemble.yaml. Earlier completion
+records are archived before extension; do not report them as current success.
+The existing TreeCorr/HPC selection still has the original 10000 split and
+15000 target. Update that selection explicitly before measuring all 40000;
+never assume its global IDs changed when generator counts changed.

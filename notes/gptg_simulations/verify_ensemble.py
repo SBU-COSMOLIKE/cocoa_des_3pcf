@@ -1,4 +1,4 @@
-"""Check every expected map and journal row without reading 177 GB of pixels.
+"""Check every expected map and journal row without rescanning all pixels.
 
 The audit checks exact IDs, seeds, finite recorded moments, NumPy headers,
 float32 dtype, four-bin/two-component shape and complete file lengths.
@@ -7,15 +7,19 @@ It does not claim a fresh all-pixel finiteness scan or a physical validation.
 import argparse
 from pathlib import Path
 import numpy as np
+import yaml
 
 
 def verify_ensemble(folder):
     indices = np.load(folder / 'indices_512.npy')
     shape = (4, 2, len(indices))
+    metadata = yaml.safe_load((folder / 'ensemble.yaml').read_text())
+    comparison_count = int(metadata['comparison_count'])
+    validation_count = int(metadata['validation_count'])
     checked = 0
     for group, count, seed_start in (
-        ('comparison', 10000, 341104759),
-        ('validation', 5000, 441104759),
+        ('comparison', comparison_count, int(metadata['comparison_seed_start'])),
+        ('validation', validation_count, int(metadata['validation_seed_start'])),
     ):
         journal = np.loadtxt(folder / f'{group}_measurements.txt', ndmin=2)
         if journal.shape != (count, 20):
@@ -38,7 +42,7 @@ def verify_ensemble(folder):
             del values
             checked += 1
     (folder / 'COMPLETENESS.txt').write_text(
-        f'{checked} maps verified: 10000 comparison + 5000 validation.\n'
+        f'{checked} maps verified: {comparison_count} comparison + {validation_count} validation.\n'
         'Exact IDs/seeds, finite journal moments, shape/dtype and file sizes pass.\n'
         'Headers checked without a full-pixel rescan. TreeCorr not run.\n'
     )

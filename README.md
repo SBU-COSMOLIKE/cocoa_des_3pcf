@@ -761,6 +761,30 @@ compatible with the MPI library used to build mpi4py. These are Open MPI
 launchers; a site requiring `srun` must use its supported PMI/PMIx settings.
 Actual multi-node execution still requires testing on that cluster.
 
+### Extended generation target: 40,000 maps
+
+The current target is **30,000 comparison maps plus 10,000 independent
+validation maps**. The existing `chains/gptg_ensemble_15000/` directory keeps
+its historical name; it is not duplicated or renamed. All original 15,000
+maps retain their IDs and seeds. Comparison seeds start at 341104759 and
+validation seeds at 441104759, so the enlarged ranges remain disjoint.
+
+From the project directory, with the tested MLX and map dependencies available:
+
+```bash
+OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=3 mpiexec -n 5 --mca mpi_yield_when_idle 1 python -u notes/gptg_simulations/generate_ensemble_mpi.py --threads 3 --precision float32 --gpu-workers 1 --gpu-pipeline --comparison-count 30000 --validation-count 10000
+```
+
+Repeat this exact command to resume the extended target. The final audit
+reads group counts from `ensemble.yaml`; old completion markers are archived
+with `.before_40000` when extension starts. The retained float32 ensemble
+requires about 473 GB total, with a separate 50 GB free-space reserve.
+
+**The existing TreeCorr Slurm job still selects the original 10,000 + 5,000
+maps.** Its global ID split remains 10,000. Do not merely increase its count
+to 40,000: the measurement selection and analysis must first be updated for
+the larger group sizes. No TreeCorr computation runs as part of generation.
+
 ### Optional float32 computation and Apple GPU point transforms
 
 Float32 **storage** and float32 **computation** have separate tests. The

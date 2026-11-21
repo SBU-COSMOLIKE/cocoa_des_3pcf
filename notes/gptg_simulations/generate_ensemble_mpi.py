@@ -1,4 +1,4 @@
-"""Resume the 15000-map ensemble using independent MPI generation workers.
+"""Resume the configured map ensemble using independent MPI generation workers.
 
 Rank zero owns journals and dispatches disjoint map numbers. Other ranks
 call exactly the serial generator's generate_one kernel. Maps keep their
@@ -30,7 +30,9 @@ from generate_maps import PROJECT, setup, gaussian_spectra, aperture_weights
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--threads', type=int, default=4)
-    parser.add_argument('--limit', type=int, default=15000)
+    parser.add_argument('--limit', type=int, default=None)
+    parser.add_argument('--comparison-count', type=int, default=10000)
+    parser.add_argument('--validation-count', type=int, default=5000)
     parser.add_argument('--output', type=Path,
                         default=PROJECT / 'chains/gptg_ensemble_15000')
     parser.add_argument(
@@ -73,8 +75,13 @@ def main():
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
-    if size < 2 or args.threads < 1 or not 1 <= args.limit <= 15000:
-        raise ValueError('Use at least two ranks, positive threads, and limit 1..15000.')
+    total = args.comparison_count + args.validation_count
+    if args.limit is None:
+        args.limit = total
+    if not 1 <= args.comparison_count <= 100000000 or args.validation_count < 1:
+        raise ValueError('Positive group counts and disjoint seed ranges are required')
+    if size < 2 or args.threads < 1 or not 1 <= args.limit <= total:
+        raise ValueError('Use at least two ranks, positive threads, and limit within group totals.')
     if args.gpu_workers >= size:
         parser.error('--gpu-workers must not exceed the number of generation ranks')
     os.environ['OMP_NUM_THREADS'] = str(args.threads)
@@ -82,7 +89,8 @@ def main():
     record = yaml.safe_load((folder / 'calibration.yaml').read_text())
     fit_hash = hashlib.sha256((folder / 'calibration.npz').read_bytes()).hexdigest()
     reserve = 50_000_000_000
-    counts = [('comparison', 10000, 341104759), ('validation', 5000, 441104759)]
+    counts = [('comparison', args.comparison_count, 341104759),
+              ('validation', args.validation_count, 441104759)]
     if rank == 0:
         manifest = folder / 'ensemble.yaml'
         metadata = yaml.safe_load(manifest.read_text()) if manifest.exists() else {}
@@ -164,8 +172,17 @@ def main():
                         compute_precision=args.precision, point_device=args.point_device,
                         point_batch=args.point_batch,
                         map_shape=[4, 2, len(indices)],
-                        comparison_count=10000, validation_count=5000,
+                        comparison_count=args.comparison_count,
+                        validation_count=args.validation_count,
                         comparison_seed_start=341104759, validation_seed_start=441104759)
+        # An earlier smaller ensemble may already have passed its audit.
+        # Archive those records before extending it so they cannot be mistaken
+        # for completion of the new target. Existing maps stay untouched.
+        if pending:
+            for marker in ('COMPLETE.txt', 'COMPLETENESS.txt'):
+                old = folder / marker
+                if old.exists():
+                    old.rename(folder / f'{marker}.before_{total}')
         manifest.write_text(yaml.safe_dump(metadata, sort_keys=False))
         with (folder / 'worker_history.txt').open('a') as history:
             history.write(f'MPI resume after {completed} journaled maps: {size-1} generation ranks x {args.threads} transform threads; BLAS=1; precision={args.precision}; point_device={args.point_device}; point_batch={args.point_batch}.\n')
@@ -209,10 +226,11 @@ def main():
         arithmetic_stream.close()
         for stream in streams.values():
             stream.close()
-        if args.limit == 15000:
+        if args.limit == total:
             from verify_ensemble import verify_ensemble
             verify_ensemble(folder)
-            (folder / 'COMPLETE.txt').write_text('10000 comparison and 5000 validation float32 maps saved.\n')
+            (folder / 'COMPLETE.txt').write_text(
+                f'{args.comparison_count} comparison and {args.validation_count} validation float32 maps saved.\n')
         print('MPI generation target complete:', completed, flush=True)
         return
     data = np.load(folder / 'calibration.npz')
