@@ -286,8 +286,9 @@ The validation quadratic/log-determinant score does not identify the direct
 sample inverse as truth. Model validation against N-body simulations remains
 separate from estimator validation conditional on a fitted generator.
 
-The current laptop priority is map generation: three MPI generation ranks
-with four transform threads each, plus an idle coordinator. BLAS stays one.
+The current laptop priority is map generation: three CPU workers and one
+Metal scalar-transform worker, each with three native CPU threads, plus a
+coordinator. BLAS stays one. See the optional arithmetic section below.
 Full TreeCorr measurement is paused. HPC launchers in scripts/ forward Cocoa's
 MPI keys and allocate one CPU per measurement rank. Global measurement IDs
 10000..14999 select validation maps 0..4999. Do not run two coordinators
@@ -312,8 +313,8 @@ residual precision or conceal a failed expansion by clipping eigenvalues.
 The main fixed-block comparison must use all 480 entries, not the former
 16-entry or four-xi-bin exercises. `measure_full_joint_mpi.py` uses TreeCorr
 5.1.2 GGCorrelation, GGGCorrelation, toSAS and calculateMap3 for all pairs
-and triples. This TreeCorr build has no OpenMP; mpi4py/Open MPI supplies
-process parallelism. `run_full_joint_mpi.py` runs first-1000 measurement,
+and triples. The updated TreeCorr build supports OpenMP; mpi4py/Open MPI supplies
+process parallelism. Count native threads in the MPI CPU allocation. `run_full_joint_mpi.py` runs first-1000 measurement,
 analysis, next-500 measurement, then independent validation without running
 matrix analysis alongside the eight active MPI workers. The fixed 80x80
 starting reference is the archived simulation covariance, not an analytical
@@ -336,10 +337,38 @@ MPI records numerical-mode changes and preserves already saved maps.
 --point-batch 4 batches the four source-bin fields within one realization;
 it is not independent-realization batching. It passed the agreement checks
 but did not establish better throughput than the single-field GPU path.
-The production hybrid allocation remains three workers x four CPU threads,
-plus a coordinator, with BLAS=1. Keep notebook/refreeze/TreeCorr runs paused.
+The point-only route is retained for comparison; the later scalar-transform
+GPU route below is the current mixed production allocation. Keep notebook,
+refreeze and full TreeCorr runs paused.
 The Apple GPU SHT probe must distinguish actual device execution from a
 CPU fallback. Torch's macOS limitation and S2FFT's MPS/DLPack failure do not
 prove that a custom Metal spherical transform is impossible. MLX FFT works.
 On completion verify_ensemble.py checks all 15000 IDs, seeds, headers and
 sizes; it does not perform a full pixel scan or launch TreeCorr measurements.
+
+
+### Validated optional Metal scalar spherical transforms
+
+`gpu_scalar_sht.py` implements scalar latitude recurrences, exact ring FFTs,
+the pixel adjoint and matrix-free CG normal equations on MLX/Metal.
+`gpu_map_generation.py` keeps the nonlinear scalar mapping on device, then
+returns coefficients to CPU ducc0 for spin-two shear. Do not describe this as
+a GPU spin-two transform. Float32 arithmetic is explicitly selected; frozen
+calibration and random draws remain double precision, measurements float64.
+The default CPU route remains float64 unless a flag changes it.
+
+The user authorized mixed production on 21 November: `mpiexec -n 5`,
+`--threads 3 --precision float32 --gpu-workers 1`. This means one coordinator,
+three CPU workers and one GPU worker, at most twelve native transform CPU
+threads and BLAS=1. Preserve saved maps, seeds, numerical history and per-map
+`arithmetic_workers.txt`. GPU dependencies tested: MLX/Metal 0.29.3.
+
+Evidence under `tests/gptg_pilot/gpu_sht/` includes scalar NSIDE512/lmax1024,
+adjoint identity, full noiseless maps and forward/reversed 32-map MPI tests.
+Elapsed time improved about 20% against CPU float64. Numerical agreement
+is not a physical validation or a full TreeCorr covariance comparison.
+Repeat gates for changed geometry or algorithm. The companion teaching
+section `notes/gptg_simulations/spherical_transforms.tex` derives every
+stage with small examples. Keep it consistent with the actual backend;
+the normal residual is not the map residual, and pixel-area scaling alone
+does not improve the normal matrix's condition number.

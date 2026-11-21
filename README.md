@@ -752,6 +752,60 @@ rule out the tested ready-made GPU route on this installation, not a future
 custom Metal spherical transform. Do not upgrade Cocoa's JAX for this probe;
 use an isolated environment for its optional dependencies.
 
+### Optional Metal scalar transforms and mixed CPU/GPU generation
+
+The later implementation in `notes/gptg_simulations/gpu_scalar_sht.py`
+moves scalar spherical synthesis, its adjoint and the iterative harmonic
+solve to Metal through MLX. The final spin-two shear transform still uses
+ducc0 on the CPU. This route does not use Torch or JAX. The earlier
+point-only timings above remain a record of that different implementation.
+
+The [map teaching notes](notes/gptg_simulations/gptg_simulations.pdf),
+Section 15, explain longitude FFTs, latitude Legendre recurrences, the
+adjoint and the least-squares solve with worked examples. The implementation
+uses MLX and mlx-metal 0.29.3 in the tested environment, alongside the
+existing ducc0 and map-generation dependencies. Make these dependencies
+available to the Python interpreter used by every MPI rank.
+
+From this project directory, the tested twelve-CPU-thread allocation is:
+
+```bash
+OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=3 mpiexec -n 5 --mca mpi_yield_when_idle 1 python -u notes/gptg_simulations/generate_ensemble_mpi.py --threads 3 --precision float32 --gpu-workers 1
+```
+
+This launches a coordinator, three CPU workers and one GPU worker. The GPU
+worker also uses three CPU threads for shear synthesis. Completed maps are
+preserved on resume; the numerical-mode history and `arithmetic_workers.txt`
+record the transition and each map's backend. Do not start a second
+coordinator on the same output directory. Metal schedules the GPU internally.
+
+Two controlled 32-map tests reduced elapsed time from 47.15 to 38.18 seconds
+and, reversing run order, from 48.12 to 38.56 seconds. That is approximately
+20% less elapsed time, not a guarantee for a busy machine. Scalar-transform
+RMS differences against ducc0 were about one part per million; tested
+noiseless map and aperture-moment differences stayed below three parts per
+million. The records are in `tests/gptg_pilot/gpu_sht/`. These are numerical
+checks, not validation of the fitted sky model or full TreeCorr covariance.
+
+Recheck the scalar transform at production resolution:
+
+```bash
+python notes/gptg_simulations/test_gpu_scalar_sht.py --nside 512 --threads 3
+```
+
+Check two paired noiseless four-bin maps:
+
+```bash
+python notes/gptg_simulations/test_gpu_map_generation.py --count 2 --threads 3
+```
+
+The map test writes under `chains/gpu_sht_maps/`. For timing, use a fresh
+output directory and free the required CPUs first:
+
+```bash
+python notes/gptg_simulations/benchmark_gpu_sht_mpi.py --count 32 --output chains/gpu_sht_timing_new
+```
+
 When generation reaches 15,000 maps, its coordinator checks exact file IDs,
 journal seeds, finite journal entries, array headers, dtype and file lengths,
 then writes `COMPLETENESS.txt`. This checks missing/truncated maps without

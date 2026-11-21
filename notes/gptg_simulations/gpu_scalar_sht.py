@@ -5,7 +5,23 @@ normalized associated-Legendre recurrences in custom Metal kernels. A pair
 of floats carries recurrence rounding corrections; binary exponents prevent
 underflow of the diagonal seed before it grows to a significant harmonic.
 The output arrays are float32/complex64. This is not a spin-two transform.
-No production caller selects this implementation without numerical gates.
+How a scalar sky passes through this module:
+1. The latitude recurrence forms b[r,m] = sum_l a[l,m] lambda[l,m](theta[r]).
+2. Ring phases and positive/negative-frequency aliases fill longitude bins.
+3. Exact-length ring Fourier sums turn those bins into real sky pixels.
+4. The adjoint reverses these operations and sums pixels into coefficients.
+5. Conjugate gradients repeat synthesis and adjoint to solve the finite
+   least-squares inverse. The adjoint alone is not that inverse.
+
+Geometry, recurrence factors and FFT chirps are prepared once per worker.
+They depend on the ring geometry and lmax, never on the random realization.
+All scalar arrays stay on device during a solve; only convergence scalars
+are read by Python. Final spin-two shear synthesis belongs to ducc0 in
+gpu_map_generation.py. The companion spherical_transforms.tex derives
+these steps, including the packed-coefficient scalar product.
+
+The optional production route passed the recorded numerical gates at
+NSIDE512/lmax1024. Other resolutions require their own agreement checks.
 """
 import numpy as np
 from scipy.special import gammaln
@@ -138,18 +154,30 @@ class MetalScalarSHT:
         self.nphi = geometry['nphi'].astype(np.int32)
         self.ringstart = geometry['ringstart'].astype(np.int32)
         self.npix = int(self.nphi.sum())
+        # Packed storage has m=0 coefficients first, then m=1, and so on.
+        # There are lmax-m+1 degrees for each order m. Summing those lengths
+        # gives (lmax+1)*(lmax+2)/2 independent complex slots; m=0 is real.
         self.na = (lmax+1)*(lmax+2)//2
         self.tiles = (self.nr+31)//32
         m = np.arange(self.nm)
         starts = m*(2*lmax+1-m)//2
         self.starts = mx.array(starts.astype(np.int32))
         self.costheta = split(np.cos(geometry['theta']))
+        # Compute log|lambda_mm| on the CPU before splitting the seed into
+        # a mantissa and a base-two exponent. Near a pole, (sin theta)^m can
+        # underflow even though later degrees have significant amplitudes.
+        # Retaining the exponent lets the recurrence reach those degrees.
         logseed = (.5*np.log((2*m+1)/(4*np.pi))+.5*gammaln(2*m+1)
                    -gammaln(m+1)-m*np.log(2.)
                    +np.log(np.sin(geometry['theta']))[:,None]*m)
         exponent = np.floor(logseed/np.log(2.)).astype(np.int32)
         self.seed = split(np.exp(logseed-exponent*np.log(2.))*(-1.)**m)
         self.exponents = mx.array(exponent)
+        # Normalized Legendre recurrence:
+        # lambda_lm = (x*lambda_(l-1,m) - A_(l-1,m)*lambda_(l-2,m))/A_lm.
+        # Store ca=1/A_lm and cb=A_(l-1,m)/A_lm once, in packed order.
+        # Two-float representations reduce rounding drift along l without
+        # requiring native float64 operations on the Apple GPU.
         ca = np.zeros(self.na)
         cb = np.zeros(self.na)
         for order in m:
@@ -162,6 +190,8 @@ class MetalScalarSHT:
             ca[starts[order]+ell.astype(int)] = 1/a
             cb[starts[order]+ell.astype(int)] = previous/a
         self.ca, self.cb = split(ca), split(cb)
+        # HEALPix rings do not all start at longitude zero. This phase
+        # rotates each ring's Fourier wave to its actual first pixel.
         angle = geometry['phi0'][:, None]*m
         self.phase = mx.array(np.stack((np.cos(angle), np.sin(angle)), axis=-1).astype(np.float32))
         self.ngpu = mx.array(self.nphi)
@@ -218,6 +248,9 @@ class MetalScalarSHT:
         rows = [None]*self.nr
         for rings, index, chirp, kernel in self.fft_groups:
             block = values[index]
+            # conj(FFT(conj(x))) is the unnormalized inverse Fourier sum.
+            # Synthesis needs that sum, not the inverse FFT divided by N.
+            # Adjoint uses the ordinary negative-exponent forward sum.
             if inverse:
                 block = mx.conj(block)
             if chirp is None:
@@ -237,6 +270,8 @@ class MetalScalarSHT:
 
     def synthesis(self, alm):
         """Packed m>=0 coefficients to a real HEALPix RING map."""
+        # First contract degrees l at fixed (ring,m). The resulting array
+        # has a real/imaginary pair for each ring and nonnegative order.
         inputs = [self.starts,self.costheta,self.seed,self.exponents,self.ca,self.cb]
         rings = self.forward_kernel(
             inputs=inputs+[alm.view(mx.float32)],
@@ -245,6 +280,9 @@ class MetalScalarSHT:
             output_shapes=[(self.nr,self.nm,2)],output_dtypes=[mx.float32],
         )[0]
         mx.eval(rings)
+        # Then collect orders into each ring's actual Fourier bins. Short
+        # polar rings have aliases: retain both signs of every m, but count
+        # zero once. Finally evaluate the longitude waves at pixel positions.
         bins = self.alias_kernel(
             inputs=[rings,self.phase,self.rgpu,self.ngpu,self.sgpu],
             template=[('NP',self.npix),('NM',self.nm)],
@@ -256,6 +294,10 @@ class MetalScalarSHT:
 
     def adjoint(self, values):
         """Unweighted pixel adjoint in the real-sky harmonic inner product."""
+        # Reverse the forward sequence: ring Fourier sums, undo longitude
+        # phases/aliases, then sum latitude weights back into coefficients.
+        # This is a pixel sum without pixel-area weighting. The solve scales
+        # both sides by pixel area; the raw adjoint contract stays explicit.
         fftmap = self.ring_fft(values.astype(mx.complex64), inverse=False)
         mx.eval(fftmap)
         rings = self.unalias_kernel(
@@ -265,6 +307,9 @@ class MetalScalarSHT:
             output_shapes=[(self.nr,self.nm,2)],output_dtypes=[mx.float32],
         )[0]
         mx.eval(rings)
+        # Each 32-lane group sums a tile of latitude rings. A subsequent
+        # device reduction combines tiles. No two groups race to update the
+        # same coefficient, and no floating-point atomic addition is needed.
         partials = self.adjoint_kernel(
             inputs=[self.starts,self.costheta,self.seed,self.exponents,self.ca,self.cb,rings],
             template=[('NR',self.nr),('NM',self.nm),('NA',self.na)],
@@ -276,14 +321,17 @@ class MetalScalarSHT:
     def solve(self, values, tolerance=1.e-6, maxiter=30):
         """Solve the unweighted least-squares map problem on the GPU.
 
-        Conjugate gradients act on S^dagger S, with pixel area as a scalar
-        preconditioner. The target is the same unweighted least-squares
+        Conjugate gradients act on S^dagger S, with pixel area scaling both
+        sides. This scalar scaling does not change the condition number. The target is the same unweighted least-squares
         problem as ducc0 pseudo_analysis, but the iteration is different.
         The final true normal residual is checked independently of the
         recursively updated residual. This does not claim a bound on the
         map's unrepresentable high-frequency power.
         """
         area = 4*np.pi/self.npix
+        # Positive m represents both +m and -m in a real sky. Its norm
+        # therefore has weight two; m=0 has weight one. Omitting this would
+        # change the scalar products used to choose the CG step lengths.
         weight = mx.concatenate((mx.ones(self.nm),2*mx.ones(self.na-self.nm)))
         rhs = area*self.adjoint(values)
         solution = mx.zeros_like(rhs)
@@ -294,9 +342,15 @@ class MetalScalarSHT:
         mx.eval(norm)
         if float(norm.item()) == 0:
             return solution, {'iterations':0,'normal_residual':0.}
+        # Matrix-free CG: action is H*p with H=area*S^dagger*S. No dense
+        # normal matrix is stored. Each iteration needs a full forward and
+        # adjoint pair, which is why moving only point arithmetic to GPU
+        # gave little benefit in the earlier implementation.
         for iteration in range(1,maxiter+1):
             action = area*self.adjoint(self.synthesis(direction))
             denominator = mx.sum(weight*mx.real(mx.conj(direction)*action))
+            # Move along the search direction, then subtract the implied
+            # change in H*a from the residual b-H*a.
             alpha = square/denominator
             solution = solution+alpha*direction
             residual = residual-alpha*action
@@ -309,6 +363,10 @@ class MetalScalarSHT:
                 break
             direction = residual+(next_square/square)*direction
             square = next_square
+        # Recursive residual updates can accumulate rounding error. Apply
+        # H once more to the final solution and test the actual equation.
+        # A small normal residual does not remove unresolved sky modes and
+        # is not a substitute for comparison with the ducc0 reference.
         true_residual = rhs-area*self.adjoint(self.synthesis(solution))
         quality = mx.sqrt(mx.sum(weight*mx.abs(true_residual)**2)/norm)
         mx.eval(solution,quality)

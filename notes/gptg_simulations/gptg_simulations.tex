@@ -1002,22 +1002,17 @@ command resumes completed records instead of regenerating them:
 \begin{lstlisting}
 python projects/des_3pcf/notes/gptg_simulations/generate_ensemble.py --workers 4
 \end{lstlisting}
-An earlier stage used eight native transform workers and one BLAS worker.
-The current allocation uses four transform threads while eight independent
-MPI measurement workers process saved maps; BLAS remains one per process.
-The same-seed four-versus-eight check gave bitwise-identical saved float32
-pixels and measured moments. The first 274 comparison maps used four workers;
-the following stage used eight, with that transition recorded. The later
-return to four makes room for the full joint measurement. After
-both map groups are complete, execute the fixed comparison:
-\begin{lstlisting}
-python projects/des_3pcf/notes/gptg_simulations/analyze_ensemble.py
-\end{lstlisting}
-The current driver runs that analysis after generation finishes. A
-validation preference is a result to report, not permission to tune
-repeatedly against the same validation group and continue calling it an
-independent final test.
-
+The serial command above is available for small runs. The current large
+run instead uses MPI with three CPU workers and one GPU scalar-transform
+worker, each with three CPU transform threads, plus a coordinator. BLAS
+remains one. Full TreeCorr measurement is paused for the HPC run. Previously
+saved maps are preserved, and the numerical-mode history records changes
+in worker allocation and arithmetic. Section~\ref{sec:sht-teaching}
+explains the transforms and the numerical checks for the GPU path.
+Completion verification checks all expected IDs, seeds, file shapes and
+sizes; it does not claim a full scan of every saved pixel. Analysis is a
+separate step. A validation preference is a result to report, not permission
+to tune repeatedly against the same validation group.
 
 \section{Measuring the full joint vector from saved maps}
 The main covariance experiment uses TreeCorr 5.1.2, credited to Mike Jarvis
@@ -1028,10 +1023,11 @@ ten source-bin pairs, twenty angular bins and two shear correlations.
 twenty source-bin triples and four aperture radii. These measurements
 replace the small aperture diagnostic as the science comparison.
 
-The installed TreeCorr build is single-threaded. mpi4py and Open MPI
-therefore distribute independent tomographic tasks over eight one-CPU
-workers. A separate coordinator receives results and writes small text
-vectors. Generation uses four native transform threads concurrently.
+The updated TreeCorr build supports OpenMP. For multi-node measurement,
+mpi4py and Open MPI distribute independent tomographic tasks over workers;
+CPU allocations must count both MPI ranks and native threads. A separate
+coordinator receives results and writes small text vectors. Full measurement
+is currently paused for HPC; laptop resources are assigned to map generation.
 BLAS is one per process. The measurement keeps every two-/three-point
 cross entry, while the analytical 400-by-400 G+SSC+cNG block stays fixed.
 
@@ -1041,6 +1037,8 @@ NSIDE512 equal-pixel measurements from the published catalogue estimator.
 The first 1,000 full vectors train the estimators; the next 500 validate
 them independently. Full-map results are pending: the older 16-entry tests
 are algebra demonstrations, not answers for the 480-entry matrix.
+
+\input{spherical_transforms}
 
 \begin{thebibliography}{9}
 \bibitem{zhong} K. Zhong, G. Bernstein, S. S. Boruah, B. Jain and S. Kobla,
