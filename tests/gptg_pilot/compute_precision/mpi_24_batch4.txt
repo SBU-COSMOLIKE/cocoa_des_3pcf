@@ -1,0 +1,4 @@
+# mode count total_seconds; includes worker initialization
+cpu64 24 35.093227000
+cpu32 24 32.841605375
+metal32 24 32.244128625

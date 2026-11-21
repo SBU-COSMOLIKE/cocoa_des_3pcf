@@ -31,7 +31,30 @@ def main():
     parser.add_argument('--limit', type=int, default=15000)
     parser.add_argument('--output', type=Path,
                         default=PROJECT / 'chains/gptg_ensemble_15000')
+    parser.add_argument(
+        '--precision',
+        choices=('float64', 'float32'),
+        default='float64',
+        help='Arithmetic precision of large map/harmonic arrays; storage is float32.',
+    )
+    parser.add_argument(
+        '--point-device',
+        choices=('cpu', 'metal'),
+        default='cpu',
+        help='Device for nonlinear pixel transformation; ducc0 stays on CPU.',
+    )
+    parser.add_argument(
+        '--point-batch',
+        type=int,
+        choices=(1, 4),
+        default=1,
+        help='Source fields per Metal point-transform batch.',
+    )
     args = parser.parse_args()
+    if args.point_batch == 4 and args.point_device != 'metal':
+        parser.error('--point-batch 4 requires --point-device metal')
+    if args.point_device == 'metal' and args.precision != 'float32':
+        parser.error('--point-device metal requires --precision float32')
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
@@ -88,15 +111,41 @@ def main():
         unsaved = sum(not (folder/g/f'GPTG_DES_{n:06d}.npy').exists() for g,n,s in pending)
         if shutil.disk_usage(folder).free < unsaved*bytes_per_map+reserve:
             raise OSError('Need space for remaining float32 maps plus a 50 GB reserve.')
+        previous_arithmetic = {
+            'precision': metadata.get('compute_precision', 'float64'),
+            'point_device': metadata.get('point_device', 'cpu'),
+            'point_batch': metadata.get('point_batch', 1),
+        }
+        next_arithmetic = {
+            'precision': args.precision,
+            'point_device': args.point_device,
+            'point_batch': args.point_batch,
+        }
+        if metadata and previous_arithmetic != next_arithmetic:
+            # Keep the boundary explicit when a validated numerical backend
+            # changes. Existing maps, including completed but unjournaled
+            # saves, are never regenerated under the new arithmetic.
+            metadata.setdefault('arithmetic_history', []).append({
+                'after_journaled_maps': completed,
+                'previous': previous_arithmetic,
+                'next': next_arithmetic,
+                'existing_unjournaled_maps_kept': [
+                    f'{group}/GPTG_DES_{number:06d}.npy'
+                    for group, number, seed in pending
+                    if (folder / group / f'GPTG_DES_{number:06d}.npy').exists()
+                ],
+            })
         metadata.update(calibration_sha256=fit_hash, mpi_ranks=size,
                         generation_workers=size-1, workers_per_rank=args.threads,
                         blas_workers=1, map_dtype='float32',
+                        compute_precision=args.precision, point_device=args.point_device,
+                        point_batch=args.point_batch,
                         map_shape=[4, 2, len(indices)],
                         comparison_count=10000, validation_count=5000,
                         comparison_seed_start=341104759, validation_seed_start=441104759)
         manifest.write_text(yaml.safe_dump(metadata, sort_keys=False))
         with (folder / 'worker_history.txt').open('a') as history:
-            history.write(f'MPI resume after {completed} journaled maps: {size-1} generation ranks x {args.threads} transform threads; BLAS=1.\n')
+            history.write(f'MPI resume after {completed} journaled maps: {size-1} generation ranks x {args.threads} transform threads; BLAS=1; precision={args.precision}; point_device={args.point_device}; point_batch={args.point_batch}.\n')
         iterator = iter(enumerate(pending))
         active = 0
         for worker in range(1, size):
@@ -130,6 +179,8 @@ def main():
         for stream in streams.values():
             stream.close()
         if args.limit == 15000:
+            from verify_ensemble import verify_ensemble
+            verify_ensemble(folder)
             (folder / 'COMPLETE.txt').write_text('10000 comparison and 5000 validation float32 maps saved.\n')
         print('MPI generation target complete:', completed, flush=True)
         return
@@ -164,6 +215,9 @@ def main():
             first=first,
             second=second,
             workers=args.threads,
+            precision=args.precision,
+            point_device=args.point_device,
+            point_batch=args.point_batch,
         )
         comm.send((position, generation, measurement, values), dest=0)
 

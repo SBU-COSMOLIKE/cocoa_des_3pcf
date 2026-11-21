@@ -321,3 +321,25 @@ three-point calculation. Count that prior input in any simulation-saving
 claim. State NSIDE512, equal pixel weights, original-bank lower-edge >=8
 cut, max_n=100, 63 SAS bins and the unresolved exact publication match.
 Do not interpret earlier small-vector performance as a result for this matrix.
+
+## Optional arithmetic and Metal map generation
+
+Float32 file storage does not by itself validate float32 computation.
+The computation tests and their records are under notes/gptg_simulations/
+and tests/gptg_pilot/compute_precision/. The optional --precision float32
+uses single-precision map/harmonic arrays with double-precision calibration
+and the original random stream. The --point-device metal flag uses MLX only
+for the nonlinear point transformation; ducc0 spherical transforms and
+iterative inversion remain on CPU. Do not describe this as full GPU map
+synthesis. The default arithmetic remains float64 unless explicitly selected.
+MPI records numerical-mode changes and preserves already saved maps.
+--point-batch 4 batches the four source-bin fields within one realization;
+it is not independent-realization batching. It passed the agreement checks
+but did not establish better throughput than the single-field GPU path.
+The production hybrid allocation remains three workers x four CPU threads,
+plus a coordinator, with BLAS=1. Keep notebook/refreeze/TreeCorr runs paused.
+The Apple GPU SHT probe must distinguish actual device execution from a
+CPU fallback. Torch's macOS limitation and S2FFT's MPS/DLPack failure do not
+prove that a custom Metal spherical transform is impossible. MLX FFT works.
+On completion verify_ensemble.py checks all 15000 IDs, seeds, headers and
+sizes; it does not perform a full pixel scan or launch TreeCorr measurements.

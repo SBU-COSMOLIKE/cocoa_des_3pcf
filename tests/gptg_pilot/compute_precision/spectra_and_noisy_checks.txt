@@ -1,0 +1,12 @@
+# seed mode max_EE_BB_cross_band_error_normalized_by_auto_power
+0 cpu32 4.216225506051468e-07
+0 metal32 7.954859967824097e-07
+1 cpu32 1.7583612852218462e-07
+1 metal32 8.741476954092428e-07
+2 cpu32 5.394657789646748e-07
+2 metal32 1.1042100727971366e-06
+3 cpu32 9.847907015763933e-07
+3 metal32 9.675750314808278e-07
+# 24 default maps bitwise equal to production
+# cpu32 max noisy-aperture error / sample scatter: 1.968155105e-06
+# metal32 max noisy-aperture error / sample scatter: 3.571768760e-06

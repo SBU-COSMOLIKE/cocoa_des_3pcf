@@ -661,6 +661,107 @@ compatible with the MPI library used to build mpi4py. These are Open MPI
 launchers; a site requiring `srun` must use its supported PMI/PMIx settings.
 Actual multi-node execution still requires testing on that cluster.
 
+### Optional float32 computation and Apple GPU point transforms
+
+Float32 **storage** and float32 **computation** have separate tests. The
+candidate keeps the fitted calibration and random draws in float64, but uses
+float32 map arrays and complex64 harmonic arrays. Four noiseless test skies
+show a maximum signal RMS difference of 2.3 parts per million; aperture
+moments through sixth order differ by at most 3.3 parts per million when
+normalized by their absolute moments. Masked E/B cross-spectrum checks also
+pass. The [test record](tests/gptg_pilot/compute_precision/summary.txt) states
+what was measured; this is numerical agreement, not a physical validation of
+the fitted map model or convergence of its covariance.
+
+The default remains float64 CPU computation. Optional `--precision float32`
+selects the tested smaller arrays. On Apple silicon, `--point-device metal`
+uses MLX for the nonlinear pixel transformation. **Spherical transforms and
+the iterative harmonic solve remain on CPU.** MPI workers can overlap their
+CPU work with another worker's GPU submission. Calibration, random-number
+draws and file handling also remain on CPU; moving these small operations
+would change reproducibility or add overhead.
+
+Install the optional tested MLX version in the activated Cocoa environment:
+
+```bash
+python -m pip install mlx==0.29.3
+```
+
+From `projects/des_3pcf/`, a four-rank hybrid launch is:
+
+```bash
+mpiexec -n 4 --mca mpi_yield_when_idle 1 python -u notes/gptg_simulations/generate_ensemble_mpi.py --threads 4 --precision float32 --point-device metal
+```
+
+This uses three CPU workers with four transform threads each and one
+coordinator. BLAS remains one. Stop the previous generator before launching
+a replacement. Existing maps are preserved; `ensemble.yaml` records an
+arithmetic change, its completed-map boundary and any saved maps awaiting
+journal recovery. Thus switching numerical settings does not conceal which
+part of the ensemble used the earlier settings.
+
+Add `--point-batch 4` to submit all four source-bin fields together. That
+batch produced bitwise-identical maps to single-field GPU submissions in
+four noiseless and 24 noisy examples. It did not demonstrate a speed advantage,
+so single-field submissions remain the default. This batches four source
+fields from one realization, not independent whole survey realizations.
+Batching across workers would also require transferring their field arrays;
+the present implementation avoids that communication.
+
+Measured MPI wall times, including process initialization:
+
+| Test | Float64 CPU | Float32 CPU | Float32 CPU + Metal |
+|---|---:|---:|---:|
+| 12 maps, single-field GPU | 18.79 s | 17.53 s | 17.38 s |
+| 24 maps, reverse order, single-field GPU | 36.42 s | 33.03 s | 31.94 s |
+| 24 maps, four-field GPU batches | 35.09 s | 32.84 s | 32.24 s |
+
+The hybrid reduces elapsed time by about 8--12% against float64 in the
+24-map tests. The GPU's extra gain beyond float32 CPU is only about 2--3%.
+The large remaining cost is the harmonic solve. These short measurements
+are not a guarantee under a different concurrent laptop workload.
+
+Reproduce the noiseless arithmetic test:
+
+```bash
+python notes/gptg_simulations/compute_precision_tests.py --count 4 --threads 1 --metal
+```
+
+Reproduce MPI timings when those CPUs are free; use a fresh output directory
+so saved maps cannot turn a timing into a cache-hit measurement:
+
+```bash
+python notes/gptg_simulations/benchmark_compute_precision.py --count 24 --reverse --output chains/compute_precision_mpi_new
+```
+
+Check the masked spectra, common seeds and the unchanged float64 reference:
+
+```bash
+python notes/gptg_simulations/check_compute_precision_outputs.py --mpi-output chains/compute_precision_mpi_new
+```
+
+The GPU spherical-transform probe is also committed as
+`notes/gptg_simulations/probe_gpu_sht.py`. With Torch 2.6.0 on this machine's
+macOS 13.7.5, GPU FFT requires macOS 14 or later. This is Cocoa's installed
+Torch version. [Torch 2.2](https://github.com/pytorch/pytorch/blob/v2.2.0/aten/src/ATen/native/native_functions.yaml#L2952)
+has no MPS FFT dispatch; [Torch 2.3](https://github.com/pytorch/pytorch/blob/v2.3.0/aten/src/ATen/native/mps/operations/FastFourierTransform.mm#L90)
+already has the macOS14 requirement. S2FFT 1.5.0, tested with
+compatible JAX/JAXLIB 0.5.3 in isolation, rejects MPS at its DLPack transfer.
+MLX's Metal FFT itself passes a NumPy comparison. Consequently these tests
+rule out the tested ready-made GPU route on this installation, not a future
+custom Metal spherical transform. Do not upgrade Cocoa's JAX for this probe;
+use an isolated environment for its optional dependencies.
+
+When generation reaches 15,000 maps, its coordinator checks exact file IDs,
+journal seeds, finite journal entries, array headers, dtype and file lengths,
+then writes `COMPLETENESS.txt`. This checks missing/truncated maps without
+reading all 177 GB of pixels again. It does not start TreeCorr. The same audit
+can be run separately:
+
+```bash
+python notes/gptg_simulations/verify_ensemble.py chains/gptg_ensemble_15000
+```
+
 The declared side cut keeps lower edges at least 8 arcmin from the original
 20-bin 0.5–80 arcmin bank (first retained edge 8.151471). It uses multipoles
 through 100, 63 SAS angle bins with edges 0.016–3.126 radians, and zero

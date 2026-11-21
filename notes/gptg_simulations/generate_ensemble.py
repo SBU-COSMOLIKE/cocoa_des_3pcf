@@ -27,12 +27,32 @@ from generate_maps import (
     setup,
     gaussian_spectra,
     normalized_transform,
+    transform,
     aperture_weights,
 )
 
 
-def generate_one(path, seed, record, data, indices, geometry, ell, factor,
-                 nodes, weights, roots, variance, first, second, workers):
+def generate_one(
+    path,
+    seed,
+    record,
+    data,
+    indices,
+    geometry,
+    ell,
+    factor,
+    nodes,
+    weights,
+    roots,
+    variance,
+    first,
+    second,
+    workers,
+    precision="float64",
+    point_device="cpu",
+    diagnostics=None,
+    point_batch=1,
+):
     """Generate one seed, atomically save float32, and measure decoded pixels.
 
     Serial and MPI drivers call this identical kernel. The seed depends on
@@ -40,6 +60,20 @@ def generate_one(path, seed, record, data, indices, geometry, ell, factor,
     is read and remeasured after an interrupted save-to-journal transition.
     No physics, transform settings or random draw ordering depends on MPI.
     """
+    # Single precision applies to the large map/harmonic arrays. Calibration
+    # integrals and the common random stream remain double precision.
+    if precision not in ("float64", "float32"):
+        raise ValueError("precision must be float64 or float32")
+    if point_device not in ("cpu", "metal"):
+        raise ValueError("point_device must be cpu or metal")
+    if point_batch not in (1, 4) or (point_batch == 4 and point_device != "metal"):
+        raise ValueError("point_batch=4 requires the Metal point device")
+    if point_device == "metal":
+        if precision != "float32":
+            raise ValueError("Metal point evaluation requires float32")
+        import mlx.core as mx
+        if not mx.metal.is_available():
+            raise RuntimeError("Apple Metal GPU is unavailable")
     started = time.monotonic()
     if path.exists():
         # A completed file may precede its journal row if the
@@ -53,21 +87,117 @@ def generate_one(path, seed, record, data, indices, geometry, ell, factor,
         white = (white+1j*rng.normal(size=white.shape))/np.sqrt(2.)
         white[:record['lmax']+1] = np.sqrt(2.)*white[:record['lmax']+1].real
         alms = np.einsum('nij,nj->ni', roots[ell], white).T
+        if precision == "float32":
+            alms = alms.astype(np.complex64)
         shear_maps = np.empty((4, 2, len(indices)))
+        if point_batch == 4:
+            # Batch the four source-bin sky fields into one GPU submission.
+            # CPU transforms produce these fields first. Separate MPI workers
+            # can still do CPU transforms while this rank uses the GPU.
+            batch_start = time.monotonic()
+            gaussian_batch = np.stack([
+                ducc0.sht.synthesis(
+                    alm=alms[source:source+1],
+                    spin=0,
+                    lmax=record['lmax'],
+                    nthreads=workers,
+                    **geometry,
+                ) for source in range(4)
+            ])
+            batch_synthesis_end = time.monotonic()
+            means = []
+            normalizations = []
+            for source in range(4):
+                values = transform(
+                    gaussian=nodes,
+                    parameters=data['parameters'][source],
+                )
+                mean = weights @ values
+                means.append(mean)
+                normalizations.append(np.sqrt(weights @ (values-mean)**2))
+            with mx.stream(mx.gpu):
+                g = mx.array(gaussian_batch)
+                parameters = mx.array(data['parameters'].astype(np.float32))
+                a1 = parameters[:, 0, None, None]
+                a2 = parameters[:, 1, None, None]
+                b = parameters[:, 2, None, None]
+                x0 = parameters[:, 3, None, None]
+                transition = parameters[:, 4, None, None]
+                mean = mx.array(np.asarray(means, dtype=np.float32)[:, None, None])
+                norm = mx.array(np.asarray(normalizations, dtype=np.float32)[:, None, None])
+                amplitude = mx.array(np.sqrt(variance).astype(np.float32)[:, None, None])
+                value = (mx.exp(a1*g-a1*a1/2.)+b*g)*mx.exp(
+                    (a2-a1)/transition*mx.logaddexp(
+                        mx.array(0., dtype=mx.float32), transition*(g-x0),
+                    )
+                )
+                kappa_gpu = amplitude*(value-mean)/norm
+                mx.eval(kappa_gpu)
+                kappa_batch = np.array(kappa_gpu)
+            batch_point_end = time.monotonic()
+            del gaussian_batch
         for source in range(4):
-            gaussian = ducc0.sht.synthesis(
-                alm=alms[source:source+1],
-                spin=0,
-                lmax=record['lmax'],
-                nthreads=workers,
-                **geometry,
-            )
-            kappa = np.sqrt(variance[source])*normalized_transform(
-                gaussian=gaussian,
-                parameters=data['parameters'][source],
-                nodes=nodes,
-                weights=weights,
-            )
+            if point_batch == 4:
+                kappa = kappa_batch[source]
+                # Amortize the batch stages over four bins for the profiler.
+                stage_start = time.monotonic()
+                synthesis_end = stage_start+(batch_synthesis_end-batch_start)/4.
+                point_end = synthesis_end+(batch_point_end-batch_synthesis_end)/4.
+            else:
+                stage_start = time.monotonic()
+                gaussian = ducc0.sht.synthesis(
+                    alm=alms[source:source+1],
+                    spin=0,
+                    lmax=record['lmax'],
+                    nthreads=workers,
+                    **geometry,
+                )
+                synthesis_end = time.monotonic()
+                if precision == "float64":
+                    kappa = np.sqrt(variance[source])*normalized_transform(
+                        gaussian=gaussian,
+                        parameters=data['parameters'][source],
+                        nodes=nodes,
+                        weights=weights,
+                    )
+                else:
+                    # The fixed Gaussian expectation is evaluated accurately once
+                    # per bin; it must not be estimated from this random sky.
+                    values = transform(
+                        gaussian=nodes,
+                        parameters=data['parameters'][source],
+                    )
+                    mean = weights @ values
+                    normalization = np.sqrt(weights @ (values-mean)**2)
+                    amplitude = np.float32(np.sqrt(variance[source]))
+                    a1, a2, b, x0, transition = data['parameters'][source].astype(
+                        np.float32,
+                    )
+                    if point_device == "cpu":
+                        kappa = amplitude*(transform(
+                            gaussian=gaussian,
+                            parameters=data['parameters'][source].astype(np.float32),
+                        )-np.float32(mean))/np.float32(normalization)
+                    else:
+                        # Only the point transformation runs on the GPU. ducc0's
+                        # spin transforms and iterative solve still use CPU threads.
+                        # Evaluate before timing/copying: MLX operations are lazy.
+                        with mx.stream(mx.gpu):
+                            g = mx.array(gaussian)
+                            value = (mx.exp(float(a1)*g-float(a1*a1/2.))
+                                     + float(b)*g)*mx.exp(
+                                float((a2-a1)/transition)*mx.logaddexp(
+                                    mx.array(0., dtype=mx.float32),
+                                    float(transition)*(g-float(x0)),
+                                )
+                            )
+                            kappa_gpu = float(amplitude)*(
+                                value-float(np.float32(mean))
+                            )/float(np.float32(normalization))
+                            mx.eval(kappa_gpu)
+                            kappa = np.array(kappa_gpu)
+                point_end = time.monotonic()
+            solve_start = time.monotonic()
             result = ducc0.sht.pseudo_analysis(
                 map=kappa,
                 spin=0,
@@ -79,14 +209,23 @@ def generate_one(path, seed, record, data, indices, geometry, ell, factor,
             )
             if result[1] not in (1, 2):
                 raise RuntimeError(f'Harmonic solver did not converge: {result[1:]}')
+            solve_end = time.monotonic()
+            shear_factor = factor.astype(np.float32) if precision == "float32" else factor
             shear = ducc0.sht.synthesis(
-                alm=result[0]*factor,
+                alm=result[0]*shear_factor,
                 spin=2,
                 mode='GRAD_ONLY',
                 lmax=record['lmax'],
                 nthreads=workers,
                 **geometry,
             )[:, indices]
+            shear_end = time.monotonic()
+            if diagnostics is not None:
+                diagnostics.append([
+                    source, synthesis_end-stage_start, point_end-synthesis_end,
+                    solve_end-solve_start, shear_end-solve_end, result[1],
+                    result[2], result[3], result[4],
+                ])
             shear[1] *= record['second_component_sign_for_ducc']
             shear += data['noise_sigma'][source]*rng.normal(size=shear.shape)
             shear_maps[source] = shear
@@ -133,13 +272,41 @@ def main():
         type=int,
         default=15000,
     )
+    parser.add_argument(
+        '--precision',
+        choices=('float64', 'float32'),
+        default='float64',
+        help='Arithmetic precision of large map/harmonic arrays; storage is float32.',
+    )
+    parser.add_argument(
+        '--point-device',
+        choices=('cpu', 'metal'),
+        default='cpu',
+        help='Device for nonlinear pixel transformation; ducc0 stays on CPU.',
+    )
+    parser.add_argument(
+        '--output',
+        type=Path,
+        default=PROJECT / 'chains/gptg_ensemble_15000',
+    )
+    parser.add_argument(
+        '--point-batch',
+        type=int,
+        choices=(1, 4),
+        default=1,
+        help='Source fields per Metal point-transform batch.',
+    )
     args = parser.parse_args()
+    if args.point_batch == 4 and args.point_device != 'metal':
+        parser.error('--point-batch 4 requires --point-device metal')
+    if args.point_device == 'metal' and args.precision != 'float32':
+        parser.error('--point-device metal requires --precision float32')
     if not 1 <= args.workers <= 8 or not 1 <= args.limit <= 15000:
         parser.error('Use workers 1..8 and limit 1..15000; BLAS remains one.')
     # ducc0 uses its explicit native worker argument; keep the environment
     # consistent for any other OpenMP consumer without increasing BLAS.
     os.environ['OMP_NUM_THREADS'] = str(args.workers)
-    folder = PROJECT / 'chains/gptg_ensemble_15000'
+    folder = args.output.resolve()
     folder.mkdir(
         parents=True,
         exist_ok=True,
@@ -181,12 +348,18 @@ def main():
         'workers': args.workers,
         'blas_workers': 1,
         'map_dtype': 'float32',
+        'compute_precision': args.precision,
+        'point_device': args.point_device,
+        'point_batch': args.point_batch,
         'map_shape': [4, 2, len(indices)],
         'status': 'initial fit; physical DES covariance not validated',
     }
     manifest = folder / 'ensemble.yaml'
     if manifest.exists():
         previous = yaml.safe_load(manifest.read_text())
+        if (previous.get('compute_precision', 'float64') != args.precision
+                or previous.get('point_device', 'cpu') != args.point_device):
+            raise ValueError('Use a separate --output when changing arithmetic/device.')
         if previous['calibration_sha256'] != fit_hash:
             raise ValueError('Frozen ensemble calibration changed; restore it before resuming.')
     manifest.write_text(yaml.safe_dump(
@@ -256,6 +429,9 @@ def main():
                     first=first,
                     second=second,
                     workers=args.workers,
+                    precision=args.precision,
+                    point_device=args.point_device,
+                    point_batch=args.point_batch,
                 )
                 text = ' '.join(f'{value:.17e}' for value in values)
                 stream.write(f'{number} {seed} {generation_seconds:.8f} {elapsed:.8f} {text}\n')

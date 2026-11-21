@@ -1,0 +1,33 @@
+Computation precision and Apple GPU tests, 21 November 2026
+Apple M2 Pro; macOS 13.7.5; MLX/MLX-Metal 0.29.3; ducc0 0.42.0.
+Fixed production calibration; NSIDE512; lmax1024; four source bins.
+Common float64 random stream and calibration; complex64/float32 transform
+arrays in candidates; stored arrays float32 for every method.
+Four noiseless skies, 16 source fields, point batches 1 and 4.
+Signal relative RMS max 2.268729744e-6.
+Aperture moments of orders 2..6: largest absolute-moment-normalized error
+3.257969312e-6. Masked EE/BB auto/cross band error max 1.104210073e-6.
+Gate for these numerical diagnostics: 1e-4; all pass.
+24 shape-noisy maps per backend: largest aperture error relative to the
+24-map sample scatter 3.571768760e-6. This small sample is not a covariance
+convergence test. Initial 12-map timing repeated with 24 maps in reverse order.
+Default float64 maps match the existing production maps bitwise.
+Metal point batches 1 and 4 match bitwise: four noiseless and 24 noisy maps.
+Small resume test: three float64 maps preserved; next map generated with
+Metal batch4 matches its independent reference; manifest records the switch.
+MPI timing: 1 coordinator + 3 workers x 4 CPU transform threads, BLAS=1.
+Production was suspended during each timing and automatically resumed.
+Initial 12-map wall times including setup: CPU64 18.792862 s;
+CPU32 17.525384 s; CPU32+Metal batch1 17.379962 s.
+24-map repetitions are recorded in mpi_24_reverse.txt and mpi_24_batch4.txt.
+Batch4 is not a demonstrated throughput improvement over batch1.
+Only the nonlinear point transform uses Metal. Spherical transforms and
+iterative inversion remain ducc0 CPU work. MLX FFT works on this GPU.
+S2FFT 1.5.0 with isolated JAX/JAXLIB 0.5.3 rejects the MPS DLPack device;
+Torch 2.6.0 GPU FFT requires macOS14+. CPU fallback was disabled.
+These failures do not establish that a custom Metal SHT is impossible.
+No full TreeCorr measurement or posterior/covariance validation was run.
+Cocoa itself supplies Torch 2.6.0; it was not replaced. Older official
+Torch 2.2 FFT dispatch has CPU/CUDA only. Torch 2.3 already guards MPS FFT
+with the macOS14 complex-support requirement; downgrading those versions
+does not provide the missing GPU FFT. Source URLs are in the README.

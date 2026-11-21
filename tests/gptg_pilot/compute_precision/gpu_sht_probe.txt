@@ -1,0 +1,8 @@
+macOS 13.7.5
+torch 2.6.0 MPS available True
+Metal {'resource_limit': 499000, 'max_buffer_length': 17179869184, 'architecture': 'applegpu_g14s', 'memory_size': 34359738368, 'max_recommended_working_set_size': 22906503168, 'device_name': 'Apple M2 Pro'}
+torch FFT torch.float32 RuntimeError FFT operations are only supported on MacOS 14+
+torch FFT torch.complex64 RuntimeError FFT operations are only supported on MacOS 14+
+MLX Metal FFT passed against NumPy
+JAX is not using 64-bit precision. This will dramatically affect numerical precision at even moderate L.
+S2FFT GPU inverse ValueError Unknown device type mps for Dlpack
