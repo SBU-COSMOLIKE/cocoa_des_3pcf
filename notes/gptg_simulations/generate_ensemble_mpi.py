@@ -199,6 +199,9 @@ def main():
                 next_row += 1
                 print('saved', completed, '/', args.limit, group, number,
                       'elapsed_seconds', round(time.monotonic()-start, 3), flush=True)
+            # Dispatch by the rank that actually finished, not by map ID.
+            # Ordered journal writes do not impose an all-worker barrier:
+            # faster workers receive more maps while earlier IDs are buffered.
             task = next(iterator, None)
             comm.send(task, dest=status.Get_source())
             if task is None:
@@ -257,6 +260,9 @@ def main():
             point_device=args.point_device,
             point_batch=args.point_batch,
             gpu_sht=gpu_sht,
+            # CPU-only ranks ignore the overlap flag. On a Metal rank it
+            # overlaps stages inside this one map; map ownership stays with
+            # the MPI worker until save and measurement have both finished.
             gpu_pipeline=args.gpu_pipeline,
         )
         comm.send((position, generation, measurement, values, arithmetic), dest=0)

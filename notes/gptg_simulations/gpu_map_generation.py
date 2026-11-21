@@ -5,6 +5,19 @@ solve on device. Only the resulting harmonic coefficients return to ducc0
 for spin-two shear. Random draws and frozen calibration retain the original
 CPU convention. This file is exercised by the comparison test before a
 production MPI worker is permitted to select it.
+
+The optional pipeline changes the order of work, not the map equations:
+  main thread / GPU: scalar bin 0 -> scalar bin 1 -> scalar bin 2 -> ...
+  CPU consumer:          shear 0 ----> shear 1 ----> shear 2 ----> ...
+Each arrow into the CPU consumer transfers an owned coefficient array.
+The CPU can finish bin 0 while the GPU works on bin 1. A single consumer
+keeps CPU shear calls and noise draws in source-bin order. The four bins
+are statistically correlated, but that correlation is already in their
+initial Gaussian coefficients; it does not require sequential transforms.
+
+This overlaps bins within one map. MPI separately distributes whole maps.
+It does not batch independent realizations into one GPU solve, create more
+MPI ranks, change the harmonic cutoff, or relax the convergence tolerance.
 """
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -25,7 +38,20 @@ def generate_gpu_map(sht, seed, record, data, roots, variance, ell, factor,
     convergence-to-shear harmonic conversion, including zero at ell<2.
 
     Returns float32 pixels shaped (4, 2, number_of_footprint_pixels), plus
-    per-bin timing and true normal-residual diagnostics. The random stream
+    per-bin timing and true normal-residual diagnostics. Each diagnostic
+    row contains source index, scalar synthesis seconds, point-transform
+    seconds, scalar solve seconds, CPU shear/noise seconds, iteration count,
+    and the final relative normal residual. CPU timing starts when its task
+    actually runs: it excludes queue wait and coefficient transfer. Those
+    durations overlap when pipeline=True, so their sum is not map wall time.
+    The caller measures the full map's elapsed time separately.
+
+    pipeline=False performs each shear step immediately on the main thread.
+    pipeline=True submits that same step to one CPU consumer and proceeds
+    to the next source bin. threads sets ducc0's native CPU thread count;
+    the Python consumer is not a second independent pool of ducc0 workers.
+
+    The random stream
     and noise ordering match the CPU generator for paired comparisons.
     """
     # Draw independent complex Gaussian coefficients, then correlate bins.
@@ -47,6 +73,14 @@ def generate_gpu_map(sht, seed, record, data, roots, variance, ell, factor,
     # between Python threads. Each submitted coefficient array is an owned
     # CPU copy, so the next GPU solve cannot overwrite it.
     def finish_shear(source, coefficients):
+        """Finish one source bin using only CPU arrays and the fixed RNG.
+
+        coefficients is an owned packed complex64 harmonic array. Inputs
+        captured from the enclosing function (geometry, factor, noise and
+        footprint indices) are read-only. The only evolving shared object
+        used here is rng; only this consumer draws from it at this stage.
+        Returns two footprint shear components and this task's elapsed time.
+        """
         started = time.monotonic()
         shear = ducc0.sht.synthesis(
             alm=coefficients[None, :]*factor.astype(np.float32),
@@ -111,10 +145,20 @@ def generate_gpu_map(sht, seed, record, data, roots, variance, ell, factor,
             if executor is None:
                 result[source], entry[4] = finish_shear(source, owned)
             else:
+                # A Future is a receipt for a queued CPU result. Do not call
+                # result() here: that would wait immediately and remove the
+                # intended overlap with the next GPU source-bin calculation.
                 pending.append((source, executor.submit(finish_shear, source, owned)))
+        # Collect in source order after submitting all bins. Only this main
+        # thread writes the final result array and diagnostic list. Reading
+        # future.result() also propagates any CPU exception to the caller.
         for source, future in pending:
             result[source], diagnostics[source][4] = future.result()
     finally:
         if executor is not None:
+            # A failed GPU stage can leave CPU work in flight. Join it before
+            # leaving this map so it cannot consume RNG draws or retain array
+            # storage after the caller handles the failure. Saving happens in
+            # generate_one only after this function returns successfully.
             executor.shutdown(wait=True)
     return result, diagnostics

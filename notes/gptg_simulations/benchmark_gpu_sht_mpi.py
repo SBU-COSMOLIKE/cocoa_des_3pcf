@@ -30,6 +30,9 @@ def main():
     parser.add_argument('--compare-pipeline', action='store_true',
                         help='Compare sequential and overlapped CPU/GPU stages.')
     args=parser.parse_args()
+    # Tuple fields: label, total MPI ranks (including coordinator), native
+    # CPU threads per generation worker, arithmetic precision, GPU workers.
+    # GPU workers still need CPU threads for their spin-two shear stage.
     cases=[('cpu64',4,4,'float64',0),('cpu32',4,4,'float32',0),
            ('mixed',5,3,'float32',1)]
     if args.compare_gpu_workers:
@@ -37,6 +40,8 @@ def main():
         # retain four workers with three native CPU threads apiece.
         cases=[('gpu1',5,3,'float32',1),('gpu2',5,3,'float32',2)]
     if args.compare_pipeline:
+        # Both cases use the same ranks, precision and transform equations.
+        # The sole difference is whether CPU shear overlaps next-bin GPU work.
         cases=[('sequential',5,3,'float32',1),('pipeline',5,3,'float32',1)]
     if args.without_cpu32:
         cases=[case for case in cases if case[0]!='cpu32']
@@ -60,6 +65,10 @@ def main():
                      '--output',str(folder.resolve())]
             if name == 'pipeline':
                 command.append('--gpu-pipeline')
+            # Measure the complete subprocess lifetime, including startup,
+            # map generation, saves and final MPI shutdown. This is aggregate
+            # throughput, not the latency of one transform or one warm map.
+            # Reverse case order in a separate run to check warm-up effects.
             start=time.monotonic()
             with (args.output/f'{name}.log').open('w') as log:
                 subprocess.run(command,stdout=log,stderr=subprocess.STDOUT,check=True)
