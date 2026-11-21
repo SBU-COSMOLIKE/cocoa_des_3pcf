@@ -565,10 +565,11 @@ exercises remain historical algebra diagnostics, not this science comparison.
 **TreeCorr 5.1.2**, by Mike Jarvis and contributors, measures the vector:
 `GGCorrelation` for ten source pairs and twenty angular bins, then
 `GGGCorrelation`, `toSAS()` and `calculateMap3()` for twenty source triples
-and four equal aperture radii. The installed build has no OpenMP support.
-**mpi4py and Open MPI** distribute measurements over eight single-CPU workers;
-a separate coordinator handles messages and small files. Map generation uses
-four transform threads concurrently. BLAS stays one per process.
+and four equal aperture radii. **mpi4py and Open MPI** distribute independent
+measurements across ranks. Each measurement rank uses one CPU, even when
+TreeCorr was built with OpenMP. A separate coordinator writes the results.
+The laptop currently prioritizes map generation: three MPI workers each use
+four transform threads; the full measurement is paused. BLAS stays one.
 
 From activated **Cocoa/**, with DES Y3 covariance support compiled, calculate
 and save all analytical components:
@@ -577,25 +578,88 @@ and save all analytical components:
 python projects/des_y3/covariance/compute_covariance.py projects/des_y3/EXAMPLE_EVALUATE_COVARIANCE.yaml --output projects/des_3pcf/chains/gptg_ensemble_15000/des_y3_full_covariance.npz
 ```
 
-From **projects/des_3pcf/**, keep one generator running with four workers:
-
-```bash
-python notes/gptg_simulations/generate_ensemble.py --workers 4
-```
-
-With TreeCorr, astropy-healpix, mpi4py and Open MPI installed, run the full
-measurement and staged analysis in a second terminal:
+The small staged test remains available from **projects/des_3pcf/**:
 
 ```bash
 python notes/gptg_simulations/run_full_joint_mpi.py
 ```
 
-The driver uses nine MPI ranks: eight measurement workers and one coordinator.
-It measures the first 1,000 maps, runs the comparison, resumes measurement
-through map 1,500, then validates on the last 500. MPI workers exit before
-matrix analysis so that calculation does not add another busy CPU. Both
-measurement stages resume existing partial vectors. Do not launch two
-measurement coordinators on the same output folder.
+It allocates nine MPI ranks: eight single-CPU measurement workers and a
+coordinator. It measures 1,000 maps, analyzes them, then measures 500 further
+maps for independent validation. Both stages resume saved partial vectors.
+Do not run it alongside the current twelve-core generation job.
+
+### MPI generation and TreeCorr measurements on HPC
+
+TreeCorr now follows Cocoa's package installation. From **Cocoa/**, leave
+`IGNORE_TREECORR_CODE` unset. Setup retrieves pinned TreeCorr 5.1.2 and its
+Coord/pybind11 dependencies; compilation uses no network. It uses Cocoa's
+selected C/C++ compilers and removes upstream's fast-math option.
+
+```bash
+source installation_scripts/setup_treecorr.sh
+```
+
+```bash
+source installation_scripts/compile_treecorr.sh
+```
+
+These sourced installation steps return 55 on success, following Cocoa's
+usual convention. Full `setup_cocoa.sh` and `compile_cocoa.sh` also include
+them. TreeCorr's keys are removed by `stop_cocoa.sh`. Install ducc0,
+astropy-healpix and mpi4py in the same environment before map generation;
+mpi4py must use the cluster's MPI installation. Build dependencies on the
+cluster rather than copying the laptop's compiled Python extensions.
+
+Use shared storage visible at the same path on every node. Transfer the
+project and its actual `data/` inputs, `maps_cov_512_v2/indices_512.npy`, and
+`chains/gptg_ensemble_15000/`. That last directory must contain the frozen
+`calibration.yaml`, `calibration.npz`, `ensemble.yaml`, footprint indices,
+existing comparison/validation maps and their measurement journals. Preserve
+these together when resuming. Recalibration is unnecessary, so Rafael's
+hundreds of GB of original maps need not be transferred for this step.
+Retain `des_y3_full_covariance.npz` for the later fixed-A analysis.
+
+The launch scripts below follow Cocoa's MPI environment forwarding. Source
+`start_cocoa.sh` on the allocated node first. Under Slurm request
+`--export=ALL`; request four CPUs per task for generation, one for measurement.
+The rank count includes one coordinator. For example, 16 generation ranks
+reserve 64 CPUs and run 15 workers with four transform threads each. Ensure
+that tasks per node times CPUs per task fits the allocated node. Do not
+launch these computations on a login node.
+
+```bash
+bash projects/des_3pcf/scripts/generate_gptg_hpc.sh 16 15000
+```
+
+This resumes the existing seeds and journals, saves float32 maps, and keeps
+at least 50 GB free. Computation remains float64. A three-map test agreed
+bitwise with the serial generator in both saved pixels and aperture moments.
+The laptop uses three generation workers with four transform threads each;
+the Linux HPC launcher additionally binds ranks to their allocated cores.
+
+After generation, measure the complete 15,000-map ensemble, for example with
+64 allocated single-CPU tasks:
+
+```bash
+bash projects/des_3pcf/scripts/measure_gptg_hpc.sh 64 15000
+```
+
+There are 63 measurement workers and one coordinator in this example.
+Global IDs 0--9999 are the comparison maps; IDs 10000--14999 refer to
+validation maps 0--4999. Workers read saved maps; only the coordinator writes
+small 480-entry vectors. No per-rank map copies or large triangle outputs
+are saved. Repeat the command to resume. Never run two coordinators against
+the same journals or measurement directory. The existing analysis driver
+still analyzes its early 1,000+500 experiment; measuring all maps does not
+silently change that statistical selection.
+
+The scripts leave network transport to the site's MPI configuration and
+forward Cocoa's paths plus OpenMP/BLAS keys explicitly. Consult Cocoa's
+main MPI README for site-specific network choices. The launcher must be
+compatible with the MPI library used to build mpi4py. These are Open MPI
+launchers; a site requiring `srun` must use its supported PMI/PMIx settings.
+Actual multi-node execution still requires testing on that cluster.
 
 The declared side cut keeps lower edges at least 8 arcmin from the original
 20-bin 0.5–80 arcmin bank (first retained edge 8.151471). It uses multipoles

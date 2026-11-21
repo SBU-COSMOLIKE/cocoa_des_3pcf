@@ -1,0 +1,7 @@
+2026-11-21 MPI generator validation
+TreeCorr measurement not involved in this gate.
+Three maps, IDs 0..2, matched original serial float32 pixels bitwise.
+Initial MPI four-thread moments matched serial moments bitwise.
+Removed final journal row while retaining its saved map; resumed with three MPI ranks and one transform thread per worker.
+Recovery restored unique IDs and seeds; moments agreed at rtol=1e-13, atol=1e-20.
+All three retained maps remained bitwise equal to the serial files.

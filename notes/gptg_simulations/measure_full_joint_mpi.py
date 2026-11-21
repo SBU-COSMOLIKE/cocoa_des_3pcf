@@ -33,6 +33,8 @@ def main():
     parser.add_argument('--count', type=int, default=1500)
     parser.add_argument('--smoke-pixels', type=int, default=0)
     args = parser.parse_args()
+    if not 1 <= args.count <= 15000:
+        raise ValueError('count must be between 1 and 15000.')
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
@@ -91,6 +93,8 @@ def main():
             comm.send(task, dest=worker)
             active += task is not None
         while active:
+            while not comm.Iprobe(source=MPI.ANY_SOURCE):
+                time.sleep(.02)
             status = MPI.Status()
             number, job, result, seconds = comm.recv(source=MPI.ANY_SOURCE, status=status)
             values = vectors[number]
@@ -126,7 +130,10 @@ def main():
         number, job = task
         started = time.monotonic()
         if cached_number != number:
-            path = folder / 'comparison' / f'GPTG_DES_{number:06d}.npy'
+            # Global IDs 10000..14999 refer to the independent ensemble.
+            group = 'comparison' if number < 10000 else 'validation'
+            local_number = number if number < 10000 else number-10000
+            path = folder / group / f'GPTG_DES_{local_number:06d}.npy'
             while not path.exists():
                 time.sleep(10)
             maps = np.load(path, mmap_mode='r')

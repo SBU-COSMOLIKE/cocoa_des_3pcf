@@ -286,11 +286,12 @@ The validation quadratic/log-determinant score does not identify the direct
 sample inverse as truth. Model validation against N-body simulations remains
 separate from estimator validation conditional on a fitted generator.
 
-The current total compute allocation is twelve CPUs: four native generation
-threads and eight single-CPU MPI measurement workers. A ninth MPI coordinator
-handles messages/files. BLAS remains one per process. Use `--workers 4` while
-full measurement runs; the earlier four/eight-worker timing records retain
-their historical labels.
+The current laptop priority is map generation: three MPI generation ranks
+with four transform threads each, plus an idle coordinator. BLAS stays one.
+Full TreeCorr measurement is paused. HPC launchers in scripts/ forward Cocoa's
+MPI keys and allocate one CPU per measurement rank. Global measurement IDs
+10000..14999 select validation maps 0..4999. Do not run two coordinators
+against the same output directory. Preserve older timing records as history.
 
 ## Exact analytical two-point block
 

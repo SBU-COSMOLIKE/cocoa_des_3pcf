@@ -31,6 +31,89 @@ from generate_maps import (
 )
 
 
+def generate_one(path, seed, record, data, indices, geometry, ell, factor,
+                 nodes, weights, roots, variance, first, second, workers):
+    """Generate one seed, atomically save float32, and measure decoded pixels.
+
+    Serial and MPI drivers call this identical kernel. The seed depends on
+    the global map number, never the MPI rank or task order. An existing map
+    is read and remeasured after an interrupted save-to-journal transition.
+    No physics, transform settings or random draw ordering depends on MPI.
+    """
+    started = time.monotonic()
+    if path.exists():
+        # A completed file may precede its journal row if the
+        # process stopped between the atomic save and flush.
+        shear_maps = np.load(file=path).astype(np.float64)
+        if shear_maps.shape != (4, 2, len(indices)):
+            raise ValueError(f'Unexpected saved map shape: {path}')
+    else:
+        rng = np.random.default_rng(seed=seed)
+        white = rng.normal(size=(len(ell), 4))
+        white = (white+1j*rng.normal(size=white.shape))/np.sqrt(2.)
+        white[:record['lmax']+1] = np.sqrt(2.)*white[:record['lmax']+1].real
+        alms = np.einsum('nij,nj->ni', roots[ell], white).T
+        shear_maps = np.empty((4, 2, len(indices)))
+        for source in range(4):
+            gaussian = ducc0.sht.synthesis(
+                alm=alms[source:source+1],
+                spin=0,
+                lmax=record['lmax'],
+                nthreads=workers,
+                **geometry,
+            )
+            kappa = np.sqrt(variance[source])*normalized_transform(
+                gaussian=gaussian,
+                parameters=data['parameters'][source],
+                nodes=nodes,
+                weights=weights,
+            )
+            result = ducc0.sht.pseudo_analysis(
+                map=kappa,
+                spin=0,
+                lmax=record['lmax'],
+                maxiter=30,
+                epsilon=1.e-6,
+                nthreads=workers,
+                **geometry,
+            )
+            if result[1] not in (1, 2):
+                raise RuntimeError(f'Harmonic solver did not converge: {result[1:]}')
+            shear = ducc0.sht.synthesis(
+                alm=result[0]*factor,
+                spin=2,
+                mode='GRAD_ONLY',
+                lmax=record['lmax'],
+                nthreads=workers,
+                **geometry,
+            )[:, indices]
+            shear[1] *= record['second_component_sign_for_ducc']
+            shear += data['noise_sigma'][source]*rng.normal(size=shear.shape)
+            shear_maps[source] = shear
+    made = time.monotonic()
+    if not path.exists():
+        temporary = path.with_suffix('.npy.tmp')
+        # Only the stored pixels are rounded. Decode those same
+        # values to float64 before filtering so the journal can
+        # be reproduced exactly from the saved map.
+        stored_maps = shear_maps.astype(np.float32)
+        with temporary.open(mode='wb') as output:
+            np.save(
+                file=output,
+                arr=stored_maps,
+            )
+        temporary.replace(path)
+        shear_maps = stored_maps.astype(np.float64)
+    aperture = first @ shear_maps[:, 0].T + second @ shear_maps[:, 1].T
+    aperture = aperture.T.reshape(4, 2, 64)
+    values = np.concatenate([
+        (aperture**2).mean(axis=2).ravel(),
+        (aperture**3).mean(axis=2).ravel(),
+    ])
+    elapsed = time.monotonic()-made
+    return made-started, elapsed, values
+
+
 def main():
     """Freeze the fit once, then generate or resume a serial map run with an explicit worker count.
 
@@ -156,83 +239,29 @@ def main():
                     continue
                 if shutil.disk_usage(folder).free < bytes_per_map+reserve:
                     raise OSError('Free disk reached the reserved 50 GB; resume after freeing space.')
-                started = time.monotonic()
                 seed = seed_start+number
-                if path.exists():
-                    # A completed file may precede its journal row if the
-                    # process stopped between the atomic save and flush.
-                    shear_maps = np.load(file=path).astype(np.float64)
-                    if shear_maps.shape != (4, 2, len(indices)):
-                        raise ValueError(f'Unexpected saved map shape: {path}')
-                else:
-                    rng = np.random.default_rng(seed=seed)
-                    white = rng.normal(size=(len(ell), 4))
-                    white = (white+1j*rng.normal(size=white.shape))/np.sqrt(2.)
-                    white[:record['lmax']+1] = np.sqrt(2.)*white[:record['lmax']+1].real
-                    alms = np.einsum('nij,nj->ni', roots[ell], white).T
-                    shear_maps = np.empty((4, 2, len(indices)))
-                    for source in range(4):
-                        gaussian = ducc0.sht.synthesis(
-                            alm=alms[source:source+1],
-                            spin=0,
-                            lmax=record['lmax'],
-                            nthreads=args.workers,
-                            **geometry,
-                        )
-                        kappa = np.sqrt(variance[source])*normalized_transform(
-                            gaussian=gaussian,
-                            parameters=data['parameters'][source],
-                            nodes=nodes,
-                            weights=weights,
-                        )
-                        result = ducc0.sht.pseudo_analysis(
-                            map=kappa,
-                            spin=0,
-                            lmax=record['lmax'],
-                            maxiter=30,
-                            epsilon=1.e-6,
-                            nthreads=args.workers,
-                            **geometry,
-                        )
-                        if result[1] not in (1, 2):
-                            raise RuntimeError(f'Harmonic solver did not converge: {result[1:]}')
-                        shear = ducc0.sht.synthesis(
-                            alm=result[0]*factor,
-                            spin=2,
-                            mode='GRAD_ONLY',
-                            lmax=record['lmax'],
-                            nthreads=args.workers,
-                            **geometry,
-                        )[:, indices]
-                        shear[1] *= record['second_component_sign_for_ducc']
-                        shear += data['noise_sigma'][source]*rng.normal(size=shear.shape)
-                        shear_maps[source] = shear
-                made = time.monotonic()
-                if not path.exists():
-                    temporary = path.with_suffix('.npy.tmp')
-                    # Only the stored pixels are rounded. Decode those same
-                    # values to float64 before filtering so the journal can
-                    # be reproduced exactly from the saved map.
-                    stored_maps = shear_maps.astype(np.float32)
-                    with temporary.open(mode='wb') as output:
-                        np.save(
-                            file=output,
-                            arr=stored_maps,
-                        )
-                    temporary.replace(path)
-                    shear_maps = stored_maps.astype(np.float64)
-                aperture = first @ shear_maps[:, 0].T + second @ shear_maps[:, 1].T
-                aperture = aperture.T.reshape(4, 2, 64)
-                values = np.concatenate([
-                    (aperture**2).mean(axis=2).ravel(),
-                    (aperture**3).mean(axis=2).ravel(),
-                ])
-                elapsed = time.monotonic()-made
+                generation_seconds, elapsed, values = generate_one(
+                    path=path,
+                    seed=seed,
+                    record=record,
+                    data=data,
+                    indices=indices,
+                    geometry=geometry,
+                    ell=ell,
+                    factor=factor,
+                    nodes=nodes,
+                    weights=weights,
+                    roots=roots,
+                    variance=variance,
+                    first=first,
+                    second=second,
+                    workers=args.workers,
+                )
                 text = ' '.join(f'{value:.17e}' for value in values)
-                stream.write(f'{number} {seed} {made-started:.8f} {elapsed:.8f} {text}\n')
+                stream.write(f'{number} {seed} {generation_seconds:.8f} {elapsed:.8f} {text}\n')
                 stream.flush()
                 print(group, number+1, '/', count, 'seconds',
-                      round(time.monotonic()-started, 3), 'elapsed_minutes',
+                      round(generation_seconds+elapsed, 3), 'elapsed_minutes',
                       round((time.monotonic()-start_run)/60., 2), flush=True)
     (folder / 'COMPLETE.txt').write_text(
         '10000 comparison and 5000 validation maps saved.\n'
