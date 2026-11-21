@@ -121,6 +121,13 @@ are insufficient.
   File counts are not independent-sky counts. Keep previews bounded and
   store generated measurements in `chains/`. The covariance introduction
   lives in `notes/covariance_from_simulations/` with its LaTeX source and PDF.
+- `scripts/measure_covariance_maps.py` is a bounded map diagnostic, not the
+  published xi/Map3 estimator. It streams maps with OpenMP <=4 and BLAS=1;
+  `--all --resume` appends arrivals after a completed pass without map copies.
+  Its 16 raw aperture moments keep noise self-products. The map notebook's
+  Gaussian reference uses a separate calibration group and is not a noiseless
+  CosmoLike theory covariance. Keep these limits and unconfirmed shear/parent
+  conventions explicit. Never treat a failed or indefinite PME as a forecast.
 - Prefer YAML or plain text to JSON outside frozen test evidence. Keep
   binary scientific arrays where their format is useful; do not convert
   FITS or NPZ arrays to text merely to avoid a file extension.

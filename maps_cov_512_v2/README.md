@@ -28,7 +28,9 @@ python -m pip install --no-deps astropy-healpix==1.0.3
 ```
 
 The saved notebook outputs include the bounded map inspection and plots;
-no covariance measurement was run.
+the viewing notebook itself runs no covariance measurement. A separate
+[aperture-moment pilot](../EXAMPLE_COVARIANCE_MAPS.ipynb) now studies a bounded
+measurement from these maps.
 
 The numerical map files, including `indices_512.npy`, are ignored by Git.
 Only this README and the viewing notebook are tracked here. Save generated
@@ -163,3 +165,48 @@ can correct an analytic precision matrix. The [introductory notes](../notes/cova
 derive the method, explain repeated-noise realizations and describe the
 validation needed before using the correction in a forecast. Neither artifact
 claims that a DES covariance has already been calibrated from this download.
+
+## Covariance pilot and storage
+
+The [measurement driver](../scripts/measure_covariance_maps.py) streams one
+map at a time, with OpenMP limited to four workers and BLAS to one. It saves
+16 coarse aperture moments per map and a small set of primary aperture
+values under `../chains/`; it never copies a map or writes a per-map figure.
+The first pass used cut zero, draws 0–3, and 48 run labels: 192 files. Its
+generated tables occupied less than 1 MB. The notes, notebooks, and driver
+are tracked; the downloaded arrays and generated measurements stay ignored.
+
+From Cocoa, measure the bounded sample:
+
+```bash
+python projects/des_3pcf/scripts/measure_covariance_maps.py --max-runs 48
+```
+
+Measure all complete, settled files currently present:
+
+```bash
+python projects/des_3pcf/scripts/measure_covariance_maps.py --all
+```
+
+After another download batch, append files not previously measured:
+
+```bash
+python projects/des_3pcf/scripts/measure_covariance_maps.py --all --resume
+```
+
+Resume is for a completed prior pass with the same estimator and geometry.
+It checks the saved input sizes and timestamps and the center table. Files
+modified in the preceding two minutes, incomplete NPY payloads, and files
+that change during reading are deferred. The notebook analyzes the small
+text tables without reopening any maps. A local inventory is not a release
+manifest; confirm completion and integrity against the producer's record.
+
+The pilot integrates Gaussian tangential-shear filters at 30 and 60 arcminutes
+around 64 fixed centers, separately in all four source-bin slots. Its raw
+squared and cubed moments retain noise self-products. They are not the
+published catalogue or finite-triangle estimator. The initial 48-run test
+gave negative precision eigenvalues for the first- and second-order
+corrections. Repeated draws dominated the measured fluctuations, and weak
+cross-draw shear correlations do not establish the assumed shared sky.
+Confirm whether these files contain signal plus noise or noise only, and
+what `nreal` randomizes, before interpreting the covariance split physically.

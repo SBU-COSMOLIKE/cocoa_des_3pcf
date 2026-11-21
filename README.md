@@ -222,7 +222,8 @@ jupyter lab projects/des_3pcf --no-browser
 | [EXAMPLE_FEEDBACK_SCENARIOS.ipynb](EXAMPLE_FEEDBACK_SCENARIOS.ipynb) | What changes among the installed Cocoa feedback scenarios? |
 | [EXAMPLE_FISHER_BACCO.ipynb](EXAMPLE_FISHER_BACCO.ipynb) | How do neutrino conversion and extrapolation affect BACCO forecasts? |
 | [EXAMPLE_COMPRESSION.ipynb](EXAMPLE_COMPRESSION.ipynb) | What local information does each optional compression preserve? |
-| [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | How can simulations correct an analytic precision matrix? |
+| [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | How do we compute the noisy-square correction, one matrix operation at a time? |
+| [EXAMPLE_COVARIANCE_MAPS.ipynb](EXAMPLE_COVARIANCE_MAPS.ipynb) | What can a bounded aperture-moment experiment establish with Rafael’s maps? |
 | [EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb) | Which calculations agree with the original libraries? |
 
 A saved notebook output describes its recorded inputs and implementation.
@@ -337,8 +338,11 @@ because these observables have small numerical units.
 
 The [PME notebook](EXAMPLE_COVARIANCE_PME.ipynb) teaches the
 [Friedrich–Eifler precision expansion](https://arxiv.org/abs/1703.07786)
-with controlled Gaussian simulations, then explains how to use Rafael's
-downloaded maps. The [undergraduate notes](notes/covariance_from_simulations/covariance_from_simulations.pdf)
+with scalar and two-by-two worked calculations, then a controlled Gaussian
+experiment. The [map pilot](EXAMPLE_COVARIANCE_MAPS.ipynb) measures coarse
+second- and third-order aperture moments and tests a separately calibrated
+Gaussian reference. Its initial 48-run correction was not positive definite;
+it does not establish a usable DES precision. The [undergraduate notes](notes/covariance_from_simulations/covariance_from_simulations.pdf)
 derive the method and explain repeated noise realizations, pixel resolution
 and independent validation; their [LaTeX source](notes/covariance_from_simulations/covariance_from_simulations.tex)
 follows the Fisher notes' style. The [simulation guide](maps_cov_512_v2/README.md)

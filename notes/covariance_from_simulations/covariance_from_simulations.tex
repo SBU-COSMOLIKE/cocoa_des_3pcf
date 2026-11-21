@@ -51,12 +51,14 @@ Improvement means more reliable uncertainties; it need not mean smaller ones.
 Sections 2--4 introduce the measurement, the maps and the noisy-matrix
 problem. Sections 5--6 derive the expansion, beginning with one number rather
 than a matrix. Section 7 explains a complication specific to repeated skies
-and noise draws. Sections 8--9 give a limited pilot and its validation criteria.
+and noise draws. Sections 8--9 give a pilot design and its validation criteria;
+Section 10 records the first measured example.
 An understanding of averages, variances and matrix multiplication is enough
 to follow the argument; the Gaussian matrix-moment identity is stated with
-its assumptions. The companion notebook first uses artificial Gaussian
-vectors with known covariance, then describes the real-map workflow. Its
-existing numerical results are not a calibration of the downloaded maps.
+its assumptions. The PME notebook computes the correction with small
+matrices before a controlled Gaussian experiment. A separate map notebook
+analyzes measured coarse aperture moments. Neither supplies a calibrated
+precision for the published DES data vector.
 
 \paragraph{A first reading, with four calculations to check yourself.}
 Read the short matrix guide below if transposes, products and inverse
@@ -82,11 +84,12 @@ before a precision correction is useful for a DES forecast.
 pixel selection, and Sunao Sugiyama and Rafael Gomes for their theory and
 measurement software.} The relevant analysis is Gomes et al.~\cite{gomes};
 the statistical method is due to Oliver Friedrich and Tim Eifler.
-The local download is incomplete. We inspected two array headers, the
-pixel-index list and bounded slices for previews of two maps, not the
-complete collection. We have not measured its joint vectors,
-corrected a DES covariance or run a new Fisher forecast. This is an explanation
-and a plan that can be checked before undertaking those computations.
+The initial inspection checked the pixel-index list and previews of two
+maps. The bounded measurement in Section 10 goes further, but the shear
+conventions and simulation-label meanings still need producer confirmation.
+We have not measured the published joint vector, calibrated its DES precision,
+or run a new Fisher forecast. The notes separate the worked statistical
+calculation, the coarse map diagnostic, and the remaining survey-level tests.
 
 
 \subsection{A short reading guide to the matrix operations}
@@ -2237,9 +2240,165 @@ cannot be inverted. It could identify covariance directions that limit our
 claims about combining two- and three-point statistics. It would not require
 compression merely to invert a noisy matrix. Compression remains an option
 for a different scientific or computational purpose, with training kept
-independent of validation. The immediate deliverables here are the notes,
-a two-file viewing example and the PME workflow; measured DES corrections,
-resolution convergence and calibrated parameter errors remain future work.
+independent of validation. The notes, viewing example, worked PME notebook and a bounded map pilot
+are now available. The pilot below measures a deliberately smaller statistic.
+A matched DES correction, resolution convergence and calibrated parameter
+errors remain future work.
+
+
+\section{A first measurement from the downloaded maps}
+\paragraph{What the experiment is allowed to conclude.}
+On 21 November 2026 a bounded pass measured 192 files: 48 run labels,
+cut zero, and four realization labels per run. Each file supplied all four
+source-bin slots. This experiment establishes a working measurement and
+covariance calculation, but does not reproduce the published DES estimator.
+The code and executed notebook are in the project repository as
+\texttt{scripts/measure\_covariance\_maps.py} and
+\texttt{EXAMPLE\_COVARIANCE\_MAPS.ipynb}. The companion PME notebook first
+computes the noisy-square correction with scalar and two-by-two examples.
+Generated tables remain under \texttt{chains/}; the map arrays are not copied
+or placed under version control.
+
+\paragraph{Choose the geometry before looking at a covariance.}
+We select 64 centers using only the retained HEALPix pixel list. Each center
+must retain at least 99\% of the truncated filter weight at both aperture
+radii. A count of pixels in the outer disk is not sufficient: a small hole
+near the filter peak can matter more than missing pixels near the edge.
+The measured minimum retained weights are approximately 0.9879 and 0.9887.
+The full unmasked truncated weight is approximately 0.99698. These numbers
+are saved with the center coordinates, so the mask approximation is visible.
+
+\paragraph{Define the aperture value itself.}
+For radius $R$, we use the Gaussian tangential-shear filter
+\begin{equation}
+ Q_R(\theta)=\frac{\theta^2}{4\pi R^4}
+             \exp\left(-\frac{\theta^2}{2R^2}\right).
+\end{equation}
+The two radii are 30 and 60 arcminutes, converted to radians in the code.
+The filter is integrated to four radii. Its retained flat-sky radial weight is
+\begin{equation}
+ \int_0^{4R}2\pi\theta Q_R(\theta)\,d\theta
+ =1-9e^{-8}.
+\end{equation}
+A source-bin slot is labeled $b$, an aperture center $c$, and a retained
+pixel $j$. The measured aperture value is the pixel sum
+\begin{equation}
+ a_{bRc}=\Omega_{\rm pix}\sum_j Q_R(\theta_{cj})\gamma_{t,bj;c}.
+\end{equation}
+The shear rotation uses the bearing at the pixel toward the center. The
+calculation assumes equatorial shear components with the first component
+referenced to east and the second to $45$ degrees toward north. That sign
+and basis convention still needs producer confirmation. The RING pixel
+ordering has the separate geometric evidence discussed earlier.
+
+\paragraph{Form the two measurements without mixing their definitions.}
+For each source bin and radius, average the squared aperture values:
+\begin{equation}
+ d_{2,bR}=\frac{1}{64}\sum_{c=1}^{64}a_{bRc}^2.
+\end{equation}
+Then average their cubes as a separate measurement:
+\begin{equation}
+ d_{3,bR}=\frac{1}{64}\sum_{c=1}^{64}a_{bRc}^3.
+\end{equation}
+There are eight squared and eight cubed entries, for a total of sixteen.
+The same sixteen entries are computed for every selected map. Their full
+covariance retains source-bin correlations and the squared/cubed cross
+block. These raw moments include noise self-products. They use equal pixel
+weights and a small fixed center set, not catalogue pair or triple weights.
+They contain no published finite-triangle cut or mixed-bin third moments.
+Those distinctions prevent treating their covariance as the production
+xi/Map3 covariance.
+
+\paragraph{Keep three groups of parents separate.}
+For the primary precision test, each run supplies only cut zero and
+realization zero. Assigning run IDs modulo three gives sixteen parents for
+reference calibration, sixteen for correction estimation, and sixteen for
+validation. This rule was fixed before the precision comparison. All
+additional descendants retain their parent's group. The interpretation
+requires the run labels to identify independent parent skies; that metadata
+has not been established merely by reading filenames.
+
+\paragraph{Explain what is analytic in this pilot.}
+The Gaussian reference uses the covariance of aperture values, denoted
+$K_{ij}$. Here $i$ and $j$ each label a source bin, radius and center. We
+estimate $K$ using the reference group only, then hold it fixed. If aperture
+values are zero-mean Gaussian variables, pair contractions give
+\begin{equation}
+ \cov(a_i^2,a_j^2)=2K_{ij}^2.
+\end{equation}
+Two pairings survive the subtraction of the product of means. For the
+cubed measurements, six pairings connect all three factors between the two
+positions, while nine connect one pair and leave one internal pair at each
+position. Therefore
+\begin{equation}
+ \cov(a_i^3,a_j^3)=6K_{ij}^3+9K_{ii}K_{jj}K_{ij}.
+\end{equation}
+The squared/cubed covariance vanishes for this zero-mean Gaussian reference,
+because it contains an odd number of factors:
+\begin{equation}
+ \cov(a_i^2,a_j^3)=0.
+\end{equation}
+We sum each expression over both center indices and divide by $64^2$.
+Overlapping apertures are therefore retained through their cross entries
+in $K$; centers are not assumed independent.
+
+\paragraph{Do not confuse this reference with the desired theory covariance.}
+The pair-contraction formulas are analytic. Their input $K$ in this pilot
+is estimated from simulations, so its powers retain finite-calibration
+noise and plug-in bias. This reference is a Gaussian surrogate defined by
+that estimated $K$, not an unbiased estimator of the true Gaussian part.
+For example, even when true off-diagonal entries vanish, their sampled
+squares are positive on average. We do not claim a simulation saving from
+this reference. The production experiment must use the matched analytic
+CosmoLike covariance, including required connected and survey-scale terms,
+with its calibration budget counted separately.
+
+\paragraph{The small pilot does not validate a precision correction.}
+After mean subtraction, sixteen correction vectors give rank at most
+fifteen for the sixteen-row covariance. This rank deficiency does not stop
+PME, which inverts only its model. However, the estimated first-order
+precision has minimum dimensionless eigenvalue approximately $-1.2291$.
+The second-order corrected estimate has minimum eigenvalue approximately
+$-0.7282$. The independent-group product gives approximately $-3.1087$.
+All three are unsuitable for Gaussian likelihood weighting. They are
+reported unchanged; no negative eigenvalue is removed.
+
+\paragraph{A near-correct average cannot rescue wrong directions.}
+For the Gaussian reference, the untouched validation covariance gives
+\begin{equation}
+ \frac{\operatorname{tr}(\Psi_{\rm model}\widehat C_{\rm val})}{16}
+ \simeq 1.0449.
+\end{equation}
+That single average is close to one. Nevertheless, covariance directions
+and their estimated corrections can be wrong, as the negative precision
+eigenvalues show. Sixteen validation parents also give a noisy test of
+sixteen directions. The notebook reports a leave-one-parent-out uncertainty
+on this trace and keeps it distinct from model-calibration uncertainty.
+A larger file count must not be substituted for more independent parents.
+
+\paragraph{Repeated files reveal a metadata question.}
+With four repeated draws per parent, the ratio of within-parent variance
+to restored single-survey variance ranges approximately from 0.85 to 1.10
+across these rows. Ratios slightly above one are possible in finite samples;
+the estimated sky component is a difference of covariances and need not
+be positive. A bounded raw-pixel comparison also finds weak correlations
+between different realization labels. These observations motivate checking
+whether the files contain signal plus noise, noise only, or a different
+randomization across realization labels. They do not establish which of
+those possibilities is correct. This uncertainty prevents a physical
+interpretation of the component split at present.
+
+\paragraph{What the first pass teaches us to do next.}
+The map stream and correction algebra work, but the first small experiment
+has not demonstrated better likelihood weights. Increasing the number of
+parents will reduce one source of statistical uncertainty; it will not
+supply missing shear conventions, correct a mismatched estimator, or remove
+connected physics from the covariance. A larger pass applies the same fixed
+measurement to complete files, retaining one primary draw per parent in
+the precision comparison. It streams one map at a time, limits OpenMP to
+four and BLAS to one, and writes only compact measured tables. The larger
+pass is a diagnostic of these coarse moments, not a substitute for matching
+the published measurement and its analytic covariance.
 
 \begin{thebibliography}{9}
 \bibitem{pme} O. Friedrich and T. Eifler,
