@@ -6,8 +6,10 @@ global seeds, float32 storage and atomic saves. Results are journaled in
 map-number order even when workers finish out of order. An interruption
 can leave a saved map ahead of its journal; resume remeasures that file.
 
-Laptop example: four MPI ranks = one coordinator + three workers, with
-four transform threads per worker (twelve compute cores). BLAS always one.
+Mixed laptop example: five MPI ranks = one coordinator + four workers,
+with three transform threads per worker. --gpu-workers 1 selects one Metal
+worker; --gpu-pipeline overlaps its CPU shear with next-bin scalar work.
+BLAS always one. Worker-count and overlap timing tests use fresh maps.
 The output directory must already contain the frozen calibration files.
 """
 import os
@@ -53,13 +55,17 @@ def main():
     parser.add_argument(
         '--gpu-workers',
         type=int,
-        choices=(0, 1),
+        choices=(0, 1, 2),
         default=0,
-        help='Use one worker for Metal scalar SHT/solve and CPU shear synthesis.',
+        help='Number of workers using Metal scalar SHT/solve and CPU shear synthesis.',
     )
+    parser.add_argument('--gpu-pipeline', action='store_true',
+                        help='Overlap GPU scalar work with CPU shear for the previous bin.')
     args = parser.parse_args()
+    if args.gpu_pipeline and not args.gpu_workers:
+        parser.error('--gpu-pipeline requires a GPU worker')
     if args.gpu_workers and args.precision != 'float32':
-        parser.error('--gpu-workers 1 requires --precision float32')
+        parser.error('--gpu-workers requires --precision float32')
     if args.point_batch == 4 and args.point_device != 'metal':
         parser.error('--point-batch 4 requires --point-device metal')
     if args.point_device == 'metal' and args.precision != 'float32':
@@ -69,6 +75,8 @@ def main():
     size = comm.Get_size()
     if size < 2 or args.threads < 1 or not 1 <= args.limit <= 15000:
         raise ValueError('Use at least two ranks, positive threads, and limit 1..15000.')
+    if args.gpu_workers >= size:
+        parser.error('--gpu-workers must not exceed the number of generation ranks')
     os.environ['OMP_NUM_THREADS'] = str(args.threads)
     folder = args.output.resolve()
     record = yaml.safe_load((folder / 'calibration.yaml').read_text())
@@ -125,12 +133,14 @@ def main():
             'point_device': metadata.get('point_device', 'cpu'),
             'point_batch': metadata.get('point_batch', 1),
             'gpu_workers': metadata.get('gpu_workers', 0),
+            'gpu_pipeline': metadata.get('gpu_pipeline', False),
         }
         next_arithmetic = {
             'precision': args.precision,
             'point_device': args.point_device,
             'point_batch': args.point_batch,
             'gpu_workers': args.gpu_workers,
+            'gpu_pipeline': args.gpu_pipeline,
         }
         if metadata and previous_arithmetic != next_arithmetic:
             # Keep the boundary explicit when a validated numerical backend
@@ -149,6 +159,7 @@ def main():
         metadata.update(calibration_sha256=fit_hash, mpi_ranks=size,
                         generation_workers=size-1, workers_per_rank=args.threads,
                         gpu_workers=args.gpu_workers,
+                        gpu_pipeline=args.gpu_pipeline,
                         blas_workers=1, map_dtype='float32',
                         compute_precision=args.precision, point_device=args.point_device,
                         point_batch=args.point_batch,
@@ -209,7 +220,9 @@ def main():
     eigenvalues, eigenvectors = np.linalg.eigh(latent)
     roots = eigenvectors*np.sqrt(np.maximum(eigenvalues, 0.))[:, None, :]
     gpu_sht = None
-    if args.gpu_workers and rank == size-1:
+    # Last ranks own independent Metal contexts. They can overlap CPU shear
+    # stages, but compete for GPU bandwidth; measure aggregate throughput.
+    if args.gpu_workers and rank >= size-args.gpu_workers:
         from gpu_scalar_sht import MetalScalarSHT
         gpu_sht = MetalScalarSHT(geometry, record['lmax'])
     while True:
@@ -221,7 +234,8 @@ def main():
         if shutil.disk_usage(folder).free < reserve+4*2*len(indices)*4+128:
             raise OSError('Free space reached the 50 GB reserve.')
         arithmetic = ('recovered' if path.exists() else
-                      'metal_sht_float32' if gpu_sht is not None else
+                      ('metal_sht_float32_pipeline' if args.gpu_pipeline
+                       else 'metal_sht_float32') if gpu_sht is not None else
                       f'{args.point_device}_{args.precision}_batch{args.point_batch}')
         generation, measurement, values = generate_one(
             path=path,
@@ -243,6 +257,7 @@ def main():
             point_device=args.point_device,
             point_batch=args.point_batch,
             gpu_sht=gpu_sht,
+            gpu_pipeline=args.gpu_pipeline,
         )
         comm.send((position, generation, measurement, values, arithmetic), dest=0)
 

@@ -491,3 +491,30 @@ include more than the scalar transform alone. The full resumed run can
 have different throughput because disk activity and other jobs vary.
 Previously saved maps are retained; a numerical-mode history records the
 transition. Full TreeCorr measurements remain a separate HPC task.
+
+
+\paragraph{Overlap independent stages without changing the sky.}
+A later scheduling test adds \texttt{--gpu-pipeline}. Once the GPU has
+recovered the scalar coefficients for source bin zero, the CPU can begin
+that bin's spin-two synthesis while the GPU begins scalar work for bin
+one. These operations use different arrays. The source correlations were
+already imposed when drawing the initial coefficients, so they do not
+require the transforms to execute one after another. The scheduling change
+does not change the statistical model.
+
+A single CPU consumer processes bins in order, retaining the noise-draw
+sequence. It receives an owned CPU coefficient array, while the main
+thread alone operates the Metal context. All four bins must finish before
+the map is saved. If a task fails, the program waits for outstanding CPU
+work and propagates the failure. Stage timings now overlap and must not
+be added together to estimate wall time.
+
+In two fresh 48-map tests, sequential execution took 56.17 and 56.12
+seconds. Overlapped execution took 52.42 and 52.33 seconds, a reduction
+of about 6.7 percent in elapsed time. Replacing a CPU worker with a second
+GPU worker instead took 56.50 and 60.48 seconds, compared with one-worker
+results of 55.16 and 55.98 seconds. A busier GPU is not necessarily a
+faster ensemble generator: CPU work, GPU work and shared memory bandwidth
+must be considered together. The selected production allocation therefore
+retains one GPU worker and enables overlap. The scheduling evidence is
+stored under \texttt{tests/gptg\_pilot/gpu\_sht/scheduling/}.

@@ -1,0 +1,3 @@
+sequential: 48 maps; max component pixel RMS 2.4729941916e-07; max moment/scatter 3.3419006773e-06
+pipeline: 48 maps; max component pixel RMS 2.4725193439e-07; max moment/scatter 2.7419733221e-06
+6 common GPU maps are pixel-identical across schedules

@@ -1,0 +1,3 @@
+gpu1: 48 maps; max component pixel RMS 2.4729941916e-07; max moment/scatter 3.3419006773e-06
+gpu2: 48 maps; max component pixel RMS 2.4774249126e-07; max moment/scatter 3.3482437873e-06
+9 common GPU maps are pixel-identical across schedules

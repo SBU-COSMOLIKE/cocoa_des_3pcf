@@ -18,6 +18,8 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--count',type=int,default=2)
     parser.add_argument('--threads',type=int,default=4)
+    parser.add_argument('--pipeline',action='store_true',
+                        help='Validate overlap of CPU shear and next-bin GPU work.')
     args=parser.parse_args()
     output=PROJECT/'chains/gpu_sht_maps'
     output.mkdir(exist_ok=True)
@@ -47,7 +49,7 @@ def main():
         candidate,diagnostics=generate_gpu_map(
             sht=sht,seed=seed,record=record,data=data,roots=roots,variance=variance,
             ell=ell,factor=factor,indices=indices,geometry=geometry,nodes=nodes,
-            weights=weights,threads=args.threads,
+            weights=weights,threads=args.threads,pipeline=args.pipeline,
         )
         gpu_seconds=time.monotonic()-start
         np.save(output/f'gpu_{number:03d}.npy',candidate)

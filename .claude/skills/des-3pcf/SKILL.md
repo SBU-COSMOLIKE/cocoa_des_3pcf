@@ -372,3 +372,19 @@ section `notes/gptg_simulations/spherical_transforms.tex` derives every
 stage with small examples. Keep it consistent with the actual backend;
 the normal residual is not the map residual, and pixel-area scaling alone
 does not improve the normal matrix's condition number.
+
+
+The follow-up scheduling test selects `--gpu-pipeline` with one GPU worker.
+A single CPU consumer synthesizes shear/noise for bin i while the main
+thread executes Metal scalar work for bin i+1. Coefficients cross into the
+consumer as owned NumPy arrays; GPU context ownership stays on the main
+thread. Noise draws remain serial in source order. All tasks finish before
+a map returns, including on exceptions. Do not equate pipeline stage-time
+sums with elapsed wall time: CPU and GPU stages overlap.
+
+Two GPU workers replaced one CPU worker at the same twelve-native-thread
+allocation and were slower in both 48-map trials. One GPU worker with overlap
+reduced elapsed time by about 6.7% in both orders. Record numerical identity
+for common GPU seeds, noiseless agreement, and timing in
+`tests/gptg_pilot/gpu_sht/scheduling/`. Defaults stay sequential unless the
+flag is selected; preserve the production arithmetic-history entry.

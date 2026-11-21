@@ -770,7 +770,7 @@ available to the Python interpreter used by every MPI rank.
 From this project directory, the tested twelve-CPU-thread allocation is:
 
 ```bash
-OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=3 mpiexec -n 5 --mca mpi_yield_when_idle 1 python -u notes/gptg_simulations/generate_ensemble_mpi.py --threads 3 --precision float32 --gpu-workers 1
+OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=3 mpiexec -n 5 --mca mpi_yield_when_idle 1 python -u notes/gptg_simulations/generate_ensemble_mpi.py --threads 3 --precision float32 --gpu-workers 1 --gpu-pipeline
 ```
 
 This launches a coordinator, three CPU workers and one GPU worker. The GPU
@@ -786,6 +786,32 @@ RMS differences against ducc0 were about one part per million; tested
 noiseless map and aperture-moment differences stayed below three parts per
 million. The records are in `tests/gptg_pilot/gpu_sht/`. These are numerical
 checks, not validation of the fitted sky model or full TreeCorr covariance.
+
+The later overlap test keeps one GPU worker and adds `--gpu-pipeline`.
+While the CPU synthesizes shear for one source bin, the GPU calculates
+scalar harmonics for the next bin. A single CPU consumer preserves noise
+ordering and the native-thread allocation. This reduced two 48-map runs
+from 56.17/56.12 seconds to 52.42/52.33 seconds, about 7% higher throughput.
+Two GPU workers were slower than one in both worker-count trials; the
+production command above retains one GPU worker. The scheduling comparison
+requires fresh output directories:
+
+```bash
+python notes/gptg_simulations/benchmark_gpu_sht_mpi.py --compare-pipeline --count 48 --output chains/pipeline_timing_new
+```
+
+Compare the generated maps with the saved original CPU ensemble:
+
+```bash
+python notes/gptg_simulations/check_gpu_worker_comparison.py chains/pipeline_timing_new --pipeline
+```
+
+For the alternative two-GPU experiment use `--compare-gpu-workers` in the
+benchmark and omit `--pipeline` in the checker. Add `--reverse` to the
+benchmark with another fresh directory to reverse the execution order.
+Neither benchmark stops an existing production process; free its CPU/GPU
+allocation before timing. Compact records live under
+`tests/gptg_pilot/gpu_sht/scheduling/`.
 
 Recheck the scalar transform at production resolution:
 

@@ -53,6 +53,7 @@ def generate_one(
     diagnostics=None,
     point_batch=1,
     gpu_sht=None,
+    gpu_pipeline=False,
 ):
     """Generate one seed, atomically save float32, and measure decoded pixels.
 
@@ -98,6 +99,7 @@ def generate_one(
             nodes=nodes,
             weights=weights,
             threads=workers,
+            pipeline=gpu_pipeline,
         )
     else:
         rng = np.random.default_rng(seed=seed)

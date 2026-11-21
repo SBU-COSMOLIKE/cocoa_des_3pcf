@@ -24,10 +24,20 @@ def main():
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--mpiexec',default='mpiexec')
     parser.add_argument('--reverse',action='store_true')
+    parser.add_argument('--compare-gpu-workers', action='store_true',
+                        help='Compare one versus two GPU workers at twelve CPU threads.')
     parser.add_argument('--without-cpu32',action='store_true')
+    parser.add_argument('--compare-pipeline', action='store_true',
+                        help='Compare sequential and overlapped CPU/GPU stages.')
     args=parser.parse_args()
     cases=[('cpu64',4,4,'float64',0),('cpu32',4,4,'float32',0),
            ('mixed',5,3,'float32',1)]
+    if args.compare_gpu_workers:
+        # Replace a CPU worker rather than adding a process. Both cases
+        # retain four workers with three native CPU threads apiece.
+        cases=[('gpu1',5,3,'float32',1),('gpu2',5,3,'float32',2)]
+    if args.compare_pipeline:
+        cases=[('sequential',5,3,'float32',1),('pipeline',5,3,'float32',1)]
     if args.without_cpu32:
         cases=[case for case in cases if case[0]!='cpu32']
     if args.reverse:
@@ -48,6 +58,8 @@ def main():
                      '--threads',str(threads),'--precision',precision,
                      '--gpu-workers',str(gpu),'--limit',str(args.count),
                      '--output',str(folder.resolve())]
+            if name == 'pipeline':
+                command.append('--gpu-pipeline')
             start=time.monotonic()
             with (args.output/f'{name}.log').open('w') as log:
                 subprocess.run(command,stdout=log,stderr=subprocess.STDOUT,check=True)
