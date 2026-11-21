@@ -432,3 +432,35 @@ At this revision, the full measurement is running; there is no completed
 480-dimensional scientific comparison. A 96-pixel MPI smoke test produced
 all 480 outputs, and a separate 480-dimensional algebra check passed at all
 three orders. Neither is a substitute for the full-map result.
+
+\paragraph{Later comparison: correct only the cross block.}
+A deferred alternative keeps the analytical two-point block fixed, uses
+the direct simulation estimate for the third-order block, and corrects
+only the cross block. Denote that proposed cross estimate by
+$\widehat B_{\rm corr}$. The candidate covariance would be
+\begin{equation}
+ C_{\rm hybrid}=\begin{pmatrix}
+ A_{\mathrm{G+SSC+cNG}}&\widehat B_{\rm corr}\\
+ \widehat B_{\rm corr}^{\mathsf T}&\widehat D_{\rm sample}
+ \end{pmatrix}.
+\end{equation}
+This asks whether the simulation ensemble already estimates the smaller
+80-by-80 third-order block adequately, while the 400-by-80 cross block
+benefits from a model-based correction. It does not assume that either
+answer is yes. The same full 480-entry vectors and independent validation
+maps will permit a comparison without changing the measurement.
+
+The construction of $\widehat B_{\rm corr}$ is still to be derived. The
+Eifler expansion estimates precision; extracting a block after inversion
+does not automatically produce an unbiased covariance-block estimator.
+Moreover, using the same simulations for the cross and third-order blocks
+correlates their estimation errors. These correlations must be retained
+in the test. Since $A$ is positive definite, the joint candidate is positive
+definite exactly when its residual covariance is positive definite:
+\begin{equation}
+ S_{\rm hybrid}=\widehat D_{\rm sample}
+ -\widehat B_{\rm corr}^{\mathsf T}A^{-1}\widehat B_{\rm corr}.
+\end{equation}
+We will report a failed positivity check rather than alter eigenvalues to
+hide it. This paragraph records a later task; it does not change the
+currently running measurement or establish a result for this alternative.

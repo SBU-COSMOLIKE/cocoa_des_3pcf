@@ -625,3 +625,14 @@ python notes/gptg_simulations/check_fixed_block.py
 ```bash
 python notes/gptg_simulations/check_full_joint.py
 ```
+
+**Later TODO — correct only the cross block.** Keep analytical A fixed,
+use the ordinary sample covariance for the full 80-by-80 D block, and
+construct an Eifler-based estimator for the full 400-by-80 B block.
+Derive that estimator explicitly: PME estimates precision, so extracting
+an off-diagonal block from a corrected inverse is not automatically an
+unbiased estimate of B. Keep the same simulation ensemble and 480 rows,
+account for the shared sampling fluctuations of B and D, and compare on
+independent validation maps. Check joint positivity through
+`D_sample - B_corrected.T @ solve(A, B_corrected)` without clipping failed
+matrices. This is a deferred alternative, not a change to the running test.
