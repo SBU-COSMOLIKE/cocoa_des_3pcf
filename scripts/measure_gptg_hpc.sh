@@ -11,6 +11,8 @@ export OMP_PLACES=cores
 export OMP_DYNAMIC=FALSE
 export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
+export BLIS_NUM_THREADS=1
+export NUMEXPR_NUM_THREADS=1
 export VECLIB_MAXIMUM_THREADS=1
 export PYTHONPATH="${PYTHONPATH:-}"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
@@ -21,6 +23,7 @@ cd "${ROOTDIR}/projects/des_3pcf"
   -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \
   -x OMP_NUM_THREADS -x OMP_PROC_BIND -x OMP_PLACES -x OMP_DYNAMIC \
   -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS -x VECLIB_MAXIMUM_THREADS \
+  -x BLIS_NUM_THREADS -x NUMEXPR_NUM_THREADS \
   --mca mpi_yield_when_idle 1 --bind-to core --report-bindings \
   --map-by slot:PE=${OMP_NUM_THREADS} \
   "${ROOTDIR}/.local/bin/python" -u \

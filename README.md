@@ -654,6 +654,72 @@ the same journals or measurement directory. The existing analysis driver
 still analyzes its early 1,000+500 experiment; measuring all maps does not
 silently change that statistical selection.
 
+### UofA Slurm: ten nodes with 96 cores each
+
+[measure_gptg_uofa.slurm](scripts/measure_gptg_uofa.slurm) requests **10 nodes,
+960 MPI ranks, and one CPU per rank**. One rank coordinates; 959 measure
+TreeCorr tasks. OpenMP and BLAS stay at one. It uses your UofA partition
+`high_priority`, QoS `user_qos_timeifler`, account `timeifler`, and a 24-hour
+wall-time limit. These account and queue settings come from your supplied
+script; acceptance depends on the site's allocation limits. No socket count
+is assumed.
+
+Copy the completed ensemble to the HPC project's
+`chains/gptg_ensemble_15000/`, retaining `comparison/`, `validation/`,
+`indices_512.npy`, calibration files and journals. The project also needs its
+bundled `data/upstream_y3/` inputs. These paths must be visible at the same
+location on every node. Build/install Cocoa, TreeCorr and mpi4py for the
+cluster; do not copy the Mac's Python binaries. The MPI installation used by
+mpi4py must match the launcher's Open MPI installation.
+
+From the HPC Cocoa directory containing `start_cocoa.sh`, activate the
+installed environment (replace `cocoa` if your HPC environment has another name):
+
+```bash
+conda activate cocoa
+```
+
+Initialize Cocoa once before submission, so the batch job inherits its paths
+and does not rebuild shared links during another job:
+
+```bash
+source start_cocoa.sh
+```
+
+Submit the allocation:
+
+```bash
+sbatch projects/des_3pcf/scripts/measure_gptg_uofa.slurm
+```
+
+Slurm writes `DES3PCF_TREECORR-<jobid>.out` and `.err` in the submission
+directory. Inspect your jobs with:
+
+```bash
+squeue -u "$USER"
+```
+
+**Resume by submitting the same command again after the previous job has
+ended.** The measurement script saves each completed tomographic task into
+its map's 480-entry text vector, using an atomic rename. Finite entries are
+retained; missing or NaN task entries are recomputed. A task interrupted by
+the time limit may need to run again, but finished tasks are not discarded.
+Never run two measurement jobs against the same output directory at once.
+This is task-level resumption, not an automatic Slurm requeue.
+
+Measurements live under `chains/gptg_ensemble_15000/full_joint_480/`.
+Successful completion writes `COMPLETE.txt`; its contents must report **15000
+full joint vectors**, since an older smaller run may have its own completion
+marker. Generation journals and float32 maps are not modified by measurement.
+
+At the recorded laptop-equivalent per-core speed, 959 measurement workers
+imply about **5 days ideal**, or **6–7.2 days at 70–85% parallel efficiency**.
+Thus plan for roughly 6–8 daily allocations, revising this from the first
+HPC job's actual timings and peak memory. Running 96 workers per node requires
+enough RAM for 96 TreeCorr tasks; that peak has not yet been established.
+The script launches measurements only; it does not generate maps or run the
+covariance analysis automatically.
+
 The scripts leave network transport to the site's MPI configuration and
 forward Cocoa's paths plus OpenMP/BLAS keys explicitly. Consult Cocoa's
 main MPI README for site-specific network choices. The launcher must be
