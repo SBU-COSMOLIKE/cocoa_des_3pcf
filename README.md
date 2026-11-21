@@ -386,6 +386,72 @@ remain float64. A separate run is generating 10,000 comparison and 5,000
 independent validation maps. Its fixed validation score does not assume the
 direct-sample inverse is true; results are pending completion.
 
+### Generate and analyze the fitted maps
+
+Run these commands from `projects/des_3pcf/` with Cocoa's Python activated.
+The generator requires NumPy, SciPy, PyYAML, ducc0 (tested with 0.42.0), and
+astropy-healpix (tested with 1.0.3); precision analysis also uses SymPy and
+plotting uses Matplotlib. Install missing dependencies into that environment.
+Supply Rafael's maps and `indices_512.npy` in `maps_cov_512_v2/` first.
+These simulation inputs are not distributed through Git.
+
+Fit the transformation and correlated spectra using 32 primary runs:
+
+```bash
+python notes/gptg_simulations/generate_maps.py fit --runs 32 --lmax 1024 --workers 4
+```
+
+This writes `calibration.yaml` and `calibration.npz` under
+`chains/gptg_method/`. To inspect a small generated sample first:
+
+```bash
+python notes/gptg_simulations/generate_maps.py generate --count 64 --workers 4
+```
+
+Generate the full 10,000 comparison plus 5,000 validation ensemble:
+
+```bash
+python notes/gptg_simulations/generate_ensemble.py --workers 8
+```
+
+The ensemble copies and freezes the calibration on its first launch. Repeating
+this command resumes from its saved-map journal. Use `--limit 1000` for a
+bounded first run, then omit that option to continue. Do not launch two
+writers to the same ensemble directory. BLAS stays at one worker.
+The 15,000 float32 maps need about 177 GB, plus a 50 GB free-space reserve.
+Their shape is `(4 source bins, 2 shear components, 369190 footprint pixels)`;
+`indices_512.npy` identifies the RING pixels. Computation remains float64.
+Maps, measured aperture moments and progress records stay in the ignored
+`chains/gptg_ensemble_15000/` directory.
+
+After all maps finish, compute the fixed-reference precision comparisons and
+independent validation scores:
+
+```bash
+python notes/gptg_simulations/analyze_ensemble.py
+```
+
+For an early look, the following process can run alongside generation. It
+freezes estimates from the first 1,000 maps and waits for the next 500 to
+validate them. Those 500 are independent of the preliminary estimates; they
+later belong to the full 10,000 comparison sample, not its final holdout.
+
+```bash
+python notes/gptg_simulations/analyze_first_1500.py
+```
+
+Once the first 1,000 estimates are written, plot covariance differences and
+split-triangle correlations:
+
+```bash
+python notes/gptg_simulations/plot_first_1000.py
+```
+
+The preliminary tables and PNG/PDF figures go to
+`chains/gptg_ensemble_15000/preliminary_1000_500/`. These tests concern 16 raw
+aperture moments within the initial fitted model, not the published DES
+measurement vector. The direct sample covariance is an estimated comparator.
+
 ## Appendix: feedback and BACCO <a name="feedback"></a>
 
 The numbered evaluate, MCMC and Nautilus YAMLs contain an optional,
