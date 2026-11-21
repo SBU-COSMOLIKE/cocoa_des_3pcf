@@ -286,9 +286,11 @@ The validation quadratic/log-determinant score does not identify the direct
 sample inverse as truth. Model validation against N-body simulations remains
 separate from estimator validation conditional on a fitted generator.
 
-The current large-map run is authorized to use eight native transform workers.
-BLAS remains one. Resume its checkpoint with `--workers 8`; the earlier
-pilot timings and numerical records used four workers and retain that label.
+The current total compute allocation is twelve CPUs: four native generation
+threads and eight single-CPU MPI measurement workers. A ninth MPI coordinator
+handles messages/files. BLAS remains one per process. Use `--workers 4` while
+full measurement runs; the earlier four/eight-worker timing records retain
+their historical labels.
 
 ## Exact analytical two-point block
 
@@ -305,3 +307,16 @@ finite polynomial is unbiased for its finite target. Its conditional
 reparameterization keeps A exactly but is nonlinear and has no corresponding
 unbiasedness guarantee; evaluate it independently. Never invert a non-positive
 residual precision or conceal a failed expansion by clipping eigenvalues.
+
+The main fixed-block comparison must use all 480 entries, not the former
+16-entry or four-xi-bin exercises. `measure_full_joint_mpi.py` uses TreeCorr
+5.1.2 GGCorrelation, GGGCorrelation, toSAS and calculateMap3 for all pairs
+and triples. This TreeCorr build has no OpenMP; mpi4py/Open MPI supplies
+process parallelism. `run_full_joint_mpi.py` runs first-1000 measurement,
+analysis, next-500 measurement, then independent validation without running
+matrix analysis alongside the eight active MPI workers. The fixed 80x80
+starting reference is the archived simulation covariance, not an analytical
+three-point calculation. Count that prior input in any simulation-saving
+claim. State NSIDE512, equal pixel weights, original-bank lower-edge >=8
+cut, max_n=100, 63 SAS bins and the unresolved exact publication match.
+Do not interpret earlier small-vector performance as a result for this matrix.

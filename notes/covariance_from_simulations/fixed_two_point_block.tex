@@ -288,16 +288,17 @@ matches the angular-row definitions; equality of all simulation and survey
 inputs has not been established. We therefore do not label this result a
 validated DES likelihood covariance.
 
-\paragraph{The larger test and what is still pending.}
-We are measuring the same four $\xi_+$ bins on the saved GPTG maps. The
+\paragraph{The superseded four-bin extension.}
+We began measuring the same four $\xi_+$ bins on the saved GPTG maps. The
 first 1,000 joint vectors set the corrections and direct sample covariance;
 the next 500 give an independent quadratic-minus-log-determinant score.
 Neither the reference nor the order is tuned on those 500 maps. The score
 does not invert their sample covariance or assume that the direct inverse
 is true. These new measurements, unlike the existing aperture journal,
 supply the observable needed for the analytical block. They do not require
-regenerating any sky. The comparison remains conditional on the fitted
-GPTG distribution and the declared survey inputs.
+regenerating any sky. This small extension was stopped when the full 480-entry experiment below
+became the main test. Its unfinished measurement is not a large-matrix
+validation result.
 
 \paragraph{Checks of the new algebra.}
 Explicit enumeration of every increasing-index product of six factors
@@ -309,3 +310,125 @@ Monte Carlo standard errors or less. Every returned constrained covariance
 retains the supplied block exactly and satisfies the matrix inverse identity.
 These checks establish the implementation's algebra; they do not turn the
 failed 32-map high-order estimates into successful ones.
+
+\subsection{The main experiment uses all 480 entries}
+\label{sec:full480}
+\paragraph{The small exercises are not the science comparison.}
+The earlier 16-entry aperture exercise and the 12-entry mixed exercise test
+algebra and data handling. Their results do not establish whether a precision
+expansion improves a large DES analysis. The main experiment now retains
+all 400 two-point entries and all 80 third-order entries. Before likelihood
+scale cuts, its covariance is
+\begin{equation}
+ C_{480}=\begin{pmatrix}A_{400\times400}&B_{400\times80}\\
+ B^{\mathsf T}_{80\times400}&D_{80\times80}\end{pmatrix}.
+\end{equation}
+The full analytical two-point block is the Gaussian plus SSC plus cNG
+production result. It is held fixed, not estimated from these simulations.
+Only the cross and third-order blocks receive corrections. We also form the
+entirely simulation-estimated covariance as the separate comparator.
+
+\paragraph{Why we still measure the two-point vector on every map.}
+Knowing $A$ does not tell us how a particular two-point fluctuation accompanies
+a particular three-point fluctuation. For simulation $s$, measure both $x_s$
+and $y_s$. The cross-covariance estimate contains their paired deviations:
+\begin{equation}
+ \widehat B=\frac{1}{N-1}\sum_{s=1}^{N}
+ (x_s-\bar x)(y_s-\bar y)^{\mathsf T}.
+\end{equation}
+The two vectors must belong to the same simulated sky. Measuring $x_s$ for
+this purpose does not replace the exact analytical $A$. Dropping most $x$
+rows would also drop most of the cross block, which is why the four-bin
+exercise has been superseded.
+
+\paragraph{The measurement software and its authors.}
+We use \textbf{TreeCorr 5.1.2}, by Mike Jarvis and contributors. Its
+\texttt{GGCorrelation} measures both $\xi_+$ and $\xi_-$ for all ten
+unordered source-bin pairs, using twenty logarithmic angular bins from
+2.5 to 250 arcminutes. This gives 200 plus entries and 200 minus entries.
+Its \texttt{GGGCorrelation} measures the shear three-point natural components
+for all twenty unordered source-bin triples. We use its multipole binning,
+convert to side--angle--side bins with \texttt{toSAS()}, and apply
+\texttt{calculateMap3()} at equal aperture radii of 7, 14, 25 and 40
+arcminutes. Twenty triples times four radii gives the remaining eighty
+entries. We thank the TreeCorr authors for these measurement and aperture
+algorithms; they are not new estimators developed in this project.
+
+\paragraph{The declared triangle selection.}
+Following the methods paper's original bin bank, the radial edges are
+\begin{equation}
+ t_j=0.5\exp\!\left[\frac{j}{20}\ln\!\left(\frac{80}{0.5}\right)\right]
+ \ \mathrm{arcmin},\qquad j=0,\ldots,20.
+\end{equation}
+Our explicit cut keeps bins whose lower edge is at least 8 arcminutes.
+The first retained lower edge is therefore 8.151471 arcminutes, rather than
+exactly 8. We retain the original logarithmic spacing. The multipole limit
+is 100; the conversion uses 63 equal opening-angle bins with edges at
+0.016 and 3.126 radians. Both TreeCorr approximation controls
+\texttt{bin\_slop} and \texttt{angle\_slop} are zero. Tomographic legs are
+symmetrized for the equal-filter statistic. The row ordering is checked
+against the bundled public FITS files before measurement.
+
+\paragraph{What is matched, and what is not yet a reproduction claim.}
+The full dimensionality, tomographic combinations and aperture radii match
+the intended data vector. Our NSIDE512 maps have equal pixel weights and
+our generator's Gaussian shape noise. The methods paper describes a
+catalogue-based noise procedure and NSIDE1024 maps. The precise interpretation
+of its approximate side cut and angle endpoints also requires an explicit
+convention. We record our choices rather than claiming that the same vector
+length establishes equality of the two estimators or of their physical
+covariances. These differences must accompany any eventual numerical result.
+
+\paragraph{Parallel work uses MPI, not TreeCorr OpenMP.}
+The installed TreeCorr build has no OpenMP support. Requesting four native
+threads therefore still ran on one thread. We now use \textbf{mpi4py with
+Open MPI} to distribute independent tomographic measurement tasks. Eight
+MPI worker processes each use one CPU. A ninth coordinator process handles
+messages and small output files; it does not evaluate pair or triangle
+integrals. Map generation continues with four native transform threads.
+Thus the compute allocation is eight measurement CPUs plus four generation
+CPUs. BLAS stays at one thread in every process. MPI rank count and native
+thread count are different controls: assigning eight threads to each of
+eight ranks would oversubscribe the machine.
+
+\paragraph{Saving progress without copying the maps.}
+Workers read existing float32 maps and perform measurement arithmetic in
+float64. The coordinator alone writes each 480-entry text vector. Unfinished
+entries are marked as missing, and a temporary file is atomically renamed
+after each completed task. Restarting reuses finished entries. We do not
+save the large intermediate three-point correlation grids or duplicate
+map files. The generator's existing map journal and disk reserve remain
+in use.
+
+\paragraph{State the starting three-point reference honestly.}
+For this full-dimensional experiment the starting $D$ is the archived
+80-by-80 simulation covariance supplied with Rafael's public measurement.
+The starting cross block is zero. This reference is fixed before using
+any of the new GPTG measurements:
+\begin{equation}
+ M=\begin{pmatrix}A_{\mathrm{G+SSC+cNG}}&0\\0&D_{\mathrm{archived}}\end{pmatrix}.
+\end{equation}
+The three-point block of this reference is \emph{not} an analytical covariance.
+Using it is mathematically allowed by the expansion, but a claim of saving
+simulations must account for the simulations that supplied it. This choice
+also does not certify a match between the archived measurement and the new
+NSIDE512 measurement. The earlier diagnostic instead used twice a Gaussian
+aperture reference estimated from map correlations. That reference omitted
+connected non-Gaussian contributions and had zero square--cube cross block.
+Its large residual cannot be attributed to missing terms in the production
+G+SSC+cNG covariance. It was a different, simplified starting matrix.
+
+\paragraph{Comparison, validation and current status.}
+The first 1,000 full vectors enter both the direct covariance and the
+second-, fourth- and sixth-order fixed-block corrections. The next 500
+vectors provide independent validation. MPI measurement processes exit
+before the matrix analysis runs, keeping the computation within the stated
+CPU allocation. The validation uses the quadratic-minus-log-determinant
+score and never treats a validation inverse as truth. We also report the
+simple sample covariance with only $A$ replaced by its exact analytical
+value; this separates the benefit of knowing $A$ from the benefit of the
+precision expansion. Non-positive candidates remain reported failures.
+At this revision, the full measurement is running; there is no completed
+480-dimensional scientific comparison. A 96-pixel MPI smoke test produced
+all 480 outputs, and a separate 480-dimensional algebra check passed at all
+three orders. Neither is a substitute for the full-map result.

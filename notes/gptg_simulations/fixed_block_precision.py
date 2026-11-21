@@ -51,7 +51,8 @@ def estimates(vectors, reference, two_point_count):
         precision = np.block([[np.linalg.solve(a, np.eye(p))+h.T @ k @ h,
                                -h.T @ k], [-k @ h, k]])
         np.testing.assert_array_equal(covariance[:p, :p], a)
-        np.testing.assert_allclose(precision @ covariance, np.eye(dimension),
+        np.testing.assert_allclose((factor.T @ precision @ factor)
+                                   @ (inverse @ covariance @ inverse.T), np.eye(dimension),
                                    atol=2.e-7, rtol=2.e-7)
         results.append((order, raw, precision, covariance))
     return results, n

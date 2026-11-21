@@ -1,0 +1,3 @@
+480 dimensions, order 2 : exact A, zero cross block, D/(r+1) passed.
+480 dimensions, order 4 : exact A, zero cross block, D/(r+1) passed.
+480 dimensions, order 6 : exact A, zero cross block, D/(r+1) passed.

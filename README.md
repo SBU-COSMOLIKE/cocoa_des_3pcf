@@ -412,7 +412,7 @@ python notes/gptg_simulations/generate_maps.py generate --count 64 --workers 4
 Generate the full 10,000 comparison plus 5,000 validation ensemble:
 
 ```bash
-python notes/gptg_simulations/generate_ensemble.py --workers 8
+python notes/gptg_simulations/generate_ensemble.py --workers 4
 ```
 
 The ensemble copies and freezes the calibration on its first launch. Repeating
@@ -556,44 +556,72 @@ operator/placement contributions and closure.
 ### Fixed analytical two-point block in the map experiment
 
 Section 13 of the [covariance teaching note](notes/covariance_from_simulations/covariance_from_simulations.pdf)
-treats the analytical two-point block as exact and derives corrections for
-the cross and three-point blocks. Its pair-product construction avoids
-using a noisy cross-covariance twice. The final constrained covariance keeps
-that analytical block exactly; this nonlinear constraint does not inherit
-the finite precision polynomial's unbiasedness.
+derives the fixed-block correction step by step. The main test uses **all
+480 entries**: 400 xi-plus/minus entries and 80 third-order aperture entries.
+The full analytical G+SSC+cNG 400-by-400 block stays fixed. Only cross and
+three-point information is corrected. The earlier 16-entry and four-xi-bin
+exercises remain historical algebra diagnostics, not this science comparison.
 
-From the activated **Cocoa/** directory, with DES Y3 covariance support compiled:
+**TreeCorr 5.1.2**, by Mike Jarvis and contributors, measures the vector:
+`GGCorrelation` for ten source pairs and twenty angular bins, then
+`GGGCorrelation`, `toSAS()` and `calculateMap3()` for twenty source triples
+and four equal aperture radii. The installed build has no OpenMP support.
+**mpi4py and Open MPI** distribute measurements over eight single-CPU workers;
+a separate coordinator handles messages and small files. Map generation uses
+four transform threads concurrently. BLAS stays one per process.
+
+From activated **Cocoa/**, with DES Y3 covariance support compiled, calculate
+and save all analytical components:
 
 ```bash
 python projects/des_y3/covariance/compute_covariance.py projects/des_y3/EXAMPLE_EVALUATE_COVARIANCE.yaml --output projects/des_3pcf/chains/gptg_ensemble_15000/des_y3_full_covariance.npz
 ```
 
-This saves full G, SSC and cNG components. The bounded study selects four
-source-bin-four xi-plus rows, then pairs them with eight cubic moments.
-It cannot use the squared-aperture rows in the existing map journal as xi.
-The survey example's inputs are recorded in the archive; matching angular
-rows alone does not establish matching simulation noise and cosmology.
-
-From **projects/des_3pcf/**, with TreeCorr and astropy-healpix installed,
-measure the required rows on saved maps (resumes from the text journal):
+From **projects/des_3pcf/**, keep one generator running with four workers:
 
 ```bash
-python notes/gptg_simulations/measure_joint_xip.py --count 1500
+python notes/gptg_simulations/generate_ensemble.py --workers 4
 ```
 
-Run the first-1000 plus independent-500 analysis alongside that measurement:
+With TreeCorr, astropy-healpix, mpi4py and Open MPI installed, run the full
+measurement and staged analysis in a second terminal:
 
 ```bash
-python notes/gptg_simulations/analyze_fixed_block.py --gptg
+python notes/gptg_simulations/run_full_joint_mpi.py
 ```
 
-For the already measured 32 Rafael primary maps, omit `--gptg`. This needs
-`chains/covariance_maps_full/moments.txt`, produced by the earlier map pass.
-The algebra check is independent of map files:
+The driver uses nine MPI ranks: eight measurement workers and one coordinator.
+It measures the first 1,000 maps, runs the comparison, resumes measurement
+through map 1,500, then validates on the last 500. MPI workers exit before
+matrix analysis so that calculation does not add another busy CPU. Both
+measurement stages resume existing partial vectors. Do not launch two
+measurement coordinators on the same output folder.
+
+The declared side cut keeps lower edges at least 8 arcmin from the original
+20-bin 0.5–80 arcmin bank (first retained edge 8.151471). It uses multipoles
+through 100, 63 SAS angle bins with edges 0.016–3.126 radians, and zero
+TreeCorr bin/angle slop. NSIDE512 equal-pixel measurements are not claimed
+to reproduce exactly the published NSIDE1024 catalogue/noise procedure.
+
+The initial cross block is zero. The initial 80-by-80 block is the archived
+**simulation-estimated** covariance supplied with Rafael's public data,
+fixed independently of these new maps. It is not an analytical three-point
+covariance; any simulation-saving claim must count that prior input. The
+analytical A is never fitted or perturbed. The precision polynomial has a
+finite-target unbiasedness proof; imposing A on the final covariance is
+nonlinear and must be assessed by independent validation.
+
+Results go under `chains/gptg_ensemble_15000/full_joint_480/` and
+`full_joint_comparison/`. Missing entries in partial text vectors are NaNs;
+only complete vectors enter the covariance. No extra map copies or large
+triangle grids are saved. At this revision, full-map results are pending.
+
+The reproducible algebra checks are:
 
 ```bash
 python notes/gptg_simulations/check_fixed_block.py
 ```
 
-All results remain in `chains/gptg_ensemble_15000/`. No input analytical block
-is fitted, perturbed or replaced by its simulated counterpart.
+```bash
+python notes/gptg_simulations/check_full_joint.py
+```

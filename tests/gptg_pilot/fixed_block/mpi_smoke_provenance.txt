@@ -1,0 +1,7 @@
+480 rows: 200 xi-plus, 200 xi-minus, 80 Map3.
+TreeCorr 5.1.2; NSIDE512 RING; equal pixel weights.
+Side bank .5..80, 20 log bins, keep lower edge >=8: index 11, minimum 8.1514711308706111 arcmin.
+Multipole max_n=100; 63 SAS bins, edges 0.016..3.126 radians.
+bin_slop=0; angle_slop=0; symmetrized tomographic legs.
+2 MPI compute ranks; one coordinator; BLAS=1; native threads=1.
+smoke_pixels=96; smoke outputs are not science vectors.
