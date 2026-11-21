@@ -1,0 +1,14 @@
+Measured 21 November 2026 using scripts/measure_covariance_xip.py.
+These are compact simulation measurements for reproducible comparisons,
+not theoretical predictions or a production likelihood covariance.
+Primary maps: runs 0..31, cut 0, draw 0; source slot 4.
+Cross tests: (runs 0..7 draw 0, same run draw 1), and
+(runs 0..7 draw 0, runs 8..15 draw 0); cut 0 throughout.
+Pixel diagnostic: runs 0 and 1, cut 0, draws 0..19, all source/component slots;
+8192 evenly spaced retained-pixel array positions.
+Reference input identities: data/y3_observed_manifest.yaml.
+Map producer checksums, shear conventions and label definitions unconfirmed.
+Recompute the map measurements with the companion notebook's explicit switch.
+
+The cross-route positive and direct-pair controls were run additionally.
+The 502.265-second record covers the original primary and eight-pair run.

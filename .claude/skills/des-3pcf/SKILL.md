@@ -128,6 +128,19 @@ are insufficient.
   Gaussian reference uses a separate calibration group and is not a noiseless
   CosmoLike theory covariance. Keep these limits and unconfirmed shear/parent
   conventions explicit. Never treat a failed or indefinite PME as a forecast.
+- `scripts/measure_covariance_xip.py` compares four actual released xi-plus
+  bins with the joint 480-row covariance. It uses exact TreeCorr binning,
+  a direct-pair subset check, and bounded same-run/different-run cross tests.
+  All-map moments remain a different estimator. Released covariance and
+  downloaded maps may share parents: their agreement is a consistency test,
+  not independent validation. Record the FITS NSIM=500 versus paired-config
+  796 discrepancy; do not silently change the reference or simulation count.
+  The separate note and executable notebook live together under
+  `notes/covariance_comparison/`. Compact measured records live under
+  `tests/covariance_map_comparison/`; the notebook's visible measurement
+  switch writes fresh bounded results under `chains/`. Same-run cross tests
+  challenge the fixed-sky/noise-only interpretation of nreal; keep its actual
+  meaning unresolved until the generating procedure is supplied.
 - Prefer YAML or plain text to JSON outside frozen test evidence. Keep
   binary scientific arrays where their format is useful; do not convert
   FITS or NPZ arrays to text merely to avoid a file extension.

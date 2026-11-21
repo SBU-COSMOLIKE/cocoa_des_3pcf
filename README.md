@@ -339,10 +339,12 @@ because these observables have small numerical units.
 The [PME notebook](EXAMPLE_COVARIANCE_PME.ipynb) teaches the
 [Friedrich–Eifler precision expansion](https://arxiv.org/abs/1703.07786)
 with scalar and two-by-two worked calculations, then a controlled Gaussian
-experiment. The [map pilot](EXAMPLE_COVARIANCE_MAPS.ipynb) measures coarse
+experiment. The [map study](EXAMPLE_COVARIANCE_MAPS.ipynb) measures coarse
 second- and third-order aperture moments and tests a separately calibrated
-Gaussian reference. Its initial 48-run correction was not positive definite;
-it does not establish a usable DES precision. The [undergraduate notes](notes/covariance_from_simulations/covariance_from_simulations.pdf)
+Gaussian reference. It also compares four measured xi-plus bins with the
+released joint covariance and tests shared shear between realization labels.
+Its initial 48-run correction was not positive definite; it does not establish
+a usable DES precision. The [undergraduate notes](notes/covariance_from_simulations/covariance_from_simulations.pdf)
 derive the method and explain repeated noise realizations, pixel resolution
 and independent validation; their [LaTeX source](notes/covariance_from_simulations/covariance_from_simulations.tex)
 follows the Fisher notes' style. The [simulation guide](maps_cov_512_v2/README.md)
@@ -350,6 +352,13 @@ and [viewing notebook](maps_cov_512_v2/EXAMPLE_VIEW_MAPS.ipynb) inspect two maps
 and plot the DES footprint using `indices_512.npy`. A comparison of both
 HEALPix orderings identifies RING geometrically. The maps are ignored by Git; only their guide and notebook
 are tracked. No DES covariance has yet been calibrated from this download.
+
+The separate [comparison note for Rafael](notes/covariance_comparison/covariance_comparison.pdf)
+focuses on the released covariance, exact pair checks and the meaning of the
+realization labels. Its [companion notebook](notes/covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
+is in the same folder. Small recorded measurements in `tests/` reproduce its
+statistics without the map download; an explicit switch repeats the bounded
+measurements with the local maps.
 Survey simulations must reproduce the selection and estimator; four cuts
 from one sky and repeated noise draws are not automatically independent skies.
 

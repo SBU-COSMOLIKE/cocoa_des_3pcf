@@ -3,8 +3,12 @@
 **Thanks to Rafael Gomes for supplying these CosmoGrid shear maps.** They
 support the covariance work associated with [Gomes et al.](https://arxiv.org/abs/2503.03964)
 and [his analysis code](https://github.com/rchgomes/3pcf_integrator).
-The download is incomplete. This guide describes the files checked on
-20–21 November 2026; it does not certify the entire archive.
+The local inventory settled at 15,997 map files on 21 November 2026. Every
+present map was measured by the coarse diagnostic, but producer completeness
+and checksums remain unverified. Three combinations of the observed labels
+are absent: run 168/cut 2/draws 7 and 19, and run 168/cut 3/draw 19.
+There are 200 distinct run labels; that alone does not identify their relation
+to the paper's 199 full-sky realizations.
 
 ## Start with the viewing notebook
 
@@ -55,9 +59,10 @@ Both contain C-order `float64` arrays of shape `(4, 2, 369190)`, occupying
 23,628,288 bytes including the NPY header. The likely axis interpretation is
 four source-redshift bins, two shear components, and retained pixels. The
 producer should confirm the source-bin order, component order, signs and
-coordinate basis. The first 4,096 pixels of each component in these two files
-were finite. This is a small inspection, not an integrity check of all pixels
-or all files. NPY contains array shape and type, but not these scientific
+coordinate basis. The initial inspection checked the first 4,096 pixels of each component
+in these two files. The later all-map diagnostic checked finite values
+throughout every present map while measuring it. These numerical checks do
+not establish archive completeness or replace producer checksums. NPY contains array shape and type, but not these scientific
 conventions or a checksum supplied by the producer.
 
 For a one-dimensional common index list, `maps[b, g, j]` belongs to HEALPix
@@ -206,7 +211,62 @@ around 64 fixed centers, separately in all four source-bin slots. Its raw
 squared and cubed moments retain noise self-products. They are not the
 published catalogue or finite-triangle estimator. The initial 48-run test
 gave negative precision eigenvalues for the first- and second-order
-corrections. Repeated draws dominated the measured fluctuations, and weak
+corrections. With all 200 primary run labels, the second-order precision is
+positive and its mean validation weight is closer to one, but that single
+average does not establish calibrated parameter errors. The all-map pass
+saved about 12 MB of tables, with no temporary map copies. Repeated draws dominated the measured fluctuations, and weak
 cross-draw shear correlations do not establish the assumed shared sky.
 Confirm whether these files contain signal plus noise or noise only, and
 what `nreal` randomizes, before interpreting the covariance split physically.
+
+## Compare with the released covariance
+
+The project includes Rafael's 480-row joint covariance and its paired row
+definitions. The [map notebook](../EXAMPLE_COVARIANCE_MAPS.ipynb) audits these
+inputs and reads a bounded xi-plus comparison using source-bin slot four,
+cut zero, draw zero, and the released bins from 39.622 to 99.527 arcminutes.
+The separate [pair driver](../scripts/measure_covariance_xip.py) uses exact
+angular binning and saves only small text vectors. It needs these optional
+packages in addition to the viewing notebook's astropy-healpix dependency:
+
+```bash
+python -m pip install --no-deps treecorr==5.1.2 LSSTDESC.Coord==1.3.0
+```
+
+From Cocoa, measure 32 primary run labels:
+
+```bash
+python projects/des_3pcf/scripts/measure_covariance_xip.py --runs 32
+```
+
+The comparison is conditional on equal pixel weights and the specified
+shear basis, and it does not remove the 512-versus-1024 resolution difference.
+If the released covariance shares these parent skies, it is not independent
+validation. Its FITS header says `NSIM=500`, whereas the paired upstream
+likelihood configuration uses 796; that provenance conflict remains open.
+The Map3 block is identical to the standalone Map3 file, but the standalone
+two-point covariance differs from the joint file's two-point block. Use the
+joint reference consistently; do not splice the two products together.
+
+For 32 primary run labels, the four measured variances are 1.41, 1.81, 1.58
+and 1.05 times the released variances. Leave-one-run-out standard errors are
+0.37, 0.42, 0.45 and 0.28. This is a comparison of single-survey fluctuations;
+the covariance is not divided by 32. Matching scales encourages further
+tests, but these numbers do not establish equal matrices or shared provenance.
+
+The driver also correlates draws zero and one of eight runs. If each pair
+shares one sky and has independent noise, their cross-correlation retains
+that sky signal. Eight pairs of different run labels provide a control.
+The notebook derives this test, plots it against the same-map measurement,
+and explains why small shared pixel variance alone cannot classify a map as
+noise-only. These measurements help interpret the labels; they do not replace
+the producer's account of what was randomized.
+
+The completed eight-pair test finds a same-run cross signal consistent with
+zero, while the same-map signal is clearly positive. It challenges the
+fixed-sky interpretation under independent, uncorrelated pixel noise; it
+does not identify the actual randomization. The
+[separate comparison note](../notes/covariance_comparison/covariance_comparison.pdf)
+derives the test. Its [notebook](../notes/covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
+reproduces every comparison check from compact recorded measurements and
+provides an explicit switch to repeat the bounded measurements.

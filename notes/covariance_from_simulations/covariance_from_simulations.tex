@@ -52,7 +52,8 @@ Sections 2--4 introduce the measurement, the maps and the noisy-matrix
 problem. Sections 5--6 derive the expansion, beginning with one number rather
 than a matrix. Section 7 explains a complication specific to repeated skies
 and noise draws. Sections 8--9 give a pilot design and its validation criteria;
-Section 10 records the first measured example.
+Section 10 records the first measured example; Section 11 compares actual
+pair measurements with the released DES covariance.
 An understanding of averages, variances and matrix multiplication is enough
 to follow the argument; the Gaussian matrix-moment identity is stated with
 its assumptions. The PME notebook computes the correction with small
@@ -2400,6 +2401,208 @@ four and BLAS to one, and writes only compact measured tables. The larger
 pass is a diagnostic of these coarse moments, not a substitute for matching
 the published measurement and its analytic covariance.
 
+\paragraph{The completed local pass improves the statistical test, with limits.}
+The settled local inventory contains 15,997 measured files spanning 200 run
+labels, four cut labels and twenty realization labels. Three combinations
+of those observed labels are absent: run 168, cut 2, realizations 7 and 19;
+and run 168, cut 3, realization 19. This is an inventory statement, not a
+producer-certified release count. All present files passed the driver's
+shape, size and finite-value checks. The generated tables occupy about
+12 MB; no map copy was written. The first 192 measured vectors equal their
+all-map counterparts exactly.
+
+The primary precision test still uses only cut zero and realization zero.
+The fixed modulo-three split gives 67 reference, 67 correction and 66
+validation runs. The second-order precision is now positive definite, with
+minimum eigenvalue approximately 0.3703 in model units. Its validation
+trace per row is
+\begin{equation}
+ q_{\rm second}=0.9207\pm0.0550.
+\end{equation}
+The Gaussian reference gives
+\begin{equation}
+ q_{\rm reference}=0.8812\pm0.0487.
+\end{equation}
+The errors are leave-one-validation-run-out standard errors with the fitted
+precision held fixed. The second-order trace is closer to one, but the two
+estimates use the same validation data and their errors are correlated.
+A single average does not validate all precision directions or parameter
+errors. The correction sample also estimates a residual spectral radius of
+1.315, above the unit radius required for the underlying matrix series.
+Sampling noise affects that estimate, but a positive second-order polynomial
+alone does not establish convergence. The first-order and independent-group-product estimates still have
+negative eigenvalues and remain unsuitable as likelihood weights. The
+calibration model and summary-statistic assumptions remain those described
+above; these are not results for a matched analytic DES covariance.
+
+\section{Use the released DES covariance as a comparison target}
+\paragraph{Begin with the files already supplied by the analysis.}
+The project contains the measured DES Y3 vectors and the joint covariance
+used by the selected upstream likelihood. This gives us a concrete target
+before constructing a new analytic model. The joint file contains 480 rows:
+200 for $\xi_+$, 200 for $\xi_-$, and 80 for the third-order aperture statistic.
+The ordering matters. A matrix entry has a physical meaning only after its
+two row labels identify the statistics, source bins and angular bins.
+The executed map notebook reads the corresponding FITS tables and selects
+rows by those labels rather than treating all 480 numbers as interchangeable.
+
+\paragraph{Check that apparently related files really agree.}
+The last 80 rows and columns of the joint covariance equal the standalone
+Map3 covariance exactly. The first 400 rows and columns do not equal the
+standalone two-point covariance. Ratios of their diagonal entries range
+from approximately 0.895 to 1.092. Thus a user who joined the two standalone
+covariances would silently choose a different two-point uncertainty, even
+before losing the cross block. Our comparison uses the joint file throughout.
+The FITS header of that file records \texttt{NSIM=500}; the selected paired
+upstream configuration records \texttt{covariance\_realizations=796}.
+We retain both facts and leave the downloaded files unchanged. The number
+that enters a finite-simulation likelihood needs its production history;
+a plausible filename is not enough to resolve the discrepancy.
+
+\paragraph{A common simulation family is useful without being independent.}
+If Rafael's downloaded maps supplied that released covariance, matching
+measurements would let us check row ordering, normalization, noise treatment
+and the effects of resolution. Agreement would then be a consistency test
+between two processing routes. It would not be independent evidence that a
+precision correction predicts new skies. The released covariance is itself
+estimated from simulations. Inserting it as the fixed reference in the
+PME algebra is possible, but using overlapping parent skies to estimate a
+correction changes the independence assumptions. We therefore do not train
+and validate a correction against that reference with an unknown overlap.
+A production validation should reserve complete parent groups before any
+reference calibration or correction is fitted.
+
+\paragraph{Start with four measurements whose definitions can be matched.}
+The first pair-counting test uses source-bin slot four, cut zero and
+realization zero. It measures the four released $\xi_+$ bins spanning
+39.622 to 99.527 arcminutes, corresponding to joint rows 192--195 when rows
+are counted from zero. There are 32 run labels. All retained pixels have
+unit weight. This is a deliberate, visible approximation to catalogue
+weighting, whose pixel occupancies and weights have not been supplied.
+The maps have NSIDE 512, while the methods paper describes NSIDE 1024.
+Consequently, equality of angular bin edges does not establish equality of
+the full estimator or its pixel smoothing.
+
+\paragraph{Separate pair-counting accuracy from those physical differences.}
+TreeCorr~\cite{treecorr} performs the shear rotations and pair sums.
+Both its angular-bin and shear-angle approximation tolerances are set to
+zero. On a 2,048-pixel subset, the resulting $\xi_+$ and pair counts agree
+with direct pair enumeration; both shear-sign choices were checked.
+This controls that numerical approximation. It cannot determine an unknown
+producer convention. TreeCorr uses a west/north spherical basis. We set
+\texttt{flip\_g2=True} to implement our provisional east/north convention,
+and record the alternative result for the first map. We do not choose a
+sign by asking which gives a more convenient covariance.
+
+\paragraph{Estimate the covariance of one survey.}
+Let $d_{si}$ be angular-bin $i$ measured from primary run $s$. First compute
+the mean over the $N$ selected runs:
+\begin{equation}
+ \bar d_i=\frac{1}{N}\sum_{s=1}^{N}d_{si}.
+\end{equation}
+Subtract this mean from every measurement. An outer product of the
+residuals records which angular bins move together:
+\begin{equation}
+ E_{s,ij}=(d_{si}-\bar d_i)(d_{sj}-\bar d_j).
+\end{equation}
+Add those outer products and divide by the number of mean-subtracted
+degrees of freedom:
+\begin{equation}
+ \widehat C_{ij}=\frac{1}{N-1}\sum_{s=1}^{N}E_{s,ij}.
+\end{equation}
+This is the covariance of one survey drawn from the ensemble. Dividing
+again by $N$ would instead estimate the covariance of the ensemble mean.
+The released covariance describes one observed DES survey, so that extra
+division would be wrong for this comparison.
+
+\paragraph{Read the first result at its actual precision.}
+The mean $\xi_+$ decreases from approximately $7.17\times10^{-6}$ in the
+first selected bin to $3.05\times10^{-6}$ in the fourth. There is a clear
+nonzero shear correlation. The four measured-to-released variance ratios are
+\begin{equation}
+ r=(1.41,\ 1.81,\ 1.58,\ 1.05).
+\end{equation}
+A leave-one-run-out calculation gives approximate standard errors
+\begin{equation}
+ \sigma_{r}=(0.37,\ 0.42,\ 0.45,\ 0.28).
+\end{equation}
+These errors describe sensitivity to the 32-run sample, conditional on
+independent run labels. They do not include uncertainty in the released
+matrix, and the four ratios are correlated. Their similar scale makes
+further comparison worthwhile, but neither equality nor an exact common
+origin follows from this small sample.
+
+\paragraph{Diagonal agreement is only the first comparison.}
+Whitening the four-by-four sample covariance with the released submatrix
+also tests its correlations. Its eigenvalues are approximately
+\begin{equation}
+ \lambda=(0.80,\ 1.05,\ 2.18,\ 2.87).
+\end{equation}
+If the two matrices were exactly equal, all four values would be one.
+Here the largest estimated directions differ appreciably, with sampling
+noise, weighting, resolution and conventions still to separate. The next
+measurement should preserve this row definition while testing those choices;
+rescaling all variances to force diagonal agreement would hide the question.
+
+\paragraph{Use cross-correlations to test what realization labels change.}
+A pixel can be dominated by shape noise while its large-scale correlation
+still contains a measurable sky signal. Therefore a weak shared fraction
+in the variance of individual pixels does not establish that the maps are
+noise-only. A more direct test correlates two different realization labels.
+Write the first map as a sky signal plus one noise field:
+\begin{equation}
+ g^{(0)}_i=s_i+n^{(0)}_i.
+\end{equation}
+Write the second map with the same proposed sky and another noise field:
+\begin{equation}
+ g^{(1)}_j=s_j+n^{(1)}_j.
+\end{equation}
+Here the symbols stand for one component of a properly rotated shear pair;
+TreeCorr performs the actual spin-two rotations. Multiplication gives
+\begin{equation}
+ g^{(0)}_i g^{(1)}_j
+ =s_i s_j+s_i n^{(1)}_j+n^{(0)}_i s_j+n^{(0)}_i n^{(1)}_j.
+\end{equation}
+If noise has zero conditional mean and is independent between the two draws,
+the last three terms average to zero at fixed sky. Thus
+\begin{equation}
+ \E[g^{(0)}_i g^{(1)}_j\mid s]=s_i s_j.
+\end{equation}
+The shared sky survives. A same-map measurement at nonzero separation has
+the same expectation if noise is also uncorrelated between distinct pixels.
+This extra condition matters: correlated noise can survive a same-map pair
+measurement. A pair of independent skies has zero ensemble correlation if
+their mean shear is zero. Comparing these three measurements therefore tests
+the proposed shared-sky interpretation without relying on raw pixel variance.
+
+\paragraph{The completed cross test changes our working interpretation.}
+Eight same-run pairs compare realization zero with realization one. At the
+first selected angular bin, their cross-correlation is approximately
+\begin{equation}
+ \bar\xi_+^{\rm cross}=(-0.17\pm0.26)\times10^{-6}.
+\end{equation}
+The auto-correlation of those same primary maps is
+\begin{equation}
+ \bar\xi_+^{\rm auto}=(6.66\pm0.34)\times10^{-6}.
+\end{equation}
+These are standard errors across eight run groups. The other angular bins show the same separation.
+Cross-correlating two copies of one map recovers its auto-correlation,
+and a different-map cross test agrees with direct pair counting on the
+2,048-pixel subset. Under independent, uncorrelated pixel noise, the measured
+files therefore challenge the fixed, aligned sky interpretation of
+\texttt{nreal}. They do not identify what is actually randomized. In
+particular, the within-run variation measured earlier cannot yet be named
+a shape-noise covariance.
+
+\paragraph{A separate note records this comparison for discussion.}
+The companion \href{../covariance_comparison/covariance_comparison.pdf}
+{comparison note} explains the released-file audit, variance estimates,
+uncertainties and cross-realization test in detail. Its
+\href{../covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb}
+{executable notebook} is beside that note. Compact measured records allow
+all comparison statistics to be reproduced without the simulation archive;
+an explicit switch repeats the bounded measurements with the local maps.
+
 \begin{thebibliography}{9}
 \bibitem{pme} O. Friedrich and T. Eifler,
 \emph{Precision matrix expansion --- efficient use of numerical simulations
@@ -2417,5 +2620,11 @@ the theory work also builds on
 \emph{Dark Energy Survey Year 3 results: weak lensing shape catalogue},
 \href{https://academic.oup.com/mnras/article/504/3/4312/6211014}
 {MNRAS 504, 4312 (2021)}, Figure 1.
+\bibitem{treecorr} M. Jarvis and contributors,
+\emph{TreeCorr: shear conventions and shear correlation measurements},
+\href{https://rmjarvis.github.io/TreeCorr/_build/html/shear.html}
+{shear conventions} and
+\href{https://rmjarvis.github.io/TreeCorr/_build/html/gg.html}
+{GGCorrelation documentation}. The bounded measurement uses version 5.1.2.
 \end{thebibliography}
 \end{document}

@@ -1,0 +1,18 @@
+Parents: 32
+Cut: 0
+Draw: 0
+Source-bin slot: 4
+TreeCorr version: 5.1.2
+OpenMP: 3
+BLAS: 1
+Weights: equal per retained pixel; producer weights unavailable
+Tree approximations: bin_slop=0 angle_slop=0; 2048-pixel tree/brute check
+Metric: Arc
+NSIDE: 512
+Pixel ordering: RING inferred from footprint
+Signs: first map both signs; main sample flip_g2=True (assumed east/north)
+Bins: released xi-plus rows 192..195, 39.622..99.527 arcmin
+No catalogue-noise covariance from TreeCorr is used
+Released matrix may share parent simulations; this is a consistency check
+Cross tests: 8 same-run draw pairs and disjoint different-run pairs
+Elapsed seconds: 502.265
