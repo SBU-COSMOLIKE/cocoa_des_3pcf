@@ -353,12 +353,20 @@ and plot the DES footprint using `indices_512.npy`. A comparison of both
 HEALPix orderings identifies RING geometrically. The maps are ignored by Git; only their guide and notebook
 are tracked. No DES covariance has yet been calibrated from this download.
 
-The separate [comparison note for Rafael](notes/covariance_comparison/covariance_comparison.pdf)
-focuses on the released covariance, exact pair checks and the meaning of the
-realization labels. Its [companion notebook](notes/covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
-is in the same folder. Small recorded measurements in `tests/` reproduce its
-statistics without the map download; an explicit switch repeats the bounded
-measurements with the local maps.
+The [comparison note for Rafael](notes/covariance_comparison/covariance_comparison.pdf)
+uses all 15,997 measured aperture vectors for both the direct covariance
+and the second-order Eifler calculation, with one fixed starting matrix and
+no sample partition. Difference maps, histograms and split-triangle
+correlations show how the methods differ. It also retains the separate
+four-bin comparison with the released DES covariance, using all 32 runs
+measured with the matching pair estimator. The aperture moments and those
+DES rows are different observables.
+Its [companion notebook](notes/covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
+reproduces these two comparisons from compact records in `tests/`;
+optional switches reread the complete moment table or repeat the bounded
+pair measurements. The broader map notebook retains the earlier pilot
+experiments as history. The current note does not divide the sample into
+calibration, correction and validation groups.
 Survey simulations must reproduce the selection and estimator; four cuts
 from one sky and repeated noise draws are not automatically independent skies.
 

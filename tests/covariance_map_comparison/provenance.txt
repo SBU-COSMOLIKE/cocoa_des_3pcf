@@ -12,3 +12,14 @@ Recompute the map measurements with the companion notebook's explicit switch.
 
 The cross-route positive and direct-pair controls were run additionally.
 The 502.265-second record covers the original primary and eight-pair run.
+
+Correction-size follow-up: aperture_primary.txt contains the 200 primary
+16-row moment vectors from chains/covariance_maps_full. aperture_reference.txt
+is the unchanged Gaussian reference from the original modulo-three split.
+No map is remeasured and no new reference calibration is performed.
+
+All-file comparison: all_maps_covariance.txt is computed directly from
+all 15997 measured vectors, without a holdout. The same covariance enters
+the formal second-order PME formula with nominal nu=15996. File count does
+not establish independent Wishart degrees of freedom; this is an algebraic
+comparison, not independent covariance calibration.

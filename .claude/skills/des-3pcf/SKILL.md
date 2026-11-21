@@ -125,8 +125,10 @@ are insufficient.
   published xi/Map3 estimator. It streams maps with OpenMP <=4 and BLAS=1;
   `--all --resume` appends arrivals after a completed pass without map copies.
   Its 16 raw aperture moments keep noise self-products. The map notebook's
-  Gaussian reference uses a separate calibration group and is not a noiseless
-  CosmoLike theory covariance. Keep these limits and unconfirmed shear/parent
+  original Gaussian reference used a separate calibration group and is not a
+  noiseless CosmoLike theory covariance. The current comparison keeps that
+  starting matrix fixed and uses all 15,997 measured vectors in both methods;
+  do not refit it or restore the former three-group split in Rafael's note. Keep these limits and unconfirmed shear/parent
   conventions explicit. Never treat a failed or indefinite PME as a forecast.
 - `scripts/measure_covariance_xip.py` compares four actual released xi-plus
   bins with the joint 480-row covariance. It uses exact TreeCorr binning,
@@ -138,9 +140,15 @@ are insufficient.
   The separate note and executable notebook live together under
   `notes/covariance_comparison/`. Compact measured records live under
   `tests/covariance_map_comparison/`; the notebook's visible measurement
-  switch writes fresh bounded results under `chains/`. Same-run cross tests
-  challenge the fixed-sky/noise-only interpretation of nreal; keep its actual
-  meaning unresolved until the generating procedure is supplied.
+  switch writes fresh bounded results under `chains/`. Rafael's note contains
+  only the complete-sample direct-versus-Eifler comparison and the separate
+  matched-bin DES comparison (currently 32 measured primary runs). Show
+  normalized differences and split-triangle correlations for both. State
+  the nominal degrees of freedom used in the noisy-square formula without
+  identifying the file count as an established independent count. Earlier
+  split-sample and same-run cross tests remain in the main map notebook as
+  history; keep the actual meaning of nreal unresolved until the generating
+  procedure is supplied.
 - Prefer YAML or plain text to JSON outside frozen test evidence. Keep
   binary scientific arrays where their format is useful; do not convert
   FITS or NPZ arrays to text merely to avoid a file extension.

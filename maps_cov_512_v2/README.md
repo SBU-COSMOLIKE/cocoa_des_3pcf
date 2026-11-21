@@ -264,9 +264,18 @@ the producer's account of what was randomized.
 
 The completed eight-pair test finds a same-run cross signal consistent with
 zero, while the same-map signal is clearly positive. It challenges the
-fixed-sky interpretation under independent, uncorrelated pixel noise; it
-does not identify the actual randomization. The
-[separate comparison note](../notes/covariance_comparison/covariance_comparison.pdf)
-derives the test. Its [notebook](../notes/covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
-reproduces every comparison check from compact recorded measurements and
-provides an explicit switch to repeat the bounded measurements.
+fixed-sky interpretation under independent, uncorrelated pixel noise;
+it does not identify the actual randomization. These historical label tests
+remain in the main map notebook.
+
+The [comparison note for Rafael](../notes/covariance_comparison/covariance_comparison.pdf)
+and its [notebook](../notes/covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
+now focus only on two matrix comparisons. First, all 15,997 measured
+aperture vectors enter both the direct covariance and the second-order
+Eifler estimate, with the starting matrix fixed and no sample partition.
+Second, all 32 available matching xi-plus measurements are compared with
+the released four-bin DES covariance. Both comparisons have normalized
+difference plots and split-triangle correlation plots. Compact records
+reproduce the figures without reopening the maps. The nominal file count
+used in the Eifler square correction is stated explicitly; it is not an
+established independent-sky count.

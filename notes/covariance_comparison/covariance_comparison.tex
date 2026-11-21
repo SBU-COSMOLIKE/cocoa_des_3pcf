@@ -1,12 +1,8 @@
 \documentclass[11pt]{article}
 \usepackage[margin=1.15in]{geometry}
-\usepackage{amsmath,amssymb,graphicx,xcolor,booktabs,needspace}
-\usepackage{xurl}
-\usepackage{placeins}
+\usepackage{amsmath,amssymb,graphicx,xcolor,booktabs,needspace,placeins,xurl}
 \usepackage[hidelinks]{hyperref}
 \newcommand{\E}{\mathbb{E}}
-\newcommand{\cov}{\operatorname{Cov}}
-\newcommand{\Var}{\operatorname{Var}}
 \emergencystretch=3em
 \setlength{\parskip}{0.2em}
 \renewcommand{\topfraction}{0.9}
@@ -15,436 +11,438 @@
 \renewcommand{\floatpagefraction}{0.85}
 \begin{document}
 \begin{center}
-{\LARGE Comparing the supplied DES Y3 shear maps\par}
-\vspace{0.3em}
-{\LARGE with the released joint covariance\par}
+{\LARGE Covariance comparisons using the complete measured samples\par}
 \vspace{0.6em}
-{\large A reproducible comparison for discussion with Rafael Gomes\par}
-\vspace{0.4em}
+{\large Direct simulations, second-order Eifler correction,\par}
+{\large and the released DES Y3 covariance\par}
+\vspace{0.5em}
 21 November 2026
 \end{center}
 
-\section{The question and the present result}
-\paragraph{What we are trying to establish.}
-The supplied NSIDE 512 shear maps may be related to the simulations used
-for the released DES Y3 two-point and third-order aperture covariance.
-Before using them to correct an analytic covariance, we want to understand
-that relationship. We therefore compare a small set of actual shear-pair
-measurements with the corresponding released covariance entries. This
-note describes the measurement, its numerical checks and the questions
-that the results raise. It does not fit cosmological parameters.
+\section{Two comparisons and the data used in each}
+\paragraph{The first comparison uses all available measured aperture vectors.}
+We estimate a covariance directly from all 15,997 measured simulation files.
+We then use that same sample covariance in the second-order
+Friedrich--Eifler precision expansion~\cite{pme}, keeping its starting matrix
+fixed. After checking that the corrected precision is positive definite,
+we invert it to obtain a covariance for comparison. Both calculations use
+the same sixteen measured quantities and the same complete sample.
+There is no calibration/correction/validation partition in this experiment.
 
-\paragraph{Two findings guide the next step.}
-For four large-angle $\xi_+$ bins, variances from 32 run labels are roughly
-one to two times the released values, with substantial sampling uncertainty.
-This makes a more closely matched comparison useful. A second test finds
-that different \nolinkurl{nreal} labels of the same \nolinkurl{run} do not retain
-the coherent correlation seen within one map at the same sky coordinates.
-Under the assumptions developed below, they do not behave as independent
-pixel-noise draws added to one fixed, aligned shear field. Understanding
-what those labels randomize is therefore the first physical question.
+\paragraph{The second comparison uses matched rows of the released DES covariance.}
+Our existing pair-counting calculation measures four published $\xi_+$
+angular bins from 32 primary run labels. We use all 32 vectors to estimate
+their covariance and compare it with the corresponding released DES
+submatrix. This four-bin measurement has not been performed on all 15,997
+maps. It is also a different statistic from the sixteen aperture moments.
+The two comparisons answer different questions and their matrices must not
+be compared entry by entry.
 
-\paragraph{Scope and reproducibility.}
-All pair measurements use four angular bins and one source-bin slot.
-There is no full three-point measurement and no scan of the entire download
-in this comparison. The companion
-\href{EXAMPLE_COVARIANCE_COMPARISON.ipynb}{comparison notebook} reproduces
-all statistical calculations and figures from compact recorded measurements.
-Its explicit switch reruns the bounded map measurements. The numerical code
-is the project's \nolinkurl{scripts/measure_covariance_xip.py}; the record
-uses TreeCorr 5.1.2, three OpenMP workers and one BLAS worker.
-\textbf{We thank Rafael Gomes for the maps and released analysis products,
-and Mike Jarvis and the TreeCorr contributors for the measurement code.}
-The broader science context is Gomes et al.~\cite{gomes}.
+\paragraph{What the comparisons show.}
+For the complete aperture sample, the Eifler covariance has per-row standard
+deviations about 11--13\% larger for the squared moments, while changes for
+the cubed moments range from about $-0.1\%$ to $+1.4\%$. Correlation
+coefficients differ by as much as 0.199. The difference persists largely
+because a second-order inverse expansion is truncated. For the separate
+four-bin DES comparison, the measured variances range from about 1.05 to
+1.81 times the released values, with appreciable uncertainty from the
+32-map sample. Neither comparison alone identifies the unknown true
+covariance or validates cosmological parameter errors.
 
-\section{Identify the inputs before comparing numbers}
-\paragraph{The maps contain values on a compressed sky footprint.}
-A map has four source-bin slots, two component slots and 369,190 retained
-pixel positions. Its shape is
+\paragraph{Reproduction and credits.}
+The \href{EXAMPLE_COVARIANCE_COMPARISON.ipynb}{companion notebook} beside
+this note computes both comparisons and the difference and split-triangle
+plots. Small recorded matrices and vectors reproduce its outputs without
+loading the simulation archive. Its optional controls recompute the full
+sample covariance from the saved measurement table and repeat the bounded
+pair measurements. \textbf{We thank Rafael Gomes for the maps and analysis
+products, Oliver Friedrich and Tim Eifler for the precision expansion,
+and Mike Jarvis and the TreeCorr contributors for the pair-counting code.}
+The DES science context and released analysis are described by
+Gomes et al.~\cite{gomes}.
+
+\section{Define the complete-sample aperture covariance}
+\paragraph{A map supplies values on the retained DES footprint.}
+Each file has four source-bin slots, two shear-component slots and 369,190
+retained pixel positions. The companion \nolinkurl{indices_512.npy} gives
+the HEALPix pixel IDs. The maps are NSIDE 512; RING ordering and equatorial
+coordinates are inferred from the footprint geometry. The shear basis and
+source-bin order still require their producer record. The calculation uses
+one fixed pixel interpretation for every method.
+
+\paragraph{The sixteen rows are coarse moments, with an explicit ordering.}
+A tangential-shear filter with radius 30 or 60 arcminutes is integrated
+around 64 fixed centers in each source-bin slot. Let $a_{bRc}$ be the
+resulting aperture value for source bin $b$, radius $R$ and center $c$.
+For each source bin and radius, the squared-moment row is
 \begin{equation}
- (4,\ 2,\ 369190).
+ d_{2,bR}=\frac{1}{64}\sum_{c=1}^{64}a_{bRc}^2.
 \end{equation}
-The companion \nolinkurl{indices_512.npy} associates the last axis with
-HEALPix pixels. Missing pixels are unobserved; they are not zero-shear
-measurements. The footprint strongly identifies RING ordering and equatorial
-coordinates geometrically. The shear-component basis and source-bin order
-still need their producer record. Each selected map has a complete
-23,628,288-byte float64 NPY payload. We have no producer checksums with
-which to certify the archive.
-
-\paragraph{Treat the filename pieces as labels until their meanings are known.}
-For \nolinkurl{ShearMaps_DESY3_run_0000_ncut0_nreal17.npy}, the three
-identifiers are run 0, cut 0 and realization 17. Our initial working
-interpretation was a parent sky, a footprint cut and a repeated shape-noise
-draw. The cross test in Section~\ref{sec:cross} specifically examines that
-last interpretation. We retain the full labels in every measurement record.
-The number of files is not used as the count of independent Universes.
-The settled local inventory has run labels 0--199; their relation to the
-paper's 199 full-sky realizations is another reason to request the parent
-mapping. The pair comparison itself uses only labels 0--31.
-
-\paragraph{The released covariance has a definite row ordering.}
-The joint FITS file has 480 rows: 200 for $\xi_+$, 200 for $\xi_-$ and 80
-for the third-order aperture statistic. The last 80-by-80 block is exactly
-equal to the standalone Map3 covariance. The standalone two-point covariance
-is different from the first 400-by-400 joint block: ratios of their diagonal
-entries range from 0.895 to 1.092. We therefore use the joint file throughout;
-joining the standalone blocks would silently change the reference and omit
-their cross-covariance.
-
-\paragraph{There is a simulation-count discrepancy to resolve.}
-The joint FITS header records \nolinkurl{NSIM=500}. Its paired upstream
-likelihood configuration sets the covariance-realization count to 796.
-The methods paper describes 199
-full-sky realizations and four footprints per sky, producing 796 mock surveys.
-This does not by itself identify which count applies to this particular
-released matrix. The note records the discrepancy without changing either
-input. Its resolution requires the matrix-generation history, including
-whether a header was retained from an earlier product.
-
-\section{Define the pair measurement}
-\paragraph{What $\xi_+$ measures.}
-For a pair of sky positions, rotate each shear into components parallel
-and at $45$ degrees to the great circle connecting the pair. Denote these
-components by $\gamma_t$ and $\gamma_\times$. The two-point statistic is
+The separate cubed-moment row is
 \begin{equation}
- \xi_+(\theta)
- =\E[\gamma_t(i)\gamma_t(j)+
-       \gamma_\times(i)\gamma_\times(j)]_{\theta_{ij}\simeq\theta}.
+ d_{3,bR}=\frac{1}{64}\sum_{c=1}^{64}a_{bRc}^3.
 \end{equation}
-The expectation is estimated by averaging pairs whose separation falls
-inside the chosen angular bin. A positive value means the shear pattern
-has a correlated component on those scales. The measurement is a product
-of two dimensionless shears, so its covariance has units of shear to the
-fourth power.
+The first eight rows contain the squared moments: source 1 at the two
+radii, then source 2, and so on. The next eight rows contain the cubed
+moments in the same source/radius order. The complete covariance retains
+the correlations within and between these blocks. These raw moments keep
+noise self-products and use equal pixel weights. They are a diagnostic of
+the maps, not the published finite-triangle Map3 estimator or the published
+xi/Map3 data vector.
 
-\paragraph{Which rows are measured.}
-We select source-bin slot four paired with itself and the four published
-angular bins spanning 39.622 to 99.527 arcminutes. These are joint rows
-192--195 with zero-based indexing. The main sample uses run labels 0--31,
-cut zero and realization zero. Its covariance therefore uses 32 primary
-surveys, conditional on the run labels representing independent parents.
-No additional noise draw is counted as another primary survey.
+\paragraph{Every available file enters the direct covariance.}
+The settled local inventory has 15,997 maps, with run labels 0--199,
+four cut labels and twenty realization labels. Three combinations of those
+observed labels are absent: run 168/cut 2/draws 7 and 19, and
+run 168/cut 3/draw 19. All present files were measured. Their small
+sixteen-row vectors are stored separately from the maps; the full generated
+measurement tables occupy about 12 MB. File labels do not by themselves
+establish independent skies or producer-certified completeness.
 
-\paragraph{What is matched and what is still approximate.}
-The bin edges match the released FITS row definitions. All retained pixels
-have equal weights. The producer's catalogue weights and pixel occupancies
-have not been supplied, so that weighting is not established to match the
-published estimator. The downloaded maps have NSIDE 512, whereas the methods
-paper describes NSIDE 1024. Pixel averaging suppresses small-scale structure
-and changes noise sampling. Choosing relatively large angles reduces one
-concern but does not prove resolution convergence.
-
-\paragraph{The spin-two convention is explicit.}
-TreeCorr uses a west/north basis on the sphere~\cite{treecorr}. We use
-\nolinkurl{flip_g2=True} to implement a provisional east/north convention.
-The first map is also measured with the opposite sign. This sign comparison
-is recorded separately; agreement with the released covariance is not used
-to select a convention. The same assumed convention is used in the auto
-and cross measurements below.
-
-\paragraph{Control numerical approximations before interpreting differences.}
-The pair calculation sets both \nolinkurl{bin_slop} and
-\nolinkurl{angle_slop} to zero. For a 2,048-pixel subset of the first map,
-we independently compare tree grouping with direct enumeration of all pairs.
-The $\xi_+$ values and pair counts agree for both sign conventions; the
-recorded $\xi_+$ differences are zero at saved precision. Earlier relaxed
-tolerances changed results by an appreciable fraction of the released
-single-survey errors and were excluded from this comparison. Two further controls check the cross route: cross-correlating two distinct
-catalogue objects containing the same field recovers its auto-correlation,
-and the different-map cross-correlation agrees with direct pairs on the
-2,048-pixel subset. These checks control pair-counting accuracy and
-normalization, not the missing physical metadata.
-
-\section{Estimate one-survey covariance, step by step}
-\paragraph{First subtract the ensemble mean.}
-Let $d_{si}$ be bin $i$ measured in survey $s$. With $N=32$ surveys, the
-sample mean is
+\paragraph{Compute a covariance of one measurement, not of its average.}
+Let $d_s$ be the sixteen-component vector from file $s$ and let
+$N=15997$. First form its mean over files:
 \begin{equation}
- \bar d_i=\frac{1}{N}\sum_{s=1}^{N}d_{si}.
+ \bar d=\frac{1}{N}\sum_{s=1}^{N}d_s.
 \end{equation}
-A residual measures how far one survey lies from that mean:
+Subtract that mean to obtain one residual vector per file:
 \begin{equation}
- e_{si}=d_{si}-\bar d_i.
+ e_s=d_s-\bar d.
 \end{equation}
-If two bins often fluctuate in the same direction, their residual product
-is positive. The sample covariance averages those products:
+The outer product of a residual with itself records which rows fluctuate
+together. Averaging these outer products gives
 \begin{equation}
- \widehat C_{ij}=\frac{1}{N-1}\sum_{s=1}^{N}e_{si}e_{sj}.
+ C_{\rm sim}=\frac{1}{N-1}\sum_{s=1}^{N}e_s e_s^{\mathsf T}.
+ \label{eq:sample}
 \end{equation}
-The denominator is $N-1$ because estimating the mean removes one degree of
-freedom. This is the covariance of one survey. Dividing it again by $N$
-would instead describe the uncertainty of the ensemble mean; it would be
-the wrong comparison with the covariance of the observed DES survey.
+This is the direct empirical covariance used throughout the first
+comparison. It is not divided again by $N$. Such a division would change
+the quantity into a covariance of the mean under independence, rather
+than the fluctuations of a single measured vector.
 
-\paragraph{Compare variances without losing their meaning.}
-Write $C^{\rm ref}$ for the released four-by-four submatrix. The ratio in
-angular bin $i$ is
-\begin{equation}
- r_i=\frac{\widehat C_{ii}}{C^{\rm ref}_{ii}}.
-\end{equation}
-A ratio of one means equal estimated variances in that bin. A ratio of two
-means twice the variance, or $\sqrt{2}$ times the standard deviation. The
-four ratios are approximately 1.41, 1.81, 1.58 and 1.05. Figure~\ref{fig:variance}
-shows their sampling uncertainty. They are of similar scale to the release,
-but do not establish equality of the covariance matrices.
+\section{Use the same sample in the Eifler calculation}
+\paragraph{Keep the starting matrix fixed.}
+Denote the existing Gaussian moment reference by $M$. It is the previously
+recorded starting matrix; there is no new reference fit or allocation of
+simulations to a calibration group. Its entries were constructed from
+Gaussian pair contractions of aperture covariances, so it is not a
+noise-free, survey-matched analytic CosmoLike covariance. The present
+question is what the correction does to this fixed matrix when supplied
+with the entire measured sample.
 
-\paragraph{Explain the error bars.}
-Leave out survey $s$ and recompute the variance ratio using the remaining
-31 surveys. Call that ratio $r_i^{(-s)}$. Average the 32 leave-one-out results:
+\paragraph{First express the sample covariance in reference units.}
+Factor the positive reference matrix into
 \begin{equation}
- \bar r_i^{\rm jack}=\frac{1}{N}\sum_{s=1}^{N}r_i^{(-s)}.
+ M=L L^{\mathsf T}.
 \end{equation}
-The jackknife variance estimate is
+For one scalar observable, dividing a residual by its reference standard
+deviation makes it dimensionless. The matrix version also accounts for
+correlations. Its covariance is
 \begin{equation}
- \widehat{\Var}_{\rm jack}(r_i)
- =\frac{N-1}{N}\sum_{s=1}^{N}
-       (r_i^{(-s)}-\bar r_i^{\rm jack})^2.
+ S=L^{-1}C_{\rm sim}L^{-\mathsf T}.
 \end{equation}
-Its square root gives the plotted errors: approximately 0.37, 0.42, 0.45
-and 0.28. They describe sensitivity to our 32-run sample, with the released
-matrix held fixed. They do not include uncertainty in that reference,
-unknown parent dependence or systematic estimator differences. The four
-bins are correlated, so their departures from one are not four independent
-tests.
+If the sample covariance exactly equaled the reference, $S$ would be the
+identity. Departures from the identity are what the expansion corrects.
 
-\begin{figure}[t]
+\paragraph{Correct the noisy matrix square before using the second-order term.}
+For independent Gaussian summary vectors, the sample-covariance moments
+obey the Wishart identities used by Friedrich and Eifler. The corrected
+square is
+\begin{equation}
+ Q=\frac{\nu^2 S^2-\nu S\operatorname{tr}(S)}{\nu^2+\nu-2}.
+ \label{eq:quadratic}
+\end{equation}
+Here $S^2$ means matrix multiplication, not squaring each entry.
+The trace is the sum of the diagonal entries. The subtraction removes the
+mean noise contribution that otherwise remains when a noisy matrix is
+multiplied by itself, provided the stated sampling assumptions apply.
+The notebook calculates the square, trace term and normalization explicitly
+before checking the shared statistical routine.
+
+\paragraph{State the count convention without assigning independence to filenames.}
+For this requested complete-file comparison, Equation~\eqref{eq:quadratic}
+is evaluated with nominal
+\begin{equation}
+ \nu=N-1=15996.
+\end{equation}
+Related maps are not established to be independent, and these nonlinear
+summary moments are not established to be Gaussian. This count therefore
+defines a formal all-file evaluation of the formula; it is not a validated
+independent-simulation degree of freedom. The unbiasedness guarantee does
+not follow for the archive merely because the matrix arithmetic can be
+performed. No effective independent count is inferred or fitted here.
+
+\paragraph{Construct a precision and then return to covariance units.}
+The second-order polynomial in reference coordinates is
+\begin{equation}
+ P_2=3I-3S+Q.
+\end{equation}
+Its smallest eigenvalue in this calculation is about 0.8204, so it is
+positive definite. Restoring the original units gives the precision
+\begin{equation}
+ \Psi_{\rm E}=L^{-\mathsf T}P_2L^{-1}.
+\end{equation}
+A precision is an inverse covariance. We therefore compare the direct
+simulation covariance with
+\begin{equation}
+ C_{\rm E}=\Psi_{\rm E}^{-1}.
+\end{equation}
+Both displayed matrices are positive definite. No eigenvalue is clipped,
+no scalar rescaling is fitted, and no data row is removed to obtain this
+property.
+
+\section{Read the complete-sample covariance plots}
+\paragraph{A stable difference normalization.}
+The matrix difference in Figure~\ref{fig:all-difference} is normalized by
+the direct simulation standard deviations:
+\begin{equation}
+ \Delta_{ij}=100\,
+ \frac{(C_{\rm E}-C_{\rm sim})_{ij}}
+ {\sqrt{(C_{\rm sim})_{ii}(C_{\rm sim})_{jj}}}.
+\end{equation}
+On the diagonal this is the percentage change in variance. Off the diagonal
+it remains finite when a reference covariance entry is close to zero.
+Dividing instead by each individual off-diagonal entry would exaggerate
+small differences near correlation zero crossings. The histogram describes
+all 256 entries, including symmetric duplicates; its bars are not independent
+statistical measurements.
+
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.76\linewidth]{plots/all_difference/all_difference.pdf}
+ \caption{Eifler minus direct simulation covariance, using the same 15,997
+ vectors. The normalization uses the direct simulation diagonal. The lower
+ panel shows the distribution of matrix entries, including symmetric copies.}
+ \label{fig:all-difference}
+\end{figure}
+
+\paragraph{Separate variance changes from correlation changes.}
+For each method, a correlation coefficient divides its covariance entry
+by its own two standard deviations:
+\begin{equation}
+ R_{ij}=\frac{C_{ij}}{\sqrt{C_{ii}C_{jj}}}.
+\end{equation}
+Figure~\ref{fig:all-triangles} puts the Eifler correlation in the displayed
+upper-left triangle and the direct simulation correlation in the lower-right.
+Thus every symmetric pair compares two methods at the same row labels.
+Each half uses its own diagonal normalization; the diagonal is one for both.
+The plotting convention places increasing row index upward, which is why
+we name the displayed halves explicitly.
+
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.88\linewidth]{plots/all_triangles/all_triangles.pdf}
+ \caption{Correlation coefficients for the complete aperture sample.
+ Upper-left: second-order Eifler. Lower-right: direct simulation covariance.
+ The block boundary separates the eight squared and eight cubed moments.}
+ \label{fig:all-triangles}
+\end{figure}
+
+\FloatBarrier
+\paragraph{The numerical size of the difference.}
+Per-row standard deviations, obtained by taking square roots of covariance
+diagonal entries, increase by 10.8--12.5\% for the squared moments.
+For the cubed moments the changes range from $-0.12\%$ to $+1.44\%$.
+The normalized covariance differences range from about $-0.78\%$ to
+$+26.64\%$, and the largest absolute correlation-coefficient change is
+0.199. Variance percentages and standard-deviation percentages differ
+because one is the square of the other.
+
+\paragraph{A sample used by both methods is not an independent validation set.}
+Multiplying $C_{\rm sim}$ by its own exact inverse necessarily gives the
+identity. The corresponding trace per row is one by algebra, not evidence
+that the covariance is cosmologically accurate. The Eifler precision times
+that same covariance has trace per row about 0.9583. This describes an
+average difference in weighting between the estimators. It is not a held-out
+accuracy score, and different matrix directions can cancel in its average.
+
+\FloatBarrier
+\section{Why the difference remains with many measured files}
+\paragraph{An infinite convergent series need not be accurate at second order.}
+To isolate truncation, temporarily omit the finite-$N$ square subtraction
+and use $Q=S^2$. Along a direction where $S$ has eigenvalue $\lambda$, the
+second-order precision polynomial becomes
+\begin{equation}
+ p_2(\lambda)=3-3\lambda+\lambda^2.
+\end{equation}
+The exact inverse of that sample direction is $1/\lambda$. Hence the
+second-order weight relative to the direct inverse is
+\begin{equation}
+ \lambda p_2(\lambda)=1+(\lambda-1)^3.
+\end{equation}
+The smallest measured eigenvalue is approximately 0.168. Substitution gives
+a relative weight near 0.424. Inverting that weight gives a covariance
+ratio near 2.36 along that particular combination of rows. Individual
+diagonal entries mix many directions, so their changes can be smaller.
+
+\paragraph{Distinguish that truncation from the finite-sample square term.}
+The largest absolute departure of an eigenvalue of $S$ from one is
+about 0.832. This number is the residual spectral radius. Being below
+one, it indicates convergence of the infinite inverse series for the sample
+matrix, but does not make the second-order term exact. With the nominal
+count used here, including Equation~\eqref{eq:quadratic} changes standard
+deviations by only 0.029--0.061\% relative to the uncorrected second-order
+polynomial. Most of the displayed difference is therefore finite-order
+truncation at the current $S$ and $M$. Increasing the sample size does not,
+by itself, remove an algebraic truncation at fixed matrices.
+
+\paragraph{Does fourth order solve the truncation?}
+A check with these same matrices, omitting finite-sample corrections at
+both orders, gives a partial improvement. Define the residual matrix
+\begin{equation}
+ U=I-S.
+\end{equation}
+Keeping two additional terms gives the fourth-order polynomial
+\begin{equation}
+ P_4=I+U+U^2+U^3+U^4.
+\end{equation}
+Its squared-moment standard deviations differ from the direct covariance
+by 5.4--6.3\%, compared with 10.7--12.5\% at second order in this
+uncorrected-polynomial check. The weakest direction still receives only
+about 0.601 times its exact sample-inverse weight: a discrepancy of about
+40\%. Fourth order helps, but improving the starting covariance remains
+necessary for a reliable low-order approximation. This calculation isolates
+truncation; it is not an unbiased fourth-order estimator. Noisy cubic and
+quartic powers require their own noise-bias corrections. The companion
+notebook reproduces this check without changing the displayed second-order
+comparison or partitioning the sample.
+
+\section{Compare with the released DES covariance}
+\paragraph{Use matching observed-row definitions.}
+The released joint matrix has 480 rows: 200 for $\xi_+$, 200 for $\xi_-$
+and 80 for Map3. We select source-bin slot four paired with itself and
+joint rows 192--195, counted from zero. Their four angular bins span
+39.622--99.527 arcminutes. TreeCorr~\cite{treecorr} measures those same
+bins in runs 0--31, cut zero and realization zero. All 32 resulting vectors
+enter their sample covariance through Equation~\eqref{eq:sample}, with
+$N=32$ and four rows instead of sixteen. There is no split of those runs.
+
+\paragraph{Control the pair calculation before interpreting the matrices.}
+Angular-bin and shear-angle approximation tolerances are both zero.
+A 2,048-pixel subset agrees with direct pair enumeration for both tested
+shear-sign choices. Cross-correlating two catalogue copies of one field
+also recovers its auto-correlation, and a different-field cross check agrees
+with direct pairs. We use the explicit provisional east/north shear
+convention, converted to TreeCorr's west/north basis with
+\nolinkurl{flip_g2=True}. The notebook retains the alternative-sign check.
+Equal pixel weights, the source-bin and shear conventions, and the
+NSIDE 512 versus the methods paper's NSIDE 1024 remain physical matching
+questions. Numerical agreement of pair algorithms cannot resolve them.
+
+\paragraph{Show the same two matrix comparisons.}
+Figure~\ref{fig:des-difference} uses the released diagonal to normalize
+measured-minus-released differences. Figure~\ref{fig:des-triangles} shows
+one correlation triangle from each method. These figures use four
+$\xi_+$ rows only. The sixteen-row aperture covariance above is never
+substituted for those rows or matched to the 480-row release by its dimensions.
+
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.76\linewidth]{plots/des_difference/des_difference.pdf}
+ \caption{Measured minus released covariance for four matching $\xi_+$ bins.
+ The denominator uses the released DES diagonal. The measured matrix uses
+ all 32 available pair-measurement vectors; its sampling noise remains.}
+ \label{fig:des-difference}
+\end{figure}
+
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.88\linewidth]{plots/des_triangles/des_triangles.pdf}
+ \caption{Four-bin correlation comparison. Upper-left: measured maps.
+ Lower-right: released DES joint covariance. Axis labels give the published
+ mean pair separations in arcminutes.}
+ \label{fig:des-triangles}
+\end{figure}
+
+\FloatBarrier
+\paragraph{Keep the sampling uncertainty visible.}
+The four variance ratios are approximately 1.41, 1.81, 1.58 and 1.05.
+To estimate their sensitivity to the 32-run sample, remove one run, recompute
+the ratio and repeat for each run. If $r_i^{(-s)}$ is the result after omitting
+run $s$, average those leave-one-out values:
+\begin{equation}
+ \bar r_i^{\rm jack}=\frac{1}{N}\sum_s r_i^{(-s)}.
+\end{equation}
+Their jackknife variance is
+\begin{equation}
+ \widehat{\mathrm{Var}}_{\rm jack}(r_i)
+ =\frac{N-1}{N}\sum_s(r_i^{(-s)}-\bar r_i^{\rm jack})^2.
+\end{equation}
+The resulting standard errors are about 0.37, 0.42, 0.45 and 0.28,
+shown in Figure~\ref{fig:variance}. These condition on independent run
+labels and a fixed released reference. They do not include uncertainty in
+that reference or estimator mismatch. Angular bins are correlated; the
+four differences cannot be treated as four independent significance tests.
+
+\begin{figure}[htbp]
  \centering
  \includegraphics[width=0.72\linewidth]{plots/variance/variance.pdf}
  \caption{Single-survey variance relative to the released joint covariance.
  The dotted line marks equality. Error bars are leave-one-run-out standard
- errors for the 32 primary maps, with the reference held fixed.}
+ errors, with the released matrix held fixed.}
  \label{fig:variance}
 \end{figure}
 
-\paragraph{Also inspect the off-diagonal information.}
-Matching variances alone would miss incorrect correlations. Factor the
-released submatrix into a Cholesky product:
-\begin{equation}
- C^{\rm ref}=L L^{\mathsf T}.
-\end{equation}
-For one bin, dividing a residual by the reference standard deviation would
-make its expected variance one. The matrix version also accounts for
-correlations: solve for the transformed residual vector
-\begin{equation}
- u_s=L^{-1}e_s.
-\end{equation}
-Compute the sample covariance of these transformed residuals using the same
-outer-product recipe as before. The left factor acts on the first residual
-and its transpose acts on the second. The result is
-\begin{equation}
- R=L^{-1}\widehat C L^{-\mathsf T}.
-\end{equation}
-If the two covariances agree exactly, $R$ is the identity matrix. Its four
-measured eigenvalues are approximately 0.80, 1.05, 2.18 and 2.87. Some
-estimated directions therefore differ more than the diagonal ratios alone
-suggest. With only 32 surveys, these eigenvalues are noisy; their ordered
-extremes cannot be treated as unbiased measurements of the true extremes.
-A larger matched comparison should assess both correlations and variances.
-
-\section{Test what changes between realization labels}\label{sec:cross}
-\paragraph{Why an auto-correlation is not enough.}
-The mean primary-map $\xi_+$ is clearly positive, falling from about
-$7.17\times10^{-6}$ to $3.05\times10^{-6}$ across the four bins. This detects
-a correlated contribution within the maps. It does not by itself establish
-that two different \nolinkurl{nreal} labels share that contribution. Correlated
-noise, different skies or sky rotations can affect the interpretation.
-A cross-correlation between two files tests the shared component directly.
-
-\paragraph{Derive what a fixed sky plus independent noise predicts.}
-For one component of the rotated shear pair, write the first map as
-\begin{equation}
- g^{(0)}_i=s_i+n^{(0)}_i.
-\end{equation}
-Here $s_i$ is the proposed fixed sky and $n^{(0)}_i$ is its first noise draw.
-The second map is assumed to contain the same aligned sky:
-\begin{equation}
- g^{(1)}_j=s_j+n^{(1)}_j.
-\end{equation}
-Multiplying the two gives four terms:
-\begin{equation}
- g^{(0)}_i g^{(1)}_j=s_i s_j+s_i n^{(1)}_j+
-                       n^{(0)}_i s_j+n^{(0)}_i n^{(1)}_j.
-\end{equation}
-If noise has zero mean conditional on the sky, the two signal--noise
-terms average to zero. If noise draws are conditionally independent, their
-cross term also averages to zero. Consequently,
-\begin{equation}
- \E[g^{(0)}_i g^{(1)}_j\mid s]=s_i s_j.
-\end{equation}
-The shared sky correlation remains. For a same-map pair at nonzero
-separation, the same conclusion additionally requires noise to be
-uncorrelated between distinct pixels. That extra assumption cannot be
-omitted: correlated noise can contribute to the auto-correlation.
-
-\paragraph{Use paired maps and a separate control.}
-The same-run test uses runs 0--7, correlating realization zero with
-realization one at fixed cut zero. The control correlates realization zero
-of runs 0--7 with realization zero of runs 8--15. All use the same pixels,
-source-bin slot and four angular bins. Figure~\ref{fig:cross} compares these
-with the auto-correlations of the same eight primary maps, so that the
-comparison does not introduce a different primary-sky sample.
-
-\paragraph{Read the observed difference.}
-In the first angular bin, the auto-correlation of those eight maps is
-approximately
-\begin{equation}
- \bar\xi_+^{\rm auto}=(6.66\pm0.34)\times10^{-6}.
-\end{equation}
-The cross-correlation between the two realization labels is instead
-\begin{equation}
- \bar\xi_+^{\rm same\ run}=(-0.17\pm0.26)\times10^{-6}.
-\end{equation}
-The different-run control is
-\begin{equation}
- \bar\xi_+^{\rm different\ run}=(0.27\pm0.16)\times10^{-6}.
-\end{equation}
-These errors are standard errors across eight pairs, conditional on
-independent run groups. The comparison of greatest interest is paired:
-subtract the auto-correlation from the same-run cross-correlation for each
-primary run, then estimate the mean and its error. In the first bin this
-paired difference is
-\begin{equation}
- \overline{\xi_+^{\rm cross}-\xi_+^{\rm auto}}
- =(-6.83\pm0.48)\times10^{-6}.
-\end{equation}
-The other three bins
-show the same qualitative separation. They are correlated measurements,
-not additional independent significance estimates.
-
-\begin{figure}[t]
- \centering
- \includegraphics[width=0.88\linewidth]{plots/cross/cross.pdf}
- \caption{Correlations within one map and between maps. The same-run pair
- changes only its realization label in the filename; the different-run
- control uses disjoint run labels. Error bars are standard errors across
- eight pairs. The dotted horizontal line marks zero correlation.}
- \label{fig:cross}
-\end{figure}
-
-\paragraph{State precisely which interpretation this challenges.}
-The same-run cross signal is consistent with zero on these angular scales,
-while the same-map signal is clearly positive. Under the preceding
-assumptions, the files do not behave as independent, uncorrelated pixel
-noise added to a fixed sky at fixed coordinates. This does not identify the
-actual randomization. For example, a changed or rotated sky would remove
-common structure at the compared positions; correlated noise could instead
-contribute to the auto signal. The producer's generation procedure is needed
-to distinguish these explanations. The zero different-run control also
-does not establish independence of all modes or all parent simulations.
+\FloatBarrier
+\paragraph{The correlations add information beyond the diagonal ratios.}
+The largest absolute correlation difference is about 0.355. Expressing the
+measured covariance in units of the released covariance gives eigenvalues
+approximately 0.80, 1.05, 2.18 and 2.87. Equality would give four ones.
+The ordered eigenvalue extremes are noisy with 32 samples. They identify
+what needs a better matched comparison; they do not by themselves assign
+a statistical significance to a physical discrepancy.
 
 \FloatBarrier
-\paragraph{Why our earlier pixel test did not settle the question.}
-A bounded check used 8,192 common pixel positions and twenty realization
-labels for each of runs zero and one. Under the fixed-signal assumption,
-let $V_s$ be the spatial variance of the shared signal and $V_n$ that of
-one noise draw. One map would have
-\begin{equation}
- V_{\rm one}=V_s+V_n.
-\end{equation}
-Averaging $K$ independent noise draws would give
-\begin{equation}
- V_{\rm mean}=V_s+V_n/K.
-\end{equation}
-Multiplying the second equation by $K$ restores the one-map noise term:
-\begin{equation}
- K V_{\rm mean}=K V_s+V_n.
-\end{equation}
-Subtract the one-map variance. The equal noise terms cancel:
-\begin{equation}
- K V_{\rm mean}-V_{\rm one}=(K-1)V_s.
-\end{equation}
-Finally divide by $K-1$. Using measured variances gives the estimate
-\begin{equation}
- \widehat V_s=\frac{K V_{\rm mean}-V_{\rm one}}{K-1}.
-\end{equation}
-Across source and component slots, its ratio to one-map variance lies
-roughly between $-0.08\%$ and $+0.09\%$ for run zero, and between $-0.06\%$
-and $+0.32\%$ for run one. Such small estimates are noisy, and pixels are
-spatially correlated. A weak coherent sky could still matter after angular
-averaging even if its pixel variance fraction were small. The pair-based
-cross test therefore supplies information that this pixel calculation
-alone could not provide. The notebook reproduces both tests separately.
+\section{Input provenance and reproduction}
+\paragraph{The released files are related, but are not interchangeable.}
+The last 80-by-80 block of the joint covariance equals the standalone Map3
+covariance exactly. The standalone two-point covariance differs from the
+joint matrix's first 400-by-400 block: their diagonal ratios range from
+0.895 to 1.092. We consistently use the joint matrix. Its FITS header says
+\nolinkurl{NSIM=500}, whereas the selected paired likelihood configuration
+uses 796 covariance realizations. The notebook reads and prints both
+values from the actual files. Their production history is needed to resolve
+that discrepancy; neither input has been changed.
 
-\section{What these tests imply for covariance work}
-\paragraph{The released covariance is useful before its origin is settled.}
-Its matched rows give a concrete normalization and correlation target.
-The present variance scale is plausible enough to continue, while the
-pixel resolution, weights and label meanings remain to be matched.
-If both products share parent simulations, agreement will test consistency
-of the measurement procedures. It will not provide independent validation
-of a covariance correction, because the same underlying fluctuations may
-enter both sides of the comparison.
+\paragraph{What remains to be supplied by the map producer.}
+The definitions of \nolinkurl{run}, \nolinkurl{ncut} and \nolinkurl{nreal}
+are needed to interpret file dependence and noise. We also need the shear
+basis, source-bin order, catalogue weights and pixel occupancies, and the
+relationship between these NSIDE 512 maps and the maps used for the released
+covariance. The local run labels extend from 0 to 199, while the methods
+paper describes 199 parent full skies and four footprints per sky. A label
+count alone does not establish that mapping. These questions concern how
+to interpret the matrices, not whether the comparisons can be reproduced.
 
-\paragraph{Do not assign physical components before identifying the draws.}
-The Friedrich--Eifler precision expansion~\cite{pme} can use simulations to
-correct a sufficiently accurate analytic model. One attractive variant
-keeps a known covariance contribution analytic and estimates another
-component from simulations. Repeated maps could help separate sky and
-noise contributions only when their conditional generation is known.
-The cross test shows why the filename interpretation alone is insufficient.
-We should not call a within-\nolinkurl{run} covariance ``shape noise'' or count
-all \nolinkurl{nreal} labels as independent skies without that information.
-
-\paragraph{The information needed from the producer is specific.}
-First, what changes with \nolinkurl{nreal}: galaxy noise, signal phases,
-full-sky rotation, pixel mapping, or another part of the realization?
-Second, how do \nolinkurl{run} and \nolinkurl{ncut} relate to the parent density
-realizations and footprint rotations? Third, what are the source-bin order,
-shear basis, noise prescription, catalogue weights and pixel occupancies?
-Finally, were these NSIDE 512 maps derived from the same simulations and
-processing used for the released joint matrix, and which production count
-explains its 500-versus-796 discrepancy? The next measurement can then
-change one identified difference at a time.
-
-\appendix
-\section{Files and reproduction}
-\paragraph{Released inputs.}
-The project records their repository revision in
-\nolinkurl{data/y3_observed_manifest.yaml}. All three scientific products
-are under \nolinkurl{data/upstream_y3_observed/data/}:
-\begin{itemize}
- \item Joint matrix: \nolinkurl{covariance/}\allowbreak
- \nolinkurl{xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits}.
- \item Two-point rows: \nolinkurl{dv/}\allowbreak
- \nolinkurl{real_2pt_desy3_unblind_g2flip_matchElisa_2025Mar10.fits}.
- \item Aperture rows and standalone covariance: \nolinkurl{dv/}\allowbreak
- \nolinkurl{real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits}.
-\end{itemize}
-The selected upstream configuration is the joint NLA case in
-\nolinkurl{config/unblind-metacal-796sims-february-Percival-2ptfix-3pcfsc/}.
-The notebook checks actual block equality and prints the header and selected
-configuration count separately.
-
-\paragraph{Reproduce statistics or repeat measurements.}
-Open \nolinkurl{EXAMPLE_COVARIANCE_COMPARISON.ipynb} beside this note.
-Its default path reads compact measurements committed under
-\nolinkurl{tests/covariance_map_comparison/}. Thus a reader can recompute
-covariances, errors, eigenvalues and plots without the large map download.
-The saved tables include both shear signs for the first map, tree/direct-pair
-checks, cross-correlations and the primitive pixel variances. Changing
-\nolinkurl{RUN_MEASUREMENT} to true runs the existing pair driver and bounded
-pixel test against the local maps, then reads the fresh results from
-\nolinkurl{chains/}. It does not overwrite the recorded comparison tables.
-The raw simulations remain outside Git. The plotted summaries and simple
-redrawing scripts are stored with this note, so its figures are also
-reproducible without a notebook kernel.
+\paragraph{Where the calculations live.}
+The companion \nolinkurl{EXAMPLE_COVARIANCE_COMPARISON.ipynb} is beside
+this note. Its compact inputs are under
+\nolinkurl{tests/covariance_map_comparison/}. The file
+\nolinkurl{all_maps_covariance.txt} stores the direct sixteen-row covariance,
+and \nolinkurl{aperture_reference.txt} stores the fixed starting matrix.
+The full per-file measurement table remains under
+\nolinkurl{chains/covariance_maps_full/}; the notebook can verify the
+recorded covariance against it without reopening the maps.
+The four-bin records are in the same small test-data folder, and
+\nolinkurl{data/y3_observed_manifest.yaml} records the pinned released
+FITS inputs. Figure folders beside the note contain text matrices and
+standalone redrawing scripts. No raw simulation array is committed.
 
 \begin{thebibliography}{9}
+\bibitem{pme} O. Friedrich and T. Eifler,
+\emph{Precision matrix expansion --- efficient use of numerical simulations
+in estimating errors on cosmological parameters},
+\href{https://arxiv.org/abs/1703.07786}{arXiv:1703.07786}.
 \bibitem{gomes} R. C. H. Gomes et al.,
 \emph{Cosmology with second and third-order shear statistics for the Dark
 Energy Survey: Methods and simulated analysis},
 \href{https://arxiv.org/abs/2503.03964}{arXiv:2503.03964}, version 2.
-Analysis inputs: \href{https://github.com/rchgomes/3pcf_integrator}
+Inputs: \href{https://github.com/rchgomes/3pcf_integrator}
 {rchgomes/3pcf\_integrator}.
 \bibitem{treecorr} M. Jarvis and contributors,
 \href{https://rmjarvis.github.io/TreeCorr/_build/html/shear.html}
 {TreeCorr shear conventions} and
 \href{https://rmjarvis.github.io/TreeCorr/_build/html/gg.html}
 {GGCorrelation documentation}.
-\bibitem{pme} O. Friedrich and T. Eifler,
-\emph{Precision matrix expansion --- efficient use of numerical simulations
-in estimating errors on cosmological parameters},
-\href{https://arxiv.org/abs/1703.07786}{arXiv:1703.07786}.
 \end{thebibliography}
 \end{document}
