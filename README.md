@@ -699,13 +699,47 @@ directory. Inspect your jobs with:
 squeue -u "$USER"
 ```
 
-**Resume by submitting the same command again after the previous job has
-ended.** The measurement script saves each completed tomographic task into
-its map's 480-entry text vector, using an atomic rename. Finite entries are
-retained; missing or NaN task entries are recomputed. A task interrupted by
-the time limit may need to run again, but finished tasks are not discarded.
-Never run two measurement jobs against the same output directory at once.
-This is task-level resumption, not an automatic Slurm requeue.
+#### Resuming after the 24-hour limit
+
+The Slurm script requests 24 hours per allocation. If that limit is reached,
+Slurm stops the job; the script does **not** automatically requeue itself.
+Keep the existing output folder and its partial vectors. From the same
+activated HPC Cocoa checkout, first check that the old job has ended:
+
+```bash
+squeue -u "$USER"
+```
+
+Wait until the old job has left the queue, including its `COMPLETING` state.
+Then submit the same script again for the next 24-hour allocation:
+
+```bash
+sbatch projects/des_3pcf/scripts/measure_gptg_uofa.slurm
+```
+
+No additional resume flag is needed. Use the same input maps, measurement
+settings and output folder. Do not delete or rename the saved vectors
+between submissions. Resume detects saved entries; it does not verify that
+you have kept the input maps and estimator settings unchanged.
+
+For each map, the script reads its saved 480-entry vector:
+
+- **All entries finite:** skip the entire map; TreeCorr does not measure it again.
+- **Some tasks saved:** skip tasks whose output entries are all finite and
+  compute only tasks with missing or `NaN` entries.
+- **No saved vector:** compute all tasks for that map.
+
+Each completed tomographic task is saved by writing a temporary vector and
+atomically replacing the map's output file. A task interrupted before its
+result was saved must run again. Results already saved remain available to
+the next allocation. This is task-level resumption, not resumption inside
+an unfinished TreeCorr calculation.
+
+**Never run two measurement jobs against the same output folder at the
+same time.** There is no inter-job lock: two coordinators could overwrite
+each other's partial vectors. Resubmit only after the previous job has
+ended. A separate Slurm log filename does not create a separate measurement
+output folder.
 
 Measurements live under `chains/gptg_ensemble_15000/full_joint_480/`.
 Successful completion writes `COMPLETE.txt`; its contents must report **15000
