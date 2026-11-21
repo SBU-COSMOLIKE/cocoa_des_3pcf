@@ -30,17 +30,19 @@ PROJECT = Path(__file__).resolve().parents[2]
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--count', type=int, default=1500)
+    parser.add_argument('--count', type=int, default=40000)
+    parser.add_argument('--maps-dir', type=Path,
+                        default=PROJECT / 'chains/gptg_ensemble_15000')
     parser.add_argument('--smoke-pixels', type=int, default=0)
     args = parser.parse_args()
-    if not 1 <= args.count <= 15000:
-        raise ValueError('count must be between 1 and 15000.')
+    if not 1 <= args.count <= 40000:
+        raise ValueError('count must be between 1 and 40000.')
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
     if size < 2:
         raise ValueError('Use mpiexec with one coordinator and at least one worker.')
-    folder = PROJECT / 'chains/gptg_ensemble_15000'
+    folder = args.maps_dir.resolve()
     output = folder / ('full_joint_smoke' if args.smoke_pixels else 'full_joint_480')
     if rank == 0:
         output.mkdir(exist_ok=True)
@@ -86,6 +88,10 @@ def main():
                     pending.append((number, job))
             if not np.all(np.isfinite(values)):
                 vectors[number] = values
+        # A completion marker from a smaller prefix is not proof that the
+        # enlarged target finished. Keep its history while new tasks run.
+        if pending and (output / 'COMPLETE.txt').exists():
+            (output / 'COMPLETE.txt').rename(output / f'COMPLETE.before_{args.count}.txt')
         iterator = iter(pending)
         active = 0
         for worker in range(1, size):
@@ -130,9 +136,17 @@ def main():
         number, job = task
         started = time.monotonic()
         if cached_number != number:
-            # Global IDs 10000..14999 refer to the independent ensemble.
-            group = 'comparison' if number < 10000 else 'validation'
-            local_number = number if number < 10000 else number-10000
+            # Preserve the original 15000 output IDs, including validation.
+            # Append new comparison maps, then new validation maps. Moving
+            # the old validation boundary would reuse results for wrong skies.
+            if number < 10000:
+                group, local_number = 'comparison', number
+            elif number < 15000:
+                group, local_number = 'validation', number-10000
+            elif number < 35000:
+                group, local_number = 'comparison', number-5000
+            else:
+                group, local_number = 'validation', number-30000
             path = folder / group / f'GPTG_DES_{local_number:06d}.npy'
             while not path.exists():
                 time.sleep(10)

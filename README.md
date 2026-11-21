@@ -638,11 +638,11 @@ bitwise with the serial generator in both saved pixels and aperture moments.
 The laptop uses three generation workers with four transform threads each;
 the Linux HPC launcher additionally binds ranks to their allocated cores.
 
-After generation, measure the complete 15,000-map ensemble, for example with
+After generation, measure the complete 40,000-map ensemble, for example with
 64 allocated single-CPU tasks:
 
 ```bash
-bash projects/des_3pcf/scripts/measure_gptg_hpc.sh 64 15000
+bash projects/des_3pcf/scripts/measure_gptg_hpc.sh 64 40000
 ```
 
 There are 63 measurement workers and one coordinator in this example.
@@ -742,13 +742,13 @@ ended. A separate Slurm log filename does not create a separate measurement
 output folder.
 
 Measurements live under `chains/gptg_ensemble_15000/full_joint_480/`.
-Successful completion writes `COMPLETE.txt`; its contents must report **15000
+Successful completion writes `COMPLETE.txt`; its contents must report **40000
 full joint vectors**, since an older smaller run may have its own completion
 marker. Generation journals and float32 maps are not modified by measurement.
 
 At the recorded laptop-equivalent per-core speed, 959 measurement workers
-imply about **5 days ideal**, or **6–7.2 days at 70–85% parallel efficiency**.
-Thus plan for roughly 6–8 daily allocations, revising this from the first
+imply about **13.5 days ideal**, or **16–19.2 days at 70–85% parallel efficiency** for 40,000 maps.
+Thus plan for roughly 16–20 daily allocations, revising this from the first
 HPC job's actual timings and peak memory. Running 96 workers per node requires
 enough RAM for 96 TreeCorr tasks; that peak has not yet been established.
 The script launches measurements only; it does not generate maps or run the
@@ -780,10 +780,57 @@ reads group counts from `ensemble.yaml`; old completion markers are archived
 with `.before_40000` when extension starts. The retained float32 ensemble
 requires about 473 GB total, with a separate 50 GB free-space reserve.
 
-**The existing TreeCorr Slurm job still selects the original 10,000 + 5,000
-maps.** Its global ID split remains 10,000. Do not merely increase its count
-to 40,000: the measurement selection and analysis must first be updated for
-the larger group sizes. No TreeCorr computation runs as part of generation.
+The HPC measurement job now targets all 40,000 maps. It preserves the
+original output IDs so existing partial and complete measurements remain
+valid. Measurement IDs are not a contiguous comparison/validation split:
+
+| Measurement ID | Input group | Local map ID |
+|---|---|---|
+| 0–9999 | comparison | 0–9999 |
+| 10000–14999 | validation | 0–4999 |
+| 15000–34999 | comparison | 10000–29999 |
+| 35000–39999 | validation | 5000–9999 |
+
+Use this mapping when selecting groups for later analysis. The earlier
+1,000+500 analysis is unchanged; it does not automatically analyze the larger
+ensemble. Measurement resumption retains finite entries under the original
+IDs; old smaller-target completion markers are archived when tasks remain.
+
+#### Copying maps and choosing the HPC folder name
+
+You may name the HPC directory `chains/gptg/`. TreeCorr requires these
+contents inside that directory:
+
+- `comparison/` and `validation/`, containing the `.npy` maps.
+- `indices_512.npy`, identifying the footprint pixels.
+- `full_joint_480/`, if transferring already completed or partial measurements
+  to resume them; otherwise this output directory is created automatically.
+
+Also retain `ensemble.yaml`, `calibration.yaml`, `calibration.npz`, and the
+two `*_measurements.txt` journals as provenance. Other diagnostic folders
+are not required. The project checkout must include `data/upstream_y3/`.
+Wait until generation finishes and transfers are complete before launching
+the full measurement job; do not expose partially copied `.npy` files.
+
+From activated Cocoa on the HPC, select the renamed directory:
+
+```bash
+export GPTG_MAP_DIR="${ROOTDIR}/projects/des_3pcf/chains/gptg"
+```
+
+Submit using the same Slurm script:
+
+```bash
+sbatch projects/des_3pcf/scripts/measure_gptg_uofa.slurm
+```
+
+Slurm exports this variable to the batch job, which passes the absolute path
+to every measurement rank. Results are written to
+`$GPTG_MAP_DIR/full_joint_480/`. Set the same variable before each resubmission.
+Without it, the historical `chains/gptg_ensemble_15000/` path is used.
+Never run two jobs against the same measurement directory, even if submitted
+with different job names. Do not mix copies of independently changed output
+vectors; use one authoritative measurement folder.
 
 ### Optional float32 computation and Apple GPU point transforms
 

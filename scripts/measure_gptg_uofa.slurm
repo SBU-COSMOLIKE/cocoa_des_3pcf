@@ -50,8 +50,8 @@ ulimit -u 2000000
 
 # The existing launcher forwards Cocoa paths and numerical-thread settings to
 # all nodes and binds each rank to one core. Do not wrap it in a second srun.
-# It processes all 10000 comparison + 5000 validation maps. On resubmission,
+# It processes all 30000 comparison + 10000 validation maps. On resubmission,
 # finite task entries in full_joint_480/map_*.txt are retained; missing/NaN
 # entries are recomputed. Do not delete partial vectors between allocations.
 bash "${ROOTDIR}/projects/des_3pcf/scripts/measure_gptg_hpc.sh" \
-    "${SLURM_NTASKS}" 15000
+    "${SLURM_NTASKS}" 40000

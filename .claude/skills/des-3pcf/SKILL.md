@@ -401,3 +401,13 @@ records are archived before extension; do not report them as current success.
 The existing TreeCorr/HPC selection still has the original 10000 split and
 15000 target. Update that selection explicitly before measuring all 40000;
 never assume its global IDs changed when generator counts changed.
+
+
+HPC measurement extension: --count 40000 retains original measurement IDs
+0..9999=comparison0..9999, 10000..14999=validation0..4999; appended IDs
+15000..34999=comparison10000..29999, 35000..39999=validation5000..9999.
+Do not reinterpret existing saved vectors using a new 30000 split.
+GPTG_MAP_DIR selects an absolute HPC folder (e.g. chains/gptg); the launcher
+passes --maps-dir and outputs remain in its full_joint_480 subfolder.
+The earlier paragraph describing the 15000-only HPC limit is superseded.
+Keep the selected folder identical on resubmission, with only one writer.
