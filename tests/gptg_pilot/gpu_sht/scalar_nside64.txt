@@ -1,0 +1,4 @@
+prepared 64 seconds 0.005746874958276749
+repeat 0 GPU forward/adjoint seconds 2.580449291970581 2.348274832824245
+repeat 1 GPU forward/adjoint seconds 0.008433792041614652 0.00890279095619917
+relative RMS forward 3.2808597e-07 adjoint 4.481169612960682e-07 normalized dot error 9.71326112570373e-10

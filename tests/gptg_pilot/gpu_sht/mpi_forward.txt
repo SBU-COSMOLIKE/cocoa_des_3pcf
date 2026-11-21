@@ -1,0 +1,4 @@
+# mode maps wall_seconds ranks threads gpu_workers
+cpu64 32 47.152359667 4 4 0
+cpu32 32 44.052001458 4 4 0
+mixed 32 38.176537459 5 3 1

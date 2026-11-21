@@ -1,0 +1,16 @@
+Native Metal scalar spherical-transform validation, 21 November 2026.
+Apple M2 Pro, macOS13.7.5, MLX0.29.3, ducc0 0.42.0.
+NSIDE512/lmax1024 GPU forward relative RMS 1.0737887e-6;
+adjoint 1.1366566e-6; normalized dot test 2.0896873e-11.
+Three successive final-kernel evaluations bitwise repeatable.
+Exact-length batched Bluestein FFTs; scaled compensated Legendre recurrence.
+Two noiseless full four-bin maps: max signal RMS 2.2669466e-6;
+normalized aperture moments 2..6 below 2.8643108e-6.
+GPU CG normal residual independently checked; three iterations in these fields.
+Spin-two shear synthesis stays on CPU. Random draws and calibration unchanged.
+32-map mixed run: 9 GPU-scalar maps, 23 CPU maps; see noisy_checks.txt.
+Reverse-order mixed aperture error / sample scatter: 2.778732512e-06.
+All timings use at most 12 CPU transform threads, BLAS=1; production paused.
+CPU baseline: 3 workers x4 threads. Mixed: 3 CPU workers plus 1 GPU-scalar
+worker, each with 3 CPU transform threads; coordinator is additional/idle.
+No full TreeCorr measurement or physical covariance validation implied.

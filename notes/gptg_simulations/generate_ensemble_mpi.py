@@ -50,7 +50,16 @@ def main():
         default=1,
         help='Source fields per Metal point-transform batch.',
     )
+    parser.add_argument(
+        '--gpu-workers',
+        type=int,
+        choices=(0, 1),
+        default=0,
+        help='Use one worker for Metal scalar SHT/solve and CPU shear synthesis.',
+    )
     args = parser.parse_args()
+    if args.gpu_workers and args.precision != 'float32':
+        parser.error('--gpu-workers 1 requires --precision float32')
     if args.point_batch == 4 and args.point_device != 'metal':
         parser.error('--point-batch 4 requires --point-device metal')
     if args.point_device == 'metal' and args.precision != 'float32':
@@ -115,11 +124,13 @@ def main():
             'precision': metadata.get('compute_precision', 'float64'),
             'point_device': metadata.get('point_device', 'cpu'),
             'point_batch': metadata.get('point_batch', 1),
+            'gpu_workers': metadata.get('gpu_workers', 0),
         }
         next_arithmetic = {
             'precision': args.precision,
             'point_device': args.point_device,
             'point_batch': args.point_batch,
+            'gpu_workers': args.gpu_workers,
         }
         if metadata and previous_arithmetic != next_arithmetic:
             # Keep the boundary explicit when a validated numerical backend
@@ -137,6 +148,7 @@ def main():
             })
         metadata.update(calibration_sha256=fit_hash, mpi_ranks=size,
                         generation_workers=size-1, workers_per_rank=args.threads,
+                        gpu_workers=args.gpu_workers,
                         blas_workers=1, map_dtype='float32',
                         compute_precision=args.precision, point_device=args.point_device,
                         point_batch=args.point_batch,
@@ -146,6 +158,9 @@ def main():
         manifest.write_text(yaml.safe_dump(metadata, sort_keys=False))
         with (folder / 'worker_history.txt').open('a') as history:
             history.write(f'MPI resume after {completed} journaled maps: {size-1} generation ranks x {args.threads} transform threads; BLAS=1; precision={args.precision}; point_device={args.point_device}; point_batch={args.point_batch}.\n')
+        arithmetic_stream = (folder / 'arithmetic_workers.txt').open('a', buffering=1)
+        if arithmetic_stream.tell() == 0:
+            arithmetic_stream.write('# group map_number worker_rank arithmetic; recovered means existing file kept\n')
         iterator = iter(enumerate(pending))
         active = 0
         for worker in range(1, size):
@@ -161,11 +176,12 @@ def main():
             while not comm.Iprobe(source=MPI.ANY_SOURCE):
                 time.sleep(.02)
             status = MPI.Status()
-            position, generation, measurement, values = comm.recv(source=MPI.ANY_SOURCE, status=status)
-            buffered[position] = (generation, measurement, values)
+            position, generation, measurement, values, arithmetic = comm.recv(source=MPI.ANY_SOURCE, status=status)
+            buffered[position] = (generation, measurement, values, status.Get_source(), arithmetic)
             while next_row in buffered:
-                generation, measurement, values = buffered.pop(next_row)
+                generation, measurement, values, worker_rank, arithmetic = buffered.pop(next_row)
                 group, number, seed = pending[next_row]
+                arithmetic_stream.write(f'{group} {number} {worker_rank} {arithmetic}\n')
                 text = ' '.join(f'{value:.17e}' for value in values)
                 streams[group].write(f'{number} {seed} {generation:.8f} {measurement:.8f} {text}\n')
                 completed += 1
@@ -176,6 +192,7 @@ def main():
             comm.send(task, dest=status.Get_source())
             if task is None:
                 active -= 1
+        arithmetic_stream.close()
         for stream in streams.values():
             stream.close()
         if args.limit == 15000:
@@ -191,6 +208,10 @@ def main():
         cl=data['cl_target'], parameters=data['parameters'], nodes=nodes, weights=weights)
     eigenvalues, eigenvectors = np.linalg.eigh(latent)
     roots = eigenvectors*np.sqrt(np.maximum(eigenvalues, 0.))[:, None, :]
+    gpu_sht = None
+    if args.gpu_workers and rank == size-1:
+        from gpu_scalar_sht import MetalScalarSHT
+        gpu_sht = MetalScalarSHT(geometry, record['lmax'])
     while True:
         task = comm.recv(source=0)
         if task is None:
@@ -199,6 +220,9 @@ def main():
         path = folder / group / f'GPTG_DES_{number:06d}.npy'
         if shutil.disk_usage(folder).free < reserve+4*2*len(indices)*4+128:
             raise OSError('Free space reached the 50 GB reserve.')
+        arithmetic = ('recovered' if path.exists() else
+                      'metal_sht_float32' if gpu_sht is not None else
+                      f'{args.point_device}_{args.precision}_batch{args.point_batch}')
         generation, measurement, values = generate_one(
             path=path,
             seed=seed,
@@ -218,8 +242,9 @@ def main():
             precision=args.precision,
             point_device=args.point_device,
             point_batch=args.point_batch,
+            gpu_sht=gpu_sht,
         )
-        comm.send((position, generation, measurement, values), dest=0)
+        comm.send((position, generation, measurement, values, arithmetic), dest=0)
 
 
 if __name__ == '__main__':

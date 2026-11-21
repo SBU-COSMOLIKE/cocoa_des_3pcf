@@ -1,0 +1,5 @@
+32 default maps bitwise equal to production.
+Mixed run: 9 GPU-scalar maps and 23 CPU maps.
+Max noisy-map relative RMS difference 1.282305315e-07.
+Max aperture difference / sample scatter 3.281220959e-06.
+IDs/seeds and finite outputs passed.

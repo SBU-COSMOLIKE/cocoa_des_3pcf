@@ -52,6 +52,7 @@ def generate_one(
     point_device="cpu",
     diagnostics=None,
     point_batch=1,
+    gpu_sht=None,
 ):
     """Generate one seed, atomically save float32, and measure decoded pixels.
 
@@ -81,6 +82,23 @@ def generate_one(
         shear_maps = np.load(file=path).astype(np.float64)
         if shear_maps.shape != (4, 2, len(indices)):
             raise ValueError(f'Unexpected saved map shape: {path}')
+    elif gpu_sht is not None:
+        from gpu_map_generation import generate_gpu_map
+        shear_maps, gpu_diagnostics = generate_gpu_map(
+            sht=gpu_sht,
+            seed=seed,
+            record=record,
+            data=data,
+            roots=roots,
+            variance=variance,
+            ell=ell,
+            factor=factor,
+            indices=indices,
+            geometry=geometry,
+            nodes=nodes,
+            weights=weights,
+            threads=workers,
+        )
     else:
         rng = np.random.default_rng(seed=seed)
         white = rng.normal(size=(len(ell), 4))
