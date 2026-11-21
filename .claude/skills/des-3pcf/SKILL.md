@@ -289,3 +289,19 @@ separate from estimator validation conditional on a fitted generator.
 The current large-map run is authorized to use eight native transform workers.
 BLAS remains one. Resume its checkpoint with `--workers 8`; the earlier
 pilot timings and numerical records used four workers and retain that label.
+
+## Exact analytical two-point block
+
+For the fixed-block covariance experiment, the user assumes the production
+G+SSC+cNG two-point block is exact. Do not fit, perturb or run robustness
+scans of that block. Correct only cross and three-point information.
+Match observables: the 16-row map journal contains aperture moments, not
+xi-plus/minus. `measure_joint_xip.py` measures four source-bin-four xi-plus
+bins on saved GPTG maps; `analyze_fixed_block.py` joins the cubic moments.
+The production DES Y3 example supplies the analytical submatrix. Record its
+survey inputs rather than claiming bin matching alone matches all physics.
+`fixed_block_precision.py` uses distinct independent pair factors. The raw
+finite polynomial is unbiased for its finite target. Its conditional
+reparameterization keeps A exactly but is nonlinear and has no corresponding
+unbiasedness guarantee; evaluate it independently. Never invert a non-positive
+residual precision or conceal a failed expansion by clipping eigenvalues.

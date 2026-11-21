@@ -1,0 +1,311 @@
+\section{Keeping the analytical two-point covariance fixed}
+\label{sec:fixed-two-point}
+\paragraph{The scientific assumption in this experiment.}
+We now assume that the analytical two-point covariance is exact. It includes
+the Gaussian, connected non-Gaussian and super-sample contributions. We do
+not fit this block to simulations or vary it to assess model uncertainty.
+The simulations are used to learn the cross-covariance with three-point
+measurements and the covariance of the three-point measurements themselves.
+This is a different use of simulation information from correcting every
+entry of a joint matrix.
+
+\paragraph{First specify what a row measures.}
+Let the two-point measurement vector be $x$ and the three-point vector be $y$.
+For example, the first entry of $x$ could be the mean tangential-shear
+correlation in one angular interval for one source-bin pair. Its definition
+includes the angular edges, the pair weights and the source bins. The joint
+measurement is
+\begin{equation}
+ d=\begin{pmatrix}x\\y\end{pmatrix}.
+\end{equation}
+Subtract the ensemble mean before defining its covariance. The resulting
+block matrix is
+\begin{equation}
+ C=\begin{pmatrix}A&B\\B^{\mathsf T}&D\end{pmatrix}.
+\end{equation}
+Here $A$ describes fluctuations in $x$ alone. The rectangular matrix $B$
+describes how a fluctuation in $x$ accompanies a fluctuation in $y$. Finally,
+$D$ describes fluctuations in $y$ alone. We keep $A$ fixed. An element of
+$B$ is not a dimensionless correlation coefficient: its units are the
+product of the units of the corresponding two measurements.
+
+\paragraph{Why the existing map journal cannot simply receive a new block.}
+The current map-generation journal stores eight raw squared aperture
+moments followed by eight raw cubed aperture moments. A squared aperture
+moment is obtained by filtering a map around each chosen center, squaring
+the filtered value, and averaging over those centers. A binned $\xi_\pm$
+measurement instead averages shear products over pairs in a separation bin.
+Both are two-point statistics, but they are different random variables.
+The DES Y3 production covariance runner computes the latter. Its rows cannot
+replace the former just because both quantities are called two-point
+statistics. Matching matrix dimensions would not cure this difference.
+
+\paragraph{A two-number example of changing the measurement.}
+Suppose two measured correlations are collected in $x$. Define a new
+measurement by a fixed weighted sum:
+\begin{equation}
+ q=w_1x_1+w_2x_2.
+\end{equation}
+Subtract its mean. Each centered correlation retains the same weight:
+\begin{equation}
+ q-\E[q]=w_1(x_1-\E[x_1])+w_2(x_2-\E[x_2]).
+\end{equation}
+Squaring and taking the expectation produces three terms:
+\begin{equation}
+ \Var(q)=w_1^2A_{11}+2w_1w_2A_{12}+w_2^2A_{22}.
+\end{equation}
+Thus even this simple change of observable changes its covariance. For a
+matrix of fixed weights the corresponding rule is
+\begin{equation}
+ q=Wx.
+\end{equation}
+Each covariance axis receives its own copy of the weights:
+\begin{equation}
+ A_q=WAW^{\mathsf T}.
+\end{equation}
+The rule is exact only when $W$ actually implements the measurement. A
+finite-center, masked map aperture estimate cannot be identified with a
+weighted sum of coarse angular bins without establishing that relation.
+Our route is therefore to measure the required $\xi_\pm$ rows from the saved
+maps and pair them with three-point measurements from the same maps. Saving
+the maps allows this new measurement without generating new skies.
+
+\paragraph{What the production run supplies.}
+The ordinary DES Y3 covariance runner saves the Gaussian, super-sample and
+connected non-Gaussian matrices separately. Their sum supplies the fixed
+analytical block after selecting the desired shear rows in the declared
+order. Galaxy-density and galaxy--shear rows of its full output are not
+part of this cosmic-shear block. The simulation measurement must use the
+same angular intervals and source-bin pairs. Survey area, source curves,
+noise convention and cosmology must also describe the intended experiment;
+this is input matching, not a test of the assumed accuracy of $A$.
+Until these measurements exist, the first-1000 aperture results remain a
+separate demonstration and are not results for a fixed production block.
+
+\paragraph{Remove the part of the three-point fluctuation predicted by $x$.}
+In the following derivation both vectors are centered. Define the residual
+\begin{equation}
+ r=y-B^{\mathsf T}A^{-1}x.
+\end{equation}
+Multiplying this expression by its transpose gives four terms. Writing all
+four prevents losing a cross term:
+\begin{equation}
+ rr^{\mathsf T}=yy^{\mathsf T}
+ -yx^{\mathsf T}A^{-1}B
+ -B^{\mathsf T}A^{-1}xy^{\mathsf T}
+ +B^{\mathsf T}A^{-1}xx^{\mathsf T}A^{-1}B.
+\end{equation}
+Take expectations using the definitions of $A$, $B$ and $D$:
+\begin{equation}
+ \E[rr^{\mathsf T}]=D-B^{\mathsf T}A^{-1}B
+ -B^{\mathsf T}A^{-1}B+B^{\mathsf T}A^{-1}AA^{-1}B.
+\end{equation}
+The last term cancels one of the two subtractions. The residual covariance,
+also called the Schur complement, is therefore
+\begin{equation}
+ S=D-B^{\mathsf T}A^{-1}B.
+\end{equation}
+This identity concerns linear prediction. Calling it the full conditional
+covariance requires additional distributional assumptions, such as joint
+Gaussianity. The block-inverse algebra does not need those assumptions.
+
+\paragraph{Why estimating the cross term twice produces a bias.}
+Write an unbiased estimate of $B$ as its true value plus a random error:
+\begin{equation}
+ \widehat B=B+E,\qquad \E[E]=0.
+\end{equation}
+Insert this into the quadratic term and expand before taking expectations:
+\begin{equation}
+ \widehat B^{\mathsf T}A^{-1}\widehat B
+ =B^{\mathsf T}A^{-1}B+B^{\mathsf T}A^{-1}E
+ +E^{\mathsf T}A^{-1}B+E^{\mathsf T}A^{-1}E.
+\end{equation}
+The two terms linear in the error average to zero. The last does not:
+\begin{equation}
+ \E[\widehat B^{\mathsf T}A^{-1}\widehat B]
+ =B^{\mathsf T}A^{-1}B+\E[E^{\mathsf T}A^{-1}E].
+\end{equation}
+For any vector $v$, the extra contribution obeys
+\begin{equation}
+ v^{\mathsf T}\E[E^{\mathsf T}A^{-1}E]v
+ =\E[(Ev)^{\mathsf T}A^{-1}(Ev)]\geq0.
+\end{equation}
+Consequently, simply subtracting the noisy square biases the residual
+covariance downward. Treating $A$ as exact does not remove this bias.
+
+\paragraph{An explicit unbiased cross-product from independent pairs.}
+Pair independent simulation vectors without reusing a vector. For pair $i$
+define the two differences
+\begin{equation}
+ u_i=(x_{2i}-x_{2i-1})/\sqrt{2},
+\end{equation}
+\begin{equation}
+ v_i=(y_{2i}-y_{2i-1})/\sqrt{2}.
+\end{equation}
+The difference cancels the unknown mean. Independence of the two maps makes
+its covariance equal to that of one map. The cross-product
+\begin{equation}
+ b_i=u_iv_i^{\mathsf T}
+\end{equation}
+has expectation $B$. Distinct pairs are independent, so for $i\ne j$,
+\begin{equation}
+ \E[b_i^{\mathsf T}A^{-1}b_j]=B^{\mathsf T}A^{-1}B.
+\end{equation}
+With $m$ pairs, average over ordered distinct pairs:
+\begin{equation}
+ Q_B=\frac{1}{m(m-1)}\sum_{i\ne j}b_i^{\mathsf T}A^{-1}b_j.
+\end{equation}
+This expression is symmetric because every ordered pair appears together
+with its transpose. It can be evaluated without a double loop by first
+including all pairs and then subtracting the equal-index terms:
+\begin{equation}
+ Q_B=\frac{(\sum_i b_i)^{\mathsf T}A^{-1}(\sum_i b_i)
+ -\sum_i b_i^{\mathsf T}A^{-1}b_i}{m(m-1)}.
+\end{equation}
+The ordinary sample covariance of the $y$ vectors is unbiased for $D$.
+Subtracting $Q_B$ therefore gives an unbiased estimate of $S$. This does not
+make its inverse unbiased, nor guarantee positivity in one finite sample.
+Higher powers must again use distinct random factors; squaring this estimate
+would reintroduce repeated-factor noise.
+
+\paragraph{Keep the uncertainty statement attached to the right object.}
+The known $A$ removes sampling noise from that covariance block. It does not
+make the upper-left precision block equal to $A^{-1}$: the joint analysis
+also uses information carried by the correlations with $y$. Block inversion
+gives
+\begin{equation}
+ C^{-1}=\begin{pmatrix}
+ A^{-1}+A^{-1}BS^{-1}B^{\mathsf T}A^{-1}&-A^{-1}BS^{-1}\\
+ -S^{-1}B^{\mathsf T}A^{-1}&S^{-1}
+ \end{pmatrix}.
+\end{equation}
+Simulation corrections to $B$ and $D$ can therefore change every block of
+the precision while the two-point covariance remains exactly fixed.
+An unbiased finite precision polynomial, its inverse, and a covariance
+constrained to retain $A$ are different estimators. Their properties must
+be checked separately rather than inherited from one another by naming.
+
+\paragraph{Extend the distinct-factor construction to orders two, four and six.}
+For each independent pair, assemble a joint matrix using the exact known
+block and the measured cross and three-point products:
+\begin{equation}
+ Z_i=\begin{pmatrix}A&u_iv_i^{\mathsf T}\\v_iu_i^{\mathsf T}&v_iv_i^{\mathsf T}\end{pmatrix}.
+\end{equation}
+Its expectation is the desired joint covariance. An individual $Z_i$ need
+not be positive definite; it is an unbiased matrix contribution, not a
+covariance to invert. Choose an independently fixed positive reference
+$M=LL^{\mathsf T}$ with the same leading block $A$. Define
+\begin{equation}
+ T_i=I-L^{-1}Z_iL^{-\mathsf T}.
+\end{equation}
+Its expectation is a deterministic residual matrix:
+\begin{equation}
+ T=I-L^{-1}CL^{-\mathsf T}.
+\end{equation}
+For different indices, independence lets expectations factor in the written
+order, even though the individual matrices do not commute:
+\begin{equation}
+ \E[T_{i_1}T_{i_2}\cdots T_{i_k}]=T^k.
+\end{equation}
+We average products with increasing indices, then symmetrize. This is a
+specified subset of ordered products, not an assertion that their realized
+values are equal. Each product has the same expectation. Starting with
+$U_0=I$, the update after adding pair $m$ is
+\begin{equation}
+ U_k^{(m)}=\frac{m-k}{m}U_k^{(m-1)}
+ +\frac{k}{m}U_{k-1}^{(m-1)}T_m.
+\end{equation}
+The first fraction counts subsets not using the newest pair. The second
+counts subsets using it. Update degrees in descending order so the same
+pair cannot enter twice. The order-$r$ precision estimate is
+\begin{equation}
+ P_r=L^{-\mathsf T}\left[\sum_{k=0}^{r}
+ \frac{U_k+U_k^{\mathsf T}}{2}\right]L^{-1},\qquad r=2,4,6.
+\end{equation}
+This estimates the corresponding finite polynomial without repeated-factor
+bias. It is not unbiased for the infinite inverse. The deterministic series
+requires all eigenvalues of $T$ to have magnitude below one to converge.
+We do not repair failed or indefinite estimates by clipping eigenvalues.
+
+\paragraph{Retain the covariance block exactly after truncation.}
+Inverting a finite joint precision polynomial does not in general return
+exactly $A$ in its leading covariance block. To impose that requirement,
+we use a conditional parameterization and report its extra nonlinearity.
+Partition the raw precision and define
+\begin{equation}
+ K=(P_r)_{yy}.
+\end{equation}
+This block estimates the precision of the residual three-point fluctuation.
+The cross block then supplies the linear prediction coefficients:
+\begin{equation}
+ H=-K^{-1}(P_r)_{yx}.
+\end{equation}
+Only if $K$ is positive definite do we form the constrained covariance:
+\begin{equation}
+ C_r^{\rm fixed}=\begin{pmatrix}A&AH^{\mathsf T}\\HA&K^{-1}+HAH^{\mathsf T}\end{pmatrix}.
+\end{equation}
+Its leading block is exactly the supplied matrix. Its cross block is
+$AH^{\mathsf T}$, and its residual covariance is $K^{-1}$: subtracting the
+cross product cancels the last term of the lower block. Hence positivity
+follows from positive $A$ and $K$. This transformation is nonlinear. The
+unbiasedness proof applies to the raw polynomial, not to this constrained
+covariance or its precision. Independent validation tests this additional
+estimation effect along with truncation and sampling error. At the exact
+population inverse, the transformation returns the original covariance.
+
+\paragraph{The first production calculation and the existing-map test.}
+The DES Y3 production calculation completed in 109.97 seconds on four
+threads, excluding its 1.20-second initialization. It saved separate
+$900\times900$ Gaussian, SSC and cNG matrices and their total. For a bounded
+joint test we selected source-bin-four $\xi_+$ in angular bins 12--15 of
+20 logarithmic bins spanning 2.5--250 arcmin. Those four rows are paired
+with the eight cubic aperture moments from the same primary map. This
+12-entry vector is an explicitly defined preliminary statistic, not the
+published joint 480-entry vector.
+
+\paragraph{What can already be measured without processing new maps.}
+There are 32 Rafael primary-map labels with the four pair measurements
+already recorded. Joining their labels to the saved cubic moments gives
+32 joint vectors. The exact analytical $A$ is extracted from the production
+total without rescaling. The cubic reference is twice the archived
+Gaussian aperture reference; it is not fitted to these 32 joint vectors.
+Second order gives a positive constrained covariance. Its largest cross-block
+difference from the direct sample, divided by the corresponding direct
+standard deviations, is 0.656. The largest similarly normalized difference
+in the cubic block is 5.712. These are large discrepancies, not evidence of
+an improvement. Fourth and sixth orders give non-positive residual precision
+blocks, so no constrained covariance is reported for them. The second-order
+analytical block changes by exactly zero.
+
+\paragraph{How to interpret that result.}
+Thirty-two maps provide only sixteen independent-pair factors, conditional
+on the primary labels identifying independent skies. The high orders can
+be noisy, and the starting cubic reference may be far from the required
+joint covariance. These failures do not question the assumed exact $A$;
+they show that a finite-order correction of the remaining blocks need not
+be usable for this ensemble and reference. The archived survey calculation
+matches the angular-row definitions; equality of all simulation and survey
+inputs has not been established. We therefore do not label this result a
+validated DES likelihood covariance.
+
+\paragraph{The larger test and what is still pending.}
+We are measuring the same four $\xi_+$ bins on the saved GPTG maps. The
+first 1,000 joint vectors set the corrections and direct sample covariance;
+the next 500 give an independent quadratic-minus-log-determinant score.
+Neither the reference nor the order is tuned on those 500 maps. The score
+does not invert their sample covariance or assume that the direct inverse
+is true. These new measurements, unlike the existing aperture journal,
+supply the observable needed for the analytical block. They do not require
+regenerating any sky. The comparison remains conditional on the fitted
+GPTG distribution and the declared survey inputs.
+
+\paragraph{Checks of the new algebra.}
+Explicit enumeration of every increasing-index product of six factors
+agrees with the recurrence through sixth order. The cross-square subtraction
+agrees with the direct sum over unequal indices. In 512 Gaussian experiments
+with 128 vectors and an exactly known fixed block, the largest entrywise
+mean discrepancy from each deterministic finite-polynomial target is 2.60
+Monte Carlo standard errors or less. Every returned constrained covariance
+retains the supplied block exactly and satisfies the matrix inverse identity.
+These checks establish the implementation's algebra; they do not turn the
+failed 32-map high-order estimates into successful ones.

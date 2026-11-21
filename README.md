@@ -16,6 +16,7 @@
 14. [Appendix: optional compression](#compression)
 15. [Appendix: estimator and publication comparisons](#estimator)
 16. [Appendix: original-code comparisons and timing](#comparison)
+17. [Fixed analytical two-point block](#fixed-analytical-two-point-block-in-the-map-experiment)
 
 ## Purpose <a name="scope"></a>
 
@@ -551,3 +552,48 @@ in its C++ interfaces. Survey readers stay in `scripts/des3pcf/`; there is no
 separate shared Python `cosmolike_3pcf` package. The optional component
 notebook calls `TransformPlan.aperture_components` and plots its signed
 operator/placement contributions and closure.
+
+### Fixed analytical two-point block in the map experiment
+
+Section 13 of the [covariance teaching note](notes/covariance_from_simulations/covariance_from_simulations.pdf)
+treats the analytical two-point block as exact and derives corrections for
+the cross and three-point blocks. Its pair-product construction avoids
+using a noisy cross-covariance twice. The final constrained covariance keeps
+that analytical block exactly; this nonlinear constraint does not inherit
+the finite precision polynomial's unbiasedness.
+
+From the activated **Cocoa/** directory, with DES Y3 covariance support compiled:
+
+```bash
+python projects/des_y3/covariance/compute_covariance.py projects/des_y3/EXAMPLE_EVALUATE_COVARIANCE.yaml --output projects/des_3pcf/chains/gptg_ensemble_15000/des_y3_full_covariance.npz
+```
+
+This saves full G, SSC and cNG components. The bounded study selects four
+source-bin-four xi-plus rows, then pairs them with eight cubic moments.
+It cannot use the squared-aperture rows in the existing map journal as xi.
+The survey example's inputs are recorded in the archive; matching angular
+rows alone does not establish matching simulation noise and cosmology.
+
+From **projects/des_3pcf/**, with TreeCorr and astropy-healpix installed,
+measure the required rows on saved maps (resumes from the text journal):
+
+```bash
+python notes/gptg_simulations/measure_joint_xip.py --count 1500
+```
+
+Run the first-1000 plus independent-500 analysis alongside that measurement:
+
+```bash
+python notes/gptg_simulations/analyze_fixed_block.py --gptg
+```
+
+For the already measured 32 Rafael primary maps, omit `--gptg`. This needs
+`chains/covariance_maps_full/moments.txt`, produced by the earlier map pass.
+The algebra check is independent of map files:
+
+```bash
+python notes/gptg_simulations/check_fixed_block.py
+```
+
+All results remain in `chains/gptg_ensemble_15000/`. No input analytical block
+is fitted, perturbed or replaced by its simulated counterpart.

@@ -1,0 +1,6 @@
+Distinct-factor recurrence equals explicit products through sixth order.
+Unbiased cross-square formula equals explicit distinct-pair sum.
+order 2 maximum mean discrepancy / Monte Carlo SE 2.59215633166888
+order 4 maximum mean discrepancy / Monte Carlo SE 2.5293911735037895
+order 6 maximum mean discrepancy / Monte Carlo SE 2.5455220281259305
+Every returned constrained covariance retains A exactly and passes the inverse identity.

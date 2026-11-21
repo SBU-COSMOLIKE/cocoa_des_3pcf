@@ -1,0 +1,4 @@
+# 32 primary maps; order max_normalized_cross_difference max_normalized_cubic_difference absolute_A_change; no independent validation yet
+2.000000000000000000e+00 6.559934562591905882e-01 5.712433116839087610e+00 0.000000000000000000e+00
+4.000000000000000000e+00 nan nan nan
+6.000000000000000000e+00 nan nan nan
