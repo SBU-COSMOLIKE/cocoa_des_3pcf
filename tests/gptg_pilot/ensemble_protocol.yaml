@@ -1,0 +1,18 @@
+comparison_count: 10000
+independent_validation_count: 5000
+rows: 16 raw same-source second/third moments at R30/R60
+reference: 2 times archived aperture_reference.txt, fixed before generated comparison/validation
+orders:
+- 2
+- 4
+- 6
+methods:
+- direct inverse
+- Gaussian matrix powers
+- distinct pairs
+score: trace(Psi C_validation)-logdet(Psi), differences versus direct; validation
+  covariance is not inverted
+selection: No tuning to validation; report all predeclared orders including indefinite
+  estimates
+truth: Initial fitted GPTG distribution; physical DES matching remains a separate
+  question

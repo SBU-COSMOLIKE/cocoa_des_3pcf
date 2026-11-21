@@ -1,0 +1,35 @@
+21 November 2026: five focused didactic passes and numerical checks.
+
+1. Algebra: expanded every multiplication/sign collection from second to
+   fourth to sixth order; added the cubic coefficient elimination, noisy
+   square cancellation, conditional-noise calculation and jackknife prefactor.
+2. Definitions: separated definitions from inline prose, distinguished
+   covariance from precision and finite-polynomial targets from exact inverses.
+   GPTG note gives array shapes, spin/shear conventions and noise assumptions.
+3. Worked examples: scalar inverse, two-by-two matrices, four-number jackknife,
+   aperture signal=0.2/noise variance=0.07 and mixed-source cubic subtraction.
+4. Evidence/assumptions: checked nominal file counts versus provisional parents,
+   actual 64-map calibration comparisons, fixed-list resampling, and direct
+   inverse stability. Added independent-validation scoring without treating a
+   sample inverse as truth. No 15000-map result is claimed before completion.
+5. Rendering: compiled all three PDFs twice; no undefined references or
+   overfull boxes. Inspected new figures and rendered pages, fixed a title
+   overlap and displayed-triangle orientation labels. Browser math checks:
+   main notebook 278/278, comparison 44/44, GPTG 27/27, zero MathJax errors.
+   README rendered and its local links checked. Prohibited-word scan passed.
+
+Exact Gaussian contraction/scalar identities passed through degree six.
+The distinct-pair recurrence passed a brute enumeration with noncommuting
+three-by-three factors through degree six. Hermite and spherical round-trip
+checks are recorded in numerical_checks.txt. All three teaching notebooks
+executed with no error outputs. A separate synthetic 10000+5000-vector test
+exercised all seven methods and verified quadratic/trace score equivalence.
+Float32 storage was checked on all 64 float64 pilot maps; the production
+float32 map journals reproduce decoded-pixel measurements exactly. A two-map
+resume check produced no duplicate records. Maps and generated tables remain
+ignored; only teaching artifacts, scripts and compact test records are staged.
+
+After the user authorized eight workers, an identical-seed map regenerated
+at eight workers matched every saved float32 pixel and measured moment of
+the four-worker reference bitwise. The large run resumed after map273;
+worker_history.txt records the transition. BLAS stayed at one.

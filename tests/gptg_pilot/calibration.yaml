@@ -1,0 +1,78 @@
+method: GPTG initial masked-field fit; not validated DES simulations
+paper: https://arxiv.org/abs/2411.04759
+nside: 512
+lmax: 1024
+workers: 4
+second_component_sign_for_ducc: 1.0
+source_files:
+- ShearMaps_DESY3_run_0000_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0001_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0002_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0003_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0004_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0005_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0006_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0007_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0008_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0009_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0010_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0011_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0012_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0013_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0014_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0015_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0016_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0017_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0018_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0019_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0020_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0021_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0022_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0023_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0024_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0025_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0026_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0027_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0028_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0029_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0030_ncut0_nreal0.npy
+- ShearMaps_DESY3_run_0031_ncut0_nreal0.npy
+noise_model: constant independent Gaussian per pixel and source bin
+noise_sigma_per_component:
+- 0.03544957212835064
+- 0.03845571849948187
+- 0.038129787831707534
+- 0.04684877382544602
+point_parameters_a1_a2_b_x0_t:
+- - 0.2375515852971147
+  - 0.21329361173926875
+  - 0.9999964341614531
+  - 1.258836279171382
+  - 3.999999995040014
+- - 0.026897716743815643
+  - 0.00500000002140008
+  - 0.0
+  - 2.7694738254027307
+  - 0.48101263192191035
+- - 0.013188935386851593
+  - 0.01263748446684794
+  - 2.605733864138235e-06
+  - 1.2608320236409074
+  - 3.999999999998292
+- - 0.21903424980353323
+  - 0.1954235440676583
+  - 0.9999999999945934
+  - -2.9999999999999996
+  - 0.20000000000000004
+fitted_family:
+- five-parameter
+- four-parameter; b fixed to zero for global monotonicity
+- five-parameter
+- five-parameter
+reconstructed_pdf_quantile_rms:
+- 0.012709471771517681
+- 0.013563198170330908
+- 0.01627490264237533
+- 0.02438433560100775
+target_cl_psd_relative_change: 0.007907575864229565
+elapsed_seconds: 24.306864709127694

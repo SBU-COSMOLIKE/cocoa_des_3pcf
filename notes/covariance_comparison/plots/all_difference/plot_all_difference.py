@@ -42,7 +42,9 @@ assert np.all(np.diag(second) > 0.)
 # off-diagonal covariance entries would explode where correlations cross zero.
 scale = np.sqrt(np.outer(np.diag(second), np.diag(second)))
 difference = 100. * (first - second) / scale
-limit = np.max(a=np.abs(difference))
+# Keep second- and fourth-order color scales and histogram bins identical.
+limit = 27.
+assert np.max(a=np.abs(difference)) <= limit
 fig = plt.figure(figsize=(5.2, 6.2), constrained_layout=True)
 grid = fig.add_gridspec(nrows=2, ncols=1, height_ratios=[1., 0.42])
 ax = fig.add_subplot(grid[0])

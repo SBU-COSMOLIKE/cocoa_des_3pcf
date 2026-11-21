@@ -179,6 +179,19 @@ controls and Fisher derivations belong in core documentation; model-specific
 equations belong beside the theory code. Give prominent bold thanks to Sunao
 Sugiyama and Rafael Gomes, with their original repositories and papers.
 
+Second- through sixth-order covariance research is taught in EXAMPLE_COVARIANCE_PME.ipynb
+and notes/covariance_from_simulations/. The exact Wick-contraction script
+verifies the Wishart matrix-power coefficients. The distinct-pair estimator
+uses fixed independent pairs and descending-degree updates to avoid reusing
+a random factor in a product; it assumes a fixed reference and independent
+vectors, but does not need Gaussian moments or a calibration/validation split.
+Unbiasedness concerns the truncated precision, not its inverse covariance
+or the exact infinite-order precision. Keep Gaussian/lognormal derivations
+and tests in those teaching notes. Rafael's separate comparison note contains
+second/fourth/sixth-order results from the same full sample, explicit nominal-count
+assumptions, and the separate matched-bin DES comparison. Explain jackknife
+deletions, pseudovalues and the prefactor with a four-number worked example.
+
 For undergraduate teaching notes, use the LSST Y1 × DESI Fisher note's
 level of explanation. Put matrix definitions and algebraic operations in
 separate numbered equation environments, with prose explaining each step.
@@ -210,3 +223,69 @@ use the user's current OpenMP limit; run numerical checks serially.
 Commit explicit paths in the correct repository. DES uses `main`; core uses
 `lowrank_fftlog`. Preserve unrelated working-tree changes. Never push or
 amend a commit without a new user instruction.
+
+## Point-transformed Gaussian map pilot
+
+`notes/gptg_simulations/` contains a separate undergraduate note, executable
+notebook and plain research scripts for Zhong et al. arXiv:2411.04759.
+The initial fit uses 32 supplied maps and produces 64 four-bin NSIDE512 maps
+with multipoles through 1024, saved as float64 under ignored
+`chains/gptg_method/maps/`. BLAS=1; honor the current user limit for ducc0 native threads. The pilot used
+four; the user authorized eight for the large run on 21 November 2026. This is our
+implementation, not an author-provided calibration. Compact measurements,
+parameters and test results live under `tests/gptg_pilot/`.
+
+Its fit uses a masked/noisy/smoothed convergence proxy and approximate
+(E-minus-B)/fsky spectra, with explicit positive-semidefinite adjustments.
+Noise is constant independent Gaussian per pixel/source/component, estimated
+from high-ell masked B power. These approximations and the unresolved producer
+conventions prevent claiming a validated DES covariance. Source-bin-two uses
+the paper's b=0 family because the first unrestricted fit was nonmonotone.
+Never normalize individual maps by their measured mean or variance. Preserve
+map fluctuations and record finite harmonic projection and noise assumptions.
+
+The scripts measure 16 same-source raw moments for the existing all-map
+comparison, and 60 raw/noise-corrected tomographic moments at the two radii.
+These are fixed-center coarse diagnostics, not the published finite-triangle
+catalogue estimator. Shape-noise subtraction of aperture products is distinct
+from correcting powers of a noisy sample covariance in PME.
+
+The sixth-order empirical test treats all 64 saved measurement vectors as a
+fixed discrete population and resamples with replacement. This establishes
+conditional algebra tests, not additional independent N-body skies. It uses
+known discrete-population covariance (denominator 64) and ordinary sample
+covariances (denominator N-1). Keep both polynomial-target and exact-inverse
+errors, and report when higher order worsens RMS. More synthetic maps reduce
+sampling error for the fitted model, not its calibration uncertainty or
+missing physical correlations. Do not present raw array file counts as a
+known count of independent cosmological realizations.
+
+### Generated-map storage precision
+
+**User directive (21 November 2026): save generated maps as float32.**
+Keep harmonic generation, normalization, filter weights, aperture accumulation,
+measured vectors, covariance and precision arithmetic in float64. Decode saved
+float32 pixels to float64 before measurement, so saved measurements reproduce
+the files users will later read. Do not change FFT or covariance arithmetic
+to float32 merely because map storage is float32.
+
+The 64-map storage check at NSIDE512 and 30/60-arcminute apertures found a
+maximum covariance-weighted vector change of 2.564e-7, fractional variance
+change of 1.499e-8, and relative precision-eigendirection change of 5.252e-8.
+These errors are negligible for this tested use. Keep the original float64
+pilot only as a small precision-test reference; new ensembles use float32.
+Repeat the storage comparison when resolution, dynamic range or observables
+change substantially. Compare differences in covariance-weighted units and
+matrix directions; relative errors of near-zero cubic moments are misleading.
+
+The 10,000 comparison + 5,000 independent validation design freezes the fitted
+model, uses disjoint seed ranges, and keeps validation out of reference/order
+tuning. Float32 payload is about 177 GB for all 15000 four-bin footprint maps.
+`generate_ensemble.py` journals each completed map and preserves a 50 GB reserve.
+The validation quadratic/log-determinant score does not identify the direct
+sample inverse as truth. Model validation against N-body simulations remains
+separate from estimator validation conditional on a fitted generator.
+
+The current large-map run is authorized to use eight native transform workers.
+BLAS remains one. Resume its checkpoint with `--workers 8`; the earlier
+pilot timings and numerical records used four workers and retain that label.

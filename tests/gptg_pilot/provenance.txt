@@ -1,0 +1,7 @@
+21 November 2026. Initial GPTG pilot, own implementation of Zhong et al. 2411.04759.
+32 Rafael maps used for fitting; 64 newly generated four-bin maps, seeds 241104759..241104822, NSIDE512, lmax1024, four ducc0 workers, BLAS1.
+Raw maps remain ignored under chains/gptg_method/maps. Measurement population = sixteen raw moments per map, not 64 independent N-body simulations.
+The initial PDF proxy is masked/noisy/smoothed, and power correction is approximate E-minus-B divided by fsky. Constant Gaussian noise is estimated from high-ell B power.
+These records document a pilot; they do not validate published DES 3pcf means/covariance. See the note for model dependence and fit reuse.
+Empirical resampling tests use this 64-member list as an exactly defined discrete population. Independent with-replacement draws are not new physical maps.
+Gaussian/lognormal toy tests and all-archive nominal-count PME records are copied here only for compact reproducibility.

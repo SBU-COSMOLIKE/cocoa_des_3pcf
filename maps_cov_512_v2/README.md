@@ -271,11 +271,27 @@ remain in the main map notebook.
 The [comparison note for Rafael](../notes/covariance_comparison/covariance_comparison.pdf)
 and its [notebook](../notes/covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
 now focus only on two matrix comparisons. First, all 15,997 measured
-aperture vectors enter both the direct covariance and the second-order
-Eifler estimate, with the starting matrix fixed and no sample partition.
+aperture vectors enter both the direct covariance and the
+second-, fourth- and sixth-order Eifler estimates, with the starting matrix fixed
+and no sample partition.
 Second, all 32 available matching xi-plus measurements are compared with
 the released four-bin DES covariance. Both comparisons have normalized
 difference plots and split-triangle correlation plots. Compact records
 reproduce the figures without reopening the maps. The nominal file count
 used in the Eifler square correction is stated explicitly; it is not an
 established independent-sky count.
+
+The separate [map-generation note](../notes/gptg_simulations/gptg_simulations.pdf)
+and [worked notebook](../notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb)
+fit an initial point-transformed Gaussian model to 32 supplied maps and save
+64 new four-bin maps with a stated Gaussian noise model under
+`chains/gptg_method/maps/`. Their names begin `GPTG_DES_`; they are not
+Rafael's original realizations. The note explains the fit approximations,
+source-bin cross correlations, noise-corrected cubic moments and current
+covariance differences. These generated maps are not yet validated replacements
+for the supplied N-body simulations.
+
+New generated-map ensembles use float32 files and float64 calculations. The
+64-map check found a maximum relative precision-direction change of 5.3e-8
+from storage rounding. The original float64 pilot remains a small reference
+for repeating that test; Rafael's downloaded inputs are never converted.

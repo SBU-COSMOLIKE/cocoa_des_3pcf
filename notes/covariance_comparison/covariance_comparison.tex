@@ -13,7 +13,7 @@
 \begin{center}
 {\LARGE Covariance comparisons using the complete measured samples\par}
 \vspace{0.6em}
-{\large Direct simulations, second-order Eifler correction,\par}
+{\large Direct simulations, second-, fourth- and sixth-order Eifler corrections,\par}
 {\large and the released DES Y3 covariance\par}
 \vspace{0.5em}
 21 November 2026
@@ -22,8 +22,8 @@
 \section{Two comparisons and the data used in each}
 \paragraph{The first comparison uses all available measured aperture vectors.}
 We estimate a covariance directly from all 15,997 measured simulation files.
-We then use that same sample covariance in the second-order
-Friedrich--Eifler precision expansion~\cite{pme}, keeping its starting matrix
+We then use that same sample covariance in the second-, fourth- and sixth-order
+Friedrich--Eifler precision expansions~\cite{pme}, keeping their starting matrix
 fixed. After checking that the corrected precision is positive definite,
 we invert it to obtain a covariance for comparison. Both calculations use
 the same sixteen measured quantities and the same complete sample.
@@ -39,11 +39,13 @@ The two comparisons answer different questions and their matrices must not
 be compared entry by entry.
 
 \paragraph{What the comparisons show.}
-For the complete aperture sample, the Eifler covariance has per-row standard
+For the complete aperture sample, the second-order covariance has per-row standard
 deviations about 11--13\% larger for the squared moments, while changes for
 the cubed moments range from about $-0.1\%$ to $+1.4\%$. Correlation
 coefficients differ by as much as 0.199. The difference persists largely
-because a second-order inverse expansion is truncated. For the separate
+because the inverse expansion is truncated. Fourth order reduces the
+squared-moment standard-deviation differences to about 5.5--6.3\%,
+but one combined precision direction still differs by about 40\%. For the separate
 four-bin DES comparison, the measured variances range from about 1.05 to
 1.81 times the released values, with appreciable uncertainty from the
 32-map sample. Neither comparison alone identifies the unknown true
@@ -256,7 +258,113 @@ that same covariance has trace per row about 0.9583. This describes an
 average difference in weighting between the estimators. It is not a held-out
 accuracy score, and different matrix directions can cancel in its average.
 
+
+\paragraph{Fourth order improves agreement but does not finish convergence.}
+We also evaluate the fourth-order Gaussian moment corrections with the same
+15,997-file sample covariance, nominal degrees of freedom and fixed starting
+matrix. This includes the cubic and quartic noise corrections; it is not
+merely the raw fourth power of the measured matrix. The derivation and
+Gaussian/lognormal tests belong to the separate
+\href{../covariance_from_simulations/covariance_from_simulations.pdf}
+{Eifler teaching notes}. The stated sampling limitations for these files
+still apply; this comparison does not establish unbiasedness for the archive.
+
+The fourth-order dimensionless precision is positive definite, with smallest
+eigenvalue about 0.8111. Its per-row standard-deviation differences from the
+direct covariance are 5.47--6.32\% for squared moments and 0.072--0.224\%
+for cubed moments. The maximum correlation difference drops from 0.199 to
+0.109. Figures~\ref{fig:fourth-difference} and~\ref{fig:fourth-triangles}
+show the same complete-sample comparison at this higher order.
+
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.76\linewidth]{plots/fourth_difference/fourth_difference.pdf}
+ \caption{Fourth-order corrected covariance minus direct simulations,
+ using the same complete sample and the direct simulation diagonal for
+ normalization. Its color scale and histogram bins match the second-order
+figure. No calibration or validation groups are reserved.}
+ \label{fig:fourth-difference}
+\end{figure}
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.88\linewidth]{plots/fourth_triangles/fourth_triangles.pdf}
+ \caption{Upper-left: fourth-order correlation. Lower-right: direct
+ simulation correlation. Each half uses its own variance normalization.}
+ \label{fig:fourth-triangles}
+\end{figure}
 \FloatBarrier
+\paragraph{Check combined directions as well as individual rows.}
+The weakest fourth-order precision direction still receives only about
+0.601 times its weight from the direct inverse. Second order gives about
+0.424. Thus the largest relative underweighting improves from roughly 58\%
+to 40\%, even though the diagonal changes are much smaller. This is useful
+progress, but it does not establish convergence. A small diagonal difference
+cannot exclude a larger difference in a correlated combination of rows.
+
+\FloatBarrier
+\paragraph{The same test at sixth order.}
+We also apply the derived Gaussian sixth-order correction to the same
+measured covariance, with the same reference and nominal count. Its
+matrix-power coefficients are obtained by exact Gaussian moment equations;
+no coefficients are fitted to these maps. The corresponding second-moment
+standard-deviation differences decrease further to about $3.21$--$3.70\%$.
+The maximum absolute correlation difference becomes $0.0658$.
+Figures~\ref{fig:sixth-difference} and~\ref{fig:sixth-triangles} use the same
+rows and display conventions as the lower orders.
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.76\linewidth]{plots/sixth_difference/sixth_difference.pdf}
+ \caption{Sixth-order covariance minus direct covariance, normalized by
+ direct standard-deviation products. The color scale matches lower orders.}
+ \label{fig:sixth-difference}
+\end{figure}
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.88\linewidth]{plots/sixth_triangles/sixth_triangles.pdf}
+ \caption{Upper-left: sixth-order correlation. Lower-right: direct
+ complete-sample correlation.}
+ \label{fig:sixth-triangles}
+\end{figure}
+\paragraph{Closer does not yet establish convergence or statistical validity.}
+The weakest relative precision weight increases from $0.424$ at second
+order to $0.601$ at fourth and $0.724$ at sixth. It remains about $28\%$
+below the weight of the direct-sample inverse in that direction. The trace
+per row becomes $0.982$, but that average hides the remaining weak direction.
+Moreover, all three orders use the same nominal Gaussian count. Related
+map files, non-Gaussian measured moments and a reference estimated from
+part of the same archive remain limitations. The separate teaching note
+derives sixth order and shows controlled examples in which its sampling
+error is worse than fourth order. This complete-sample sequence is a useful
+convergence diagnostic, not proof that the sixth-order inverse is unbiased
+for the true survey precision.
+\FloatBarrier
+
+\paragraph{The direct inverse is not established truth.}
+Its role here is a comparator estimated from the same sample. A higher
+expansion order can approach that comparator while also reproducing more
+sample noise. Closeness alone does not select the estimator nearest the
+unknown survey precision. We checked one fixed direction by deleting all
+cuts and draws of one run label at a time. There are 200 labels, with
+77--80 files each. The direct-inverse weight changes by $-0.184\%$ to
+$+0.330\%$ on individual deletions. The approximate group-jackknife relative
+standard error is $1.38\%$. This uses run labels as provisional groups,
+not independently verified parent metadata; its usual equal-group prefactor
+is also approximate for these slightly unequal sizes. The direction was
+selected from the full data, so this is a descriptive stability diagnostic.
+
+\paragraph{What that limited check tells us.}
+The $28\%$ sixth-order discrepancy in this direction exceeds the sampling
+variation detected by that grouping check. That supports investigating
+remaining truncation and reference mismatch, but does not establish the
+full direct inverse as true. In one reproducible nested ordering of run
+labels, using 25, 50, 100 and 150 labels gives relative direct weights
+$1.0424$, $0.9784$, $0.9962$ and $0.9994$, normalized to the 200-label
+result. These are correlated prefixes, and the final value is one by
+construction. The main estimates still use all files; no calibration,
+correction or validation partition has been introduced. The separate
+GPTG study instead generates additional independent validation maps and
+scores predictions without assuming the direct inverse is truth.
+
 \section{Why the difference remains with many measured files}
 \paragraph{An infinite convergent series need not be accurate at second order.}
 To isolate truncation, temporarily omit the finite-$N$ square subtraction
@@ -285,27 +393,6 @@ deviations by only 0.029--0.061\% relative to the uncorrected second-order
 polynomial. Most of the displayed difference is therefore finite-order
 truncation at the current $S$ and $M$. Increasing the sample size does not,
 by itself, remove an algebraic truncation at fixed matrices.
-
-\paragraph{Does fourth order solve the truncation?}
-A check with these same matrices, omitting finite-sample corrections at
-both orders, gives a partial improvement. Define the residual matrix
-\begin{equation}
- U=I-S.
-\end{equation}
-Keeping two additional terms gives the fourth-order polynomial
-\begin{equation}
- P_4=I+U+U^2+U^3+U^4.
-\end{equation}
-Its squared-moment standard deviations differ from the direct covariance
-by 5.4--6.3\%, compared with 10.7--12.5\% at second order in this
-uncorrected-polynomial check. The weakest direction still receives only
-about 0.601 times its exact sample-inverse weight: a discrepancy of about
-40\%. Fourth order helps, but improving the starting covariance remains
-necessary for a reliable low-order approximation. This calculation isolates
-truncation; it is not an unbiased fourth-order estimator. Noisy cubic and
-quartic powers require their own noise-bias corrections. The companion
-notebook reproduces this check without changing the displayed second-order
-comparison or partitioning the sample.
 
 \section{Compare with the released DES covariance}
 \paragraph{Use matching observed-row definitions.}
@@ -355,24 +442,140 @@ substituted for those rows or matched to the 480-row release by its dimensions.
 \end{figure}
 
 \FloatBarrier
-\paragraph{Keep the sampling uncertainty visible.}
-The four variance ratios are approximately 1.41, 1.81, 1.58 and 1.05.
-To estimate their sensitivity to the 32-run sample, remove one run, recompute
-the ratio and repeat for each run. If $r_i^{(-s)}$ is the result after omitting
-run $s$, average those leave-one-out values:
+\paragraph{What a jackknife asks.}
+Imagine removing one of the measured runs. Would the variance ratio change
+very little, or would its value depend strongly on that run? The jackknife
+answers this sensitivity question by recomputing the same statistic after
+omitting each run in turn. The final reported covariance still uses all
+runs. Nothing is assigned to a separate calibration or validation sample,
+and no new simulation is generated.
+
+\paragraph{Name one statistic before resampling it.}
+Consider one angular bin. Let $\widehat\theta$ be its variance ratio from
+all $N$ runs. Its denominator is the fixed released DES variance. Omit run
+$s$ and recompute the measured mean, the residuals and the sample variance
+of the remaining $N-1$ measurements. The variance denominator is now $N-2$.
+Call the resulting ratio
 \begin{equation}
- \bar r_i^{\rm jack}=\frac{1}{N}\sum_s r_i^{(-s)}.
+ \widehat\theta_{(-s)}.
 \end{equation}
-Their jackknife variance is
+Do this $N$ times. These estimates overlap heavily: any two contain $N-2$
+of the same runs. They must not be treated as $N$ fresh independent surveys.
+
+\paragraph{Average the deletion estimates and measure their spread.}
+Their mean is
 \begin{equation}
- \widehat{\mathrm{Var}}_{\rm jack}(r_i)
- =\frac{N-1}{N}\sum_s(r_i^{(-s)}-\bar r_i^{\rm jack})^2.
+ \bar\theta_{\rm delete}=\frac1N\sum_{s=1}^{N}\widehat\theta_{(-s)}.
 \end{equation}
-The resulting standard errors are about 0.37, 0.42, 0.45 and 0.28,
-shown in Figure~\ref{fig:variance}. These condition on independent run
-labels and a fixed released reference. They do not include uncertainty in
-that reference or estimator mismatch. Angular bins are correlated; the
-four differences cannot be treated as four independent significance tests.
+Subtract that mean from each deletion estimate. The jackknife variance is
+\begin{equation}
+ V_{\rm jack}=\frac{N-1}{N}\sum_{s=1}^{N}
+ \left(\widehat\theta_{(-s)}-\bar\theta_{\rm delete}\right)^2.
+ \label{eq:jackknife-variance}
+\end{equation}
+The standard error displayed on the ratio is its square root. The prefactor
+is different from the sample-variance denominator for independent data.
+We can understand its origin by constructing quantities called pseudovalues.
+
+\paragraph{A pseudovalue records the estimated contribution of one run.}
+Define
+\begin{equation}
+ p_s=N\widehat\theta-(N-1)\widehat\theta_{(-s)}.
+\end{equation}
+To see why this combination is natural, suppose the statistic were just a
+mean of numbers $x_s$. Removing observation $s$ would give
+\begin{equation}
+ \bar x_{(-s)}=\frac{N\bar x-x_s}{N-1}.
+\end{equation}
+Substitute this expression, including its denominator, into the
+pseudovalue definition:
+\begin{equation}
+ p_s=N\bar x-(N-1)\frac{N\bar x-x_s}{N-1}.
+\end{equation}
+Cancel the two factors of $N-1$, then distribute the subtraction:
+\begin{equation}
+ p_s=N\bar x-N\bar x+x_s=x_s.
+\end{equation}
+For a mean, pseudovalues recover the original independent observations.
+For a smooth nonlinear statistic such as a variance ratio, they approximate
+the individual contributions; they are not literally new independent data.
+This is why jackknife error bars are an approximation for our application.
+
+\paragraph{Derive the prefactor rather than memorize it.}
+The variance-of-a-mean expression applied to the pseudovalues is
+\begin{equation}
+ V_{\rm pseudo}=\frac1{N(N-1)}\sum_s(p_s-\bar p)^2.
+\end{equation}
+Average the pseudovalue definition first. The full-sample estimate
+is the same in each of the $N$ terms:
+\begin{equation}
+ \bar p=N\widehat\theta-(N-1)\bar\theta_{\rm delete}.
+\end{equation}
+Now subtract this average without dropping either bracket:
+\begin{equation}
+ \begin{split}
+ p_s-\bar p={}&[N\widehat\theta-(N-1)\widehat\theta_{(-s)}]\\
+ &-[N\widehat\theta-(N-1)\bar\theta_{\rm delete}].
+ \end{split}
+\end{equation}
+The two full-sample terms cancel. Factor the remaining difference:
+\begin{equation}
+ p_s-\bar p=-(N-1)
+ \left(\widehat\theta_{(-s)}-\bar\theta_{\rm delete}\right).
+\end{equation}
+Square this expression inside the variance sum. The minus sign disappears,
+and the common factor can be taken outside the sum:
+\begin{equation}
+ V_{\rm pseudo}=\frac{(N-1)^2}{N(N-1)}\sum_s
+ \left(\widehat\theta_{(-s)}-\bar\theta_{\rm delete}\right)^2.
+\end{equation}
+Cancel one factor of $N-1$ in numerator and denominator:
+\begin{equation}
+ V_{\rm pseudo}=\frac{N-1}{N}\sum_s
+ \left(\widehat\theta_{(-s)}-\bar\theta_{\rm delete}\right)^2.
+\end{equation}
+This is precisely Equation~\eqref{eq:jackknife-variance}.
+This algebra is exact. Treating the result as a well-calibrated uncertainty
+for a nonlinear statistic remains a statistical approximation.
+
+\paragraph{Check the arithmetic with four numbers.}
+Take measurements $0,1,2,3$. Their mean is $1.5$ and the squared residuals
+sum to five. Dividing by three gives sample variance $5/3$. With a fixed
+reference variance of two, the full-sample ratio is
+\begin{equation}
+ \widehat\theta=\frac{5/3}{2}=\frac56.
+\end{equation}
+Omitting zero leaves $1,2,3$: the mean is two, the squared residuals sum to
+two, and division by two gives variance one. Its ratio is $1/2$.
+Omitting one leaves $0,2,3$: the mean is $5/3$, the squared residuals sum to
+$14/3$, and division by two gives variance $7/3$. Its ratio is $7/6$.
+The other two omissions give the symmetric counterparts. Thus the four
+leave-one-out ratios are
+\begin{equation}
+ \left(\frac12,\frac76,\frac76,\frac12\right).
+\end{equation}
+Their mean is $5/6$. Subtract it to obtain
+\begin{equation}
+ \left(-\frac13,\frac13,\frac13,-\frac13\right).
+\end{equation}
+Squaring and summing gives $4/9$. The jackknife prefactor is $3/4$, so
+\begin{equation}
+ V_{\rm jack}=\frac34\frac49=\frac13.
+\end{equation}
+The standard error is therefore $1/\sqrt3$, about 0.577. The notebook prints
+every deletion ratio and checks this result. Four numbers are useful for
+learning the calculation, but far too few to promise precise error bars.
+
+\paragraph{Apply this to the DES comparison with its limits intact.}
+Each deletion removes one of the 32 primary runs and recomputes the
+four-bin covariance. The resulting standard errors of the variance ratios
+are approximately 0.37, 0.42, 0.45 and 0.28. They condition on independent
+run labels and a fixed released reference. They omit uncertainty in the
+released covariance and physical estimator mismatch. The bins remain
+correlated, so the four bars are not four independent significance tests.
+If several measurements share one parent sky, a group jackknife must omit
+that entire dependent group. Deleting individual related files would not
+measure the uncertainty associated with independent skies.
 
 \begin{figure}[htbp]
  \centering

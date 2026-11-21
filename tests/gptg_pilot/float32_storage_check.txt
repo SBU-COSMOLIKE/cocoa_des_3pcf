@@ -1,0 +1,6 @@
+max_absolute_shear_rounding 8.57983639690473865e-09
+max_moment_change_in_its_single_map_standard_deviation 1.19411115907004286e-07
+max_joint_covariance_weighted_vector_change 2.56353941029503208e-07
+max_fractional_variance_change 1.49890324596668734e-08
+max_relative_covariance_eigendirection_change 5.25167417506345957e-08
+max_relative_precision_eigendirection_change 5.25167390685865598e-08

@@ -23,3 +23,11 @@ all 15997 measured vectors, without a holdout. The same covariance enters
 the formal second-order PME formula with nominal nu=15996. File count does
 not establish independent Wishart degrees of freedom; this is an algebraic
 comparison, not independent covariance calibration.
+
+Fourth-order follow-up (21 November 2026): the comparison notebook applies
+explicit Gaussian/Wishart cubic and quartic moment corrections to this same
+all-file covariance, with nominal nu=15996 and the same fixed reference.
+The derivation, exact algebra checks and Gaussian/lognormal tests are in
+notes/covariance_from_simulations/ and EXAMPLE_COVARIANCE_PME.ipynb. The
+separate comparison note contains the measured second/fourth-order results
+and jackknife explanations, not the fourth-order derivation.

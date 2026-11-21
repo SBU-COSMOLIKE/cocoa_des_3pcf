@@ -338,8 +338,10 @@ because these observables have small numerical units.
 
 The [PME notebook](EXAMPLE_COVARIANCE_PME.ipynb) teaches the
 [Friedrich–Eifler precision expansion](https://arxiv.org/abs/1703.07786)
-with scalar and two-by-two worked calculations, then a controlled Gaussian
-experiment. The [map study](EXAMPLE_COVARIANCE_MAPS.ipynb) measures coarse
+with scalar and two-by-two worked calculations, then controlled Gaussian
+and lognormal experiments. It derives unbiased matrix powers through sixth order
+under Gaussian sampling, tests a distinct-pair alternative using
+one complete ensemble, and explains jackknife error bars step by step. The [map study](EXAMPLE_COVARIANCE_MAPS.ipynb) measures coarse
 second- and third-order aperture moments and tests a separately calibrated
 Gaussian reference. It also compares four measured xi-plus bins with the
 released joint covariance and tests shared shear between realization labels.
@@ -355,7 +357,7 @@ are tracked. No DES covariance has yet been calibrated from this download.
 
 The [comparison note for Rafael](notes/covariance_comparison/covariance_comparison.pdf)
 uses all 15,997 measured aperture vectors for both the direct covariance
-and the second-order Eifler calculation, with one fixed starting matrix and
+and the second-, fourth- and sixth-order Eifler calculations, with one fixed starting matrix and
 no sample partition. Difference maps, histograms and split-triangle
 correlations show how the methods differ. It also retains the separate
 four-bin comparison with the released DES covariance, using all 32 runs
@@ -369,6 +371,20 @@ experiments as history. The current note does not divide the sample into
 calibration, correction and validation groups.
 Survey simulations must reproduce the selection and estimator; four cuts
 from one sky and repeated noise draws are not automatically independent skies.
+
+The [map-generation note](notes/gptg_simulations/gptg_simulations.pdf) and
+[notebook](notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb) teach
+[Zhong et al.'s point-transformed Gaussian method](https://arxiv.org/abs/2411.04759),
+our initial 32-map fit, and 64 saved DES-footprint maps with added Gaussian
+shape noise. They derive the noise subtraction for squared, cubed and mixed-bin
+apertures, then compare spectra and covariance. The pilot is not yet a validated
+DES covariance model. A conditional resampling experiment tests second-,
+fourth- and sixth-order precision estimates without claiming new physical skies.
+Scripts and compact records are committed; generated maps remain in `chains/`.
+New maps use float32 storage after a measured rounding check; computations
+remain float64. A separate run is generating 10,000 comparison and 5,000
+independent validation maps. Its fixed validation score does not assume the
+direct-sample inverse is true; results are pending completion.
 
 ## Appendix: feedback and BACCO <a name="feedback"></a>
 

@@ -1,0 +1,16 @@
+count: 64
+seed_start: 241104759
+workers: 4
+latent_cl_psd_relative_change: 6.426515731266598e-05
+latent_variance_before_normalization:
+- 1.0002254209557968
+- 1.0006059181139406
+- 1.0000885621437512
+- 1.000087467100374
+dtype: float64
+shape:
+- 4
+- 2
+- 369190
+noise: constant independent Gaussian per pixel and source bin
+status: initial calibrated pilot; forward validation required

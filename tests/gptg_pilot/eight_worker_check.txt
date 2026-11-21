@@ -1,0 +1,4 @@
+8-worker generation seconds: 4.401224999921396
+Changed saved float32 pixels: 0
+Maximum absolute saved-pixel change: 0.0
+Covariance-weighted moment change: 0.0

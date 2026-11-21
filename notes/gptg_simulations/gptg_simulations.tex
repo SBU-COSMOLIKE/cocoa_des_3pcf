@@ -1,0 +1,1036 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{amsmath,amssymb,graphicx,xcolor,booktabs,needspace,placeins,xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Var}{\operatorname{Var}}
+\emergencystretch=3em
+\setlength{\parskip}{0.2em}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.85}
+\begin{document}
+\begin{center}
+{\LARGE Generating lensing maps on the DES footprint\par}
+\vspace{0.6em}
+{\large A student introduction to point-transformed Gaussian fields,\par}
+{\large calibration from Rafael's maps, and covariance tests\par}
+\vspace{0.5em}
+21 November 2026
+\end{center}
+
+\section{What this experiment is trying to achieve}
+\paragraph{Begin with a practical question.}
+We have a finite collection of simulated shear maps supplied by Rafael
+Gomes. We want to learn a much cheaper statistical generator from them,
+then draw additional maps. The purpose is to test covariance estimation
+for joint second- and third-order lensing measurements. Generating more
+maps is useful only if their measured fluctuations are sufficiently
+representative of the target. A generator that predicts the mean correctly
+can still predict the covariance incorrectly.
+
+\paragraph{The paper supplies a method, not our calibration.}
+Zhong, Bernstein, Boruah, Jain and Kobla propose general point-transformed
+Gaussian fields, abbreviated GPTG~\cite{zhong}. Their transformation is
+more flexible than a lognormal mapping. They match one-point distributions
+and angular two-point correlations, including correlations between source
+bins. Their principal numerical tests use approximately seven-arcminute
+pixels. The present implementation follows that construction but is our
+own code and fit. It does not use an author-supplied four-bin calibration.
+\textbf{We thank Kunhao Zhong and his coauthors for the method, Rafael Gomes
+for the simulation maps, and the developers of ducc0 and HEALPix for the
+spherical geometry and transforms.}
+
+\paragraph{A route through this note.}
+We first explain what a Gaussian field contains, then change its values
+without randomly moving sky positions. Next we repair the power spectrum,
+convert convergence into shear, apply the DES footprint and add a stated
+noise model. Finally we describe the actual scripts and compare generated
+measurements with the measurements used for calibration. Every approximation
+in the first fit remains part of the interpretation of that comparison.
+
+\paragraph{What an additional mock does and does not provide.}
+A new random seed produces a new realization of the fitted stochastic
+model. It supplies additional information about that model's covariance.
+It does not create another independent gravitational N-body simulation.
+Uncertainty in fitted parameters and shortcomings of the point transformation
+remain even if we generate a million maps. This distinction determines
+whether higher-order precision corrections are scientifically useful.
+
+\section{From random numbers to a correlated sky}
+\paragraph{One pixel is not yet a field.}
+A standard Gaussian random number has mean zero and variance one. A
+Gaussian field assigns such numbers to positions with specified correlations.
+For two pixels, a simple example is
+\begin{equation}
+ g_1=u,\qquad g_2=\rho u+\sqrt{1-\rho^2}\,v,
+\end{equation}
+where $u$ and $v$ are independent standard Gaussian numbers. The first
+variance is one. Expanding the second variance gives
+\begin{equation}
+ \E[g_2^2]=\rho^2\E[u^2]+2\rho\sqrt{1-\rho^2}\E[uv]
+                 +(1-\rho^2)\E[v^2].
+\end{equation}
+Independence and zero means imply $\E[uv]=0$, while both squared means
+are one. Therefore
+\begin{equation}
+ \E[g_2^2]=\rho^2+(1-\rho^2)=1.
+\end{equation}
+Their cross-correlation follows from one multiplication:
+\begin{equation}
+ \E[g_1g_2]=\rho\E[u^2]+\sqrt{1-\rho^2}\E[uv]=\rho.
+\end{equation}
+Independent pixels would set every nonzero-separation correlation to zero.
+Such an image cannot test the covariance of a spatial lensing measurement.
+
+\paragraph{Spherical harmonics organize correlations by angular scale.}
+On the full sky, write a real field as a sum of spherical harmonics:
+\begin{equation}
+ g_i(\hat n)=\sum_{\ell=0}^{\ell_{\max}}
+                   \sum_{m=-\ell}^{\ell} a^i_{\ell m}Y_{\ell m}(\hat n).
+\end{equation}
+The index $i$ labels a source-redshift bin. Small $\ell$ describes broad
+angular variations; large $\ell$ describes finer structure. Statistical
+isotropy specifies the covariance of the harmonic coefficients:
+\begin{equation}
+ \E[a^i_{\ell m}a^{j*}_{\ell' m'}]
+       =C^{G,ij}_\ell\,\delta_{\ell\ell'}\delta_{mm'}.
+\end{equation}
+Different angular modes are independent in a Gaussian field, but the four
+source bins can be correlated at each mode. Their four-by-four matrix
+$C^G_\ell$ must be positive semidefinite: no combination of source fields
+can have a negative variance.
+
+\paragraph{Draw all source bins together.}
+Factor the spectral matrix as
+\begin{equation}
+ C^G_\ell=A_\ell A_\ell^{\mathsf T}.
+\end{equation}
+An eigenvalue factorization allows zero eigenvalues; a Cholesky factor is
+also possible when every eigenvalue is strictly positive. Draw a column
+of four independent unit-variance Gaussian coefficients $z_{\ell m}$ and
+multiply it by the factor:
+\begin{equation}
+ a_{\ell m}=A_\ell z_{\ell m}.
+\end{equation}
+Taking its covariance gives
+\begin{equation}
+ \E[a_{\ell m}a_{\ell m}^{\dagger}]
+ =A_\ell\E[z_{\ell m}z_{\ell m}^{\dagger}]A_\ell^{\mathsf T}
+ =A_\ell I A_\ell^{\mathsf T}=C^G_\ell.
+\end{equation}
+For $m>0$, real and imaginary parts each have half the variance. For
+$m=0$, the coefficient is real and has the full variance. The negative
+$m$ coefficients are fixed by the requirement of a real sky. Generating
+each source bin independently would lose the desired cross-bin covariance.
+
+\section{Changing the distribution while keeping the sky positions}
+\paragraph{A local transformation is applied at every position.}
+A point transformation takes a Gaussian value $g$ to a new value $f(g)$.
+The same function is applied at every pixel within a source bin. It can
+change skewness and tails, while the input correlations still connect
+different positions. It does not reproduce every spatial dependence of
+a nonlinear gravitational field; agreement must be tested on the statistics
+we will actually measure.
+
+\paragraph{Write the five-parameter function in two manageable pieces.}
+Following Table 1 of Zhong et al., define the first factor
+\begin{equation}
+ h(g)=\exp(a_1g-a_1^2/2)+bg.
+\end{equation}
+The exponential gives a curved response; the linear term changes its
+central shape and tail behavior. Define the transition factor separately:
+\begin{equation}
+ q(g)=\left[1+\exp\{t(g-x_0)\}\right]^{(a_2-a_1)/t}.
+\end{equation}
+The location $x_0$ places the transition and positive $t$ sets how rapidly
+it occurs. The product before normalization is
+\begin{equation}
+ f(g)=h(g)q(g).
+\end{equation}
+Different parameters are allowed for different source bins.
+
+\paragraph{Compute normalization from the ensemble distribution.}
+For a standard Gaussian input, the mean is the integral
+\begin{equation}
+ \mu_f=\int_{-\infty}^{\infty}
+       f(g)\frac{\exp(-g^2/2)}{\sqrt{2\pi}}\,dg.
+\end{equation}
+Subtracting this fixed mean centers the transformed field. Its variance is
+\begin{equation}
+ v_f=\int_{-\infty}^{\infty}
+       [f(g)-\mu_f]^2\frac{\exp(-g^2/2)}{\sqrt{2\pi}}\,dg.
+\end{equation}
+Our code uses the unit-variance form
+\begin{equation}
+ F(g)=\frac{f(g)-\mu_f}{\sqrt{v_f}}.
+\end{equation}
+The physical convergence amplitude is then supplied by a separately stated
+standard deviation $\sigma_\kappa$:
+\begin{equation}
+ \kappa=\sigma_\kappa F(g).
+\end{equation}
+This is a change of normalization of the paper's point-function family.
+It lets the spectrum set the physical variance while the fit controls the
+shape. The integrals use fixed Gauss--Hermite quadrature. We never subtract
+each generated map's own mean or divide by its own measured variance: doing
+so would remove random fluctuations whose covariance we want to estimate.
+
+\paragraph{A good-looking central fit can still be invalid.}
+The first trial fit to the downloaded maps produced a source-bin-two
+function that turned over in a Gaussian tail. A central quantile fit alone
+did not reveal that failure. To see the issue algebraically, first
+differentiate the two factors:
+\begin{equation}
+ h'(g)=a_1\exp(a_1g-a_1^2/2)+b.
+\end{equation}
+The logarithmic derivative of the second factor is
+\begin{equation}
+ \frac{q'(g)}{q(g)}=(a_2-a_1)
+                   \frac1{1+\exp[-t(g-x_0)]}.
+\end{equation}
+The product rule then gives
+\begin{equation}
+ \frac{f'(g)}{q(g)}=h'(g)+h(g)(a_2-a_1)
+                   \frac1{1+\exp[-t(g-x_0)]}.
+\end{equation}
+The factor $q$ is positive, so the right-hand side determines the slope's
+sign. We check it over the fitting region and Gaussian tails before drawing
+maps. We retained the first failed attempt separately as debugging history;
+it is not included in the subsequent pilot covariance.
+
+\paragraph{A restricted family provides a transparent fallback.}
+Setting $b=0$ recovers the paper's four-parameter double-log form. Its
+logarithmic derivative simplifies to
+\begin{equation}
+ \frac{d\log f}{dg}=a_1+(a_2-a_1)s(g),
+ \qquad s(g)=\frac1{1+\exp[-t(g-x_0)]}.
+\end{equation}
+Since $0<s<1$, rewrite the derivative as
+\begin{equation}
+ \frac{d\log f}{dg}=(1-s)a_1+s a_2.
+\end{equation}
+It is a weighted average of two positive numbers when $a_1,a_2>0$.
+The function is then monotone for every real input. The current bin-two
+fit uses this restriction and records it in its configuration. We do not
+clip generated tail values to disguise a nonmonotone five-parameter fit.
+
+\section{Why the Gaussian input spectrum must change}
+\paragraph{A nonlinear map changes a correlation.}
+Even if two Gaussian values have correlation $\rho$, their transformed
+values generally do not. For centered unit-variance transformations, define
+\begin{equation}
+ H_{ij}(\rho)=\E[F_i(g_1)F_j(g_2)],
+\end{equation}
+where $(g_1,g_2)$ is jointly Gaussian with unit marginal variances and
+correlation $\rho$. The desired convergence correlation is therefore
+\begin{equation}
+ \xi^{\kappa,ij}(\theta)=
+ \sigma_{\kappa,i}\sigma_{\kappa,j}
+ H_{ij}\!\left(\xi^{G,ij}(\theta)\right).
+\end{equation}
+The Gaussian correlation inside $H$ is dimensionless. The variance
+factors outside restore the units and amplitudes of convergence.
+Using the target convergence spectrum directly as the Gaussian input
+would skip this nonlinear relation.
+
+\paragraph{Invert one scalar relation at each angular separation.}
+First divide the desired correlation by its two standard deviations:
+\begin{equation}
+ y_{ij}(\theta)=\frac{\xi^{\kappa,ij}(\theta)}
+                         {\sigma_{\kappa,i}\sigma_{\kappa,j}}.
+\end{equation}
+Then solve for the Gaussian correlation:
+\begin{equation}
+ H_{ij}(\rho)=y_{ij}(\theta).
+\end{equation}
+The solution is the value to put into the Gaussian field at that
+separation. A solution must lie between $-1$ and $1$. More strongly,
+the complete set of solutions must produce positive semidefinite
+spectral matrices for all multipoles. Valid pairwise correlations alone
+do not prove that a multibin random sky exists.
+
+\paragraph{Hermite functions make the correlation integral reusable.}
+Let $\phi_n(g)$ be normalized probabilists' Hermite polynomials, with
+$\phi_0=1$ and $\phi_1=g$. They are orthonormal under a unit Gaussian:
+\begin{equation}
+ \E[\phi_n(g)\phi_m(g)]=\delta_{nm}.
+\end{equation}
+Expand each centered transform in this basis:
+\begin{equation}
+ F_i(g)=\sum_{n=1}^{\infty}a_{in}\phi_n(g).
+\end{equation}
+Multiplying by $\phi_m$ and averaging isolates its coefficient:
+\begin{equation}
+ a_{im}=\E[F_i(g)\phi_m(g)].
+\end{equation}
+For correlated Gaussian inputs, the corresponding identity is
+\begin{equation}
+ \E[\phi_n(g_1)\phi_m(g_2)]=\delta_{nm}\rho^n.
+\end{equation}
+Insert both series into the desired two-point expectation before
+simplifying the double sum:
+\begin{equation}
+ H_{ij}(\rho)=\sum_{n,m}a_{in}a_{jm}\delta_{nm}\rho^n.
+\end{equation}
+Only terms with equal indices survive, leaving
+\begin{equation}
+ H_{ij}(\rho)=\sum_{n=1}^{\infty}a_{in}a_{jn}\rho^n.
+\end{equation}
+The code evaluates coefficients once per fitted model, truncates at a
+stated degree and tabulates this relation for inversion. Increasing the
+Hermite degree and quadrature density is a numerical convergence test;
+it does not add new physical information to the fitted model.
+
+\paragraph{Connect angular correlations and spectra.}
+For isotropic scalar fields, the correlation follows from the Legendre sum
+\begin{equation}
+ \xi^{ij}(\theta)=\sum_{\ell=0}^{\ell_{\max}}
+       \frac{2\ell+1}{4\pi}C^{ij}_\ell P_\ell(\cos\theta).
+\end{equation}
+After the point-correlation inversion, transform back using
+\begin{equation}
+ C^{G,ij}_\ell=2\pi\int_{-1}^{1}
+      \xi^{G,ij}(\arccos\mu)P_\ell(\mu)\,d\mu.
+\end{equation}
+The prototype uses fixed Gauss--Legendre nodes. Spectral interpolation,
+finite multipole range and positivity repairs can disturb the requested
+correlation. Their sizes must be reported, and generated spectra must be
+measured again. Matching a table before those operations is not sufficient.
+
+\section{Convergence becomes shear before the footprint is selected}
+\paragraph{Shear is a spin-two field.}
+A rotation of the local coordinate axes changes the two shear components.
+A scalar point transform applied independently to those components would
+not be the lensing construction in the paper. We transform convergence,
+then obtain its two-component shear through spherical harmonics.
+For multipoles $\ell\geq2$, the chosen convention relates them by
+\begin{equation}
+ \gamma^E_{\ell m}=
+ -\sqrt{\frac{(\ell+2)(\ell-1)}{\ell(\ell+1)}}\,
+ \kappa_{\ell m}.
+\end{equation}
+The minus sign is tied to the convention for the spin-harmonic basis.
+The gravitational field in this pilot has no input B-mode. Monopole and
+dipole convergence coefficients have no shear counterpart here.
+The generated component basis must be checked against the basis of the
+supplied maps before interpreting sign-sensitive third moments.
+
+\paragraph{Why we generate a full sky.}
+A full sky supplies correlated modes inside and outside the observed
+region. A mask then selects the observed pixels. Generating only a
+rectangular image and identifying it with DES would change the window,
+long modes and boundary effects. The current implementation generates
+NSIDE 512 skies and uses the exact supplied footprint list. The pilot
+retains multipoles through 1024; this is a numerical choice to be tested,
+not a claim that all observable contributions above it vanish.
+
+\paragraph{The list of pixel IDs defines the saved array.}
+There are
+\begin{equation}
+ N_{\rm full}=12(512)^2=3145728
+\end{equation}
+full-sky HEALPix pixels. The supplied list retains 369,190 of them.
+For the saved shear array, the index relation is
+\begin{equation}
+ \texttt{map}[i,c,j]=\gamma_c^i(\texttt{indices}[j]).
+\end{equation}
+Here $i$ is the source bin and $c$ is the shear component. The last
+axis is not a rectangular image axis. Reordering pixel IDs without the
+same reordering of the map values changes the sky. We use the RING ordering
+identified geometrically in the earlier footprint study.
+
+\section{Adding and testing a shape-noise model}
+\paragraph{State the first model explicitly.}
+For each retained pixel, component and source bin, draw a zero-mean
+Gaussian noise value independently. The observed synthetic shear is
+\begin{equation}
+ \gamma^{i,\rm obs}_c(p)=\gamma^{i,\rm signal}_c(p)+n^i_c(p).
+\end{equation}
+The assumed noise covariance is
+\begin{equation}
+ \E[n^i_c(p)n^j_d(q)]=\sigma_{n,i}^2\,
+                \delta_{ij}\delta_{cd}\delta_{pq}.
+\end{equation}
+This initial model has constant noise variance within each source bin.
+A DES catalogue can have position-dependent weights, number counts and
+non-Gaussian ellipticities. Those are additional inputs or model tests;
+constant independent Gaussian noise does not encode them automatically.
+
+\paragraph{Where a variance estimate comes from.}
+If one shear component of a galaxy has dispersion $\sigma_e$ and a pixel
+contains $N_g$ equally weighted independent galaxies, averaging their
+shapes gives
+\begin{equation}
+ \Var(n_c)=\frac1{N_g^2}\sum_{a=1}^{N_g}\sigma_e^2
+          =\frac{\sigma_e^2}{N_g}.
+\end{equation}
+Writing the count as density times pixel area gives
+\begin{equation}
+ \sigma_{n}^2=\frac{\sigma_e^2}{n_g\Omega_{\rm pix}}.
+\end{equation}
+Here $\sigma_e$ is explicitly a \emph{per-component} dispersion; using a
+two-component dispersion would require the corresponding factor of two.
+Weighted catalogues replace the simple count by an effective count.
+
+\paragraph{Our downloaded files do not supply that catalogue description.}
+The first calibration estimates a constant noise level from high-multipole
+masked B power, dividing by the sky fraction and equal pixel area. For a
+pure white noise field this relation is motivated by
+\begin{equation}
+ N_\ell=\Omega_{\rm pix}\sigma_n^2.
+\end{equation}
+Multiplication by a footprint changes harmonic modes and creates E/B
+leakage. Consequently our B-based estimate can include leaked signal;
+it is an initial approximation, not an identification of the archive's
+true noise-generation prescription. The generated E and B spectra and
+aperture-noise statistics must expose whether it is sufficient.
+
+\paragraph{Noise enters cubic measurements even when its mean is zero.}
+Let one filtered aperture value be $A=s+n$, where $s$ is fixed and
+$n$ is zero-mean Gaussian with variance $v$. Expand its cube:
+\begin{equation}
+ A^3=s^3+3s^2n+3sn^2+n^3.
+\end{equation}
+Average each term over noise:
+\begin{equation}
+ \E[A^3\mid s]=s^3+3s^2\E[n]+3s\E[n^2]+\E[n^3].
+\end{equation}
+The first and third noise moments vanish, while the second equals $v$:
+\begin{equation}
+ \E[A^3\mid s]=s^3+3sv.
+\end{equation}
+For a known, signal-independent $v$, the statistic $A^3-3vA$ has mean
+$s^3$. Our raw-aperture comparison instead retains the same self-products
+in both the downloaded and generated maps, matching the earlier diagnostic.
+A published catalogue estimator can exclude repeated galaxies or apply
+different corrections. Its formula must be matched separately.
+
+\section{What the first calibration actually fits}
+\paragraph{Choose a bounded and identifiable file selection.}
+The first fit uses 32 run labels, always cut zero and realization zero.
+The precise source filenames are recorded. This avoids silently counting
+all realization labels as independent skies, whose production relationship
+is still unresolved. It does not establish that the 32 selected runs are
+statistically independent; it states the convention used by this pilot.
+
+\paragraph{Measure both E and B pseudo-spectra.}
+We insert the observed shear values into a zero-padded full-sky array and
+apply the adjoint spin transform with equal-area pixel weights. In this
+operation zero means a known missing-data window, not an observed galaxy
+with zero shear. The resulting spectra are called pseudo-spectra because
+the mask mixes angular modes. The initial signal estimate subtracts B
+power from E power and divides by the sky fraction. We average within
+multipole bands before interpolating. Exact mode-coupling deconvolution
+is not part of this first fit.
+
+\paragraph{Fit a distribution that can be measured with the available maps.}
+The files contain shear, whereas the point transform is a model for
+convergence. We reconstruct a filtered E-mode convergence proxy with the
+same masked transform, smooth it at ten arcminutes, and evaluate it at
+64 preselected interior positions. Quantiles of this reconstructed field
+supply an initial point-function fit. They are not the distribution of
+an unmasked, noiseless convergence sky. A subsequent forward comparison
+must run generated maps through the same mask, reconstruction and filter.
+Even a good comparison would constrain this measured proxy rather than
+uniquely recover all underlying physical ingredients.
+
+\paragraph{Why quantiles provide a simple fitting language.}
+The $q$ quantile is the value below which fraction $q$ of the sample lies.
+For a monotone function $F$, transforming a Gaussian quantile transforms
+the corresponding output quantile:
+\begin{equation}
+ Q_F(q)=F\bigl(\Phi^{-1}(q)\bigr).
+\end{equation}
+Here $\Phi$ is the standard Gaussian cumulative distribution. The fit
+uses probabilities from 0.02 to 0.98 and compares these predicted values
+with measured standardized quantiles. A small residual over this interval
+does not constrain extreme tails, nor does it establish that higher
+moments or spatial correlations are correct. Boundary-hitting parameters
+also signal that the data may not identify the chosen functional freedom.
+
+\paragraph{Record repairs instead of presenting them as exact matching.}
+Noisy cross-spectrum estimates can have negative eigenvalues. A covariance
+for Gaussian harmonic draws cannot. The first pilot projects negative
+eigenvalues to zero and records the fractional matrix change. After the
+nonlinear correlation inversion it checks positivity again and normalizes
+the latent Gaussian variances. Every such operation changes the requested
+spectra. A later fit should improve the model or estimates when those
+changes matter for measured observables; the code must not silently claim
+exact spectrum matching after a repair.
+
+\section{Programs, files and commands}
+\paragraph{Use an activated Cocoa Python environment.}
+The scripts require NumPy, SciPy, PyYAML and Astropy, already part of the
+working scientific environment. The additional spherical-transform package
+used in this test is ducc0 0.42.0. Install it with
+\begin{lstlisting}
+python -m pip install ducc0==0.42.0
+\end{lstlisting}
+The existing footprint and aperture reader additionally uses
+astropy-healpix 1.0.3:
+\begin{lstlisting}
+python -m pip install astropy-healpix==1.0.3
+\end{lstlisting}
+Our tests installed these in temporary dependency directories instead of
+modifying the shared Cocoa environment. Ordinary users can install them
+in their selected environment. No separate Kunhao executable is downloaded:
+\texttt{generate\_maps.py} is our documented implementation of the paper's
+method. No CAMB call or N-body evolution is hidden inside it.
+
+\paragraph{Keep the worker budget explicit.}
+BLAS uses one worker. The transform worker count is set independently by
+the script's command-line option, with a current maximum of eight. The ducc0
+transforms use their native thread pool; setting a BLAS count does not
+control that pool. The pilot used four workers. The later large run was authorized to use
+eight; respect the current limit when reproducing a run. We generate maps serially so separate maps
+do not each start their own four-worker computation concurrently.
+
+\paragraph{Fit the initial model.}
+From the activated Cocoa directory, run one command:
+\begin{lstlisting}
+python projects/des_3pcf/notes/gptg_simulations/generate_maps.py fit --runs 32 --workers 4
+\end{lstlisting}
+This reads the listed original maps and writes fitted parameters and
+small measurement records under \texttt{chains/gptg\_method/}. The originals
+are unchanged. The YAML record gives source filenames, the harmonic cutoff,
+noise amplitudes, point parameters and positivity-repair sizes.
+
+\paragraph{Draw and save the new maps.}
+The next command uses that saved fit:
+\begin{lstlisting}
+python projects/des_3pcf/notes/gptg_simulations/generate_maps.py generate --count 64 --workers 4
+\end{lstlisting}
+The historical pilot used float64; recreating that precision reference
+requires the explicit \texttt{--float64-reference} option in a fresh
+output destination. The default for new maps is float32.
+Each output has the same array shape and footprint ordering as a supplied
+map. Names begin \texttt{GPTG\_DES\_} so the generated files cannot be
+mistaken for Rafael's original realizations. The starting seed is recorded;
+map number $r$ uses the starting seed plus $r$. Existing generated files
+are not overwritten by another experiment. Preserve or move the old
+experiment before deliberately rerunning the same output destination.
+
+\paragraph{Measure the same quantities in both ensembles.}
+The generator reuses the existing fixed aperture weights: 64 enclosed
+centers, Gaussian shear filters at 30 and 60 arcminutes, and four source
+bins. For each realization it averages squared and cubed aperture values,
+producing sixteen raw moments. Thus the comparison includes third-order
+measurements, but these coarse moments are not the published finite-triangle
+three-point estimator. Run the forward comparison and tomographic noise subtraction as separate
+commands:
+\begin{lstlisting}
+python projects/des_3pcf/notes/gptg_simulations/compare_maps.py
+\end{lstlisting}
+\begin{lstlisting}
+python projects/des_3pcf/notes/gptg_simulations/measure_apertures.py
+\end{lstlisting}
+The companion notebook shows the definitions,
+normalizations and saved vectors before constructing their covariances.
+
+\section{Measuring second and third moments, one operation at a time}
+\paragraph{Start with one weighted aperture.}
+The filter turns many shear pixels into one number at a chosen center.
+Let $w_{1p}$ and $w_{2p}$ include pixel area, radial filter and the rotation
+into tangential shear. For source bin $i$, the measured aperture is
+\begin{equation}
+ A_i=\sum_p\left(w_{1p}\gamma^i_1(p)+w_{2p}\gamma^i_2(p)\right).
+\end{equation}
+These weights are fixed by geometry. They do not depend on a map's measured
+values. Write the aperture as signal plus filtered noise:
+\begin{equation}
+ A_i=s_i+\epsilon_i.
+\end{equation}
+For independent pixel components with the fitted variance, expand the
+variance of the weighted noise sum. Cross terms between distinct pixels
+or components vanish. What remains is
+\begin{equation}
+ v_i=\E[\epsilon_i^2]
+ =\sigma_{n,i}^2\sum_p\left(w_{1p}^2+w_{2p}^2\right).
+\end{equation}
+The code uses the actual weights for each center. Even constant pixel noise
+need not give exactly equal aperture noise at every center.
+
+\paragraph{Correct the square before averaging over centers.}
+Multiplying the two factors gives
+\begin{equation}
+ A_i^2=s_i^2+2s_i\epsilon_i+\epsilon_i^2.
+\end{equation}
+The signal is fixed while we average over added noise, so
+\begin{equation}
+ \E[A_i^2\mid s_i]=s_i^2+2s_i\E[\epsilon_i]+\E[\epsilon_i^2].
+\end{equation}
+The zero mean removes the middle term; the last term is $v_i$. Subtracting
+that known contribution gives a statistic with the desired conditional mean:
+\begin{equation}
+ \E[A_i^2-v_i\mid s_i]=s_i^2.
+\end{equation}
+This is a correction to an aperture measurement. It is different from the
+Wishart noisy-matrix-square correction in the precision-expansion note.
+Both involve a noisy square, but they act on different random quantities.
+
+\paragraph{Show the cubic subtraction without a skipped step.}
+From the earlier expansion, the raw cubic expectation is
+\begin{equation}
+ \E[A_i^3\mid s_i]=s_i^3+3s_i v_i.
+\end{equation}
+We do not know $s_i$ in an observed aperture. However, the measured aperture
+has the correct conditional mean:
+\begin{equation}
+ \E[A_i\mid s_i]=s_i.
+\end{equation}
+Multiply this identity by the known number $3v_i$:
+\begin{equation}
+ \E[3v_iA_i\mid s_i]=3v_i s_i.
+\end{equation}
+Subtract the last expectation from the raw cubic expectation:
+\begin{equation}
+ \E[A_i^3-3v_iA_i\mid s_i]
+ =s_i^3+3s_i v_i-3v_i s_i=s_i^3.
+\end{equation}
+For a numerical example, take a signal of $0.2$ and noise variance $0.07$.
+The desired squared moment is $0.04$ and the desired cube is $0.008$.
+The raw square has expectation $0.11$. The raw cube has expectation
+$0.008+3(0.2)(0.07)=0.050$. Subtracting $0.07$ from the square and a
+term whose expectation is $0.042$ from the cube recovers the two target
+moments. The numerical check integrates these polynomial expressions
+against a Gaussian and recovers $0.04$ and $0.008$ to roundoff.
+
+\paragraph{Mixed source bins have three possible noise pairs.}
+Define the aperture-noise covariance between bins by
+\begin{equation}
+ V_{ij}=\E[\epsilon_i\epsilon_j].
+\end{equation}
+Multiplying all three signal-plus-noise factors gives eight terms:
+\begin{align}
+ A_iA_jA_k={}&s_is_js_k
+ +\epsilon_i s_js_k+s_i\epsilon_j s_k+s_is_j\epsilon_k\nonumber\\
+ &+\epsilon_i\epsilon_j s_k
+  +\epsilon_i s_j\epsilon_k
+  +s_i\epsilon_j\epsilon_k
+  +\epsilon_i\epsilon_j\epsilon_k.
+\end{align}
+For centered Gaussian noise independent of the signals, terms with one or
+three noise factors have zero expectation. The three two-noise terms give
+\begin{equation}
+ \E[A_iA_jA_k\mid s]=s_is_js_k+V_{ij}s_k+V_{ik}s_j+V_{jk}s_i.
+\end{equation}
+Each remaining signal can be replaced by its unbiased observed aperture
+inside a subtraction. Thus define
+\begin{equation}
+ T_{ijk}=A_iA_jA_k-V_{ij}A_k-V_{ik}A_j-V_{jk}A_i.
+\end{equation}
+Taking the expectation cancels the three extra terms separately:
+\begin{equation}
+ \E[T_{ijk}\mid s]=s_is_js_k.
+\end{equation}
+For our independent source-bin noise, $V_{ij}$ vanishes for different bins.
+For three equal indices the formula reduces to the cubic subtraction above.
+For indices $(1,1,2)$ only $V_{11}A_2$ remains. For $(1,2,3)$ none remains.
+Correlated source-bin noise would require its nonzero cross terms.
+
+\paragraph{One map produces a vector, not an ensemble covariance.}
+We average each corrected product over the same 64 enclosed centers at each
+radius. Four source bins give ten unordered pairs and twenty unordered
+triples. Two radii therefore produce twenty second-order rows and forty
+third-order rows. The code writes all sixty raw rows and all sixty corrected
+rows, with explicit source labels. A second operation estimates covariance
+across maps. Subtracting a conditional noise bias from the mean does not
+remove the variance of the noisy measurement; that variance belongs in its
+covariance. The sixteen-row comparison below keeps only the original
+same-source raw moments so its definitions remain identical to the complete
+Rafael-ensemble diagnostic.
+
+\section{Results of the first fitted and saved ensemble}
+\paragraph{What was actually run.}
+The fit read 32 primary files. We then generated and saved 64 four-bin
+maps with independent random seeds, the exact retained pixel list and
+added Gaussian noise. The noise standard deviations per shear component
+are approximately $0.03545$, $0.03846$, $0.03813$ and $0.04685$ in source-bin
+order. The central reconstructed-quantile fit residuals are between
+$0.013$ and $0.024$ in standardized units. Several fit parameters approach
+their allowed limits. A small residual and a boundary solution together
+are insufficient evidence that the underlying convergence distribution
+has been recovered.
+
+\paragraph{The spectral adjustments are measured.}
+Removing negative eigenvalues from the initial signal-spectrum matrices
+changes their combined Frobenius norm by about $0.79\%$. The analogous
+change after nonlinear correlation inversion is about $0.0064\%$.
+Normalizing the latent Gaussian variances changes scale factors associated
+with variances between $1.00009$ and $1.00061$. These small repairs do not
+prove that the masked-spectrum approximation is accurate. Figure~\ref{fig:gptg-power}
+measures the final maps, after the mask and noise have been applied.
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.66\linewidth]{plots/spectra/spectra.pdf}
+ \caption{Generated masked auto-power divided by the 32-map calibration
+ measurement. The dotted horizontal line denotes equality.}
+ \label{fig:gptg-power}
+\end{figure}
+
+\paragraph{Compare the same raw covariance with the full supplied ensemble.}
+The direct reference uses all 15,997 available measured vectors; it is not
+restricted to the 32 maps used for this initial fit. For the sixteen raw
+moments, generated-to-reference variance ratios range from $0.621$ to
+$1.440$. The largest absolute correlation difference is $0.332$.
+Figures~\ref{fig:gptg-var} and~\ref{fig:gptg-corr} locate these differences.
+The generated covariance itself is estimated from only 64 maps. Even for
+one exactly Gaussian observable, its sample variance would have fractional
+standard deviation
+\begin{equation}
+ \sqrt{\frac{2}{64-1}}\simeq0.178.
+\end{equation}
+Non-Gaussian observables need not follow that estimate. We therefore do not
+interpret every difference as established model bias, or interpret a noisy
+agreement as validation. This pilot shows a practical generator and a
+measurable comparison; it does not establish a trustworthy DES covariance.
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.72\linewidth]{plots/variance/variance.pdf}
+ \caption{Variance ratios for the same sixteen raw moments. The reference
+ uses the complete supplied ensemble; the generated estimate uses 64 maps.}
+ \label{fig:gptg-var}
+\end{figure}
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.7\linewidth]{plots/correlation/correlation.pdf}
+ \caption{The two covariance correlations in opposite triangles, with
+ their shared second-/third-order row boundary marked.}
+ \label{fig:gptg-corr}
+\end{figure}
+
+\paragraph{Separate numerical checks from physical matching.}
+For the fitted parameters, increasing Gaussian quadrature from 160 to
+240 nodes changes the normalized transform by a weighted RMS below
+$7.1\times10^{-12}$. The 64-term Hermite relation agrees with direct
+bivariate Gaussian quadrature within $5.9\times10^{-12}$ at the checked
+correlations; extending to 96 terms changes it by less than
+$4.5\times10^{-13}$. A separate band-limited spherical round trip at low
+resolution has relative error below $4.9\times10^{-12}$. These checks
+support the implemented algebra and transform conventions. They do not
+bound errors from the chosen multipole cutoff, masked reconstruction,
+noise approximation, calibration sample or absent physical correlations.
+The production nonlinear map is not band-limited: projecting it back to a
+finite harmonic range discards high-frequency content. A solver residual
+in that projection must not be confused with the small band-limited
+round-trip error.
+
+\section{Testing sixth-order precision formulas on measured map vectors}
+\paragraph{Define a population whose truth can be computed exactly.}
+The continuous fitted map model does not come with an exact analytic
+covariance for our measurements. To test estimator algebra without guessing
+that truth, take the 64 measured vectors as a fixed list. Select four rows:
+the squared and cubed 30-arcminute apertures in source bins one and four.
+Give every list member probability $1/64$. We now have a discrete probability
+model with a known covariance. This is a conditional test on the measured
+list, not a claim of 64 perfectly representative N-body skies.
+
+\paragraph{Compute that covariance with the population denominator.}
+Let $x_r$ be a four-component list member. Its mean is
+\begin{equation}
+ \mu=\frac1{64}\sum_{r=1}^{64}x_r.
+\end{equation}
+The stipulated population covariance is
+\begin{equation}
+ C_{\rm list}=\frac1{64}\sum_{r=1}^{64}(x_r-\mu)(x_r-\mu)^{\mathsf T}.
+\end{equation}
+Here the denominator is 64 because the list defines the entire probability
+model. When we later draw an independent sample from this model and estimate
+its covariance, that sample uses the usual denominator $N-1$.
+This distinction prevents a small normalization error from masquerading as
+bias in a sixth-order estimator.
+
+\paragraph{Make independent experiments by sampling with replacement.}
+For each draw, choose an integer uniformly between zero and 63 and select
+that list member. Return it to the list before the next choice. Returning
+it allows repeated values while keeping successive choices independent.
+For each of 8,192 experiments, draw either 128 or 512 vectors this way.
+We use all list members in the probability model, with no calibration or
+validation groups. Reusing list members does not create new physical maps;
+it creates independent random experiments within a precisely specified
+discrete distribution.
+
+\paragraph{Fix the starting matrix before those experiments.}
+We first standardize the four measurement coordinates using fixed list
+scales. In those coordinates choose
+\begin{equation}
+ M=2C_{\rm list}+0.1I.
+\end{equation}
+This deliberately imperfect but positive reference is held fixed for every
+resampled experiment. The exact whitened population covariance determines
+the second-, fourth- and sixth-order polynomial targets. Its exact inverse
+is a separate target. We measure error about both, because removing
+finite-sample bias from a polynomial does not make the polynomial equal
+to the full inverse.
+
+\paragraph{Read the error comparison rather than choosing the largest order.}
+Figure~\ref{fig:gptg-precision} shows relative RMS matrix error about the
+exact inverse. For the distribution-independent distinct-pair construction,
+the errors at 128 draws are approximately $0.194$, $0.226$ and $0.267$ at
+orders two, four and six. At 512 draws they become $0.158$, $0.116$ and
+$0.130$. More draws help, and fourth order becomes useful in this example;
+sixth order still does not beat fourth. The Gaussian-formula curves are
+included as an assumption test. These measured non-Gaussian vectors do not
+satisfy a Wishart proof merely because the formula returns a positive matrix.
+At 128 draws, the largest mean discrepancy from its sixth-order truncated
+target is about $4.8$ Monte Carlo standard errors for that formula. The
+corresponding distinct-pair discrepancy is about $2.7$, across the inspected
+matrix entries. These are measured diagnostics, not fitted success criteria.
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=0.75\linewidth]{plots/precision/precision.pdf}
+ \caption{Precision errors in independent resamplings of the fixed
+ 64-member measurement population. New resamplings are not new physical skies.}
+ \label{fig:gptg-precision}
+\end{figure}
+\FloatBarrier
+
+\section{Cost, storage and the next scientific decision}
+\paragraph{A measured construction cost.}
+Before calibration, three four-bin NSIDE 512 generations with multipoles
+through 1024 took approximately 4.28, 3.71 and 4.09 seconds with four
+workers. They included scalar synthesis, the point transform, iterative
+harmonic analysis, spin-two synthesis and footprint selection. That
+benchmark used illustrative spectra and parameters with no shape noise.
+It is not a forecast of the complete published three-point measurement
+cost. The calibrated 64-map run has median generation-plus-save-plus-aperture
+time of 4.27 seconds per map. Extrapolating that measured median gives about
+71 minutes for 1,000 maps or 11.9 hours for 10,000; these are extrapolations,
+not completed large-ensemble timings. Published triangle measurements can
+have a different cost. The run records all three stages separately.
+
+\paragraph{Saving maps is affordable for a pilot.}
+The output contains four bins, two components and 369,190 pixels. At eight
+bytes per value, the payload size is
+\begin{equation}
+ 4\times2\times369190\times8=23628160\ \mathrm{bytes}.
+\end{equation}
+Sixty-four maps need about 1.51 GB in decimal units. Ten thousand need
+about 236 GB before headers and auxiliary files. The original pilot remains float64 as a precision reference. The measured
+rounding check below supports float32 for new saved maps, halving those
+storage values while keeping all arithmetic in float64.
+The raw maps and generated outputs are ignored by Git; the notes, scripts,
+notebook and compact validation evidence belong in the repository.
+
+\paragraph{Decide from measurements rather than file count.}
+We must compare spectra, reconstructed distributions, raw and noise-corrected
+moments, covariance diagonals, correlations and parameter-sensitive matrix
+directions. Matching the one-point distribution and two-point correlation
+alone does not establish the four-, five- and six-field correlations needed
+by a joint covariance. More generated maps reduce random uncertainty in
+those comparisons; they do not remove a persistent disagreement.
+
+\paragraph{How this connects to sixth-order Eifler corrections.}
+The separate precision-expansion note derives second-, fourth- and
+sixth-order estimators and distinguishes truncation error from sampling
+noise. A calibrated generator could provide a more accurate starting
+covariance, or a cheap ensemble for testing the estimators. If fitted
+using the same finite N-body sample later used for a correction, that
+dependence must be accounted for. We cannot invoke a proof conditional
+on an independently fixed model while silently fitting that model to the
+correction sample. This is a statistical accounting requirement, not a
+reason to avoid the generator experiment.
+
+\paragraph{Reproduce the bounded checks without generating another ensemble.}
+The companion notebook, \texttt{EXAMPLE\_GPTG\_SIMULATIONS.ipynb}, reads
+compact frozen measurements from the repository. Its explicit optional
+switches run calibration, map generation or precision resampling. To run
+the deterministic numerical checks directly, use
+\begin{lstlisting}
+python projects/des_3pcf/notes/gptg_simulations/check_numerics.py
+\end{lstlisting}
+To repeat the measured-list precision experiment, use
+\begin{lstlisting}
+python projects/des_3pcf/notes/gptg_simulations/map_precision_tests.py
+\end{lstlisting}
+The \texttt{tests/gptg\_pilot/} records retain the actual parameters, row
+labels, measurements, timing and numerical checks. The raw generated maps
+remain under \texttt{chains/gptg\_method/maps/} and are not committed.
+
+\paragraph{What would justify a larger production ensemble.}
+First replace or test the masked-spectrum approximation with a forward
+window calculation, and compare both auto- and cross-bin spectra. Fit the
+point-function parameters through the same noisy reconstruction used on
+the real inputs, rather than identifying a noisy proxy distribution with
+the underlying convergence distribution. Obtain the producer's shear basis,
+noise and weighting conventions; our sign diagnostic favors the current
+component choice but does not replace that information. Then refine the
+harmonic cutoff and pixel treatment and measure the actual intended
+second-/third-order estimator. Finally propagate uncertainty of the fitted
+parameters and examine covariance eigen-directions, not only diagonal
+variances. Additional generated mocks become useful for physical forecasts
+when those comparisons support the fitted model at the required precision.
+
+\section{A larger ensemble with genuinely separate validation draws}
+\paragraph{Freeze the model before testing estimators.}
+The authorized larger run has 10,000 comparison maps and 5,000 additional
+validation maps. Its generation is in progress at the time of this note;
+no results from those 15,000 maps are claimed here. The fitted parameters
+are copied once into the run directory, and the two map groups use disjoint
+seed ranges, also distinct from the 64-map pilot. Independence here is
+conditional on that fixed fitted model. It is not proof that the model
+reproduces independent N-body skies.
+
+\paragraph{Use all comparison maps in both estimates.}
+The direct covariance and each Eifler estimate use the same 10,000 measured
+vectors. The initial reference is fixed in advance to twice the archived
+Gaussian raw-aperture reference. The factor of two is a stated benchmark
+choice, not fitted using the new comparison or validation maps. Both Gaussian
+matrix-power and distinct-pair constructions are tested at orders two,
+four and six. Every predeclared result is retained, including a report when
+an estimate is indefinite. The 5,000 validation maps do not choose the
+reference, order or discarded cases.
+
+\paragraph{The direct inverse is a comparator, not known truth.}
+More simulated maps reduce its sampling uncertainty, but inversion can
+amplify noise in weak covariance directions. Agreement with a sample inverse
+is especially limited evidence when the alternative uses the same sample.
+A higher-order polynomial can approach that particular inverse while
+reproducing more sample noise. The validation group provides an additional
+question: which proposed precision better predicts new fluctuations?
+
+\paragraph{Define a score that never inverts the validation covariance.}
+For a fixed positive precision $\Psi$, define
+\begin{equation}
+ J(\Psi)=\operatorname{tr}(\Psi C_*)-\log\det\Psi,
+\end{equation}
+where $C_*$ is the unknown covariance of the fitted generator. Lower is
+better. This is the covariance-dependent part of an expected Gaussian
+quadratic loss. Its optimum is the true inverse covariance even if the
+vectors are not Gaussian, provided their covariance exists. It does not
+assert that a Gaussian likelihood describes every aspect of those vectors.
+
+\paragraph{Show why its optimum is the true inverse.}
+Use the symmetric positive square root of $C_*$ to define
+\begin{equation}
+ A=C_*^{1/2}\Psi C_*^{1/2}.
+\end{equation}
+Cyclic invariance of the trace gives
+\begin{equation}
+ \operatorname{tr}(\Psi C_*)=\operatorname{tr}(A).
+\end{equation}
+Multiplication of determinants gives
+\begin{equation}
+ \det A=\det C_*\,\det\Psi.
+\end{equation}
+Taking logarithms and solving for the precision determinant gives
+\begin{equation}
+ \log\det\Psi=\log\det A-\log\det C_*.
+\end{equation}
+Substitute these two identities into the score:
+\begin{equation}
+ J(\Psi)=\operatorname{tr}(A)-\log\det A+\log\det C_*.
+\end{equation}
+The last term does not depend on the candidate precision. If $\lambda_i$
+are the positive eigenvalues of $A$, the remaining terms are
+\begin{equation}
+ \sum_i\left(\lambda_i-\log\lambda_i\right).
+\end{equation}
+For one positive number, the derivative of $x-\log x$ is $1-1/x$.
+It vanishes at $x=1$; its second derivative is $1/x^2>0$. Each eigenvalue
+therefore minimizes the score at one. Thus $A=I$ is the optimum. Multiplying
+that identity on each side by $C_*^{-1/2}$ gives
+\begin{equation}
+ \Psi=C_*^{-1}.
+\end{equation}
+We have established the target of the score without using an observed
+sample inverse as the truth.
+
+\paragraph{Estimate the score difference on independent maps.}
+Let $r_a$ be a validation vector minus the validation sample mean. Its
+ordinary sample covariance is
+\begin{equation}
+ \widehat C_v=\frac1{N_v-1}\sum_{a=1}^{N_v}r_ar_a^{\mathsf T}.
+\end{equation}
+For the candidate precision and the direct comparison-sample precision,
+define their fixed difference
+\begin{equation}
+ D=\Psi-\Psi_{\rm direct}.
+\end{equation}
+The measured score difference is
+\begin{equation}
+ \widehat{\Delta J}=\operatorname{tr}(D\widehat C_v)
+             -\log\det\Psi+\log\det\Psi_{\rm direct}.
+\end{equation}
+Insert the sample-covariance sum into its trace term:
+\begin{equation}
+ \operatorname{tr}(D\widehat C_v)
+ =\frac1{N_v-1}\sum_a\operatorname{tr}(Dr_ar_a^{\mathsf T}).
+\end{equation}
+For a column vector, cyclically moving the factors inside the trace leaves
+a one-by-one matrix. Its trace is just its scalar value:
+\begin{equation}
+ \operatorname{tr}(Dr_ar_a^{\mathsf T})=r_a^{\mathsf T}Dr_a.
+\end{equation}
+We can therefore calculate the comparison directly from new realizations,
+without inverting their covariance. A negative measured difference favors
+the candidate on this validation sample. Its uncertainty comes from the
+scatter of the quadratic differences; the reported standard error is an
+asymptotic estimate, since centering by a sample mean introduces weak
+within-group dependence. Indefinite precisions receive no such score.
+
+\paragraph{Storage precision is tested separately from arithmetic precision.}
+New generated maps are stored as float32. Generation, harmonic transforms,
+filter weights, aperture accumulation, covariance and inversion remain
+float64. Saved pixels are decoded to float64 before measuring the recorded
+vectors. This ensures the journal can be reproduced from the files later
+read by a student. The 64 original pilot maps remain float64 solely as a
+small precision-test reference.
+
+\paragraph{Measure the rounding error on actual observables.}
+For each pilot map we rounded its pixels to float32, decoded them to
+float64, and repeated the same filtering and moment calculation. Across
+all 64 maps, the largest absolute shear change was $8.58\times10^{-9}$.
+The largest joint covariance-weighted vector change was
+$2.56\times10^{-7}$. The largest fractional variance change was
+$1.50\times10^{-8}$; the largest relative covariance or precision change
+in any matrix direction was about $5.25\times10^{-8}$. These effects are
+negligible for the tested 30/60-arcminute diagnostics. A cubic moment near
+zero is not a useful denominator for a relative-error check, so we compare
+against the measured covariance and its matrix directions instead.
+
+\paragraph{Retain maps without doubling the working disk.}
+Fifteen thousand float32 maps require about 177 GB. The runner writes one
+map at a time, keeps a 50 GB free-space reserve, and flushes a text journal
+after every completed map. A temporary file is renamed only after a map
+save completes; full-sky intermediates stay in memory. Restarting the same
+command resumes completed records instead of regenerating them:
+\begin{lstlisting}
+python projects/des_3pcf/notes/gptg_simulations/generate_ensemble.py --workers 8
+\end{lstlisting}
+The large run now uses eight native transform workers and one BLAS worker.
+The same-seed four-versus-eight check gave bitwise-identical saved float32
+pixels and measured moments. The first 274 comparison maps used four workers;
+subsequent maps use eight, with that transition recorded. After
+both map groups are complete, execute the fixed comparison:
+\begin{lstlisting}
+python projects/des_3pcf/notes/gptg_simulations/analyze_ensemble.py
+\end{lstlisting}
+The current driver runs that analysis after generation finishes. A
+validation preference is a result to report, not permission to tune
+repeatedly against the same validation group and continue calling it an
+independent final test.
+
+\begin{thebibliography}{9}
+\bibitem{zhong} K. Zhong, G. Bernstein, S. S. Boruah, B. Jain and S. Kobla,
+\emph{Fast Generation of Weak Lensing Maps with Analytical Point
+Transformation Functions},
+\href{https://arxiv.org/abs/2411.04759}{arXiv:2411.04759};
+\href{https://doi.org/10.1103/PhysRevD.111.103507}{Phys. Rev. D 111, 103507}.
+\bibitem{pme} O. Friedrich and T. Eifler,
+\emph{Precision matrix expansion --- efficient use of numerical simulations
+in estimating errors on cosmological parameters},
+\href{https://arxiv.org/abs/1703.07786}{arXiv:1703.07786}.
+\bibitem{ducc} ducc0 contributors,
+\href{https://mtr.pages.mpcdf.de/ducc/}{ducc0 documentation} and
+\href{https://pypi.org/project/ducc0/0.42.0/}{version 0.42.0}.
+\bibitem{gomes} R. C. H. Gomes et al.,
+\emph{Cosmology with second and third-order shear statistics for the Dark
+Energy Survey: Methods and simulated analysis},
+\href{https://arxiv.org/abs/2503.03964}{arXiv:2503.03964}.
+\end{thebibliography}
+\end{document}

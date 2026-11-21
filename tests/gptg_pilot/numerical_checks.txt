@@ -1,0 +1,6 @@
+Normalization 160 -> 240 nodes, weighted RMS: 7.033751977914459e-12
+Hermite 64 versus direct 2D quadrature: 5.8718585549399904e-12
+Hermite 64 -> 96, maximum correlation change: 4.4719783431901305e-13
+Band-limited scalar harmonic round trip: 4.87017864611109e-12
+Distinct-pair recurrence agrees with every subset through degree 6.
+Noise-subtracted square and cube recover 0.039999999999999744 0.00799999999999984

@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage[margin=1.15in]{geometry}
-\usepackage{amsmath,amssymb,graphicx,xcolor,booktabs,needspace}
+\usepackage{amsmath,amssymb,graphicx,xcolor,booktabs,needspace,placeins,xurl}
 \usepackage[hidelinks]{hyperref}
 \newcommand{\Cov}{\mathsf{C}}
 \newcommand{\M}{\mathsf{M}}
@@ -57,7 +57,10 @@ pair measurements with the released DES covariance.
 An understanding of averages, variances and matrix multiplication is enough
 to follow the argument; the Gaussian matrix-moment identity is stated with
 its assumptions. The PME notebook computes the correction with small
-matrices before a controlled Gaussian experiment. A separate map notebook
+matrices before controlled Gaussian and lognormal experiments.
+Sections~\ref{sec:fourth-order}--\ref{sec:fourth-toys} then extend the
+second-order derivation to fourth order and to distinct-pair products that
+use one complete ensemble. A separate map notebook
 analyzes measured coarse aperture moments. Neither supplies a calibrated
 precision for the published DES data vector.
 
@@ -522,11 +525,31 @@ $N-1$. A 480-component vector and 199 independent measurements give rank at
 most 198: its full sample covariance cannot be inverted.
 
 \paragraph{Even an invertible estimate fluctuates.}
-For a single positive variance estimate $\hat v=v+\epsilon$, expand its
-inverse for small $\epsilon/v$:
+For a single positive variance estimate, separate the true value and
+its sampling error:
 \begin{equation}
- \E[\hat v^{-1}]\simeq v^{-1}
- +\frac{\E[\epsilon^2]}{v^3},\qquad \E[\epsilon]=0.
+ \hat v=v+\epsilon,\qquad \E[\epsilon]=0.
+\end{equation}
+First factor out the true variance from its reciprocal:
+\begin{equation}
+ \hat v^{-1}=\frac1v\frac1{1+\epsilon/v}.
+\end{equation}
+For small $\epsilon/v$, the geometric expansion keeps a constant, a linear
+error and a quadratic error:
+\begin{equation}
+ \hat v^{-1}\simeq\frac1v\left(1-\frac\epsilon v+
+                                     \frac{\epsilon^2}{v^2}\right).
+\end{equation}
+Distribute $1/v$ and average each term separately:
+\begin{equation}
+ \E[\hat v^{-1}]\simeq\frac1v-
+              \frac{\E[\epsilon]}{v^2}+
+              \frac{\E[\epsilon^2]}{v^3}.
+\end{equation}
+Only the linear error vanishes. The quadratic contribution remains:
+\begin{equation}
+ \E[\hat v^{-1}]\simeq\frac1v+
+              \frac{\E[\epsilon^2]}{v^3}.
 \end{equation}
 Zero average error in the variance therefore does not give zero average
 error in its inverse. Matrix inversion has the same problem and mixes errors
@@ -616,7 +639,8 @@ modeled covariance is
 Substitute the Cholesky factorization. Each inverse cancels its matching
 factor:
 \begin{equation}
- L^{-1}(L L\T)L^{-\mathsf T}=\I.
+ L^{-1}(L L\T)L^{-\mathsf T}
+   =(L^{-1}L)(L\T L^{-\mathsf T})=\I\I=\I.
 \end{equation}
 The modeled covariance is therefore the identity. This operation, called whitening,
 removes the model's units and correlations. The true covariance in these
@@ -639,9 +663,21 @@ measurement units. Whitening can be evaluated by triangular solves rather than b
 forming explicit numerical inverses.
 
 \paragraph{Apply the scalar argument to each matrix direction.}
+First undo the definition of $R$ by multiplying by $L$ on the left
+and $L\T$ on the right:
+\begin{equation}
+ \Cov=LRL\T=L(\I+X)L\T.
+\end{equation}
+To undo these three factors, their inverses must act in reverse order:
+\begin{equation}
+ \Cov^{-1}=L^{-\mathsf T}(\I+X)^{-1}L^{-1}.
+\end{equation}
+For example, multiplying the proposed inverse on the right of $\Cov$
+cancels $L\T L^{-\mathsf T}$ first, then $(\I+X)(\I+X)^{-1}$,
+and finally $LL^{-1}$. This verifies the order of the factors.
 A real symmetric $X$ has orthogonal eigenvectors. Along an eigenvector with
-eigenvalue $x$, the required inverse factor is precisely $1/(1+x)$.
-Therefore
+eigenvalue $x$, the middle inverse factor is precisely $1/(1+x)$.
+Replacing that factor by its geometric series gives
 \begin{equation}
  \Psi=L^{-\mathsf T}(\I-X+X^2-\cdots)L^{-1}.
  \label{eq:series}
@@ -938,7 +974,22 @@ unwanted term. We are ready to subtract them. The separate multipliers
 are chosen for this cancellation, not as additional fitted parameters.
 
 \paragraph{Step 4: subtract and normalize.}
-Subtract the second product from the first. Linearity of expectation gives
+Subtract the second product from the first. Keep both complete
+expectations visible before cancelling anything:
+\begin{equation}
+ \begin{split}
+ \E[\nu^2S^2-\nu S\operatorname{tr}(S)]
+ ={}&[(\nu^2+\nu)R^2+\nu R\operatorname{tr}(R)]\\
+    &-[\nu R\operatorname{tr}(R)+2R^2].
+ \end{split}
+\end{equation}
+The subtraction changes the signs of both terms in the second bracket.
+Group the square coefficient and the trace coefficient separately:
+\begin{equation}
+ \E[\nu^2S^2-\nu S\operatorname{tr}(S)]
+ =[(\nu^2+\nu)-2]R^2+(\nu-\nu)R\operatorname{tr}(R).
+\end{equation}
+The second coefficient is zero. The first is the required normalization:
 \begin{equation}
  \E[\nu^2S^2-\nu S\operatorname{tr}(S)]
                        =(\nu^2+\nu-2)R^2.
@@ -1466,6 +1517,1068 @@ shape noise mixes with the signal inside products; the next section
 shows why deleting noise from maps does not automatically realize this
 simple additive measurement example.
 
+\subsection{From second order to fourth order, without skipping the algebra}
+\label{sec:fourth-order}
+\paragraph{The new question.}
+Second order leaves out cubic and higher powers of the model error.
+Can we keep two more powers and still remove the bias caused by multiplying
+noisy estimates? Yes, under specified sampling assumptions. We will first
+extend the Gaussian calculation, then construct an alternative that does
+not require Gaussian vectors. These are extensions derived here from the
+expansion logic of Friedrich and Eifler; their paper gives the second-order
+estimator. Neither extension makes a finite polynomial equal to an exact
+inverse.
+
+\paragraph{Keep truth and observation separate.}
+The true covariance is $C$; the observed sample covariance is $\widehat C$.
+The model $M$ is positive definite and fixed independently of the particular
+sample used to estimate the correction. Factor the model:
+\begin{equation}
+ M=LL^{\mathsf T}.
+\end{equation}
+Write the unknown true covariance in model units:
+\begin{equation}
+ R=L^{-1}CL^{-\mathsf T}.
+\end{equation}
+The corresponding measured matrix is
+\begin{equation}
+ S=L^{-1}\widehat C L^{-\mathsf T}.
+\end{equation}
+The distinction matters: powers of $R$ describe the target polynomial,
+whereas powers of $S$ contain sampling noise. The residual of the true
+covariance from the model is
+\begin{equation}
+ X=R-I.
+\end{equation}
+An accurate model makes this residual small in every relevant matrix
+direction, not merely in its diagonal entries.
+
+\paragraph{First multiply out the square.}
+The identity matrix leaves every matrix unchanged on either side. In
+particular, the products used below obey
+\begin{equation}
+ RI=IR=R,\qquad I^2=I.
+\end{equation}
+We need this property because two arbitrary matrices cannot be reordered.
+Start by replacing each residual factor by its definition:
+\begin{equation}
+ X^2=(R-I)(R-I).
+\end{equation}
+The first term in the left bracket multiplies both terms on the right;
+then the second term does the same. This gives four products:
+\begin{equation}
+ X^2=RR-RI-IR+II.
+\end{equation}
+Use the identity rules above, without changing any other product order:
+\begin{equation}
+ X^2=R^2-R-R+I=R^2-2R+I.
+\end{equation}
+Now insert the residual and its square into the second-order polynomial:
+\begin{equation}
+ P_2=I-(R-I)+(R^2-2R+I).
+\end{equation}
+The minus sign before the first bracket changes both signs in that bracket:
+\begin{equation}
+ P_2=I-R+I+R^2-2R+I.
+\end{equation}
+Keep the identity, linear and quadratic terms in separate groups:
+\begin{equation}
+ P_2=(1+1+1)I+(-1-2)R+R^2.
+\end{equation}
+Adding the scalar coefficients gives the familiar starting point:
+\begin{equation}
+ P_2=3I-3R+R^2.
+\end{equation}
+
+\paragraph{Multiply once more to obtain the cubic residual.}
+Instead of quoting a binomial formula, multiply the square we just found
+by one more copy of the residual:
+\begin{equation}
+ X^3=(R^2-2R+I)(R-I).
+\end{equation}
+First multiply the left bracket by $R$, retaining all three terms:
+\begin{equation}
+ (R^2-2R+I)R=R^3-2R^2+R.
+\end{equation}
+Then multiply the same bracket by $-I$:
+\begin{equation}
+ (R^2-2R+I)(-I)=-R^2+2R-I.
+\end{equation}
+Add those two results before collecting coefficients:
+\begin{equation}
+ X^3=R^3-2R^2+R-R^2+2R-I.
+\end{equation}
+There is one cubic term, two quadratic contributions and two linear
+contributions. Grouping them explicitly gives
+\begin{equation}
+ X^3=R^3+(-2-1)R^2+(1+2)R-I.
+\end{equation}
+Thus the cube needed by the inverse series is
+\begin{equation}
+ X^3=R^3-3R^2+3R-I.
+\end{equation}
+
+\paragraph{Subtract the whole cubic, including every sign.}
+Third order extends the second-order polynomial by $-X^3$:
+\begin{equation}
+ P_3=P_2-X^3.
+\end{equation}
+Substitute both complete expressions, with brackets still visible:
+\begin{equation}
+ P_3=(3I-3R+R^2)-(R^3-3R^2+3R-I).
+\end{equation}
+The minus sign changes all four terms of the second bracket, not only
+the leading cubic term:
+\begin{equation}
+ P_3=3I-3R+R^2-R^3+3R^2-3R+I.
+\end{equation}
+There are now two contributions to each of the identity, linear and
+quadratic coefficients:
+\begin{equation}
+ P_3=(3+1)I+(-3-3)R+(1+3)R^2-R^3.
+\end{equation}
+Adding them yields
+\begin{equation}
+ P_3=4I-6R+4R^2-R^3.
+\end{equation}
+No sample covariance has entered. We are still calculating a polynomial
+of the fixed, unknown true covariance in model units.
+
+\paragraph{Multiply again to obtain the quartic residual.}
+The fourth power is the cubic residual times one more residual:
+\begin{equation}
+ X^4=(R^3-3R^2+3R-I)(R-I).
+\end{equation}
+Multiplication by the first term in the right bracket gives
+\begin{equation}
+ (R^3-3R^2+3R-I)R=R^4-3R^3+3R^2-R.
+\end{equation}
+Multiplication by its second term gives
+\begin{equation}
+ (R^3-3R^2+3R-I)(-I)=-R^3+3R^2-3R+I.
+\end{equation}
+Add these results, displaying which coefficients come from the two products:
+\begin{equation}
+ X^4=R^4+(-3-1)R^3+(3+3)R^2+(-1-3)R+I.
+\end{equation}
+This reduces to
+\begin{equation}
+ X^4=R^4-4R^3+6R^2-4R+I.
+\end{equation}
+
+\paragraph{Add the quartic to the cubic approximation.}
+The geometric inverse series alternates signs in powers of $X$. Its
+fourth term is positive, so this step is addition:
+\begin{equation}
+ P_4=P_3+X^4.
+\end{equation}
+Substitute the expressions obtained above:
+\begin{equation}
+ \begin{split}
+ P_4={}&(4I-6R+4R^2-R^3)\\
+       &+(R^4-4R^3+6R^2-4R+I).
+ \end{split}
+\end{equation}
+Collect each power in its own coefficient, from the identity through the
+fourth power:
+\begin{equation}
+ P_4=(4+1)I+(-6-4)R+(4+6)R^2+(-1-4)R^3+R^4.
+\end{equation}
+The target polynomial is consequently
+\begin{equation}
+ P_4=5I-10R+10R^2-5R^3+R^4.
+ \label{eq:fourth-target}
+\end{equation}
+These integer coefficients follow from the multiplications and additions
+just displayed. They are not fitted to simulation measurements.
+
+\paragraph{Check the signs with one number.}
+In one dimension set $R=1.2$, so $X=0.2$. The second-order value is
+\begin{equation}
+ P_2=1-0.2+0.04=0.84.
+\end{equation}
+Subtract the cubic residual to obtain
+\begin{equation}
+ P_3=0.84-0.008=0.832.
+\end{equation}
+Add the fourth power to obtain
+\begin{equation}
+ P_4=0.832+0.0016=0.8336.
+\end{equation}
+The expression in powers of $R$ gives the same result independently:
+\begin{equation}
+ P_4=5-12+14.4-8.64+2.0736=0.8336.
+\end{equation}
+The exact inverse is $1/1.2=0.83333\ldots$. This check illustrates the
+finite truncation error; it is not a test of simulation noise.
+
+\paragraph{What unbiasedness would mean.}
+Let $Q_j$ estimate the $j$th true matrix power, with
+\begin{equation}
+ \E[Q_j]=R^j.
+\end{equation}
+Since the ordinary sample covariance has the correct mean, take $Q_1=S$.
+Linearity of expectation then gives the fourth-order estimator
+\begin{equation}
+ \widehat P_4=5I-10S+10Q_2-5Q_3+Q_4.
+ \label{eq:fourth-estimator}
+\end{equation}
+Its expectation is $P_4$. Returning to the original units gives
+\begin{equation}
+ \widehat\Psi_4=L^{-\mathsf T}\widehat P_4 L^{-1}.
+\end{equation}
+This is unbiased for the \emph{truncated precision}, not for the exact
+precision. Inverting this random estimate to display a covariance does not
+preserve unbiasedness either. Those are separate nonlinear operations.
+
+\paragraph{Why squaring the corrected square is insufficient.}
+Write the second-power estimate as truth plus a zero-mean matrix error:
+\begin{equation}
+ Q_2=R^2+E_2,\qquad \E[E_2]=0.
+\end{equation}
+Multiplication produces both cross orders and an error square:
+\begin{equation}
+ Q_2^2=R^4+R^2E_2+E_2R^2+E_2^2.
+\end{equation}
+The cross terms have zero expectation because $R$ is fixed. The last term
+usually does not. Thus
+\begin{equation}
+ \E[Q_2^2]=R^4+\E[E_2^2].
+\end{equation}
+A correction valid for one power cannot simply be reused as though it were
+noise-free. We need new moment equations for the cubic and quartic powers.
+
+\subsection{The Gaussian fourth-order correction}
+\label{sec:fourth-wishart}
+\paragraph{Exactly which assumption supplies the correction.}
+For $N$ independent Gaussian measurement vectors, the mean-subtracted
+sample covariance has Wishart degrees of freedom
+\begin{equation}
+ \nu=N-1.
+\end{equation}
+The following formulas require $\nu>3$. They apply in any matrix dimension;
+they are not special formulas for the two-dimensional examples below.
+A fixed invertible whitening transformation preserves the Gaussian
+assumption and the Wishart form. An estimated covariance obtained from
+correlated files or a nonlinear non-Gaussian vector does not automatically
+have these moments.
+
+\paragraph{A scalar check before another matrix calculation.}
+In one dimension, the sample variance in model units has the form
+\begin{equation}
+ S=R\frac{Z}{\nu},\qquad Z\sim\chi^2_\nu.
+\end{equation}
+The successive moments of a chi-square variable imply
+\begin{equation}
+ \E[S^k]
+ =R^k\prod_{a=0}^{k-1}\frac{\nu+2a}{\nu}.
+\end{equation}
+Therefore divide the observed power by this multiplier. At fourth order,
+\begin{equation}
+ Q_{4,\rm scalar}
+ =\frac{\nu^3}{(\nu+2)(\nu+4)(\nu+6)}S^4.
+\end{equation}
+For $\nu=9$, the multiplier is $729/2145$, about 0.340. The uncorrected
+fourth power is almost three times its desired expectation. This large
+factor is a noise effect, even when the original sample variance is unbiased.
+The matrix formula must reduce to this scalar result; the notebook checks it.
+
+\paragraph{Recover the second-order method as a small linear system.}
+Recall the two Gaussian matrix identities:
+\begin{equation}
+ \E[S^2]=\left(1+\frac1\nu\right)R^2
+           +\frac1\nu R\operatorname{tr}(R).
+\end{equation}
+The trace-weighted sample has a different combination of the same targets:
+\begin{equation}
+ \E[S\operatorname{tr}(S)]
+ =\frac2\nu R^2+R\operatorname{tr}(R).
+\end{equation}
+Seek a linear combination with coefficient one in front of $R^2$ and zero
+in front of the unwanted trace term. If its two coefficients are $a$ and
+$b$, the required equations are
+\begin{equation}
+ a\left(1+\frac1\nu\right)+\frac{2b}{\nu}=1.
+\end{equation}
+Cancelling the trace contribution gives the second equation:
+\begin{equation}
+ \frac a\nu+b=0.
+\end{equation}
+The second equation expresses $b$ in terms of $a$:
+\begin{equation}
+ b=-\frac a\nu.
+\end{equation}
+Insert it into the first equation, including its minus sign:
+\begin{equation}
+ a\left(1+\frac1\nu\right)-\frac{2a}{\nu^2}=1.
+\end{equation}
+Factor out $a$ and place the remaining coefficient over one denominator:
+\begin{equation}
+ a\frac{\nu^2+\nu-2}{\nu^2}=1.
+\end{equation}
+Dividing by that known coefficient gives
+\begin{equation}
+ a=\frac{\nu^2}{\nu^2+\nu-2}.
+\end{equation}
+Return to the second equation to obtain
+\begin{equation}
+ b=-\frac{\nu}{\nu^2+\nu-2}.
+\end{equation}
+The combination $aS^2+bS\operatorname{tr}(S)$ is exactly the earlier
+corrected square. Higher orders use this same elimination idea with more
+observed terms and more unwanted trace terms.
+
+\paragraph{How to enumerate the higher-order moments.}
+A Wishart matrix can be represented as the average of $\nu$ independent
+Gaussian outer products. A degree-$k$ matrix expression therefore contains
+$2k$ Gaussian factors. Their expectation is the sum over all pairings:
+three pairings at degree two, fifteen at degree three and 105 at degree
+four. Each pairing contributes covariance entries. A chain of contracted
+indices gives a matrix power; a closed chain gives a trace. Independent
+Gaussian-vector labels must agree within a pair, and each remaining free
+label contributes a factor of $\nu$.
+
+The accompanying \texttt{derive\_wishart\_powers.py} enumerates those
+pairings using exact rational algebra. It constructs the linear map from
+observed matrix/trace terms to their expectations, solves for the desired
+pure power, and verifies the resulting identity symbolically. The coefficients
+are consequently not determined by numerical agreement on one toy covariance.
+A separate check reduces every result to the scalar chi-square moments.
+
+\paragraph{State the cubic formula with its pieces defined first.}
+Use the short trace notation
+\begin{equation}
+ t_j=\operatorname{tr}(S^j).
+\end{equation}
+For example, $t_2$ is the trace \emph{after} multiplying $S$ by itself; it is
+not the square of its trace. Define the cubic denominator
+\begin{equation}
+ D_3=(\nu-2)(\nu-1)(\nu+2)(\nu+4).
+\end{equation}
+The unbiased cubic estimate is
+\begin{equation}
+ Q_3=\frac{\nu^2}{D_3}
+ \left[\nu^2S^3-2\nu S^2t_1-\nu S t_2+2S t_1^2\right].
+ \label{eq:unbiased-cube}
+\end{equation}
+All four terms have total degree three. Their trace contributions cancel
+in expectation, leaving $R^3$. A trace is a scalar, so multiplying a matrix
+by it does not change the matrix multiplication order.
+
+\paragraph{See the cubic linear system explicitly.}
+At cubic degree the observed expressions are $S^3$, $S^2t_1$, $S t_2$
+and $S t_1^2$. The possible true expressions have the same pattern with
+$S$ replaced by $R$. Let their four observed coefficients be $c_1,c_2,c_3,c_4$.
+The Gaussian contractions give the system
+\begin{equation}
+ \begin{pmatrix}
+ \nu^2+3\nu+4 & 4(\nu+1) & 4(\nu+1) & 8\\
+ 2(\nu+1) & \nu^2+\nu+2 & 4 & 4\nu\\
+ \nu+1 & 2 & \nu(\nu+1) & 2\nu\\
+ 1 & \nu & \nu & \nu^2
+ \end{pmatrix}
+ \begin{pmatrix}c_1\\c_2\\c_3\\c_4\end{pmatrix}
+ =\nu^2\begin{pmatrix}1\\0\\0\\0\end{pmatrix}.
+\end{equation}
+Each column describes the expectation of one observed expression. The first
+row demands coefficient one for $R^3$; the next three rows cancel unwanted
+trace expressions. The factor $\nu^2$ on the right accounts for the common
+$1/\nu^2$ in those expectation identities. Solving gives
+\begin{equation}
+ (c_1,c_2,c_3,c_4)=\frac1{D_3}(\nu^4,-2\nu^3,-\nu^3,2\nu^2).
+\end{equation}
+Check the last row yourself. Its numerator is
+\begin{equation}
+ \nu^4-2\nu^4-\nu^4+2\nu^4=0.
+\end{equation}
+Thus the $R[\operatorname{tr}(R)]^2$ contamination cancels. The other rows
+work in the same way. The quartic calculation enlarges this four-equation
+system to seven equations; the exact script performs that elimination.
+
+\paragraph{Solve the cubic system one row at a time.}
+Start with the last row because its coefficients are simplest. Solving
+for the fourth unknown gives
+\begin{equation}
+ c_4=-\frac{c_1+\nu c_2+\nu c_3}{\nu^2}.
+\end{equation}
+Insert this expression into the third row:
+\begin{equation}
+ (\nu+1)c_1+2c_2+\nu(\nu+1)c_3
+ -\frac2\nu(c_1+\nu c_2+\nu c_3)=0.
+\end{equation}
+Distribute the last term. Its $-2c_2$ cancels $+2c_2$. The remaining
+coefficients are
+\begin{equation}
+ \left(\nu+1-\frac2\nu\right)c_1
+ +\left[\nu(\nu+1)-2\right]c_3=0.
+\end{equation}
+Use the factorization $\nu^2+\nu-2=(\nu+2)(\nu-1)$ in both terms:
+\begin{equation}
+ (\nu+2)(\nu-1)\left(\frac{c_1}{\nu}+c_3\right)=0.
+\end{equation}
+For the allowed $\nu>3$, the first two factors do not vanish. Hence
+\begin{equation}
+ c_3=-\frac{c_1}{\nu}.
+\end{equation}
+Return to the expression for $c_4$. The sum $c_1+\nu c_3$ is zero,
+leaving
+\begin{equation}
+ c_4=-\frac{c_2}{\nu}.
+\end{equation}
+Now substitute both relations into the second row of the system:
+\begin{equation}
+ 2(\nu+1)c_1+(\nu^2+\nu+2)c_2
+ -\frac{4c_1}{\nu}-4c_2=0.
+\end{equation}
+Collecting only the scalar coefficients gives
+\begin{equation}
+ (\nu+2)(\nu-1)\left(\frac{2c_1}{\nu}+c_2\right)=0.
+\end{equation}
+It follows that the remaining two unknowns are
+\begin{equation}
+ c_2=-\frac{2c_1}{\nu},\qquad c_4=\frac{2c_1}{\nu^2}.
+\end{equation}
+All four coefficients are now expressed in terms of $c_1$. Use the first
+row to set its normalization:
+\begin{equation}
+ \left[\nu^2+3\nu+4-\frac{8(\nu+1)}\nu
+       -\frac{4(\nu+1)}\nu+\frac{16}{\nu^2}\right]c_1=\nu^2.
+\end{equation}
+Combining the two middle fractions and multiplying the bracket by
+$\nu^2/\nu^2$ gives
+\begin{equation}
+ \frac{\nu^4+3\nu^3-8\nu^2-12\nu+16}{\nu^2}c_1=\nu^2.
+\end{equation}
+The numerator factors into the previously defined $D_3$. Dividing by
+that coefficient gives
+\begin{equation}
+ c_1=\frac{\nu^4}{D_3}.
+\end{equation}
+Inserting it into the three relations already obtained reproduces every
+coefficient of Equation~\eqref{eq:unbiased-cube}. The elimination has used
+only substitution, cancellation and division by known nonzero scalars.
+
+\paragraph{Build the fourth power from seven terms.}
+Its normalization is
+\begin{equation}
+ D_4=(\nu-3)(\nu-2)(\nu-1)(\nu+1)(\nu+2)(\nu+4)(\nu+6).
+\end{equation}
+Two scalar abbreviations keep the coefficients readable:
+\begin{equation}
+ a_\nu=\nu^2+\nu+2.
+\end{equation}
+The second abbreviation is
+\begin{equation}
+ b_\nu=5\nu+6.
+\end{equation}
+Now take the following seven terms and coefficients:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Term & Matrix expression $T_j(S)$ & Coefficient $c_j$\\
+\midrule
+1 & $S^4$ & $\nu^2a_\nu$\\
+2 & $S^3t_1$ & $-3\nu a_\nu$\\
+3 & $S^2t_2$ & $-\nu(2\nu^2+3\nu-6)$\\
+4 & $S^2t_1^2$ & $\nu b_\nu$\\
+5 & $S t_3$ & $-\nu a_\nu$\\
+6 & $S t_2t_1$ & $\nu b_\nu$\\
+7 & $S t_1^3$ & $-b_\nu$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Multiply each matrix expression by its listed scalar coefficient, add the
+seven matrices, and apply one common normalization:
+\begin{equation}
+ Q_4=\frac{\nu^3}{D_4}\sum_{j=1}^{7}c_jT_j(S).
+ \label{eq:unbiased-fourth}
+\end{equation}
+The exact contraction calculation verifies that its expectation is $R^4$.
+Use this result, the cubic above and the previously derived $Q_2$ in
+Equation~\eqref{eq:fourth-estimator}. As $\nu$ grows, $Q_j$ approaches the
+ordinary power $S^j$, as expected when sampling fluctuations vanish.
+
+\paragraph{Work through one quartic entry numerically.}
+Return to a sample matrix with ten independent Gaussian observations:
+\begin{equation}
+ S=\begin{pmatrix}1.1&0.2\\0.2&0.9\end{pmatrix},\qquad \nu=9.
+\end{equation}
+Its first three traces are $t_1=2$, $t_2=2.1$ and $t_3=2.3$.
+The normalization denominator is $D_4=7207200$. To calculate the first
+diagonal entry of $Q_4$, take the first diagonal entry of each of the seven
+matrix expressions, multiply by its coefficient, and finally by $729/D_4$:
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+Term & $[T_j(S)]_{11}$ & $c_j$ & Contribution to $[Q_4]_{11}$\\
+\midrule
+1 & 1.7225 & 7452 & $+1.298354$\\
+2 & 2.9100 & $-2484$ & $-0.731148$\\
+3 & 2.6250 & $-1647$ & $-0.437304$\\
+4 & 5.0000 & 459 & $+0.232137$\\
+5 & 2.5300 & $-828$ & $-0.211891$\\
+6 & 4.6200 & 459 & $+0.214494$\\
+7 & 8.8000 & $-51$ & $-0.045396$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Adding the last column gives about 0.319246. Repeating for the remaining
+entries produces
+\begin{equation}
+ Q_4\simeq\begin{pmatrix}
+ 0.319246&0.253196\\0.253196&0.066050
+ \end{pmatrix}.
+\end{equation}
+This observed matrix is not positive definite. That does not contradict
+its unbiased expectation: an unbiased estimate of a positive matrix need
+not be positive for every finite sample. It is a corrected \emph{power}
+to be inserted into the polynomial, not a covariance to use on its own.
+The notebook prints the seven contributions so the table can be checked.
+
+\subsection{One complete ensemble, without Gaussian sampling identities}
+\label{sec:distinct-pair}
+\paragraph{Remove a repeated random factor instead of modelling its moments.}
+The bias in a power arises when the same random estimate occurs repeatedly
+inside a product. We can avoid that repetition by multiplying independent
+factors with the right means. This construction needs the individual vectors,
+not just their final sample covariance. It is not determined by that covariance
+alone, and does not reuse the Wishart trace corrections.
+
+\paragraph{Eliminate the unknown mean with pairs.}
+Suppose there are $N=2m$ independent, identically distributed vectors, each
+with unknown mean $\mu$ and covariance $C$. Pair them in a fixed order chosen
+without inspecting their values. Define
+\begin{equation}
+ y_a=\frac{d_{2a}-d_{2a-1}}{\sqrt2}.
+\end{equation}
+The mean cancels on subtraction. To see why the covariance normalization is
+correct, expand one difference outer product:
+\begin{equation}
+ 2y_a y_a^{\mathsf T}
+ =d_{2a}d_{2a}^{\mathsf T}+d_{2a-1}d_{2a-1}^{\mathsf T}
+ -d_{2a}d_{2a-1}^{\mathsf T}-d_{2a-1}d_{2a}^{\mathsf T}.
+\end{equation}
+Each self-product has expectation $C+\mu\mu^{\mathsf T}$. Each cross-product
+has expectation $\mu\mu^{\mathsf T}$ by independence. The four mean terms
+cancel, leaving
+\begin{equation}
+ 2\E[y_a y_a^{\mathsf T}]=2C.
+\end{equation}
+Consequently each pair supplies an unbiased covariance factor. Disjoint pairs
+are independent of one another. Pairing uses every vector; it does not reserve
+separate groups for calibration, correction or validation.
+
+\paragraph{Form a residual factor with the right mean.}
+Whiten the pair difference using the fixed model:
+\begin{equation}
+ z_a=L^{-1}y_a.
+\end{equation}
+Define its matrix factor
+\begin{equation}
+ B_a=I-z_a z_a^{\mathsf T}.
+\end{equation}
+Its expectation is
+\begin{equation}
+ U=\E[B_a]=I-R=-X.
+\end{equation}
+The change of sign is deliberate: the desired series is now
+$I+U+U^2+U^3+U^4$, with all plus signs.
+
+\paragraph{Why independence fixes the product.}
+For two distinct pairs, consider one entry of their matrix product:
+\begin{equation}
+ (B_aB_b)_{ij}=\sum_\ell (B_a)_{i\ell}(B_b)_{\ell j}.
+\end{equation}
+Independence lets us average the two factors separately within each term:
+\begin{equation}
+ \E[(B_aB_b)_{ij}]
+ =\sum_\ell \E[(B_a)_{i\ell}]\E[(B_b)_{\ell j}].
+\end{equation}
+Both mean matrices are $U$, so the right-hand side is precisely
+\begin{equation}
+ \E[(B_aB_b)_{ij}]=(U^2)_{ij}.
+\end{equation}
+Repeating this argument for four distinct pairs gives $U^4$. At fourth
+order, each product uses eight distinct original vectors. No Gaussian
+moment identity appears in the proof. Finite covariance supplies the needed
+first moments; finite fourth moments of the vectors suffice for finite
+variance of this fixed-order distinct-pair estimator. The lognormal examples
+have all these moments, although heavy tails can still make them large. By contrast, a raw
+fourth power of a sample covariance can contain the eighth power of one
+measurement; its variance can involve sixteenth moments. This helps explain
+why the repeated-factor formula is sensitive to rare lognormal outcomes.
+
+\paragraph{Average many distinct products while keeping the order explicit.}
+Among $m$ pair factors, define
+\begin{equation}
+ H_j(m)=\binom mj^{-1}
+ \sum_{1\leq a_1<\cdots<a_j\leq m} B_{a_1}\cdots B_{a_j}.
+\end{equation}
+The binomial coefficient counts subsets of $j$ indices. Each subset appears
+once, in increasing index order. Matrices generally do not commute, so this
+is not the fully permutation-symmetrized U-statistic. Every term nevertheless
+has expectation $U^j$. For example, with three pairs,
+\begin{equation}
+ H_2(3)=\frac{B_1B_2+B_1B_3+B_2B_3}{3}.
+\end{equation}
+There is no $B_1^2$: reusing a pair would reintroduce the noisy-square problem.
+
+\paragraph{Count subsets to obtain a cheap recurrence.}
+Some subsets omit the newest pair. Their fraction is
+\begin{equation}
+ \frac{\binom{m-1}{j}}{\binom mj}=\frac{m-j}{m}.
+\end{equation}
+The remaining subsets include pair $m$ and choose their other $j-1$ members
+from the previous pairs. Their fraction is
+\begin{equation}
+ \frac{\binom{m-1}{j-1}}{\binom mj}=\frac jm.
+\end{equation}
+These two possibilities exhaust the subsets, giving
+\begin{equation}
+ H_j(m)=\frac{m-j}{m}H_j(m-1)
+       +\frac jm H_{j-1}(m-1)B_m.
+ \label{eq:pair-recurrence}
+\end{equation}
+Check the recurrence with three factors and products of length two.
+The previous two-factor quantities are
+\begin{equation}
+ H_2(2)=B_1B_2,\qquad H_1(2)=\frac{B_1+B_2}{2}.
+\end{equation}
+One of the three pairs omits the newest factor. The other two contain it.
+The recurrence assigns the corresponding fractions:
+\begin{equation}
+ H_2(3)=\frac13B_1B_2+\frac23\frac{B_1+B_2}{2}B_3.
+\end{equation}
+Cancel the factor of two and distribute the last multiplication:
+\begin{equation}
+ H_2(3)=\frac{B_1B_2+B_1B_3+B_2B_3}{3}.
+\end{equation}
+This reproduces the explicit subset average above, without creating
+$B_3^2$. Start from $H_0=I$ and update degrees four, three, two and one
+in descending order. An ascending update would mix new and old factors and could use the
+same pair twice. The notebook checks the recurrence against explicit subset
+products of noncommuting matrices. Computation grows linearly with the number
+of pairs at fixed matrix size and order; we do not enumerate all quartets.
+
+\paragraph{Make the estimator symmetric without changing its expectation.}
+A product of symmetric matrices need not be symmetric. Define
+\begin{equation}
+ \operatorname{sym}(A)=\frac{A+A^{\mathsf T}}2.
+\end{equation}
+The dimensionless fourth-order estimate is
+\begin{equation}
+ \widehat P_{4,\rm pair}
+ =I+\sum_{j=1}^{4}\operatorname{sym}(H_j).
+\end{equation}
+Since every $U^j$ is symmetric, this operation preserves the desired mean.
+A fixed pairing and ordering produce a valid estimator, but changing that
+ordering can change one finite-sample result. Averaging a predetermined set
+of pairings or orderings also remains unbiased and may reduce that variation.
+Do not choose them according to which result looks closest to a desired answer.
+
+\paragraph{Limits before applying this to real maps.}
+The toy implementation uses even $N\geq8$. For odd $N$, average predetermined
+pairings that omit different individual vectors, so all vectors contribute
+to the average. Each pairing still needs distinct independent members within
+every product. Related maps cannot become independent merely by assigning
+different indices. Likewise, if the model $M$ was fitted from the same random
+vectors, its dependence invalidates the proof with fixed $L$. An analytic
+model fixed beforehand avoids that issue without allocating a calibration
+group. Positive definiteness is not guaranteed for either unbiased estimator;
+clipping or rejecting negative outcomes changes its expectation.
+
+\subsection{Gaussian and lognormal tests with an exactly known covariance}
+\label{sec:fourth-toys}
+\paragraph{Change the distribution without changing its covariance.}
+Use two observables with true covariance
+\begin{equation}
+ C=\begin{pmatrix}1&0.3\\0.3&1\end{pmatrix}.
+\end{equation}
+Choose the same fixed model for every repetition:
+\begin{equation}
+ M=\begin{pmatrix}1.4&0.1\\0.1&0.9\end{pmatrix}.
+\end{equation}
+Gaussian vectors with this covariance provide the first test. For a
+lognormal test, choose a logarithmic standard deviation $s$ and define
+\begin{equation}
+ v=\exp(s^2)-1.
+\end{equation}
+Construct a latent Gaussian covariance by applying the following formula
+to each entry separately:
+\begin{equation}
+ G_{ij}=\log(1+vC_{ij}).
+\end{equation}
+For our choices this is positive definite. Draw a Gaussian vector $g$ with
+covariance $G$ and mean
+\begin{equation}
+ \E[g_i]=-\frac12G_{ii}.
+\end{equation}
+Exponentiate its entries to obtain positive lognormal variables:
+\begin{equation}
+ Y_i=\exp(g_i).
+\end{equation}
+For a scalar Gaussian $h$, its exponential moment is
+\begin{equation}
+ \E[e^h]=\exp\left(\E[h]+\tfrac12\Var(h)\right).
+\end{equation}
+For $h=g_i$, the chosen mean cancels half its variance:
+\begin{equation}
+ \E[Y_i]=\exp(-G_{ii}/2+G_{ii}/2)=1.
+\end{equation}
+For the product, use $Y_iY_j=e^{g_i+g_j}$. The sum has mean
+$-(G_{ii}+G_{jj})/2$ and variance $G_{ii}+G_{jj}+2G_{ij}$, so
+\begin{equation}
+ \E[Y_iY_j]
+ =\exp\left[-\frac{G_{ii}+G_{jj}}2+
+             \frac{G_{ii}+G_{jj}+2G_{ij}}2\right]
+ =\exp(G_{ij}).
+\end{equation}
+Covariance subtracts the product of the two unit means:
+\begin{equation}
+ \cov(Y_i,Y_j)=\exp(G_{ij})-1.
+\end{equation}
+Finally insert the definition of $G_{ij}$, cancelling logarithm and
+exponential:
+\begin{equation}
+ \cov(Y_i,Y_j)=(1+vC_{ij})-1=vC_{ij}.
+\end{equation}
+Subtract the mean and rescale:
+\begin{equation}
+ d_i=\frac{Y_i-1}{\sqrt v}.
+\end{equation}
+The resulting vector has exactly the desired covariance $C$ but remains
+non-Gaussian. A linear change of units does not erase skewness. We test
+$s=0.25$ and $s=0.5$, alongside the Gaussian case.
+
+\paragraph{What constitutes one experiment.}
+Each experiment contains 128 independent vectors. The Wishart method uses
+their ordinary sample covariance with $\nu=127$. The distinct-pair method
+uses all 128 vectors as 64 independent pair differences. We repeat the whole
+experiment 32,000 times with a recorded random seed. These repetitions
+measure the behavior of the estimator; none calibrates the reference for
+another. No raw DES map is read and no holdout group is required because
+the population truth is known analytically.
+
+\paragraph{First measure bias against the right target.}
+For each order, compare the Monte Carlo mean estimate with its own true
+truncated polynomial, not with the exact inverse. For one matrix entry,
+write the estimate from repetition $r$ as $p_r$. The Monte Carlo mean is
+\begin{equation}
+ \bar p=\frac1K\sum_{r=1}^{K}p_r,\qquad K=32000.
+\end{equation}
+Estimate the scatter of a single experiment using
+\begin{equation}
+ s_p^2=\frac1{K-1}\sum_r(p_r-\bar p)^2.
+\end{equation}
+The uncertainty of the mean over repetitions is smaller:
+\begin{equation}
+ \operatorname{SE}_{\rm MC}=\frac{s_p}{\sqrt K}.
+\end{equation}
+The plot's error bars are twice this standard error. They describe how well
+we have measured estimator bias; they are not error bars for a cosmological
+measurement or for one 128-vector covariance estimate.
+
+\paragraph{Then measure scatter and unusable outcomes separately.}
+We also record the root-mean-square matrix error relative to the norm of the
+true truncated target and count estimates with a nonpositive eigenvalue.
+Every result remains in the averages. Deleting troublesome realizations
+would hide a failure mode and could make an unbiased method appear biased,
+or a biased method appear successful. Higher order can reduce truncation
+while increasing sampling scatter.
+
+\begin{center}
+\begin{tabular}{llrr}
+\toprule
+Distribution & Fourth-order estimator & Relative RMS error & Nonpositive [\%]\\
+\midrule
+Gaussian & Wishart & 0.145 & 0\\
+Gaussian & Distinct pairs & 0.208 & 0\\
+Lognormal, $s=0.25$ & Wishart & 0.169 & 0\\
+Lognormal, $s=0.25$ & Distinct pairs & 0.229 & 0.0063\\
+Lognormal, $s=0.5$ & Wishart & 15.08 & 0.0031\\
+Lognormal, $s=0.5$ & Distinct pairs & 0.318 & 0.609\\
+\bottomrule
+\end{tabular}
+\end{center}
+The large lognormal Wishart RMS is sensitive to rare outcomes; this one
+finite run does not establish a precisely converged population variance.
+The absence of a nonpositive estimate in a finite test is also not a
+guarantee of positivity in every future realization.
+
+\paragraph{What the tests establish.}
+For Gaussian vectors, the means of both fourth-order methods agree with
+their target within about 1.1 Monte Carlo standard errors in every entry.
+The Wishart correction becomes visibly biased for lognormal vectors:
+already at $s=0.25$, one fourth-order entry differs by about ten standard
+errors. The distinct-pair means remain within about one standard error for
+both lognormal cases. This agrees with their distribution-independent proof,
+but does not guarantee a small variance or an always-positive precision.
+For $s=0.5$, about 0.6\% of distinct-pair fourth-order estimates are nonpositive.
+
+The second-order distinct-pair RMS errors are about 0.175, 0.193 and 0.264
+for the three distributions; their fourth-order counterparts are about
+0.208, 0.229 and 0.318. Thus fourth order costs additional sampling noise
+in these examples. It is a useful option, not an automatic improvement in
+mean-squared precision accuracy. The choice must account for both truncation
+and sampling fluctuations.
+
+\begin{figure}[htbp]
+ \centering
+ \includegraphics[width=\linewidth]{plots/fourth_order/fourth_order.pdf}
+ \caption{Controlled Gaussian and lognormal experiments. Left: bias of
+ the first diagonal entry relative to its order's true truncated target,
+ with twice the Monte Carlo standard error. Right: relative RMS matrix
+ error of individual 128-vector estimates, on a logarithmic scale.
+ The two panels distinguish a biased mean from a noisy individual result.}
+\end{figure}
+
+\paragraph{Reproduce and interpret before using the archive.}
+Sections 13--16 of \nolinkurl{EXAMPLE_COVARIANCE_PME.ipynb} execute the
+symbolic checks, scalar checks, distinct-product recurrence check and
+Gaussian/lognormal experiments. The symbolic derivation script is beside
+this note. Its fourth-order identity concerns independent Gaussian samples;
+the alternative concerns independent measurement vectors. Neither proves
+that 15,997 map files constitute 15,997 independent realizations. The
+all-file numerical comparison for Rafael remains a comparison under its
+explicitly stated count and reference conventions, not a claim that the
+archive satisfies the assumptions of these theorems.
+
+
+\subsection{Continue to sixth order: two more multiplications}
+\label{sec:sixth-order}
+\paragraph{Keep the target fixed while increasing the polynomial order.}
+The unknown true matrix remains $R$, the same fixed model defines its
+units, and $X=R-I$. Increasing the order changes the approximation to
+$R^{-1}$; it does not change what covariance we are estimating. Start
+from the fourth residual power already multiplied out:
+\begin{equation}
+ X^4=R^4-4R^3+6R^2-4R+I.
+\end{equation}
+Multiply by the first term of $R-I$:
+\begin{equation}
+ X^4R=R^5-4R^4+6R^3-4R^2+R.
+\end{equation}
+Multiplying by the second term reverses every sign:
+\begin{equation}
+ X^4(-I)=-R^4+4R^3-6R^2+4R-I.
+\end{equation}
+Add the two rows, displaying the coefficient additions:
+\begin{equation}
+ X^5=R^5+(-4-1)R^4+(6+4)R^3+(-4-6)R^2+(1+4)R-I.
+\end{equation}
+The simplified fifth power is
+\begin{equation}
+ X^5=R^5-5R^4+10R^3-10R^2+5R-I.
+\end{equation}
+
+\paragraph{Subtract the fifth power from the fourth-order inverse.}
+The next inverse-series term has a minus sign:
+\begin{equation}
+ P_5=P_4-X^5.
+\end{equation}
+Insert both polynomials before removing brackets:
+\begin{equation}
+ \begin{split}
+ P_5={}&(5I-10R+10R^2-5R^3+R^4)\\
+       &-(R^5-5R^4+10R^3-10R^2+5R-I).
+ \end{split}
+\end{equation}
+Each contribution from the second line changes sign. Collecting the
+coefficients in ascending powers gives
+\begin{equation}
+ \begin{split}
+ P_5={}&(5+1)I+(-10-5)R+(10+10)R^2\\
+       &+(-5-10)R^3+(1+5)R^4-R^5.
+ \end{split}
+\end{equation}
+Adding the displayed integers yields
+\begin{equation}
+ P_5=6I-15R+20R^2-15R^3+6R^4-R^5.
+\end{equation}
+
+\paragraph{Build the sixth residual power before adding it.}
+Multiply the fifth residual by $R$:
+\begin{equation}
+ X^5R=R^6-5R^5+10R^4-10R^3+5R^2-R.
+\end{equation}
+The other product in $X^5(R-I)$ is
+\begin{equation}
+ X^5(-I)=-R^5+5R^4-10R^3+10R^2-5R+I.
+\end{equation}
+Adding their coefficients gives
+\begin{equation}
+ \begin{split}
+ X^6={}&R^6+(-5-1)R^5+(10+5)R^4+(-10-10)R^3\\
+       &+(5+10)R^2+(-1-5)R+I.
+ \end{split}
+\end{equation}
+This simplifies to
+\begin{equation}
+ X^6=R^6-6R^5+15R^4-20R^3+15R^2-6R+I.
+\end{equation}
+The sixth-order inverse is $P_5+X^6$. The plus sign leaves every
+coefficient of the new residual power unchanged:
+\begin{equation}
+ \begin{split}
+ P_6={}&(6+1)I+(-15-6)R+(20+15)R^2\\
+       &+(-15-20)R^3+(6+15)R^4+(-1-6)R^5+R^6.
+ \end{split}
+\end{equation}
+The target polynomial is therefore
+\begin{equation}
+ P_6=7I-21R+35R^2-35R^3+21R^4-7R^5+R^6.
+ \label{eq:sixth-target}
+\end{equation}
+For the earlier scalar check, $R=1.2$ and $X=0.2$. Subtracting the fifth
+residual power gives
+\begin{equation}
+ P_5=0.8336-0.00032=0.83328.
+\end{equation}
+Adding the sixth gives
+\begin{equation}
+ P_6=0.83328+0.000064=0.833344.
+\end{equation}
+The exact answer remains $0.83333\ldots$. Smaller truncation error in this
+noise-free calculation does not yet imply a better finite-sample estimate.
+
+\paragraph{Show exactly what must be unbiased.}
+Under Gaussian sampling, construct $Q_j$ with mean $R^j$ for every degree
+through six. The linear combination to evaluate is
+\begin{equation}
+ \widehat P_6=7I-21S+35Q_2-35Q_3+21Q_4-7Q_5+Q_6.
+\end{equation}
+Take its expectation term by term, keeping all coefficients:
+\begin{equation}
+ \begin{split}
+ \E[\widehat P_6]={}&7I-21\E[S]+35\E[Q_2]-35\E[Q_3]\\
+                   &+21\E[Q_4]-7\E[Q_5]+\E[Q_6].
+ \end{split}
+\end{equation}
+Insert the defining expectation of each corrected power:
+\begin{equation}
+ \E[\widehat P_6]=7I-21R+35R^2-35R^3+21R^4-7R^5+R^6=P_6.
+\end{equation}
+The proof is about the mean of the finite polynomial. It does not assert
+that its inverse is unbiased or that every sampled precision is positive.
+
+\paragraph{How the Gaussian coefficient calculation grows.}
+At degree five there are twelve matrix/trace expressions; at degree six
+there are nineteen. To list them without guessing, choose the matrix
+power $r\geq1$, then partition the remaining degree among traces. For
+example, at total degree six and $r=3$, the remaining degree is three.
+Its partitions are $3$, $2+1$ and $1+1+1$, giving respectively
+\begin{equation}
+ S^3\operatorname{tr}(S^3).
+\end{equation}
+The second partition gives
+\begin{equation}
+ S^3\operatorname{tr}(S^2)\operatorname{tr}(S).
+\end{equation}
+The third gives
+\begin{equation}
+ S^3[\operatorname{tr}(S)]^3.
+\end{equation}
+Repeating this enumeration for $r=1,\ldots,6$ supplies all nineteen terms.
+Each contains twelve Gaussian factors. Pair the first factor with one
+of eleven partners, the next unused factor with one of nine, and continue:
+\begin{equation}
+ 11\times9\times7\times5\times3\times1=10395.
+\end{equation}
+Each pairing is evaluated by the same covariance-entry multiplication
+used in the earlier noisy-square derivation. Arrange the resulting
+expectations as columns of a matrix $A_6(\nu)$. If $c$ lists the nineteen
+observed-term coefficients, the equations are
+\begin{equation}
+ A_6(\nu)c=(1,0,\ldots,0)^{\mathsf T}.
+\end{equation}
+The first component keeps $R^6$ with unit coefficient; the other eighteen
+cancel trace contamination. This is the same linear system construction
+and elimination demonstrated in full at cubic order. The accompanying
+exact script enumerates every contraction, solves this system symbolically
+and verifies all nineteen equations. The formulas used here require
+$\nu>5$. The numerical experiment also solves the system in exact rational
+arithmetic at its chosen integer $\nu$, before any floating-point sampling.
+
+\paragraph{Check the sixth-power correction in one dimension.}
+For the scalar Wishart form $S=RZ/\nu$, the sixth chi-square moment is
+\begin{equation}
+ \E[Z^6]=\nu(\nu+2)(\nu+4)(\nu+6)(\nu+8)(\nu+10).
+\end{equation}
+Multiplication by $R^6/\nu^6$ gives the mean of $S^6$:
+\begin{equation}
+ \E[S^6]=R^6\frac{(\nu+2)(\nu+4)(\nu+6)(\nu+8)(\nu+10)}{\nu^5}.
+\end{equation}
+Divide the observed sixth power by this known multiplier:
+\begin{equation}
+ Q_{6,\rm scalar}=
+ \frac{\nu^5S^6}{(\nu+2)(\nu+4)(\nu+6)(\nu+8)(\nu+10)}.
+\end{equation}
+Summing the nineteen matrix coefficients in one dimension must reproduce
+this scalar coefficient. The script checks that identity exactly; it is
+an independent normalization check, not a substitute for the matrix proof.
+
+\paragraph{The distinct-pair construction extends without Gaussian moments.}
+Keep the factors $B_a=I-z_az_a^{\mathsf T}$ and their mean $U=I-R$.
+For six distinct pairs, write one product entry with its five intermediate
+indices:
+\begin{equation}
+ (B_aB_bB_cB_dB_eB_f)_{ij}
+ =\sum_{k_1,\ldots,k_5}
+ (B_a)_{ik_1}(B_b)_{k_1k_2}(B_c)_{k_2k_3}
+ (B_d)_{k_3k_4}(B_e)_{k_4k_5}(B_f)_{k_5j}.
+\end{equation}
+Independence allows the expectation of each term to be factored into
+six separate expectations. Replace each of those expectations by an
+entry of $U$, without changing the index order:
+\begin{equation}
+ \E[(B_aB_bB_cB_dB_eB_f)_{ij}]
+ =\sum_{k_1,\ldots,k_5}
+ U_{ik_1}U_{k_1k_2}U_{k_2k_3}U_{k_3k_4}U_{k_4k_5}U_{k_5j}.
+\end{equation}
+The right-hand side is the definition of $(U^6)_{ij}$. Each product now
+uses twelve distinct original vectors. Extend the existing recurrence to
+$H_5$ and $H_6$, updating from degree six down to one. The estimator is
+\begin{equation}
+ \widehat P_{6,\rm pair}=I+
+       \operatorname{sym}(H_1)+\cdots+\operatorname{sym}(H_6).
+\end{equation}
+Its expectation is $I+U+\cdots+U^6=P_6$. No independent calibration or
+validation group is consumed by this construction. Independent vectors
+and a fixed reference are still required; twelve related files do not
+satisfy the proof merely because they have twelve filenames.
+
+\paragraph{The repeated experiments separate bias from noise.}
+The same 32,000 repetitions of 128 vectors are evaluated at orders two,
+four and six. Gaussian and both lognormal populations retain the same
+known covariance, fixed model and random seeds used above. Both estimator
+families are evaluated on each complete sample. The Gaussian sixth-order
+mean agrees with its truncated target within 0.32 Monte Carlo standard
+errors entry by entry. The distinct-pair sixth-order means agree within
+1.09 standard errors in all three populations. These are finite numerical
+checks accompanying the exact expectation proofs.
+
+For the more skewed lognormal population, the Gaussian-moment sixth-order
+relative RMS error about its truncated target is approximately 985. Rare
+samples dominate this result; its small-looking mean-discrepancy significance
+is caused by an enormous Monte Carlo standard error and is not evidence of
+unbiasedness for that non-Gaussian population. The distinct-pair RMS errors
+at orders two, four and six are approximately 0.264, 0.318 and 0.336.
+Their nonpositive fractions are 0.463\%, 0.609\% and 0.788\%, respectively.
+Nothing was clipped or rejected before computing these statistics.
+
+\paragraph{More simulated skies can help one error but cannot remove another.}
+Additional independent draws from a fixed generator reduce sampling noise
+about that generator's covariance. They do not make its covariance equal
+to the N-body covariance. A map generator fitted using a finite simulation
+suite carries uncertainty and possible mismatch in that fit. Treating its
+millions of generated maps as millions of new independent N-body skies
+would discard that uncertainty. The separate GPTG teaching note explains
+the map-generation and forward-comparison experiment. Here the conclusion
+is narrower: sixth order is available and testable, but it is not an
+automatic improvement over a lower-order estimate at fixed sample size.
+
+
+\FloatBarrier
 \section{Repeated noise is useful, but it is not a new sky}
 \paragraph{Three labels need three meanings.}
 The filenames contain \texttt{run}, \texttt{ncut} and \texttt{nreal}.
@@ -2101,7 +3214,23 @@ A covariance coefficient by itself cannot tell us whether the second
 observable is redundant for the chosen parameter.
 
 \paragraph{Separate old information from new information.}
-Complete the square in the numerator to rewrite the result as
+The cross term suggests the square $(u_2-r u_1)^2$. Expanding it
+shows which term it supplies:
+\begin{equation}
+ (u_2-r u_1)^2=u_2^2-2r u_1u_2+r^2u_1^2.
+\end{equation}
+Our numerator needs $u_1^2$ rather than $r^2u_1^2$. Add the missing
+$(1-r^2)u_1^2$ explicitly:
+\begin{equation}
+ u_1^2-2r u_1u_2+u_2^2
+ =(1-r^2)u_1^2+(u_2-r u_1)^2.
+\end{equation}
+Divide both terms by the common denominator:
+\begin{equation}
+ F=\frac{(1-r^2)u_1^2}{1-r^2}
+   +\frac{(u_2-r u_1)^2}{1-r^2}.
+\end{equation}
+Only the first fraction cancels. This gives
 \begin{equation}
  F=u_1^2+\frac{(u_2-r u_1)^2}{1-r^2}.
  \label{eq:added-information}
@@ -2113,9 +3242,18 @@ physically, define a new residual measurement
 \begin{equation}
  d_{2|1}=d_2-rd_1.
 \end{equation}
-Its covariance with $d_1$ is zero. Its variance is
+Its covariance with $d_1$ is obtained by distributing the two
+terms, while treating $r$ as a fixed number:
 \begin{equation}
- \Var(d_{2|1})=1-r^2.
+ \cov(d_2-rd_1,d_1)=\cov(d_2,d_1)-r\Var(d_1)=r-r=0.
+\end{equation}
+Its variance includes the cross term from squaring a difference:
+\begin{equation}
+ \Var(d_2-rd_1)=\Var(d_2)+r^2\Var(d_1)-2r\cov(d_2,d_1).
+\end{equation}
+Both variances are one and the covariance is $r$. Substitution gives
+\begin{equation}
+ \Var(d_{2|1})=1+r^2-2r^2=1-r^2.
 \end{equation}
 Its parameter derivative is
 \begin{equation}
@@ -2532,6 +3670,143 @@ matrix, and the four ratios are correlated. Their similar scale makes
 further comparison worthwhile, but neither equality nor an exact common
 origin follows from this small sample.
 
+\subsection{Understand the jackknife error bars}
+\label{sec:jackknife}
+\paragraph{What a jackknife asks.}
+Imagine removing one of the measured runs. Would the variance ratio change
+very little, or would its value depend strongly on that run? The jackknife
+answers this sensitivity question by recomputing the same statistic after
+omitting each run in turn. The final reported covariance still uses all
+runs. Nothing is assigned to a separate calibration or validation sample,
+and no new simulation is generated.
+
+\paragraph{Name one statistic before resampling it.}
+Consider one angular bin. Let $\widehat\theta$ be its variance ratio from
+all $N$ runs. Its denominator is the fixed released DES variance. Omit run
+$s$ and recompute the measured mean, the residuals and the sample variance
+of the remaining $N-1$ measurements. The variance denominator is now $N-2$.
+Call the resulting ratio
+\begin{equation}
+ \widehat\theta_{(-s)}.
+\end{equation}
+Do this $N$ times. These estimates overlap heavily: any two contain $N-2$
+of the same runs. They must not be treated as $N$ fresh independent surveys.
+
+\paragraph{Average the deletion estimates and measure their spread.}
+Their mean is
+\begin{equation}
+ \bar\theta_{\rm delete}=\frac1N\sum_{s=1}^{N}\widehat\theta_{(-s)}.
+\end{equation}
+Subtract that mean from each deletion estimate. The jackknife variance is
+\begin{equation}
+ V_{\rm jack}=\frac{N-1}{N}\sum_{s=1}^{N}
+ \left(\widehat\theta_{(-s)}-\bar\theta_{\rm delete}\right)^2.
+ \label{eq:jackknife-variance}
+\end{equation}
+The standard error displayed on the ratio is its square root. The prefactor
+is different from the sample-variance denominator for independent data.
+We can understand its origin by constructing quantities called pseudovalues.
+
+\paragraph{A pseudovalue records the estimated contribution of one run.}
+Define
+\begin{equation}
+ p_s=N\widehat\theta-(N-1)\widehat\theta_{(-s)}.
+\end{equation}
+To see why this combination is natural, suppose the statistic were just a
+mean of numbers $x_s$. Removing observation $s$ would give
+\begin{equation}
+ \bar x_{(-s)}=\frac{N\bar x-x_s}{N-1}.
+\end{equation}
+Substitute this expression, including its denominator, into the
+pseudovalue definition:
+\begin{equation}
+ p_s=N\bar x-(N-1)\frac{N\bar x-x_s}{N-1}.
+\end{equation}
+Cancel the two factors of $N-1$, then distribute the subtraction:
+\begin{equation}
+ p_s=N\bar x-N\bar x+x_s=x_s.
+\end{equation}
+For a mean, pseudovalues recover the original independent observations.
+For a smooth nonlinear statistic such as a variance ratio, they approximate
+the individual contributions; they are not literally new independent data.
+This is why jackknife error bars are an approximation for our application.
+
+\paragraph{Derive the prefactor rather than memorize it.}
+The variance-of-a-mean expression applied to the pseudovalues is
+\begin{equation}
+ V_{\rm pseudo}=\frac1{N(N-1)}\sum_s(p_s-\bar p)^2.
+\end{equation}
+Average the pseudovalue definition first. The full-sample estimate
+is the same in each of the $N$ terms:
+\begin{equation}
+ \bar p=N\widehat\theta-(N-1)\bar\theta_{\rm delete}.
+\end{equation}
+Now subtract this average without dropping either bracket:
+\begin{equation}
+ \begin{split}
+ p_s-\bar p={}&[N\widehat\theta-(N-1)\widehat\theta_{(-s)}]\\
+ &-[N\widehat\theta-(N-1)\bar\theta_{\rm delete}].
+ \end{split}
+\end{equation}
+The two full-sample terms cancel. Factor the remaining difference:
+\begin{equation}
+ p_s-\bar p=-(N-1)
+ \left(\widehat\theta_{(-s)}-\bar\theta_{\rm delete}\right).
+\end{equation}
+Square this expression inside the variance sum. The minus sign disappears,
+and the common factor can be taken outside the sum:
+\begin{equation}
+ V_{\rm pseudo}=\frac{(N-1)^2}{N(N-1)}\sum_s
+ \left(\widehat\theta_{(-s)}-\bar\theta_{\rm delete}\right)^2.
+\end{equation}
+Cancel one factor of $N-1$ in numerator and denominator:
+\begin{equation}
+ V_{\rm pseudo}=\frac{N-1}{N}\sum_s
+ \left(\widehat\theta_{(-s)}-\bar\theta_{\rm delete}\right)^2.
+\end{equation}
+This is precisely Equation~\eqref{eq:jackknife-variance}.
+This algebra is exact. Treating the result as a well-calibrated uncertainty
+for a nonlinear statistic remains a statistical approximation.
+
+\paragraph{Check the arithmetic with four numbers.}
+Take measurements $0,1,2,3$. Their mean is $1.5$ and the squared residuals
+sum to five. Dividing by three gives sample variance $5/3$. With a fixed
+reference variance of two, the full-sample ratio is
+\begin{equation}
+ \widehat\theta=\frac{5/3}{2}=\frac56.
+\end{equation}
+Omitting zero leaves $1,2,3$: the mean is two, the squared residuals sum to
+two, and division by two gives variance one. Its ratio is $1/2$.
+Omitting one leaves $0,2,3$: the mean is $5/3$, the squared residuals sum to
+$14/3$, and division by two gives variance $7/3$. Its ratio is $7/6$.
+The other two omissions give the symmetric counterparts. Thus the four
+leave-one-out ratios are
+\begin{equation}
+ \left(\frac12,\frac76,\frac76,\frac12\right).
+\end{equation}
+Their mean is $5/6$. Subtract it to obtain
+\begin{equation}
+ \left(-\frac13,\frac13,\frac13,-\frac13\right).
+\end{equation}
+Squaring and summing gives $4/9$. The jackknife prefactor is $3/4$, so
+\begin{equation}
+ V_{\rm jack}=\frac34\frac49=\frac13.
+\end{equation}
+The standard error is therefore $1/\sqrt3$, about 0.577. The notebook prints
+every deletion ratio and checks this result. Four numbers are useful for
+learning the calculation, but far too few to promise precise error bars.
+
+\paragraph{Apply this to the DES comparison with its limits intact.}
+Each deletion removes one of the 32 primary runs and recomputes the
+four-bin covariance. The resulting standard errors of the variance ratios
+are approximately 0.37, 0.42, 0.45 and 0.28. They condition on independent
+run labels and a fixed released reference. They omit uncertainty in the
+released covariance and physical estimator mismatch. The bins remain
+correlated, so the four bars are not four independent significance tests.
+If several measurements share one parent sky, a group jackknife must omit
+that entire dependent group. Deleting individual related files would not
+measure the uncertainty associated with independent skies.
+
 \paragraph{Diagonal agreement is only the first comparison.}
 Whitening the four-by-four sample covariance with the released submatrix
 also tests its correlations. Its eigenvalues are approximately
@@ -2596,12 +3871,48 @@ a shape-noise covariance.
 
 \paragraph{A separate note records this comparison for discussion.}
 The companion \href{../covariance_comparison/covariance_comparison.pdf}
-{comparison note} explains the released-file audit, variance estimates,
-uncertainties and cross-realization test in detail. Its
+{comparison note} presents complete-sample direct-versus-Eifler covariance
+plots and the separate matched-row comparison with released DES. The historical
+cross-realization tests remain in this teaching note and the main map notebook. Its
 \href{../covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb}
 {executable notebook} is beside that note. Compact measured records allow
 all comparison statistics to be reproduced without the simulation archive;
 an explicit switch repeats the bounded measurements with the local maps.
+
+\section{A measured-map example after the algebra tests}
+\paragraph{A separate note builds and tests the maps.}
+The companion \href{../gptg_simulations/gptg_simulations.pdf}{map-generation
+note} explains the point-transformed Gaussian method of Zhong et al., our
+initial calibration to Rafael's maps, added pixel noise and the aperture
+measurements. Its notebook and scripts save the maps and reproduce the
+bounded comparisons. The pilot contains 64 generated maps. Its covariance
+is not yet validated against the N-body ensemble; its value here is to
+supply measured second-/third-order vectors with which to test estimator
+behavior under an explicitly specified probability model.
+
+\paragraph{Specify known truth instead of pretending that 64 maps determine it.}
+For the controlled test, all 64 measured vectors define a discrete
+population with equal probabilities. Four joint second-/third-order rows
+are selected and standardized with fixed population scales. The covariance
+of this stipulated distribution uses denominator 64 and is known exactly.
+Each new experiment draws 128 or 512 list members independently with
+replacement. These are independent experiments conditional on the list,
+not additional independent gravitational simulations. The starting matrix
+is fixed before drawing any experiment. Thus the distinct-pair proof
+applies to this resampling model, while Gaussian/Wishart assumptions need
+not hold for its non-Gaussian measurements.
+
+\paragraph{The test separates truncation from sampling noise.}
+Across 8,192 experiments, relative RMS error about the exact inverse for
+the distinct-pair construction at orders two, four and six is respectively
+$0.194$, $0.226$ and $0.267$ with 128 draws. With 512 draws it is
+$0.158$, $0.116$ and $0.130$. More draws reduce scatter, and fourth order
+helps in the larger sample; sixth remains worse than fourth. Therefore
+having an unbiased sixth-order polynomial is not sufficient reason to
+choose sixth order. Its smaller deterministic truncation must compensate
+for its additional noise in the actual measurement distribution. The
+companion notebook records both finite-polynomial and exact-inverse errors,
+so those two questions cannot be confused.
 
 \begin{thebibliography}{9}
 \bibitem{pme} O. Friedrich and T. Eifler,

@@ -1,0 +1,9 @@
+direct validation score difference, SE, mean quadratic/16: 0.0 0.0 0.9977083760898222
+gaussian2 validation score difference, SE, mean quadratic/16: 0.1356332270638414 0.010257538442678956 0.8714331918050222
+gaussian4 validation score difference, SE, mean quadratic/16: 0.006080176151086025 0.0027028600107814812 0.9648729961184201
+gaussian6 validation score difference, SE, mean quadratic/16: -0.00036503539910590077 0.0007875654177722849 0.9882324506318092
+distinct2 validation score difference, SE, mean quadratic/16: 0.13613429243654984 0.010181857222989614 0.8738894105806315
+distinct4 validation score difference, SE, mean quadratic/16: 0.016292404363871638 0.0034310999260422767 0.9688821074259821
+distinct6 validation score difference, SE, mean quadratic/16: 0.014473445328091875 0.0028899538409196276 0.9928734845965579
+
+Seven methods completed on 10000+5000 synthetic Gaussian vectors; quadratic and trace score forms agree. This is a pipeline check, not a GPTG ensemble result.
