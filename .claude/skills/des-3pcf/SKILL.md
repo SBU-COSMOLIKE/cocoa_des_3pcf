@@ -112,6 +112,13 @@ are insufficient.
 - `chains/` contains generated theory tables, predictions, Fisher products,
   compression matrices, plots, logs and sampler results. Ignore it in Git.
   Do not introduce `outputs/`, `plots/` or `runs/` for these products.
+- `maps_cov_512_v2/` is a local simulation download. Ignore its contents
+  except its README and viewing notebook; never stage the map arrays.
+  Rafael confirmed NSIDE 512 and footprint pixel IDs in `indices.npy`.
+  Confirm HEALPix ordering and parent/cut/noise labels before measurement.
+  File counts are not independent-sky counts. Keep previews bounded and
+  store generated measurements in `chains/`. The covariance introduction
+  lives in `notes/covariance_from_simulations/` with its LaTeX source and PDF.
 - Prefer YAML or plain text to JSON outside frozen test evidence. Keep
   binary scientific arrays where their format is useful; do not convert
   FITS or NPZ arrays to text merely to avoid a file extension.

@@ -335,12 +335,19 @@ fixed released joint covariance. A fixed Gaussian likelihood retains its
 normalization and uses a Cholesky solve; a positive log density is possible
 because these observables have small numerical units.
 
-The PME notebook teaches the [Friedrich–Eifler precision expansion](https://arxiv.org/abs/1703.07786)
-with controlled Gaussian simulations. It is not a DES covariance
-calibration. Survey simulations must reproduce the selection and estimator;
-independent validation must check the corrected precision. The released
-covariance does not supply those individual realizations. Four footprints
-cut from one full sky also require an independence assessment.
+The [PME notebook](EXAMPLE_COVARIANCE_PME.ipynb) teaches the
+[Friedrich–Eifler precision expansion](https://arxiv.org/abs/1703.07786)
+with controlled Gaussian simulations, then explains how to use Rafael's
+downloaded maps. The [undergraduate notes](notes/covariance_from_simulations/covariance_from_simulations.pdf)
+derive the method and explain repeated noise realizations, pixel resolution
+and independent validation; their [LaTeX source](notes/covariance_from_simulations/covariance_from_simulations.tex)
+follows the Fisher notes' style. The [simulation guide](maps_cov_512_v2/README.md)
+and [viewing notebook](maps_cov_512_v2/EXAMPLE_VIEW_MAPS.ipynb) inspect two maps
+and show how to plot the DES footprint once its pixel indices and ordering
+are available. The maps are ignored by Git; only their guide and notebook
+are tracked. No DES covariance has yet been calibrated from this download.
+Survey simulations must reproduce the selection and estimator; four cuts
+from one sky and repeated noise draws are not automatically independent skies.
 
 ## Appendix: feedback and BACCO <a name="feedback"></a>
 

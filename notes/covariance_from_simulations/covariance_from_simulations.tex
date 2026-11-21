@@ -1,0 +1,504 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{amsmath,amssymb,graphicx,xcolor,booktabs,needspace}
+\usepackage[hidelinks]{hyperref}
+\newcommand{\Cov}{\mathsf{C}}
+\newcommand{\M}{\mathsf{M}}
+\newcommand{\I}{\mathsf{I}}
+\newcommand{\T}{^{\mathsf{T}}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\cov}{\operatorname{Cov}}
+\emergencystretch=3em
+\setlength{\parskip}{0.2em}
+\begin{document}
+\begin{center}
+{\LARGE Learning a covariance from simulations\par}
+\vspace{0.5em}
+{\large The Friedrich--Eifler precision expansion and Rafael's DES shear maps\par}
+\vspace{0.5em}
+20 November 2026
+\end{center}
+
+\section{The question and how to read this note}
+\paragraph{Why simulate a survey more than once?}
+Imagine measuring the same cosmological model in many different Universes.
+The galaxies and dark-matter structures would be in different places, so our
+measurement would change even if the underlying parameters did not.
+Galaxy shapes and measurement noise introduce further changes. A covariance
+matrix describes the size and correlation of those fluctuations. We need it
+because a difference between theory and data is meaningful only in relation
+to how much the data could fluctuate.
+
+\paragraph{What we want to improve.}
+An analytic covariance is quick to evaluate and has no Monte Carlo sampling
+noise. Its physical approximations, however, can miss correlations produced
+by nonlinear structure, the survey boundary or the measurement procedure.
+Simulated surveys contain some of these effects, but estimating a large
+matrix from a finite set is noisy. Friedrich and Eifler~\cite{pme} proposed
+expanding the \emph{inverse covariance} around an analytic model and learning
+the correction from simulations. This note derives that idea before asking
+how Rafael Gomes's downloaded shear maps could supply the measurements.
+Improvement means more reliable uncertainties; it need not mean smaller ones.
+
+\paragraph{A route through the mathematics.}
+Sections 2--4 introduce the measurement, the maps and the noisy-matrix
+problem. Sections 5--6 derive the expansion, beginning with one number rather
+than a matrix. Section 7 explains a complication specific to repeated skies
+and noise draws. Sections 8--9 give a limited pilot and its validation criteria.
+An understanding of averages, variances and matrix multiplication is enough
+to follow the argument; the Gaussian matrix-moment identity is stated with
+its assumptions. The companion notebook first uses artificial Gaussian
+vectors with known covariance, then describes the real-map workflow. Its
+existing numerical results are not a calibration of the downloaded maps.
+
+\paragraph{Credits and present scope.}
+\textbf{We thank Rafael Gomes for supplying the maps and explaining their
+pixel selection, and Sunao Sugiyama and Rafael Gomes for their theory and
+measurement software.} The relevant analysis is Gomes et al.~\cite{gomes};
+the statistical method is due to Oliver Friedrich and Tim Eifler.
+The local download is incomplete. We inspected two array headers and small
+slices, not the complete collection. We have not measured its joint vectors,
+corrected a DES covariance or run a new Fisher forecast. This is an explanation
+and a plan that can be checked before undertaking those computations.
+
+\section{What the covariance is a covariance of}
+\paragraph{The observable comes before its uncertainty.}
+Weak gravitational lensing distorts the apparent shapes of distant galaxies.
+Shear has two components because an elongated image has both an amplitude
+and an orientation. A shear map stores these components at sky positions.
+Our inference does not use each pixel as a separate observable. Instead, it
+uses averages of products of shears: two-point correlations compare pairs
+of positions, while third-order statistics compare triples. Aperture mass,
+written $M_{\rm ap}$, is a filtered lensing statistic; its third moment is an
+average of three such filtered measurements. We abbreviate that observable
+as Map3, not as a third independent shear component.
+
+\paragraph{A vector makes the bookkeeping explicit.}
+Let $\boldsymbol d$ be a column of $p$ measured numbers. Its entries include
+$\xi_+$ and $\xi_-$, the two usual shear correlation functions, and Map3,
+with their specified angular bins and source-redshift combinations. In
+Rafael's methods setup, 400 two-point entries and 80 aperture entries give
+480 entries before further selections~\cite{gomes}. This count describes that
+setup, not an obligation to use every row here. Changing a scale cut changes
+the vector and therefore changes the covariance we must estimate.
+Every row needs a definition, including its units, bins, weights and cuts.
+
+\paragraph{A covariance records shared fluctuations.}
+Write $\boldsymbol\mu=\E[\boldsymbol d]$ for the ensemble mean. Then
+\begin{equation}
+ \Cov_{ij}=\E[(d_i-\mu_i)(d_j-\mu_j)].
+\end{equation}
+The diagonal gives individual variances. A positive off-diagonal entry means
+that the two observables tend to rise together. For example, a sky containing
+an unusually large concentration of matter can change both two- and
+three-point statistics. In block form,
+\begin{equation}
+ \Cov=\begin{pmatrix}\Cov_{22}&\Cov_{23}\\
+                     \Cov_{23}\T&\Cov_{33}\end{pmatrix}.
+\end{equation}
+The block $\Cov_{23}$ is why the two statistics must be measured on the
+\emph{same} simulated survey before their vectors are concatenated. Drawing
+unrelated skies for the two blocks erases the shared fluctuations.
+
+\paragraph{Why the inverse matters.}
+The precision matrix is $\Psi=\Cov^{-1}$. For a Gaussian likelihood with a
+fixed covariance, the squared distance of a model $\boldsymbol m$ from the
+data is
+\begin{equation}
+ \chi^2=(\boldsymbol d-\boldsymbol m)\T\Psi
+                  (\boldsymbol d-\boldsymbol m).
+\end{equation}
+Consider two observables with covariance
+$\sigma^2\left(\begin{smallmatrix}1&r\\r&1\end{smallmatrix}\right)$,
+where $\sigma$ is their common standard deviation and $r$ their correlation.
+The normalized sum and difference have variances $\sigma^2(1+r)$ and
+$\sigma^2(1-r)$. If $r$ is close to one, their difference is tightly measured.
+An error in $r$ then matters greatly for its inverse variance. This is why
+judging only the diagonal entries of a covariance is insufficient.
+
+\section{What is in the downloaded folder}
+\paragraph{Confirmed information.}
+Rafael's message identifies the files as CosmoGrid shear maps at HEALPix
+resolution $N_{\rm side}=512$. They contain only pixels where the DES
+footprint is nonzero; the accompanying \texttt{indices.npy} lists these sky
+pixels. Two files, with labels \texttt{run\_0000}, \texttt{ncut0} and
+\texttt{nreal0} or \texttt{nreal1}, have shape $(4,2,369190)$ and double
+precision entries. Each file contains 23,628,288 bytes including its header.
+The first 4,096 pixels in each slot were finite. This small check establishes
+neither completeness of the download nor its scientific calibration.
+
+\paragraph{Array positions are not sky coordinates.}
+The likely first two axes are four source-redshift bins and two shear
+components; their ordering and signs still require confirmation. If the
+index file is a common one-dimensional list, the entry $d_{bgj}$ in a map
+belongs to HEALPix pixel \texttt{indices[j]}. The index $j$ is merely its
+position in the compressed list. Sorting that list without sorting the
+shear values in exactly the same way places the signal at incorrect sky
+positions. A rectangular reshape is also incorrect. Pixels outside the list
+are unobserved, not measurements of zero shear.
+
+\paragraph{Recovering a footprint picture.}
+HEALPix divides the sphere into $12N_{\rm side}^2$ equal-area pixels. For 512
+this is 3,145,728 pixels. There are two index orderings, RING and NESTED,
+with the same valid integer range but different coordinate assignments.
+The producer must identify which one applies, and whether its coordinates
+are equatorial. The viewing notebook uses \texttt{healpy.pix2ang} after those
+choices are supplied. At writing, \texttt{indices.npy} was not present locally,
+so we have not shown a guessed footprint. The notebook also checks whether
+the indices are a common list; a separate list for each cut needs an explicit
+selection of the matching list.
+
+\paragraph{A preview is not a measurement.}
+The viewing notebook samples at most 30,000 retained positions from each of
+two named files and plots both components of the first source-bin slot.
+This keeps rendering inexpensive. The same color limits permit visual
+comparison, but no quantitative estimator should use this display
+subsampling. A component image also does not validate the spin-2 coordinate
+basis: a shear correlation estimator rotates components relative to pair
+or triangle directions and needs the correct sign convention. Pixel weights,
+galaxy occupancies and the source distributions are further measurement
+inputs; pixel indices alone do not supply them.
+
+\section{Why simply inverting the sample covariance is difficult}
+\paragraph{The familiar estimator.}
+For $N$ independent measurements of the same vector, the unbiased sample
+covariance is
+\begin{equation}
+ \widehat\Cov=\frac{1}{N-1}\sum_{r=1}^{N}
+ (\boldsymbol d_r-\bar{\boldsymbol d})
+ (\boldsymbol d_r-\bar{\boldsymbol d})\T,
+ \qquad \bar{\boldsymbol d}=\frac1N\sum_r\boldsymbol d_r.
+\end{equation}
+The $N-1$ accounts for estimating the mean from these measurements. After
+subtracting it, the residual vectors sum to zero, so there can be at most
+$N-1$ independent directions. Consequently $\widehat\Cov$ has rank at most
+$N-1$. A 480-component vector and 199 independent measurements give rank at
+most 198: its full sample covariance cannot be inverted.
+
+\paragraph{Even an invertible estimate fluctuates.}
+For a single positive variance estimate $\hat v=v+\epsilon$, expand its
+inverse for small $\epsilon/v$:
+\begin{equation}
+ \E[\hat v^{-1}]\simeq v^{-1}
+ +\frac{\E[\epsilon^2]}{v^3},\qquad \E[\epsilon]=0.
+\end{equation}
+Zero average error in the variance therefore does not give zero average
+error in its inverse. Matrix inversion has the same problem and mixes errors
+between entries. A correction to the mean bias of an inverse, such as the
+Hartlap factor under its Gaussian assumptions, does not eliminate its
+sampling fluctuations or make a singular matrix invertible.
+
+\paragraph{The analytic model supplies information.}
+Let $\M$ be a positive-definite analytic approximation to $\Cov$. PME only
+inverts $\M$, so a rank-deficient sample covariance is allowed. This does not
+create missing simulation information. Directions poorly constrained by the
+simulations depend strongly on the analytic baseline. We must validate its
+physical ingredients and compare corrections in the parameter combinations
+we actually use. Nor can one transfer a simulation-count requirement from
+another forecast without checking its vector, baseline and precision target.
+
+\section{Deriving the precision expansion}
+\paragraph{Start with one dimension.}
+If the modeled variance is one and the true variance is $1+x$, then
+\begin{equation}
+ \frac1{1+x}=1-x+x^2-x^3+\cdots,\qquad |x|<1.
+\end{equation}
+At $x=0.1$, the true inverse is $0.90909\ldots$; the first- and second-order
+approximations are $0.9$ and $0.91$. The expansion works because the
+\emph{fractional error} is small. The same absolute variance error could be
+large or small depending on the variance used to scale it.
+
+\paragraph{Put different observables on comparable scales.}
+Two- and three-point entries can have very different numerical sizes.
+Factor the model as $\M=L L\T$, where $L$ is its lower-triangular Cholesky
+factor. Transform a residual to $\boldsymbol y=L^{-1}(\boldsymbol d-\boldsymbol\mu)$.
+Its modeled covariance is the identity. This operation, called whitening,
+removes the model's units and correlations. The true covariance in these
+coordinates is
+\begin{equation}
+ R=L^{-1}\Cov L^{-\mathsf T}=\I+X,
+ \qquad X=L^{-1}(\Cov-\M)L^{-\mathsf T}.
+\end{equation}
+Here $L^{-\mathsf T}$ means $(L\T)^{-1}$ and $X$ is the dimensionless model
+error. Whitening can be evaluated by triangular solves rather than by
+forming explicit numerical inverses.
+
+\paragraph{Apply the scalar argument to each matrix direction.}
+A real symmetric $X$ has orthogonal eigenvectors. Along an eigenvector with
+eigenvalue $x$, the required inverse factor is precisely $1/(1+x)$.
+Therefore
+\begin{equation}
+ \Psi=L^{-\mathsf T}(\I-X+X^2-\cdots)L^{-1}.
+ \label{eq:series}
+\end{equation}
+If $\rho=\max|x|<1$, the norm of the remainder after second order is at most
+$\rho^3/(1-\rho)$ in whitened coordinates. This is a statement about the
+\emph{true} model error. A sample estimate of $X$ is noisy. In particular,
+a singular whitened sample covariance has zero eigenvalues, so subtracting
+$\I$ produces eigenvalues of $-1$ even when the true model is excellent.
+The sample spectral radius is useful to record, but is neither a proof nor
+a general disproof of true convergence with few simulations.
+
+\paragraph{Truncation and simulation noise are different errors.}
+Even an infinite simulation ensemble leaves the discarded cubic and higher
+terms when using a second-order formula. A finite ensemble adds random
+errors in the retained terms. Improving the model can reduce truncation;
+adding independent skies can reduce sampling errors. These operations are
+not interchangeable. A tiny pilot tests file interpretation and algebra,
+not convergence of a high-dimensional precision estimate.
+
+\section{Why the noisy square must be corrected}
+\paragraph{A square does not average like its argument.}
+Let $S=L^{-1}\widehat\Cov L^{-\mathsf T}$ be the whitened sample covariance.
+Its expectation is $R$, but generally $\E[S^2]\ne R^2$. Write $S=R+\delta S$;
+then the average square contains $\E[\delta S\delta S]$ as well as $R^2$.
+Simply inserting the noisy residual $S-\I$ into Equation~\eqref{eq:series}
+therefore introduces a second-order sampling bias.
+
+\paragraph{The Gaussian identity and what it assumes.}
+For independent Gaussian vectors and their ordinary mean-subtracted sample
+covariance, $\nu S$ follows a Wishart distribution with $\nu=N-1$ degrees of
+freedom and scale $R$. Wishart is the matrix analogue of the distribution
+of a sum of squared Gaussian numbers. Its moment identities give
+\begin{align}
+ \E[S^2]&=(1+1/\nu)R^2+R\,\operatorname{tr}(R)/\nu,\\
+ \E[S\operatorname{tr}(S)]&=R\operatorname{tr}(R)+2R^2/\nu.
+\end{align}
+The trace, $\operatorname{tr}(R)$, is the sum of diagonal entries. Combining
+these relations cancels the extra trace term:
+\begin{equation}
+ Q=\frac{\nu^2S^2-\nu S\operatorname{tr}(S)}{\nu^2+\nu-2},
+ \qquad \E[Q]=R^2,\qquad N>2.
+\end{equation}
+Thus the first- and second-order precision estimators are
+\begin{align}
+ \widehat\Psi_1&=L^{-\mathsf T}(2\I-S)L^{-1},\\
+ \widehat\Psi_2&=L^{-\mathsf T}(3\I-3S+Q)L^{-1}.
+\end{align}
+Their expectations equal the corresponding truncated expansions, not the
+exact precision. They need no Hartlap multiplier. A realization can be
+indefinite; negative precision eigenvalues must be diagnosed rather than
+clipped away and silently used in a likelihood.
+
+\paragraph{What if the aperture vectors are not Gaussian?}
+Nonlinear summaries need not follow a multivariate Gaussian distribution.
+An available alternative for the quadratic expectation is to estimate
+covariances $S_1,S_2$ from two \emph{independent} parent groups measuring the
+same population. Independence gives
+\begin{equation}
+ \E[(S_1S_2+S_2S_1)/2]=R^2.
+\end{equation}
+Replacing $S$ by $(S_1+S_2)/2$ and $Q$ by this symmetric product in the
+second-order formula removes the Gaussian assumption for that expectation.
+It still requires finite moments, unbiased sample covariances and a model
+fixed independently of both groups. It does not remove truncation or
+sampling noise; splitting a small ensemble can make the latter large.
+A third independent group is needed for a clean held-out check.
+
+\paragraph{The component version can be better, when its inputs exist.}
+The especially useful case in Friedrich--Eifler is
+$\Cov=A+B$ with a well-known covariance contribution $A$ and model
+$\M=A+B_m$. If simulations directly isolate $B$, they need not re-estimate
+$A$ with Monte Carlo noise. Define $S_B=L^{-1}\widehat B L^{-\mathsf T}$,
+$T=L^{-1}B_m L^{-\mathsf T}$, and let $Q_B$ be the above unbiased-square
+expression applied to $S_B$. The second-order polynomial is
+\begin{equation}
+ \I-S_B+T+Q_B-S_BT-TS_B+T^2.
+\end{equation}
+Both multiplication orders matter. These are additive covariance
+components, \emph{not} the two-point and three-point blocks with their
+cross-covariance discarded. Nor does subtracting a known $A$ from a full
+sample covariance turn the remainder into a Wishart sample of $B$.
+The existing component routine must receive actual isolated-component
+realizations satisfying its assumptions.
+
+\section{Repeated noise is useful, but it is not a new sky}
+\paragraph{Three labels need three meanings.}
+The filenames contain \texttt{run}, \texttt{ncut} and \texttt{nreal}.
+They suggest parent sky, footprint cut and noise realization; Rafael's
+message confirms the pixel selection, not this interpretation. His methods
+paper describes 199 parent skies and four DES footprints per sky, giving
+796 mocks~\cite{gomes}. That description alone does not identify every
+relationship in this new archive. Obtain its parent IDs and noise-generation
+conventions before assigning a statistical degree of freedom. Keep all
+children of one parent together when splitting training and validation.
+
+\paragraph{A useful decomposition from conditional averages.}
+Suppose, for this derivation, a fixed sky $s$ has repeated independent noise
+realizations. Let $\boldsymbol d=\mathcal T(s+n)$ be the measured vector,
+where $n$ denotes shape noise and $\mathcal T$ the correlation measurement.
+Define $\boldsymbol\mu_s=\E_n[\boldsymbol d\mid s]$. Add and subtract this
+conditional mean in $\boldsymbol d-\E[\boldsymbol d]$. The cross term has
+zero average because $\E_n[\boldsymbol d-\boldsymbol\mu_s\mid s]=0$. Hence
+\begin{equation}
+ \Cov=\underbrace{\cov_s(\boldsymbol\mu_s)}_{B}
+       +\underbrace{\E_s[\cov_n(\boldsymbol d\mid s)]}_{A}.
+ \label{eq:total}
+\end{equation}
+The first term describes changing skies; the second describes changing
+noise on a fixed sky, averaged over skies. This identity requires no Gaussian
+assumption. Its physical usefulness depends on what random quantities the
+simulation actually varies or holds fixed.
+
+\paragraph{Averaging reduces noise, which changes the target.}
+Take $K>1$ noise draws for each of $R_s>1$ independent parents, using one
+fixed footprint selection and the same measurement throughout. Let
+$\bar{\boldsymbol d}_s$ be the mean vector for parent $s$, and $W_s$ the
+sample covariance of its $K$ vectors with denominator $K-1$. Define
+$\widehat A=R_s^{-1}\sum_s W_s$ and let $\widehat C_{\bar d}$ be the ordinary
+sample covariance of the $R_s$ parent means. Conditional independence and
+equal $K$ imply
+\begin{equation}
+ \E[\widehat A]=A,\qquad
+ \E[\widehat C_{\bar d}]=B+A/K.
+\end{equation}
+An unbiased estimate of the covariance of one noisy survey is consequently
+\begin{equation}
+ \widehat\Cov=\widehat C_{\bar d}+(1-1/K)\widehat A,
+ \qquad
+ \widehat B=\widehat C_{\bar d}-\widehat A/K.
+ \label{eq:hierarchical}
+\end{equation}
+For example, averaging 20 noise realizations leaves only one twentieth of
+the conditional-noise covariance in the parent means. Using their covariance
+alone would miss the other nineteen twentieths of the single-observation
+noise. This is a worked statistical example, not a claim that the local
+\texttt{nreal} labels have already been verified as these 20 draws.
+
+\paragraph{This decomposition does not yet supply component PME.}
+The difference defining $\widehat B$ in Equation~\eqref{eq:hierarchical}
+can have negative eigenvalues and is not a Wishart sample covariance.
+Inserting it into the component formula with an invented effective sample
+count is unjustified. Also, $\mathcal T$ is nonlinear: measuring an averaged
+map is generally different from averaging measured vectors. Mixed signal
+and noise terms enter the covariance of products, so noiseless maps do not
+automatically deliver the $B$ needed for a particular proposed split.
+Repeated-noise data can help test those terms, but deriving the required
+product-moment correction is a separate statistical task.
+
+\paragraph{Footprint cuts require another check.}
+Different cuts from the same full sky can share large-scale modes or even
+pixels. Averaging them changes the effective survey rather than producing
+one ordinary DES realization. A conservative initial construction is one
+preselected cut and one preselected noise draw per independent parent.
+This uses less of the archive but gives a clear reference population.
+Using more cuts requires measuring their correlations or deriving an
+estimator that accounts for them. Parent-level resampling can be useful
+for uncertainty checks, but does not magically make cuts independent.
+
+\section{The measurement must match before the covariance can match}
+\paragraph{Pixel size is a physical smoothing scale.}
+A HEALPix pixel has area $4\pi/(12N_{\rm side}^2)$ steradians. Its square-root
+angular scale is about $6.87$ arcminutes at 512, twice the scale at 1024.
+The methods paper uses 1024 and discusses a small-triangle cutoff near
+8 arcminutes~\cite{gomes}. At 512 the same numerical cut is much closer to
+a pixel width. The old cutoff is therefore not a validation of the new maps.
+Increasing it in a sensitivity test is sensible, but no factor-of-two rule
+by itself establishes a converged estimator. Small aperture radii also need
+an explicit resolution check.
+
+\paragraph{A mask is more than an area.}
+Two footprints with the same total area can have different pair and triangle
+counts, holes and boundaries. A pixel-weighted map estimator may also differ
+from a galaxy-catalog estimator. Record source-bin definitions, pixel weights,
+shape-noise prescription, coordinate basis, pair/triangle bins and angular
+averaging, aperture filters, finite-triangle cuts and any pixel smoothing.
+The analytic covariance and the simulated measurement must target these
+same choices. A mismatch in their means can reveal a problem, but agreement
+of means alone does not establish agreement of covariances.
+
+\paragraph{Physics absent from the maps cannot be calibrated by them.}
+The current message does not specify intrinsic alignment, baryonic feedback,
+source clustering, calibration fluctuations or the cosmological parameters
+of the archive. A gravitational shear ensemble at a fixed cosmology cannot
+by itself validate all these contributions or the covariance's cosmology
+dependence. Confirm which ingredients are simulated, which are modeled
+analytically and which are neglected. The current full-filter gravitational
+covariance implementation is not already a matched finite-triangle TATT
+covariance for this download. Correcting a matrix cannot repair a wrong
+mean model or supply a physical effect absent from both model and simulations.
+
+\section{A bounded pilot and the decision it should support}
+\paragraph{First establish the inputs.}
+Obtain \texttt{indices.npy}, the ordering, coordinate frame and label meanings;
+verify two complete files against the producer's expected size or checksum.
+Make the footprint previews, then measure one joint vector with fully
+recorded rows and settings. Repeat with one more selected map to check
+pairing and repeatability. The first purpose is to catch a wrong coordinate
+assignment, sign or row order cheaply. Do not begin by passing the entire
+partially downloaded directory to a measurement job.
+
+\paragraph{Then construct a defensible training set.}
+Choose parents before inspecting their covariance residuals. Reserve separate
+parents for model tuning, correction estimation and validation. Use one
+specified footprint/noise draw per parent for the initial full-covariance
+route. Store generated vectors and their labels under \texttt{chains/}.
+The existing notebook loader checks row ordering and rejects repeated or
+excluded parent IDs, but the analyst must still establish their physical
+independence. If two independent groups are used for the quadratic product,
+keep validation parents out of both. A small pilot may simply be too noisy
+to support any correction; that is an informative result.
+
+\paragraph{Compare at fixed scientific assumptions.}
+Evaluate the analytic precision, first-order PME and, if justified,
+second-order or split-group PME. Keep the mean, data rows, derivatives and
+priors fixed. Record precision eigenvalues, corrections to correlations,
+and parameter uncertainties. For parameter derivatives $D_{i\alpha}
+=\partial m_i/\partial\theta_\alpha$, the Gaussian fixed-covariance Fisher
+matrix is $F=D\T\Psi D+F_{\rm prior}$. Here $F_{\rm prior}$ represents the
+specified prior information. This projects the covariance changes onto
+parameter-sensitive directions. A higher figure of merit merely means a
+smaller quoted ellipse; it does not establish more accurate error bars.
+
+\paragraph{Validate weights using data not used to learn them.}
+For independent residuals $\boldsymbol r=\boldsymbol d-\boldsymbol\mu$
+about a known ensemble mean,
+\begin{equation}
+ \E[\boldsymbol r\T\Psi\boldsymbol r]=\operatorname{tr}(\Psi\Cov).
+\end{equation}
+For the exact precision this equals $p$. If the mean is wrong by
+$\boldsymbol b$, an additional $\boldsymbol b\T\Psi\boldsymbol b$ appears.
+If parameters are fitted or a finite-sample mean is used, the reference
+expectation also changes. Do not demand $p$ without checking which residuals
+were computed. Examine distributions and parameter-sensitive directions as
+well as this single average; different errors can cancel in a trace.
+
+\paragraph{Check the errors that the analysis reports.}
+In a locally linear model without priors, let
+$H=(D\T\Psi D)^{-1}D\T\Psi$. The fitted parameter displacement is
+$H\boldsymbol r$, so its true scatter is $H\Cov H\T$. This need not equal
+the quoted covariance $(D\T\Psi D)^{-1}$ when the precision is approximate.
+Held-out fits can compare these quantities and test whether, for example,
+a nominal 68\% region contains the input parameters at the expected rate.
+Priors, nonlinear models and finite validation samples need their own
+calibration. Repeating the training/validation split tests sensitivity to
+which parents happened to be available; it does not increase the number
+of independent parent skies.
+
+\paragraph{What success would buy us.}
+A validated correction could retain a full joint vector with more reliable
+weights than the analytic model alone, even when the raw sample covariance
+cannot be inverted. It could identify covariance directions that limit our
+claims about combining two- and three-point statistics. It would not require
+compression merely to invert a noisy matrix. Compression remains an option
+for a different scientific or computational purpose, with training kept
+independent of validation. The immediate deliverables here are the notes,
+a two-file viewing example and the PME workflow; measured DES corrections,
+resolution convergence and calibrated parameter errors remain future work.
+
+\begin{thebibliography}{9}
+\bibitem{pme} O. Friedrich and T. Eifler,
+\emph{Precision matrix expansion --- efficient use of numerical simulations
+in estimating errors on cosmological parameters},
+\href{https://arxiv.org/abs/1703.07786}{arXiv:1703.07786}.
+\bibitem{gomes} R. C. H. Gomes et al.,
+\emph{Cosmology with second and third-order shear statistics for the Dark
+Energy Survey: Methods and simulated analysis},
+\href{https://arxiv.org/abs/2503.03964}{arXiv:2503.03964}, version 2.
+The public source code is at
+\href{https://github.com/rchgomes/3pcf_integrator}{rchgomes/3pcf\_integrator};
+the theory work also builds on
+\href{https://github.com/git-sunao/fastnc}{git-sunao/fastnc}.
+\end{thebibliography}
+\end{document}
