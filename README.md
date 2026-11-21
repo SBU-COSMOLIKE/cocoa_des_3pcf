@@ -343,8 +343,8 @@ derive the method and explain repeated noise realizations, pixel resolution
 and independent validation; their [LaTeX source](notes/covariance_from_simulations/covariance_from_simulations.tex)
 follows the Fisher notes' style. The [simulation guide](maps_cov_512_v2/README.md)
 and [viewing notebook](maps_cov_512_v2/EXAMPLE_VIEW_MAPS.ipynb) inspect two maps
-and show how to plot the DES footprint once its pixel indices and ordering
-are available. The maps are ignored by Git; only their guide and notebook
+and plot the DES footprint using `indices_512.npy`. A comparison of both
+HEALPix orderings identifies RING geometrically. The maps are ignored by Git; only their guide and notebook
 are tracked. No DES covariance has yet been calibrated from this download.
 Survey simulations must reproduce the selection and estimator; four cuts
 from one sky and repeated noise draws are not automatically independent skies.

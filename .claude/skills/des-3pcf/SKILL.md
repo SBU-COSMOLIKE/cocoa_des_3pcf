@@ -114,8 +114,10 @@ are insufficient.
   Do not introduce `outputs/`, `plots/` or `runs/` for these products.
 - `maps_cov_512_v2/` is a local simulation download. Ignore its contents
   except its README and viewing notebook; never stage the map arrays.
-  Rafael confirmed NSIDE 512 and footprint pixel IDs in `indices.npy`.
-  Confirm HEALPix ordering and parent/cut/noise labels before measurement.
+  Rafael confirmed NSIDE 512 and footprint pixel IDs in `indices_512.npy`.
+  The footprint comparison strongly identifies RING/equatorial coordinates;
+  record this as geometric evidence. Confirm shear signs and parent/cut/noise
+  labels before measurement. The preview uses astropy-healpix, not healpy.
   File counts are not independent-sky counts. Keep previews bounded and
   store generated measurements in `chains/`. The covariance introduction
   lives in `notes/covariance_from_simulations/` with its LaTeX source and PDF.
@@ -148,6 +150,14 @@ how to run an example and what its result establishes. General numerical
 controls and Fisher derivations belong in core documentation; model-specific
 equations belong beside the theory code. Give prominent bold thanks to Sunao
 Sugiyama and Rafael Gomes, with their original repositories and papers.
+
+For undergraduate teaching notes, use the LSST Y1 × DESI Fisher note's
+level of explanation. Put matrix definitions and algebraic operations in
+separate numbered equation environments, with prose explaining each step.
+Do not hide a derivation in inline math or jump directly from expectations
+to a corrected estimator. Work through numerical matrices and distinguish
+an observed estimate, its ensemble expectation and the unknown truth.
+Depth takes precedence over a short page count when the user asks for it.
 
 Use plain explanations for a physics student. Explain units, array shapes,
 assumptions and the reason for a non-obvious operation. Avoid unnecessary

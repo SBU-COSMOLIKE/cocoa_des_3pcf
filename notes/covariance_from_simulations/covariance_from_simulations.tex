@@ -11,13 +11,19 @@
 \newcommand{\cov}{\operatorname{Cov}}
 \emergencystretch=3em
 \setlength{\parskip}{0.2em}
+% Let the teaching figure share a page with the surrounding explanation,
+% following the Fisher note's float settings.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.85}
 \begin{document}
 \begin{center}
 {\LARGE Learning a covariance from simulations\par}
 \vspace{0.5em}
 {\large The Friedrich--Eifler precision expansion and Rafael's DES shear maps\par}
 \vspace{0.5em}
-20 November 2026
+21 November 2026
 \end{center}
 
 \section{The question and how to read this note}
@@ -52,15 +58,184 @@ its assumptions. The companion notebook first uses artificial Gaussian
 vectors with known covariance, then describes the real-map workflow. Its
 existing numerical results are not a calibration of the downloaded maps.
 
+\paragraph{A first reading, with four calculations to check yourself.}
+Read the short matrix guide below if transposes, products and inverse
+transformations are unfamiliar. Then follow four worked calculations:
+\begin{enumerate}
+ \item Section~\ref{sec:four-surveys} turns four pairs of measurements
+ into a sample covariance, entry by entry.
+ \item Section~\ref{sec:matrix-example} whitens a two-observable covariance
+ and builds its second-order precision without simulation noise.
+ \item Section~\ref{sec:Q-numerical} computes the noisy-square correction
+ from an observed matrix, including its numerator, denominator and units.
+ \item Section~\ref{sec:joint-information} shows when a correlated second
+ observable adds no, modest or substantial parameter information.
+\end{enumerate}
+After these calculations, read the repeated-noise derivation in Section 7.
+It explains which quantities Rafael's files could estimate and why several
+files from one sky cannot simply be counted as several independent skies.
+The later physical and validation sections then explain what must match
+before a precision correction is useful for a DES forecast.
+
 \paragraph{Credits and present scope.}
 \textbf{We thank Rafael Gomes for supplying the maps and explaining their
 pixel selection, and Sunao Sugiyama and Rafael Gomes for their theory and
 measurement software.} The relevant analysis is Gomes et al.~\cite{gomes};
 the statistical method is due to Oliver Friedrich and Tim Eifler.
-The local download is incomplete. We inspected two array headers and small
-slices, not the complete collection. We have not measured its joint vectors,
+The local download is incomplete. We inspected two array headers, the
+pixel-index list and bounded slices for previews of two maps, not the
+complete collection. We have not measured its joint vectors,
 corrected a DES covariance or run a new Fisher forecast. This is an explanation
 and a plan that can be checked before undertaking those computations.
+
+
+\subsection{A short reading guide to the matrix operations}
+\label{sec:matrix-language}
+\paragraph{A vector is an ordered list of measurements.}
+For two measurements, a column vector and its transpose are
+\begin{equation}
+ \boldsymbol r=\begin{pmatrix}r_1\\r_2\end{pmatrix},
+ \qquad \boldsymbol r\T=\begin{pmatrix}r_1&r_2\end{pmatrix}.
+\end{equation}
+The transpose changes a column into a row. It does not change the values
+or conjugate real numbers. The order of measurements matters: covariance
+rows, covariance columns, model predictions and derivatives must use the
+same order.
+
+\paragraph{An outer product makes a covariance-shaped object.}
+Multiply the column by its row transpose:
+\begin{equation}
+ \boldsymbol r\boldsymbol r\T=
+ \begin{pmatrix}r_1^2&r_1r_2\\r_2r_1&r_2^2\end{pmatrix}.
+\end{equation}
+Every entry multiplies one measurement residual by another residual from
+the same realization. Averaging such matrices is how a covariance is
+constructed. In the reverse order the result is a single scalar instead:
+\begin{equation}
+ \boldsymbol r\T\boldsymbol r=r_1^2+r_2^2.
+\end{equation}
+This scalar ignores correlations and uses raw measurement units. It is
+not the statistical squared distance unless the covariance is the identity.
+
+\paragraph{Matrix multiplication is row times column.}
+For two matrices $U$ and $V$, the entry in row $i$ and column $j$ of the
+product is
+\begin{equation}
+ (UV)_{ij}=\sum_k U_{ik}V_{kj}.
+\end{equation}
+The index $k$ runs through every intermediate measurement. For example,
+\begin{equation}
+ \begin{pmatrix}a&b\\c&d\end{pmatrix}
+ \begin{pmatrix}e&f\\g&h\end{pmatrix}
+ =\begin{pmatrix}ae+bg&af+bh\\ce+dg&cf+dh\end{pmatrix}.
+\end{equation}
+A matrix square means applying this rule with the same matrix twice.
+It does not mean squaring each entry independently. That distinction is
+used explicitly in Section~\ref{sec:Q-numerical}.
+
+\paragraph{Why changing the order can change the answer.}
+Consider two symmetric matrices,
+\begin{equation}
+ U=\begin{pmatrix}1&0\\0&2\end{pmatrix},
+ \qquad V=\begin{pmatrix}1&1\\1&1\end{pmatrix}.
+\end{equation}
+Multiplying them in this order gives
+\begin{equation}
+ UV=\begin{pmatrix}1&1\\2&2\end{pmatrix}.
+\end{equation}
+Reversing their order gives a different matrix:
+\begin{equation}
+ VU=\begin{pmatrix}1&2\\1&2\end{pmatrix}.
+\end{equation}
+Although the original matrices are symmetric, the individual products
+are not. Their sum is symmetric. This small example explains why the
+component precision expansion retains both multiplication orders instead
+of replacing their sum by twice one product.
+
+\paragraph{An inverse undoes a transformation.}
+The identity matrix leaves a vector unchanged. In two dimensions it is
+\begin{equation}
+ \I=\begin{pmatrix}1&0\\0&1\end{pmatrix}.
+\end{equation}
+An invertible matrix $L$ has an inverse defined by
+\begin{equation}
+ L^{-1}L=LL^{-1}=\I.
+\end{equation}
+For a diagonal matrix, the inverse simply replaces each nonzero diagonal
+entry by its reciprocal. For a general matrix, it does not take entrywise
+reciprocals. In numerical work it is often more accurate and efficient
+to solve for a vector than to construct an explicit inverse. The inverse
+notation in these notes describes the mathematical operation, not a
+requirement for a particular computer implementation.
+
+\paragraph{A covariance transforms on both sides.}
+Suppose new residuals are obtained with a fixed matrix $J$:
+\begin{equation}
+ \boldsymbol y=J\boldsymbol r.
+\end{equation}
+Their outer product is
+\begin{equation}
+ \boldsymbol y\boldsymbol y\T
+       =J\boldsymbol r\boldsymbol r\T J\T.
+\end{equation}
+Since $J$ is fixed, averaging the middle residual product gives
+\begin{equation}
+ \Cov_y=J\Cov_r J\T.
+\end{equation}
+A change of units affects each residual factor, which is why the covariance
+changes on both the left and the right. Whitening will be a particular
+choice of $J$.
+
+\paragraph{Precision transforms so that the same discrepancy has the same weight.}
+Suppose the whitened residual has weight matrix $P$. Its squared distance is
+\begin{equation}
+ \chi^2=\boldsymbol y\T P\boldsymbol y.
+\end{equation}
+Replace each occurrence of $\boldsymbol y$ by $J\boldsymbol r$:
+\begin{equation}
+ \chi^2=\boldsymbol r\T J\T P J\boldsymbol r.
+\end{equation}
+Therefore the weight matrix in the original coordinates is
+\begin{equation}
+ \Psi=J\T P J.
+\end{equation}
+For whitening, $J$ is the inverse of the model's Cholesky factor. This
+explains the order of the two factors in every precision-restoration
+formula later in the note; it need not be memorized.
+
+\paragraph{Positive definiteness means positive variance in every measured direction.}
+For any nonzero combination of data entries specified by a vector
+$\boldsymbol a$, its variance is
+\begin{equation}
+ \Var(\boldsymbol a\T\boldsymbol d)=\boldsymbol a\T\Cov\boldsymbol a.
+\end{equation}
+A covariance is positive semidefinite when this quantity cannot be negative.
+It is positive definite when it is strictly positive for every nonzero
+$\boldsymbol a$. A sample covariance can have zero directions because too
+few simulations were available. That is why it can be a valid covariance
+estimate but have no inverse. The analytic model used for whitening must
+be positive definite so its Cholesky factor is invertible.
+
+\paragraph{An eigenvector identifies one direction without mixing it with others.}
+An eigenvector $\boldsymbol a$ of a matrix $X$ obeys
+\begin{equation}
+ X\boldsymbol a=x\boldsymbol a.
+\end{equation}
+The scalar $x$ is its eigenvalue: applying the matrix stretches that vector
+but does not change its direction. A real symmetric matrix has mutually
+orthogonal eigenvectors spanning the measurement space. This allows a
+matrix inverse series to be checked one direction at a time using an
+ordinary scalar series. No physical interpretation of every eigenvector
+is required to use this statement.
+
+\paragraph{An expectation averages repeated experiments.}
+A hat marks an estimate obtained from a finite sample. The symbol $\E$
+means the average of that estimate over repeated complete samples drawn
+under the same assumptions. Unbiasedness says that this average equals
+the target. It does not say that a single sample equals its target, or
+that its random error is small. The scalar noisy-square example in
+Section~\ref{sec:noisy-square-example} is designed to make this distinction
+visible rather than leave it as statistical terminology.
 
 \section{What the covariance is a covariance of}
 \paragraph{The observable comes before its uncertainty.}
@@ -89,7 +264,9 @@ Write $\boldsymbol\mu=\E[\boldsymbol d]$ for the ensemble mean. Then
 \begin{equation}
  \Cov_{ij}=\E[(d_i-\mu_i)(d_j-\mu_j)].
 \end{equation}
-The diagonal gives individual variances. A positive off-diagonal entry means
+For a diagonal entry, the two residual factors refer to the same
+measurement, so their product is its squared residual. The diagonal
+therefore gives individual variances. A positive off-diagonal entry means
 that the two observables tend to rise together. For example, a sky containing
 an unusually large concentration of matter can change both two- and
 three-point statistics. In block form,
@@ -102,26 +279,186 @@ The block $\Cov_{23}$ is why the two statistics must be measured on the
 unrelated skies for the two blocks erases the shared fluctuations.
 
 \paragraph{Why the inverse matters.}
-The precision matrix is $\Psi=\Cov^{-1}$. For a Gaussian likelihood with a
-fixed covariance, the squared distance of a model $\boldsymbol m$ from the
+The precision matrix is the inverse covariance:
+\begin{equation}
+ \Psi=\Cov^{-1}.
+\end{equation}
+For a Gaussian likelihood with a fixed covariance, the squared distance of a model $\boldsymbol m$ from the
 data is
 \begin{equation}
  \chi^2=(\boldsymbol d-\boldsymbol m)\T\Psi
                   (\boldsymbol d-\boldsymbol m).
 \end{equation}
-Consider two observables with covariance
-$\sigma^2\left(\begin{smallmatrix}1&r\\r&1\end{smallmatrix}\right)$,
-where $\sigma$ is their common standard deviation and $r$ their correlation.
-The normalized sum and difference have variances $\sigma^2(1+r)$ and
-$\sigma^2(1-r)$. If $r$ is close to one, their difference is tightly measured.
+Consider two observables with common standard deviation $\sigma$ and
+correlation coefficient $r$. Their covariance is
+\begin{equation}
+ \Cov=\sigma^2\begin{pmatrix}1&r\\r&1\end{pmatrix}.
+\end{equation}
+The normalized sum measures their shared fluctuation. Its variance is
+\begin{equation}
+ \Var\left(\frac{d_1+d_2}{\sqrt2}\right)=\sigma^2(1+r).
+\end{equation}
+The normalized difference removes that shared fluctuation. Its variance is
+\begin{equation}
+ \Var\left(\frac{d_1-d_2}{\sqrt2}\right)=\sigma^2(1-r).
+\end{equation} If $r$ is close to one, their difference is tightly measured.
 An error in $r$ then matters greatly for its inverse variance. This is why
 judging only the diagonal entries of a covariance is insufficient.
+
+
+\subsection{Worked example: four surveys and two measurements}
+\label{sec:four-surveys}
+\paragraph{The numbers we start with.}
+Take four hypothetical independent surveys. In each one measure two
+observables, after dividing them by fixed reference units so that the
+numbers are easy to read. Suppose the resulting vectors are
+\begin{equation}
+ \boldsymbol d_1=\begin{pmatrix}1\\1\end{pmatrix},\quad
+ \boldsymbol d_2=\begin{pmatrix}2\\1\end{pmatrix},\quad
+ \boldsymbol d_3=\begin{pmatrix}3\\3\end{pmatrix},\quad
+ \boldsymbol d_4=\begin{pmatrix}4\\3\end{pmatrix}.
+\end{equation}
+These are invented teaching numbers, not measured DES correlations. The
+mean is $(2.5,2)\T$. The four residuals are $(-1.5,-1)\T$,
+$(-0.5,-1)\T$, $(0.5,1)\T$ and $(1.5,1)\T$. Notice how both entries tend
+to be below their means in the same surveys, and above their means in the
+same surveys. That is the physical content of positive covariance.
+
+\paragraph{Build the entries rather than treating a matrix as a black box.}
+The first diagonal entry is the mean squared residual of the first
+observable, with the sample-mean correction:
+\begin{equation}
+ \widehat\Cov_{11}=\frac{2.25+0.25+0.25+2.25}{3}=\frac53.
+\end{equation}
+The second diagonal entry is computed from the second residual in each
+survey:
+\begin{equation}
+ \widehat\Cov_{22}=\frac{1+1+1+1}{3}=\frac43.
+\end{equation}
+For the off-diagonal entry, multiply the residuals \emph{within the same
+survey} before adding them:
+\begin{equation}
+ \widehat\Cov_{12}=\frac{1.5+0.5+0.5+1.5}{3}=\frac43.
+\end{equation}
+The lower-left entry equals the upper-right entry because the residual
+products are unchanged when their order is swapped. Assemble the four
+entries into the sample matrix:
+\begin{equation}
+ \widehat\Cov=\frac13\begin{pmatrix}5&4\\4&4\end{pmatrix}.
+\end{equation}
+Pairing the first observable from one survey with the second from an
+unrelated survey would change this sum. File order is therefore part of
+the statistical construction, not just a storage preference.
+
+\paragraph{Turn covariance into a dimensionless correlation.}
+Divide the cross covariance by the product of the two standard deviations:
+\begin{equation}
+ r=\frac{\widehat\Cov_{12}}
+          {\sqrt{\widehat\Cov_{11}\widehat\Cov_{22}}}.
+\end{equation}
+Inserting the entries just calculated gives
+\begin{equation}
+ r=\frac{4/3}{\sqrt{(5/3)(4/3)}}=\frac2{\sqrt5}\simeq0.894.
+\end{equation} Unlike the raw covariance, it is unchanged when
+one observable is expressed in different units. A large positive value
+tells us that the two observables share fluctuations. It does not say
+whether they respond identically to a cosmological parameter. That is a
+separate question about derivatives of their means. We will return to this
+distinction when evaluating what a three-point measurement adds.
+
+\paragraph{Why correlation changes the meaning of a residual.}
+For a second simple example, let both variances be one and let $r=0.8$.
+Then
+\begin{equation}
+ \Cov=\begin{pmatrix}1&0.8\\0.8&1\end{pmatrix},\qquad
+ \Psi=\frac1{0.36}\begin{pmatrix}1&-0.8\\-0.8&1\end{pmatrix}.
+ \label{eq:correlated-two}
+\end{equation}
+For a residual with both entries equal to one, the squared distance is
+\begin{equation}
+ \chi^2_{\rm same}=\frac{2}{1+0.8}=1.111\ldots.
+\end{equation}
+For a residual with first entry one and second entry minus one, it is
+\begin{equation}
+ \chi^2_{\rm opposite}=\frac{2}{1-0.8}=10.
+\end{equation}
+If we ignored the correlation, both would instead have a squared distance
+of two. The first residual follows the
+usual shared fluctuation; the second points across it and is much harder
+to explain. Figure~\ref{fig:ellipse} draws this difference. It is the
+simplest reason that matching only error bars on individual data rows can
+leave a badly wrong likelihood.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/correlated_residuals.pdf}
+\caption{An exact teaching covariance, not simulation data. The blue curve
+is $\boldsymbol r\T\Psi\boldsymbol r=1$ for unit variances and correlation
+0.8; the dashed circle is the result of discarding that correlation. The
+two marked residuals have the same ordinary length but different statistical
+significance. A unit Mahalanobis-distance contour in two dimensions is not
+a 68\% probability contour.}
+\label{fig:ellipse}
+\end{figure}
+
+\subsection{From a shear map to one row of the vector}
+\paragraph{What a pair average actually does.}
+For illustration, let pixel $a$ carry shear components
+$(\gamma_{1,a},\gamma_{2,a})$ and weight $w_a$. Relative to the direction
+of a pair, these can be rotated into tangential and cross components,
+$\gamma_t$ and $\gamma_\times$. A schematic bin estimator is
+\begin{equation}
+ \widehat\xi_\pm(\theta)=
+ \frac{\sum_{(a,b)\in\theta}w_aw_b
+  (\gamma_{t,a}\gamma_{t,b}\pm
+   \gamma_{\times,a}\gamma_{\times,b})}
+ {\sum_{(a,b)\in\theta}w_aw_b}.
+ \label{eq:pair-average}
+\end{equation}
+Here $(a,b)\in\theta$ means that the pair separation lies in the specified
+angular bin. The basis rotations must be consistent at both ends of a
+pair, including the spherical geometry. This expression illustrates weights
+and normalization; an actual galaxy estimator also needs its response,
+calibration and self-pair conventions. A pixel is not necessarily equivalent
+to a galaxy with weight one. Pixels with many source galaxies can carry more
+information than pixels with few, depending on how the map was built.
+
+\paragraph{What an aperture measurement adds.}
+An ideal aperture mass centered at $\boldsymbol\theta_0$ can be written as
+\begin{equation}
+ M_{\rm ap}(\boldsymbol\theta_0;\theta)
+ =\int d^2\boldsymbol\vartheta\,
+ Q_\theta(|\boldsymbol\vartheta|)
+ \gamma_t(\boldsymbol\theta_0+\boldsymbol\vartheta;
+                 \boldsymbol\theta_0).
+\end{equation}
+The filter $Q_\theta$ specifies how shear at angular distance
+$|\boldsymbol\vartheta|$ is weighted; $\theta$ sets its aperture scale.
+Its inverse-angular-area units make $M_{\rm ap}$ dimensionless when shear
+is dimensionless. A third-order measurement averages products of three
+aperture masses, possibly with different source bins or aperture sizes.
+On an infinite, fully observed field, this can be related to an integral of
+three-point shear correlations. A finite observed field removes some
+centers, pairs and triangles. An estimator built from finite triangle bins
+therefore requires its own window and weighting treatment; the ideal
+integral is not a license to replace that estimator by a convenient map
+convolution near the survey boundary.
+
+\paragraph{Why one realization must produce the whole vector.}
+Suppose a dense concentration of matter falls in one simulated footprint.
+It may raise several two-point bins and many third-order bins at once.
+The vector from that footprint must retain all those changes together.
+Only after measuring it do we proceed to another independent sky. The
+logical order is therefore sky, joint measurement, ensemble covariance.
+There is no corresponding prescription in which we compute a covariance
+of the raw shear pixels and relabel its axes as $\xi$ and Map3: the
+measurement is a nonlinear operation and changes the random variables.
 
 \section{What is in the downloaded folder}
 \paragraph{Confirmed information.}
 Rafael's message identifies the files as CosmoGrid shear maps at HEALPix
 resolution $N_{\rm side}=512$. They contain only pixels where the DES
-footprint is nonzero; the accompanying \texttt{indices.npy} lists these sky
+footprint is nonzero; the accompanying \texttt{indices\_512.npy} lists these sky
 pixels. Two files, with labels \texttt{run\_0000}, \texttt{ncut0} and
 \texttt{nreal0} or \texttt{nreal1}, have shape $(4,2,369190)$ and double
 precision entries. Each file contains 23,628,288 bytes including its header.
@@ -142,12 +479,16 @@ are unobserved, not measurements of zero shear.
 HEALPix divides the sphere into $12N_{\rm side}^2$ equal-area pixels. For 512
 this is 3,145,728 pixels. There are two index orderings, RING and NESTED,
 with the same valid integer range but different coordinate assignments.
-The producer must identify which one applies, and whether its coordinates
-are equatorial. The viewing notebook uses \texttt{healpy.pix2ang} after those
-choices are supplied. At writing, \texttt{indices.npy} was not present locally,
-so we have not shown a guessed footprint. The notebook also checks whether
-the indices are a common list; a separate list for each cut needs an explicit
-selection of the matching list.
+The array format does not identify the ordering or coordinate frame.
+A producer declaration would establish these directly; an independent
+footprint comparison supplies geometric evidence. The viewing notebook uses \texttt{astropy\_healpix.HEALPix} to compare these choices. The supplied \texttt{indices\_512.npy} has 369,190 unique integer entries,
+matching the map axis. Comparing both orderings recovers the recognizable
+DES footprint only for RING. Its longitude spans $-61.17$ to $99.40$ degrees
+when wrapped at 180 degrees, and its latitude spans $-67.84$ to $5.45$ degrees.
+NESTED instead produces disconnected patterns across all longitudes.
+We use RING and equatorial coordinates for the previews on this geometric
+evidence, consistent with the footprint in the DES Y3 shape-catalog
+paper~\cite{gatti}. This does not determine the shear-component signs or basis.
 
 \paragraph{A preview is not a measurement.}
 The viewing notebook samples at most 30,000 retained positions from each of
@@ -198,6 +539,48 @@ physical ingredients and compare corrections in the parameter combinations
 we actually use. Nor can one transfer a simulation-count requirement from
 another forecast without checking its vector, baseline and precision target.
 
+
+\subsection{Worked example: rank and simulation count}
+\paragraph{Why two vectors cannot determine a two-dimensional covariance.}
+Take just $(1,1)\T$ and $(3,5)\T$. Their mean is $(2,3)\T$ and their
+residuals are $\pm(1,2)\T$. With denominator $N-1=1$,
+\begin{equation}
+ \widehat\Cov=\begin{pmatrix}2&4\\4&8\end{pmatrix}.
+\end{equation}
+Multiplying this matrix by $(-2,1)\T$ gives zero. We did not observe any
+scatter in that perpendicular direction, so the sample assigns it zero
+variance. That is a limitation of these observations, not evidence of an
+infinitely precise measurement. A positive analytic covariance supplies
+an estimate in that unobserved direction. PME can use that estimate while
+learning corrections in the directions the simulations do probe.
+
+\paragraph{How noisy is one variance before any matrix inversion?}
+For independent Gaussian scalar measurements, a sample variance $s^2$
+satisfies
+\begin{equation}
+ \frac{\operatorname{sd}(s^2)}{\E[s^2]}=
+ \sqrt{\frac{2}{N-1}}.
+ \label{eq:variance-noise}
+\end{equation}
+For $N=20$, this is 32.4\%; for $N=100$, 14.2\%; for $N=199$, 10.1\%.
+These are fluctuations of a variance estimate, not the error on a
+cosmological parameter and not the precision of a covariance correction.
+An analytic baseline may greatly improve the latter problem, especially
+when the uncertain component is small. Conversely, merely having more
+simulations than data rows does not make the direct inverse accurate.
+
+\paragraph{Why a 480-dimensional matrix is demanding.}
+A symmetric matrix of size $p$ has $p(p+1)/2$ distinct entries, which is
+115,440 for $p=480$. They are correlated estimates, so this count is not
+a rule demanding one simulation per entry. It does explain why examining
+one diagonal plot is a weak validation. A plot can hide correlated errors
+in many combinations of rows. The analytic model supplies structure
+across these entries; the simulations should determine whether a
+relatively small correction is supported. The numerical tests should
+therefore include covariance modes and parameter projections, rather
+than requiring a small percentage error independently on every tiny
+cross entry.
+
 \section{Deriving the precision expansion}
 \paragraph{Start with one dimension.}
 If the modeled variance is one and the true variance is $1+x$, then
@@ -211,17 +594,44 @@ large or small depending on the variance used to scale it.
 
 \paragraph{Put different observables on comparable scales.}
 Two- and three-point entries can have very different numerical sizes.
-Factor the model as $\M=L L\T$, where $L$ is its lower-triangular Cholesky
-factor. Transform a residual to $\boldsymbol y=L^{-1}(\boldsymbol d-\boldsymbol\mu)$.
-Its modeled covariance is the identity. This operation, called whitening,
+Write the model as a product of a lower-triangular matrix and its transpose:
+\begin{equation}
+ \M=L L\T.
+\end{equation}
+This is the Cholesky factorization. Lower triangular means that entries
+above the diagonal are zero. It exists with a positive diagonal when the
+model is positive definite. Define the transformed residual by
+\begin{equation}
+ \boldsymbol y=L^{-1}(\boldsymbol d-\boldsymbol\mu).
+\end{equation}
+Using the covariance transformation derived in the matrix guide, its
+modeled covariance is
+\begin{equation}
+ \Cov_{y,\rm model}=L^{-1}\M L^{-\mathsf T}.
+\end{equation}
+Substitute the Cholesky factorization. Each inverse cancels its matching
+factor:
+\begin{equation}
+ L^{-1}(L L\T)L^{-\mathsf T}=\I.
+\end{equation}
+The modeled covariance is therefore the identity. This operation, called whitening,
 removes the model's units and correlations. The true covariance in these
 coordinates is
 \begin{equation}
- R=L^{-1}\Cov L^{-\mathsf T}=\I+X,
- \qquad X=L^{-1}(\Cov-\M)L^{-\mathsf T}.
+ R=L^{-1}\Cov L^{-\mathsf T}.
 \end{equation}
-Here $L^{-\mathsf T}$ means $(L\T)^{-1}$ and $X$ is the dimensionless model
-error. Whitening can be evaluated by triangular solves rather than by
+Subtract the identity, which is the model covariance in these coordinates,
+to define the dimensionless covariance error:
+\begin{equation}
+ X=R-\I.
+\end{equation}
+Equivalently, subtract the model before whitening:
+\begin{equation}
+ X=L^{-1}(\Cov-\M)L^{-\mathsf T}.
+\end{equation}
+The notation $L^{-\mathsf T}$ means the inverse of the transposed factor.
+This is the same as transposing the inverse. The residual $X$ has no
+measurement units. Whitening can be evaluated by triangular solves rather than by
 forming explicit numerical inverses.
 
 \paragraph{Apply the scalar argument to each matrix direction.}
@@ -248,70 +658,809 @@ adding independent skies can reduce sampling errors. These operations are
 not interchangeable. A tiny pilot tests file interpretation and algebra,
 not convergence of a high-dimensional precision estimate.
 
-\section{Why the noisy square must be corrected}
-\paragraph{A square does not average like its argument.}
-Let $S=L^{-1}\widehat\Cov L^{-\mathsf T}$ be the whitened sample covariance.
-Its expectation is $R$, but generally $\E[S^2]\ne R^2$. Write $S=R+\delta S$;
-then the average square contains $\E[\delta S\delta S]$ as well as $R^2$.
-Simply inserting the noisy residual $S-\I$ into Equation~\eqref{eq:series}
-therefore introduces a second-order sampling bias.
 
-\paragraph{The Gaussian identity and what it assumes.}
-For independent Gaussian vectors and their ordinary mean-subtracted sample
-covariance, $\nu S$ follows a Wishart distribution with $\nu=N-1$ degrees of
-freedom and scale $R$. Wishart is the matrix analogue of the distribution
-of a sum of squared Gaussian numbers. Its moment identities give
-\begin{align}
- \E[S^2]&=(1+1/\nu)R^2+R\,\operatorname{tr}(R)/\nu,\\
- \E[S\operatorname{tr}(S)]&=R\operatorname{tr}(R)+2R^2/\nu.
-\end{align}
-The trace, $\operatorname{tr}(R)$, is the sum of diagonal entries. Combining
-these relations cancels the extra trace term:
+\subsection{Worked example: perform the matrix expansion by hand}
+\label{sec:matrix-example}
+\paragraph{Choose a model and a known truth.}
+Use two observables in fixed teaching units. Let the model and true
+covariances be
 \begin{equation}
- Q=\frac{\nu^2S^2-\nu S\operatorname{tr}(S)}{\nu^2+\nu-2},
- \qquad \E[Q]=R^2,\qquad N>2.
+ \M=\begin{pmatrix}4&0\\0&1\end{pmatrix},\qquad
+ \Cov=\begin{pmatrix}4.4&0.4\\0.4&0.9\end{pmatrix}.
 \end{equation}
-Thus the first- and second-order precision estimators are
-\begin{align}
- \widehat\Psi_1&=L^{-\mathsf T}(2\I-S)L^{-1},\\
- \widehat\Psi_2&=L^{-\mathsf T}(3\I-3S+Q)L^{-1}.
-\end{align}
-Their expectations equal the corresponding truncated expansions, not the
-exact precision. They need no Hartlap multiplier. A realization can be
-indefinite; negative precision eigenvalues must be diagnosed rather than
-clipped away and silently used in a likelihood.
+The model overestimates one variance, underestimates the other, and misses
+a correlation. For this example the truth is stipulated, so there is no
+simulation noise. We are isolating the approximation error caused by
+truncating the inverse series. It would be a mistake to regard a discrepancy
+here as a problem that more random realizations could solve.
 
-\paragraph{What if the aperture vectors are not Gaussian?}
-Nonlinear summaries need not follow a multivariate Gaussian distribution.
-An available alternative for the quadratic expectation is to estimate
-covariances $S_1,S_2$ from two \emph{independent} parent groups measuring the
-same population. Independence gives
+\paragraph{Whiten and calculate the residual.}
+The Cholesky factor is $L=\operatorname{diag}(2,1)$, so the first row and
+column of $\Cov$ are each divided by two during whitening:
 \begin{equation}
- \E[(S_1S_2+S_2S_1)/2]=R^2.
+ R=\begin{pmatrix}1.1&0.2\\0.2&0.9\end{pmatrix}.
 \end{equation}
-Replacing $S$ by $(S_1+S_2)/2$ and $Q$ by this symmetric product in the
-second-order formula removes the Gaussian assumption for that expectation.
-It still requires finite moments, unbiased sample covariances and a model
-fixed independently of both groups. It does not remove truncation or
-sampling noise; splitting a small ensemble can make the latter large.
-A third independent group is needed for a clean held-out check.
+Now subtract the identity. This subtracts one from each diagonal entry
+and leaves the off-diagonal entries unchanged:
+\begin{equation}
+ X=R-\I=\begin{pmatrix}0.1&0.2\\0.2&-0.1\end{pmatrix}.
+\end{equation}
+Multiply the first row of this residual by each column, and then repeat
+with the second row. The squared residual is
+\begin{equation}
+ X^2=\begin{pmatrix}0.01+0.04&0.02-0.02\\
+                         0.02-0.02&0.04+0.01\end{pmatrix}
+ =0.05\I.
+\end{equation}
+The eigenvalues of $X$ are $\pm\sqrt{0.05}$, both within the convergence
+interval. The off-diagonal residual describes a correlation missed by the
+model; it is not removed by merely adjusting its two diagonal variances.
 
-\paragraph{The component version can be better, when its inputs exist.}
-The especially useful case in Friedrich--Eifler is
-$\Cov=A+B$ with a well-known covariance contribution $A$ and model
-$\M=A+B_m$. If simulations directly isolate $B$, they need not re-estimate
-$A$ with Monte Carlo noise. Define $S_B=L^{-1}\widehat B L^{-\mathsf T}$,
-$T=L^{-1}B_m L^{-\mathsf T}$, and let $Q_B$ be the above unbiased-square
-expression applied to $S_B$. The second-order polynomial is
+\paragraph{Build the polynomial, then restore units.}
+At second order the whitened precision is
 \begin{equation}
- \I-S_B+T+Q_B-S_BT-TS_B+T^2.
+ P_2=\I-X+X^2=\begin{pmatrix}0.95&-0.2\\-0.2&1.15\end{pmatrix}.
 \end{equation}
-Both multiplication orders matter. These are additive covariance
-components, \emph{not} the two-point and three-point blocks with their
-cross-covariance discarded. Nor does subtracting a known $A$ from a full
-sample covariance turn the remainder into a Wishart sample of $B$.
-The existing component routine must receive actual isolated-component
-realizations satisfying its assumptions.
+Restoring the original coordinates divides its first row and first column
+by two, giving
+\begin{equation}
+ \Psi_2=\begin{pmatrix}0.2375&-0.1\\-0.1&1.15\end{pmatrix}.
+ \label{eq:matrix-precision2}
+\end{equation}
+For comparison, the exact inverse follows from the determinant
+$4.4(0.9)-0.4^2=3.8$:
+\begin{equation}
+ \Psi=\frac1{3.8}\begin{pmatrix}0.9&-0.4\\-0.4&4.4\end{pmatrix}
+ =\begin{pmatrix}0.236842&-0.105263\\-0.105263&1.157895\end{pmatrix}
+ \quad\text{(rounded)}.
+\end{equation}
+Every multiplication used by the abstract expansion is visible here.
+The simulated version will replace the true covariance by a sample and
+correct the noisy square; it does not change the whitening convention.
+
+\paragraph{Translate the matrix difference into a likelihood difference.}
+For residual $\boldsymbol r=(2,1)\T$, the successive squared distances are
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+Precision used & $\boldsymbol r\T\Psi\boldsymbol r$\\
+\midrule
+Analytic model $\M^{-1}$ & $2.000000$\\
+First-order expansion & $1.600000$\\
+Second-order expansion & $1.700000$\\
+Exact true inverse & $1.684211$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Second order improves this particular comparison, but the table is only
+one residual direction. A validation examines other directions and the
+parameter fit, because a matrix error can cancel for one chosen vector.
+The example also shows that a correction can \emph{decrease} the weight
+assigned to a discrepancy. Improving a likelihood is not synonymous with
+increasing its information.
+
+\subsection{When a close-looking model is not close enough}
+\paragraph{A missing correlated direction.}
+Suppose the true whitened covariance has eigenvalues 1 and 2.5 while the
+model is the identity. In the second direction the model's covariance
+error is 1.5. The exact precision in that direction is
+\begin{equation}
+ \Psi_{\rm exact}=\frac1{2.5}=0.4.
+\end{equation}
+The first-order inverse approximation instead gives
+\begin{equation}
+ \Psi_1=1-1.5=-0.5.
+\end{equation}
+A negative weight is not a physical precision. Adding the quadratic term
+makes the result positive:
+\begin{equation}
+ \Psi_2=1-1.5+1.5^2=1.75.
+\end{equation}
+It is still badly wrong compared with 0.4. It is not a
+cure for first order's negative value. This example is deliberately outside
+the convergence interval and explains why positive definiteness is a
+necessary property of a usable precision but not an accuracy certificate.
+
+\paragraph{Entrywise small errors can accumulate.}
+Take $p=100$ measurement directions and let $\boldsymbol 1$ denote the
+column with every entry equal to one. Choose a coherent residual matrix
+\begin{equation}
+ X=\epsilon\boldsymbol 1\boldsymbol 1\T,
+ \qquad \epsilon=0.015.
+\end{equation}
+Each matrix element differs from the baseline by only 0.015 in these
+coordinates, but the common mode has eigenvalue $p\epsilon=1.5$.
+It is exactly the failed direction of the previous example. A coherent
+missing response, such as modulation by a long-wavelength environment,
+can be more serious than many unrelated small errors. Looking at
+parameter-sensitive combinations and covariance modes is therefore
+motivated by physics as well as linear algebra.
+
+\paragraph{Improving the model is a separate experiment.}
+One might use simulations to fit a missing common-mode amplitude and then
+repeat PME around the improved model. That is reasonable only if the
+statistical accounting respects the fit. The formulas above condition on
+an analytic model fixed independently of the correction sample. Fitting
+it on the same sample correlates its Cholesky factor with the residual
+being estimated and invalidates that simple expectation calculation.
+Reserve different parents for tuning, or derive and validate the effects
+of the shared training procedure. Neither relabeling the matrix
+``analytic'' nor reusing the same simulations in a second file makes it
+independent.
+
+\section{Correcting the noisy square, one operation at a time}
+\label{sec:correct-square}
+\subsection{The objects we know and the object we want}
+\paragraph{Start with the sample, not with its inverse.}
+Suppose we have measured the same joint vector in $N$ independent surveys.
+The ordinary sample covariance of those vectors is denoted by a hat:
+\begin{equation}
+ \widehat\Cov=\frac{1}{N-1}\sum_{r=1}^{N}
+ (\boldsymbol d_r-\bar{\boldsymbol d})
+ (\boldsymbol d_r-\bar{\boldsymbol d})\T.
+\end{equation}
+The hat reminds us that another set of surveys would give a different
+matrix. We also have an analytic model, chosen independently of this sample.
+Its Cholesky factor is defined by
+\begin{equation}
+ \M=L L\T.
+\end{equation}
+We know both matrices on the right once the model is specified. We do not
+know the true covariance of all possible surveys; that unknown population
+quantity is $\Cov$ without a hat.
+
+\paragraph{Put the observed covariance in model units.}
+Apply the whitening operation already illustrated in
+Section~\ref{sec:matrix-example} to the sample covariance:
+\begin{equation}
+ S=L^{-1}\widehat\Cov L^{-\mathsf T}.
+ \label{eq:define-S}
+\end{equation}
+This is a matrix we can calculate. It varies from sample to sample.
+Performing the same transformation on the unknown true covariance defines
+\begin{equation}
+ R=L^{-1}\Cov L^{-\mathsf T}.
+ \label{eq:define-R}
+\end{equation}
+This is a fixed but unknown matrix for the assumed cosmology and estimator.
+Because the sample covariance is unbiased and $L$ is held fixed,
+\begin{equation}
+ \E[S]=R.
+\end{equation}
+The expectation means repeating the entire experiment with new independent
+surveys, not averaging the entries of a single matrix. Distinguishing these
+two uses of the word average is essential to the calculation below.
+
+\paragraph{Name the sample fluctuation.}
+Write the difference between an observed whitened covariance and its true
+value as
+\begin{equation}
+ \delta S=S-R.
+\end{equation}
+It follows that its expectation is the zero matrix:
+\begin{equation}
+ \E[\delta S]=0.
+\end{equation}
+The first-order expansion uses only quantities linear in $S$, so this
+property is enough to control their mean. Second order contains a matrix
+square. That introduces products of fluctuations, which need separate
+attention.
+
+\subsection{Why replacing the true square by the observed square fails}
+\paragraph{Multiply before taking an average.}
+Substitute the definition of the fluctuation into the square:
+\begin{equation}
+ S^2=(R+\delta S)(R+\delta S).
+\end{equation}
+Distributing both factors gives four terms:
+\begin{equation}
+ S^2=R^2+R\delta S+\delta S R+\delta S\delta S.
+\end{equation}
+The middle terms are distinct matrix products; we have not assumed that
+matrices commute. Now average over repeated ensembles. The two middle
+terms vanish because each contains one zero-mean fluctuation, leaving
+\begin{equation}
+ \E[S^2]=R^2+\E[\delta S\delta S].
+\end{equation}
+The last term generally does not vanish. For a symmetric fluctuation
+matrix, its diagonal entries contain sums of squared entry fluctuations.
+This is the matrix version of the positive variance contribution in
+\emph{mean of a square versus square of a mean}. Our task is to construct
+another observable matrix, called $Q$, whose expectation is just $R^2$.
+
+\paragraph{What the Gaussian assumption buys us.}
+Here Gaussian means a multivariate bell-shaped distribution: every fixed
+linear combination of the summary entries has a Gaussian distribution.
+This is an assumption about the measured vectors, not merely the noise
+added to pixels. For independent Gaussian summary vectors, the sample
+covariance has a known distribution called Wishart. We will use two of its moment
+relations. The number of degrees of freedom is
+\begin{equation}
+ \nu=N-1.
+\end{equation}
+The subtraction of one appears because the sample mean was fitted from
+the same vectors. The formulas below are not automatically valid for
+arbitrary non-Gaussian aperture vectors or for different cuts of one
+correlated sky. Their role here is to provide a conditional statistical
+method whose applicability must later be tested.
+
+\subsection{Derive the correction instead of quoting it}
+\paragraph{Step 1: identify the unwanted contribution in the square.}
+The first Gaussian moment relation is
+\begin{equation}
+ \E[S^2]=\left(1+\frac1\nu\right)R^2
+                   +\frac1\nu R\operatorname{tr}(R).
+ \label{eq:moment-one}
+\end{equation}
+There are two problems compared with the desired $R^2$: its coefficient
+is larger than one, and there is an additional matrix proportional to
+$R\operatorname{tr}(R)$. The trace is a scalar obtained by adding diagonal
+entries. For example, for a two-by-two matrix,
+\begin{equation}
+ \operatorname{tr}(R)=R_{11}+R_{22}.
+\end{equation}
+Thus the second term in Equation~\eqref{eq:moment-one} multiplies every
+entry of $R$ by the same unknown scalar. We cannot simply subtract its
+true value, because $R$ is exactly what we do not know.
+
+\paragraph{Step 2: find a measurable product with the same unwanted term.}
+Both $S$ and its trace are available from our sample. Their product has
+the second Gaussian moment relation
+\begin{equation}
+ \E[S\operatorname{tr}(S)]
+       =R\operatorname{tr}(R)+\frac2\nu R^2.
+ \label{eq:moment-two}
+\end{equation}
+The first term is the same unknown trace contribution we need to cancel.
+The other term is proportional to the desired square. This is useful:
+subtracting a suitable multiple of this observable product from the
+observed square can remove the unwanted matrix while leaving a known
+coefficient multiplying $R^2$.
+
+\paragraph{Step 3: make the trace coefficients equal.}
+Multiply Equation~\eqref{eq:moment-one} by $\nu^2$:
+\begin{equation}
+ \E[\nu^2S^2]=(\nu^2+\nu)R^2
+                         +\nu R\operatorname{tr}(R).
+\end{equation}
+Its trace contribution now has coefficient $\nu$. Multiply
+Equation~\eqref{eq:moment-two} by $\nu$ to obtain that same coefficient:
+\begin{equation}
+ \E[\nu S\operatorname{tr}(S)]
+                   =\nu R\operatorname{tr}(R)+2R^2.
+\end{equation}
+These are two measurable products with expectations containing the same
+unwanted term. We are ready to subtract them. The separate multipliers
+are chosen for this cancellation, not as additional fitted parameters.
+
+\paragraph{Step 4: subtract and normalize.}
+Subtract the second product from the first. Linearity of expectation gives
+\begin{equation}
+ \E[\nu^2S^2-\nu S\operatorname{tr}(S)]
+                       =(\nu^2+\nu-2)R^2.
+\end{equation}
+The unknown trace term has canceled. Only a known scalar coefficient
+remains. Dividing by it defines the corrected square estimator:
+\begin{equation}
+ Q=\frac{\nu^2S^2-\nu S\operatorname{tr}(S)}{\nu^2+\nu-2}.
+ \label{eq:Q-recipe}
+\end{equation}
+We can compute every object on the right from the observed sample and its
+independent realization count. Taking its expectation now yields
+\begin{equation}
+ \E[Q]=R^2.
+\end{equation}
+The denominator vanishes at $N=2$, so this estimator requires more than two
+independent realizations. That algebraic lower limit is not a recommendation
+that three simulations suffice for a useful covariance calibration.
+
+\subsection{From the corrected square to a precision estimate}
+\paragraph{Step 5: rewrite the expansion in terms of the covariance.}
+The true whitened residual is
+\begin{equation}
+ X=R-\I.
+\end{equation}
+The identity matrix commutes with every matrix, so its squared residual
+can be expanded directly:
+\begin{equation}
+ X^2=(R-\I)(R-\I)=R^2-2R+\I.
+\end{equation}
+Substitute this result into the second-order inverse polynomial:
+\begin{equation}
+ \I-X+X^2=\I-(R-\I)+(R^2-2R+\I).
+\end{equation}
+Collecting the three identity matrices and the three negative copies of
+$R$ gives a form ready for sample estimates:
+\begin{equation}
+ \I-X+X^2=3\I-3R+R^2.
+\end{equation}
+We already know an unbiased estimator for each unknown quantity on the
+right: $S$ estimates $R$, and $Q$ estimates $R^2$. Therefore our observed
+second-order polynomial is
+\begin{equation}
+ \widehat P_2=3\I-3S+Q.
+ \label{eq:P2-recipe}
+\end{equation}
+There is no reason to square $S$ again at this stage: its corrected
+quadratic information is already contained in $Q$.
+
+\paragraph{Step 6: restore the original measurement coordinates.}
+The polynomial weights residuals in whitened coordinates. The data vector
+is in its original units. Transforming the quadratic form back gives
+\begin{equation}
+ \widehat\Psi_2=L^{-\mathsf T}\widehat P_2L^{-1}.
+ \label{eq:restore-P2}
+\end{equation}
+This is the matrix to compare with the analytic precision and, after
+validation, use in a fixed-covariance analysis. It estimates the truncated
+inverse expansion. Its mean is not generally the exact inverse of the
+true covariance, because we have still omitted cubic and higher residual
+terms.
+
+\paragraph{The first-order calculation stops earlier.}
+At first order the true whitened inverse approximation is
+\begin{equation}
+ \I-X=2\I-R.
+\end{equation}
+Only one unknown matrix appears, so replacing it by $S$ is enough:
+\begin{equation}
+ \widehat P_1=2\I-S.
+\end{equation}
+Restore the original coordinates in the same way as before:
+\begin{equation}
+ \widehat\Psi_1=L^{-\mathsf T}\widehat P_1L^{-1}.
+\end{equation}
+This estimator does not need the Gaussian fourth-moment correction to a
+square. Its expectation still assumes independent unbiased covariance
+samples and a separately fixed analytic model. It can be noisy or
+indefinite, and it has first-order truncation error. Simplicity of the
+formula is not a validation of the result.
+
+\subsection{Worked example: calculate every entry of the correction}
+\label{sec:Q-numerical}
+\paragraph{The inputs.}
+Suppose ten independent Gaussian vectors give the following whitened
+sample covariance:
+\begin{equation}
+ S=\begin{pmatrix}1.1&0.2\\0.2&0.9\end{pmatrix}.
+\end{equation}
+We take the model factor to be
+\begin{equation}
+ L=\begin{pmatrix}2&0\\0&1\end{pmatrix}.
+\end{equation}
+These numbers deliberately reuse the small matrix from the earlier
+noiseless example, but now its role is different: it is an observed
+sample, not a stipulated truth. The input does not tell us whether its
+entries equal the unknown population covariance. Here the degree of
+freedom is $\nu=9$.
+
+\paragraph{The square means row times column.}
+For the upper-left entry, multiply the first row by the first column:
+\begin{equation}
+ (S^2)_{11}=1.1(1.1)+0.2(0.2)=1.25.
+\end{equation}
+For the upper-right entry, use the first row and the second column:
+\begin{equation}
+ (S^2)_{12}=1.1(0.2)+0.2(0.9)=0.40.
+\end{equation}
+The lower-left entry is also 0.40. For the lower-right entry, multiply
+the second row by the second column:
+\begin{equation}
+ (S^2)_{22}=0.2(0.2)+0.9(0.9)=0.85.
+\end{equation}
+Assembling these four entries gives
+\begin{equation}
+ S^2=\begin{pmatrix}1.25&0.40\\0.40&0.85\end{pmatrix}.
+\end{equation}
+The trace is the sum of diagonal entries, not their product:
+\begin{equation}
+ \operatorname{tr}(S)=1.1+0.9=2.
+\end{equation}
+Multiplying the whole matrix by this scalar gives
+\begin{equation}
+ S\operatorname{tr}(S)=\begin{pmatrix}2.2&0.4\\0.4&1.8\end{pmatrix}.
+\end{equation}
+The square and the trace product are different operations. Both must be
+calculated for the correction.
+
+\paragraph{The numerator and denominator.}
+The first contribution to the numerator of Equation~\eqref{eq:Q-recipe} is
+\begin{equation}
+ \nu^2S^2=81S^2=
+ \begin{pmatrix}101.25&32.40\\32.40&68.85\end{pmatrix}.
+\end{equation}
+The second contribution, which is to be subtracted, is
+\begin{equation}
+ \nu S\operatorname{tr}(S)=
+ \begin{pmatrix}19.80&3.60\\3.60&16.20\end{pmatrix}.
+\end{equation}
+Subtract corresponding entries and divide by the scalar denominator 88:
+\begin{equation}
+ Q=\frac1{88}
+ \begin{pmatrix}81.45&28.80\\28.80&52.65\end{pmatrix}.
+\end{equation}
+This is the corrected-square matrix for this one sample. It is not the
+square of an improved sample covariance and is not obtained by changing
+individual shear measurements.
+
+\paragraph{Assemble the weight matrix.}
+Insert $Q$ and $S$ into Equation~\eqref{eq:P2-recipe}. The resulting
+whitened precision is
+\begin{equation}
+ \widehat P_2\simeq
+ \begin{pmatrix}0.625568&-0.272727\\-0.272727&0.898295\end{pmatrix}.
+\end{equation}
+The diagonal model factor makes the last step easy to inspect: divide the
+first row and the first column by two. The restored precision is
+\begin{equation}
+ \widehat\Psi_2\simeq
+ \begin{pmatrix}0.156392&-0.136364\\-0.136364&0.898295\end{pmatrix}.
+\end{equation}
+The exercise specifies how to compute the estimator. It does not establish
+its accuracy for this sample, because the true covariance was not supplied.
+A positive result is usable as a candidate for validation; a negative
+precision mode would require investigation. Adding a Hartlap factor or
+clipping negative eigenvalues is not part of this derivation.
+
+\subsection{A separate route when Gaussian moments are doubtful}
+\paragraph{Replace self-products by products from independent ensembles.}
+Suppose two disjoint parent groups provide unbiased covariance estimates
+for the same population. Whiten them with the same independently fixed
+model to obtain $S_1$ and $S_2$. Independence implies, entry by entry,
+\begin{equation}
+ \E[(S_1S_2)_{ij}]
+      =\sum_k\E[(S_1)_{ik}]\E[(S_2)_{kj}].
+\end{equation}
+Both expectations on the right are entries of $R$. Summing over $k$
+therefore gives
+\begin{equation}
+ \E[S_1S_2]=R^2.
+\end{equation}
+The reverse product has the same expectation but can differ in one
+realization. To retain a symmetric matrix, average the two orders:
+\begin{equation}
+ Q_{\rm split}=\frac{S_1S_2+S_2S_1}{2}.
+\end{equation}
+For the linear term use the mean of the two covariance estimates:
+\begin{equation}
+ \bar S=\frac{S_1+S_2}{2}.
+\end{equation}
+The second-order polynomial becomes
+\begin{equation}
+ \widehat P_{2,\rm split}=3\I-3\bar S+Q_{\rm split}.
+\end{equation}
+Restore coordinates as before. This product expectation does not require
+Gaussian summary vectors, but it does require genuinely independent groups
+and the same underlying covariance in both. Truncation error remains.
+Splitting a small ensemble may also increase noise. A third independent
+group is needed for a clean validation; reusing either training group for
+that check would reward fitting its fluctuations.
+
+\subsection{The component correction, with each operation exposed}
+\label{sec:component-steps}
+\paragraph{First specify an additive physical decomposition.}
+Suppose the full covariance is the sum of two covariance contributions:
+\begin{equation}
+ \Cov=A+B.
+\end{equation}
+We assume $A$ is known to the required accuracy. The unknown contribution
+is $B$. It has its own analytic approximation, denoted $B_m$, so the
+baseline used for whitening is
+\begin{equation}
+ \M=A+B_m.
+\end{equation}
+The aim is to learn the error in $B_m$ without estimating the already
+known $A$ from noisy simulations. This is possible only if the available
+simulations isolate the required $B$ contribution. It is an extra physical
+assumption, not a manipulation of a full sample covariance. We have not yet
+established such an isolated component for the downloaded maps.
+
+\paragraph{Subtract the two full covariances before whitening.}
+Their difference is
+\begin{equation}
+ \Cov-\M=(A+B)-(A+B_m).
+\end{equation}
+The same known $A$ cancels from the two expressions, leaving
+\begin{equation}
+ \Cov-\M=B-B_m.
+\end{equation}
+This is why the correction need only estimate $B$ accurately. The model
+factor $L$ nevertheless comes from the full baseline $\M$, because the
+final precision weights the full observation, including the fluctuations
+represented by $A$.
+
+\paragraph{Define the true and modeled components in model units.}
+Whiten the unknown component and give the resulting true matrix a name:
+\begin{equation}
+ U=L^{-1}B L^{-\mathsf T}.
+\end{equation}
+Whiten its fixed model separately:
+\begin{equation}
+ T=L^{-1}B_m L^{-\mathsf T}.
+\end{equation}
+Their difference is the full whitened covariance error,
+\begin{equation}
+ X=U-T.
+\end{equation}
+We know $T$, but must estimate $U$ from the component simulations. Keeping
+these definitions in separate equations makes clear which quantities
+fluctuate and which are fixed during this statistical calculation.
+
+\paragraph{Expand the residual square without interchanging factors.}
+The square in the inverse expansion is
+\begin{equation}
+ X^2=(U-T)(U-T).
+\end{equation}
+Multiply the first term in the left bracket by each term in the right,
+then repeat with the second term. The result is
+\begin{equation}
+ X^2=U^2-UT-TU+T^2.
+\end{equation}
+In general $UT$ and $TU$ are different matrices. Symmetry of $U$ and $T$
+does not make them commute; it makes these two products transposes of
+one another. Keeping both gives a symmetric total. The true second-order
+whitened precision is therefore
+\begin{equation}
+ P_2=\I-U+T+U^2-UT-TU+T^2.
+\end{equation}
+The three kinds of unknown quantity are now visible: $U$, its square,
+and its products with the fixed matrix $T$.
+
+\paragraph{Replace each unknown by the appropriate sample estimator.}
+Let the directly simulated component covariance be $\widehat B$. Its
+whitened sample is
+\begin{equation}
+ S_B=L^{-1}\widehat B L^{-\mathsf T}.
+\end{equation}
+Under the independent Gaussian component-vector assumption, it estimates
+$U$, and the corrected square is
+\begin{equation}
+ Q_B=\frac{\nu^2 S_B^2-\nu S_B\operatorname{tr}(S_B)}
+                  {\nu^2+\nu-2}.
+\end{equation}
+Because $T$ is fixed, the products $S_BT$ and $TS_B$ already have the
+correct respective expectations. No noisy-square correction is needed
+for multiplication by a fixed matrix. The estimated polynomial is
+\begin{equation}
+ \widehat P_{2,B}=\I-S_B+T+Q_B-S_BT-TS_B+T^2.
+\end{equation}
+Restore the original coordinates in the last operation:
+\begin{equation}
+ \widehat\Psi_{2,B}=L^{-\mathsf T}\widehat P_{2,B}L^{-1}.
+\end{equation}
+This is the component formula. Every term now has a construction and a
+statistical reason for being present.
+
+\paragraph{What the decomposition does not mean.}
+The two- and three-point diagonal blocks are not independent additive
+covariance components with the cross block removed. A matrix containing
+only cross entries generally has negative eigenvalues and is not a
+covariance on its own. Likewise, subtracting a known $A$ from the full
+sample covariance does not produce a Wishart sample of $B$. The method
+requires simulations of the appropriate random component or a separate
+derivation for the actual estimator used. The repeated-noise construction
+in the next section will make that distinction concrete.
+
+\subsection{Worked example: the bias of the noisy square}
+\label{sec:noisy-square-example}
+\paragraph{The scalar limit makes the correction transparent.}
+In one dimension, suppose the whitened true variance is 1.1 and there are
+five independent Gaussian measurements. The degree of freedom is four.
+The first Gaussian moment formula reduces to
+\begin{equation}
+ \E[S^2]=\left(1+\frac2\nu\right)R^2.
+\end{equation}
+Insert the stated numbers:
+\begin{equation}
+ \E[S^2]=\left(1+\frac24\right)(1.1)^2=1.815.
+\end{equation}
+The true square we want to estimate is only 1.21. The difference, 0.605,
+comes entirely from estimating a variance with a small sample. Squaring
+the observed variance turns its fluctuations into an extra positive
+contribution even though the variance estimate itself is unbiased.
+
+\paragraph{Simplify the matrix correction to one number.}
+For a scalar, the trace is just the scalar itself. The numerator of the
+corrected-square formula becomes
+\begin{equation}
+ \nu^2S^2-\nu S\operatorname{tr}(S)=\nu(\nu-1)S^2.
+\end{equation}
+The denominator factors as
+\begin{equation}
+ \nu^2+\nu-2=(\nu-1)(\nu+2).
+\end{equation}
+Cancel the common factor, which is nonzero in this example:
+\begin{equation}
+ Q=\frac{\nu}{\nu+2}S^2=\frac23S^2.
+\end{equation}
+Its expectation is therefore two thirds of 1.815, which is the desired
+1.21. The corrected estimator still fluctuates; this calculation concerns
+its mean over repeated sets of five measurements.
+
+\paragraph{Compare the two expected precision estimates.}
+Using the uncorrected square would give
+\begin{equation}
+ \E[\widehat P_{2,\rm naive}]=3-3(1.1)+1.815=1.515.
+\end{equation}
+Using the corrected square gives instead
+\begin{equation}
+ \E[\widehat P_2]=3-3(1.1)+1.21=0.91.
+\end{equation}
+The exact inverse is
+\begin{equation}
+ \Psi_{\rm true}=\frac1{1.1}=0.90909\ldots.
+\end{equation}
+The small difference between 0.91 and the exact inverse is truncation
+error. The much larger difference introduced by the naive square was
+sampling bias. Correcting the latter does not eliminate the former.
+
+\paragraph{Unbiased in expectation does not mean accurate in one draw.}
+Suppose one small ensemble happens to return an observed variance of
+1.1, numerically equal to the truth. The corrected second-order estimate
+for that particular ensemble is
+\begin{equation}
+ \widehat P_2=3-3(1.1)+\frac23(1.1)^2=0.50667\ldots.
+\end{equation}
+This is not close to 0.90909. There is no contradiction: the correction
+was constructed for the average over all possible samples, not for the
+special event that one variance estimate lands on its expectation. The
+estimator can remain noisy. This is why the derivation must be followed by
+an independent validation rather than a claim that five simulations are
+sufficient for a useful scientific likelihood.
+
+\subsection{Derive the two matrix moments from individual entries}
+\label{sec:entry-derivation}
+\paragraph{The entrywise fact we use.}
+For independent Gaussian summary vectors, the covariance between two
+entries of their whitened sample covariance is
+\begin{equation}
+ \cov(S_{ij},S_{kl})=
+       \frac{R_{ik}R_{jl}+R_{il}R_{jk}}{\nu}.
+ \label{eq:wishart-entry}
+\end{equation}
+The four subscripts specify two matrix entries, not four independent
+simulations. This relation is the remaining Gaussian moment result we
+use. It follows from pairing factors in fourth moments of Gaussian
+variables; fitting the sample mean sets the degree of freedom to $N-1$.
+The following steps show precisely how this entrywise statement produces
+the two matrix identities in the correction, without skipping the sum.
+
+\paragraph{First identity, step 1: write one entry of the squared matrix.}
+The definition of matrix multiplication gives
+\begin{equation}
+ (S^2)_{ij}=\sum_k S_{ik}S_{kj}.
+\end{equation}
+For each intermediate index $k$, we have a product of two random entries.
+For any two scalar random quantities, the mean of their product equals
+the product of their means plus their covariance. Apply that rule here:
+\begin{equation}
+ \E[S_{ik}S_{kj}]
+       =R_{ik}R_{kj}+\cov(S_{ik},S_{kj}).
+\end{equation}
+The first contribution is easy to recognize: summing its product of
+means over $k$ gives the true matrix square. The second contribution
+contains the sampling correction.
+
+\paragraph{First identity, step 2: substitute the relevant indices.}
+In Equation~\eqref{eq:wishart-entry}, choose the first entry to have indices
+$(i,k)$ and the second to have indices $(k,j)$. The result is
+\begin{equation}
+ \cov(S_{ik},S_{kj})
+   =\frac{R_{ik}R_{kj}+R_{ij}R_{kk}}{\nu}.
+\end{equation}
+Insert this expression into the product expectation and sum over $k$:
+\begin{equation}
+ \E[(S^2)_{ij}]
+ =\sum_k R_{ik}R_{kj}
+ +\frac1\nu\sum_k R_{ik}R_{kj}
+ +\frac1\nu\sum_k R_{ij}R_{kk}.
+\end{equation}
+Each sum has a distinct origin: product of means, the first Gaussian
+covariance term, and the second Gaussian covariance term.
+
+\paragraph{First identity, step 3: identify the matrix square and trace.}
+The first two sums are copies of the same matrix-product entry:
+\begin{equation}
+ \sum_k R_{ik}R_{kj}=(R^2)_{ij}.
+\end{equation}
+In the last sum, $R_{ij}$ does not depend on $k$, so it can be taken
+outside the sum. The remaining diagonal sum is the trace:
+\begin{equation}
+ \sum_k R_{ij}R_{kk}=R_{ij}\operatorname{tr}(R).
+\end{equation}
+Substituting these two identifications gives the entrywise result
+\begin{equation}
+ \E[(S^2)_{ij}]
+ =\left(1+\frac1\nu\right)(R^2)_{ij}
+       +\frac1\nu R_{ij}\operatorname{tr}(R).
+\end{equation}
+Because this holds for every pair of indices, it is exactly
+Equation~\eqref{eq:moment-one}. No additional approximation was made
+when recognizing the sums as matrix notation.
+
+\paragraph{Second identity, step 1: expand the trace product.}
+The trace is a scalar, so one entry of its product with $S$ is
+\begin{equation}
+ [S\operatorname{tr}(S)]_{ij}=\sum_k S_{ij}S_{kk}.
+\end{equation}
+Use the same product-of-means-plus-covariance rule for each summand:
+\begin{equation}
+ \E[S_{ij}S_{kk}]=R_{ij}R_{kk}+\cov(S_{ij},S_{kk}).
+\end{equation}
+The difference from the first calculation is the pairing of subscripts.
+We now correlate an entry with a diagonal entry, rather than using the
+row-by-column entries of a matrix square.
+
+\paragraph{Second identity, step 2: evaluate the covariance contribution.}
+Substituting these indices into Equation~\eqref{eq:wishart-entry} gives
+\begin{equation}
+ \cov(S_{ij},S_{kk})=\frac{2R_{ik}R_{jk}}{\nu}.
+\end{equation}
+The true covariance is symmetric, so $R_{jk}$ can be written as $R_{kj}$.
+Summing over the intermediate index therefore gives
+\begin{equation}
+ \sum_k\cov(S_{ij},S_{kk})=\frac2\nu(R^2)_{ij}.
+\end{equation}
+The product-of-means sum gives the trace term found above. Combining
+these two contributions yields
+\begin{equation}
+ \E\bigl([S\operatorname{tr}(S)]_{ij}\bigr)
+       =R_{ij}\operatorname{tr}(R)+\frac2\nu(R^2)_{ij}.
+\end{equation}
+This is Equation~\eqref{eq:moment-two}, entry by entry. These derivations
+explain both the extra trace term in the naive square and the coefficient
+needed to cancel it.
+
+\subsection{Why isolating a known noise component can help}
+\paragraph{A numerical error budget.}
+Take a scalar covariance with a known contribution of 9 and an unknown
+contribution of 1. The total true variance is
+\begin{equation}
+ C=A+B=9+1=10.
+\end{equation}
+Choose a model whose estimate of the unknown contribution is 0.8:
+\begin{equation}
+ M=A+B_m=9+0.8=9.8.
+\end{equation}
+For 50 independent Gaussian full measurements, the standard deviation of
+the sample variance follows Equation~\eqref{eq:variance-noise}:
+\begin{equation}
+ \operatorname{sd}(\widehat C)=10\sqrt{\frac2{49}}\simeq2.020.
+\end{equation}
+If the simulations can directly isolate the smaller unknown contribution,
+its sample variance has a much smaller standard deviation:
+\begin{equation}
+ \operatorname{sd}(\widehat B)=1\sqrt{\frac2{49}}\simeq0.202.
+\end{equation}
+The known contribution is no longer being estimated through noisy
+measurements. Both routes have the same covariance correction in their
+expectation, but the second avoids sampling fluctuations in the large
+contribution that we already know.
+
+\paragraph{A first-order precision comparison.}
+For fixed scalar $M$, the first-order precision is a linear function of
+the estimated covariance. A small change in that estimate gives
+\begin{equation}
+ \delta\widehat\Psi=-\frac{\delta\widehat C}{M^2}.
+\end{equation}
+The minus sign says that an increased estimated variance receives less
+weight. Dividing the full-covariance standard deviation by the square of the
+baseline gives
+\begin{equation}
+ \operatorname{sd}(\widehat\Psi_{1,\rm full})
+      \simeq\frac{2.020}{9.8^2}=0.0210.
+\end{equation}
+The corresponding isolated-component calculation gives
+\begin{equation}
+ \operatorname{sd}(\widehat\Psi_{1,\rm component})
+      \simeq\frac{0.202}{9.8^2}=0.00210.
+\end{equation} The improvement factor is ten in this
+constructed example. It depends on which covariance contribution is
+known and can actually be isolated. It is not a general promised speedup
+or simulation reduction for DES. For higher-order lensing statistics,
+shape noise mixes with the signal inside products; the next section
+shows why deleting noise from maps does not automatically realize this
+simple additive measurement example.
 
 \section{Repeated noise is useful, but it is not a new sky}
 \paragraph{Three labels need three meanings.}
@@ -324,68 +1473,379 @@ relationship in this new archive. Obtain its parent IDs and noise-generation
 conventions before assigning a statistical degree of freedom. Keep all
 children of one parent together when splitting training and validation.
 
-\paragraph{A useful decomposition from conditional averages.}
-Suppose, for this derivation, a fixed sky $s$ has repeated independent noise
-realizations. Let $\boldsymbol d=\mathcal T(s+n)$ be the measured vector,
-where $n$ denotes shape noise and $\mathcal T$ the correlation measurement.
-Define $\boldsymbol\mu_s=\E_n[\boldsymbol d\mid s]$. Add and subtract this
-conditional mean in $\boldsymbol d-\E[\boldsymbol d]$. The cross term has
-zero average because $\E_n[\boldsymbol d-\boldsymbol\mu_s\mid s]=0$. Hence
+\subsection{Two sources of randomness, two different averages}
+\paragraph{Label a parent sky and its noise draws separately.}
+For the following derivation only, suppose the archive has independent
+parent skies and, for each parent, independent draws of shape noise.
+Use $s$ for a parent-sky index and $k$ for a noise-draw index. The measured
+joint vector from that pair is
 \begin{equation}
- \Cov=\underbrace{\cov_s(\boldsymbol\mu_s)}_{B}
-       +\underbrace{\E_s[\cov_n(\boldsymbol d\mid s)]}_{A}.
+ \boldsymbol d_{sk}=\mathcal T(s+n_{sk}).
+\end{equation}
+Here $\mathcal T$ stands for the entire measurement procedure, including
+pair or triangle averages, weights and cuts. The formula is schematic:
+it identifies the two kinds of randomness without assuming the procedure
+is linear. Use one fixed footprint selection in this derivation. Different
+footprints need an additional treatment of their geometry and correlations.
+
+\paragraph{First imagine repeating noise on one fixed sky.}
+Hold the parent $s$ fixed and average over all possible noise draws. This
+defines the conditional mean vector
+\begin{equation}
+ \boldsymbol\mu_s=\E_n[\boldsymbol d_{sk}\mid s].
+\end{equation}
+The subscript $n$ says that only noise is changing. The vertical bar means
+``given this sky.'' Each parent can have a different conditional mean,
+because it contains a different arrangement of cosmic structure.
+The conditional covariance for that same fixed parent is
+\begin{equation}
+ A_s=\E_n[(\boldsymbol d_{sk}-\boldsymbol\mu_s)
+         (\boldsymbol d_{sk}-\boldsymbol\mu_s)\T\mid s].
+\end{equation}
+It describes what repeated observations of this sky would scatter by under
+the noise-generating procedure. It can depend on the sky, even if the
+noise added to individual pixels has a sky-independent variance.
+
+\paragraph{Then imagine changing the parent sky.}
+Average the conditional means over independent parents to recover the
+full ensemble mean:
+\begin{equation}
+ \boldsymbol\mu=\E_s[\boldsymbol\mu_s].
+\end{equation}
+The covariance of those conditional means is
+\begin{equation}
+ B=\E_s[(\boldsymbol\mu_s-\boldsymbol\mu)
+        (\boldsymbol\mu_s-\boldsymbol\mu)\T].
+\end{equation}
+This matrix measures how the noise-averaged observation changes with the
+cosmic structure in the footprint. The average conditional-noise
+covariance is a different matrix:
+\begin{equation}
+ A=\E_s[A_s].
+\end{equation}
+Both $A$ and $B$ are defined at the level of the \emph{measured vector}.
+Neither is a covariance of the shear pixels themselves.
+
+\paragraph{Derive why the two contributions add.}
+Add and subtract the conditional mean inside one observation's residual:
+\begin{equation}
+ \boldsymbol d_{sk}-\boldsymbol\mu
+ = (\boldsymbol\mu_s-\boldsymbol\mu)
+   +(\boldsymbol d_{sk}-\boldsymbol\mu_s).
+\end{equation}
+The first term depends on the parent sky; the second has zero mean when
+noise is averaged at that parent. Multiplying this expression by its
+transpose gives a sky term, a noise term and two cross terms. One cross
+term, averaged first over noise, contains
+\begin{equation}
+ (\boldsymbol\mu_s-\boldsymbol\mu)
+ \E_n[\boldsymbol d_{sk}-\boldsymbol\mu_s\mid s]\T=0.
+\end{equation}
+The other is its transpose and vanishes for the same reason. Averaging the
+remaining two terms over parents gives the law of total covariance:
+\begin{equation}
+ \Cov=B+A.
  \label{eq:total}
 \end{equation}
-The first term describes changing skies; the second describes changing
-noise on a fixed sky, averaged over skies. This identity requires no Gaussian
-assumption. Its physical usefulness depends on what random quantities the
-simulation actually varies or holds fixed.
+No Gaussian assumption was used. The identity follows from doing the two
+averages in their proper order.
 
-\paragraph{Averaging reduces noise, which changes the target.}
-Take $K>1$ noise draws for each of $R_s>1$ independent parents, using one
-fixed footprint selection and the same measurement throughout. Let
-$\bar{\boldsymbol d}_s$ be the mean vector for parent $s$, and $W_s$ the
-sample covariance of its $K$ vectors with denominator $K-1$. Define
-$\widehat A=R_s^{-1}\sum_s W_s$ and let $\widehat C_{\bar d}$ be the ordinary
-sample covariance of the $R_s$ parent means. Conditional independence and
-equal $K$ imply
+\subsection{What can be estimated with finitely many noise draws}
+\paragraph{Define the finite parent mean.}
+Suppose every selected parent has the same number $K$ of independent
+noise realizations, with $K>1$. Their measured-vector mean is
 \begin{equation}
- \E[\widehat A]=A,\qquad
- \E[\widehat C_{\bar d}]=B+A/K.
+ \bar{\boldsymbol d}_s=\frac1K\sum_{k=1}^{K}\boldsymbol d_{sk}.
 \end{equation}
-An unbiased estimate of the covariance of one noisy survey is consequently
+This average is an estimate of $\boldsymbol\mu_s$. It is not equal to it:
+only finitely many noise draws have been averaged. Its conditional
+expectation is correct,
 \begin{equation}
- \widehat\Cov=\widehat C_{\bar d}+(1-1/K)\widehat A,
- \qquad
- \widehat B=\widehat C_{\bar d}-\widehat A/K.
+ \E_n[\bar{\boldsymbol d}_s\mid s]=\boldsymbol\mu_s,
+\end{equation}
+but it retains a smaller amount of noise. We must compute how much before
+using the scatter of parent means as a survey covariance.
+
+\paragraph{Why the residual noise variance is divided by $K$.}
+The covariance of the average contains a double sum over noise draws:
+\begin{equation}
+ \cov_n(\bar{\boldsymbol d}_s\mid s)
+ =\frac1{K^2}\sum_{k=1}^{K}\sum_{l=1}^{K}
+       \cov_n(\boldsymbol d_{sk},\boldsymbol d_{sl}\mid s).
+\end{equation}
+If the draws are independent at fixed sky, terms with different $k$ and
+$l$ vanish. Each of the $K$ diagonal terms is $A_s$. Therefore
+\begin{equation}
+ \cov_n(\bar{\boldsymbol d}_s\mid s)
+     =\frac{K}{K^2}A_s=\frac{A_s}{K}.
+\end{equation}
+This calculation concerns a covariance, hence the square of the
+averaging factor. It explains why standard deviations shrink as the
+square root of $K$ while variances shrink as $K$.
+
+\paragraph{Measure the noise scatter within each parent.}
+The available estimate of $A_s$ is the within-parent sample covariance
+\begin{equation}
+ W_s=\frac1{K-1}\sum_{k=1}^{K}
+       (\boldsymbol d_{sk}-\bar{\boldsymbol d}_s)
+       (\boldsymbol d_{sk}-\bar{\boldsymbol d}_s)\T.
+\end{equation}
+Its denominator is $K-1$, because the parent mean was estimated from
+those same $K$ draws. Given $R_s$ independent parent skies, estimate the
+average conditional noise by averaging their matrices:
+\begin{equation}
+ \widehat A=\frac1{R_s}\sum_{s=1}^{R_s}W_s.
+\end{equation}
+This is an average of covariance estimates, so its prefactor is
+$1/R_s$, not $1/(R_s-1)$. The mean-subtraction correction already appears
+inside each $W_s$. Repeating the whole experiment gives
+\begin{equation}
+ \E[\widehat A]=A.
+ \label{eq:mean-Ahat}
+\end{equation}
+This is the first ingredient needed to reconstruct the single-survey
+covariance.
+
+\paragraph{Measure the scatter between parent means.}
+First average the $R_s$ parent means themselves:
+\begin{equation}
+ \bar{\boldsymbol d}=\frac1{R_s}\sum_{s=1}^{R_s}\bar{\boldsymbol d}_s.
+\end{equation}
+Their ordinary sample covariance is
+\begin{equation}
+ \widehat C_{\bar d}=\frac1{R_s-1}\sum_{s=1}^{R_s}
+  (\bar{\boldsymbol d}_s-\bar{\boldsymbol d})
+  (\bar{\boldsymbol d}_s-\bar{\boldsymbol d})\T.
+\end{equation}
+The parent means have sky covariance $B$ plus residual noise covariance
+$A/K$. Therefore this sample matrix has expectation
+\begin{equation}
+ \E[\widehat C_{\bar d}]=B+\frac{A}{K}.
+ \label{eq:parent-mean-cov}
+\end{equation}
+It estimates the covariance of a noise-averaged observation. It does not
+yet estimate the covariance of one ordinary noisy survey.
+
+\subsection{Recover the single-survey covariance without a missing step}
+\paragraph{Ask what contribution is absent from the parent-mean covariance.}
+The desired covariance contains the full $A$ term. The parent-mean
+covariance contains only $A/K$. Their difference is
+\begin{equation}
+ \Cov-\left(B+\frac AK\right)=A-\frac AK.
+\end{equation}
+Factor out the matrix $A$; $K$ is only a scalar:
+\begin{equation}
+ A-\frac AK=\left(1-\frac1K\right)A.
+\end{equation}
+This is the amount of noise covariance removed by averaging. To estimate
+the original survey covariance, we must add that amount back, using
+$\widehat A$ as its sample estimate.
+
+\paragraph{Propose the estimator and verify it by taking its expectation.}
+The resulting candidate is
+\begin{equation}
+ \widehat\Cov=\widehat C_{\bar d}
+                    +\left(1-\frac1K\right)\widehat A.
  \label{eq:hierarchical}
 \end{equation}
-For example, averaging 20 noise realizations leaves only one twentieth of
-the conditional-noise covariance in the parent means. Using their covariance
-alone would miss the other nineteen twentieths of the single-observation
-noise. This is a worked statistical example, not a claim that the local
-\texttt{nreal} labels have already been verified as these 20 draws.
+Now check the claim rather than assuming it. Linearity of expectation gives
+\begin{equation}
+ \E[\widehat\Cov]=\E[\widehat C_{\bar d}]
+                   +\left(1-\frac1K\right)\E[\widehat A].
+\end{equation}
+Insert the two expectations derived above:
+\begin{equation}
+ \E[\widehat\Cov]=B+\frac AK+\left(1-\frac1K\right)A.
+\end{equation}
+The positive and negative copies of $A/K$ cancel, leaving
+\begin{equation}
+ \E[\widehat\Cov]=B+A=\Cov.
+\end{equation}
+That is the unbiasedness statement. It uses independent, identically
+selected parents, conditionally independent noise draws, and the same
+$K$ for each parent. The two estimated matrices need not be independent
+for this \emph{linear expectation} argument. Their dependence does matter
+when calculating the uncertainty of the estimate or a product of estimates.
 
-\paragraph{This decomposition does not yet supply component PME.}
-The difference defining $\widehat B$ in Equation~\eqref{eq:hierarchical}
-can have negative eigenvalues and is not a Wishart sample covariance.
-Inserting it into the component formula with an invented effective sample
-count is unjustified. Also, $\mathcal T$ is nonlinear: measuring an averaged
-map is generally different from averaging measured vectors. Mixed signal
-and noise terms enter the covariance of products, so noiseless maps do not
-automatically deliver the $B$ needed for a particular proposed split.
-Repeated-noise data can help test those terms, but deriving the required
-product-moment correction is a separate statistical task.
+\paragraph{Isolating the sky contribution is a different subtraction.}
+If the target is $B$ alone, remove the residual $A/K$ from the covariance
+of parent means. Define
+\begin{equation}
+ \widehat B=\widehat C_{\bar d}-\frac{\widehat A}{K}.
+\end{equation}
+Its expectation is
+\begin{equation}
+ \E[\widehat B]=\left(B+\frac AK\right)-\frac AK=B.
+\end{equation}
+The subtraction is unbiased, but the resulting matrix need not be
+positive in one sample. More importantly for PME, it is a difference of
+estimated matrices, not an ordinary Wishart sample covariance. The
+component correction in Section~\ref{sec:component-steps} cannot be used
+on it merely by supplying a guessed effective realization count.
+
+\subsection{Worked example: twenty noise draws of the same parent}
+\paragraph{Use a one-number measurement to expose the bookkeeping.}
+Consider the artificial model
+\begin{equation}
+ d_{sk}=u_s+e_{sk}.
+\end{equation}
+The random parent value $u_s$ has variance 4. The independent noise $e_{sk}$
+has variance 9 and is independent of $u_s$. For a single observation the
+variance is
+\begin{equation}
+ \Var(d)=4+9=13.
+\end{equation}
+If we average 20 noise draws on each parent, the variance of a parent mean
+is instead
+\begin{equation}
+ \Var(\bar d_s)=4+\frac9{20}=4.45.
+\end{equation}
+Treating 4.45 as the uncertainty of one ordinary survey would miss most
+of its observational noise. It would quote a standard deviation about
+$\sqrt{4.45/13}\simeq0.585$ times the correct value.
+
+\paragraph{Restore what averaging removed.}
+The missing noise variance is
+\begin{equation}
+ \left(1-\frac1{20}\right)9=8.55.
+\end{equation}
+Adding it back recovers the intended single-observation variance:
+\begin{equation}
+ 4.45+8.55=13.
+\end{equation}
+Subtracting just the remaining noise from the parent means isolates the
+sky variance instead:
+\begin{equation}
+ 4.45-\frac9{20}=4.
+\end{equation}
+These numbers illustrate the two different targets. They are not a
+measurement of the noise and cosmic-variance split in Rafael's maps.
+
+\paragraph{Why the twenty files do not become twenty independent skies.}
+Two different noise draws on one parent share the same $u_s$. Their
+covariance is therefore
+\begin{equation}
+ \cov(d_{sk},d_{sl})=4,\qquad k\ne l.
+\end{equation}
+Since each has variance 13, their correlation is $4/13$. Let $R_s$ parents
+each have $K$ such files. The variance of the grand mean is
+\begin{equation}
+ \Var(\bar d)=\frac4{R_s}+\frac9{R_sK}.
+\end{equation}
+The sky term is reduced by the number of parents only. If we incorrectly
+pretended all $R_sK$ files were independent, we would use
+\begin{equation}
+ \Var_{\rm wrong}(\bar d)=\frac{13}{R_sK}.
+\end{equation}
+At $K=20$, the ratio of the actual mean variance to this incorrect one is
+$89/13\simeq6.85$. This ratio concerns one scalar mean in this artificial
+model. It is not a universal effective sample size that can be substituted
+into a multivariate Wishart formula.
+
+\subsection{Why nonlinear measurements make the noise split harder}
+\paragraph{A square already mixes signal and noise.}
+Let a scalar map value be a fixed signal $s$ plus zero-mean Gaussian noise
+$n$ of variance $v$. A quadratic measurement is
+\begin{equation}
+ d_2=(s+n)^2=s^2+2sn+n^2.
+\end{equation}
+Averaging over noise removes the middle term but retains the average of
+$n^2$. Thus the conditional mean is
+\begin{equation}
+ \E_n[d_2\mid s]=s^2+v.
+\end{equation}
+Subtracting the known constant $v$ restores an unbiased mean for $s^2$.
+To calculate the variance, subtract the full conditional mean from one
+quadratic measurement:
+\begin{equation}
+ d_2-\E_n[d_2\mid s]=2sn+(n^2-v).
+\end{equation}
+Square this residual and average. The cross term is proportional to the
+third and first moments of zero-mean Gaussian noise, which both vanish.
+The two surviving terms give
+\begin{equation}
+ \Var_n(d_2\mid s)=4s^2\E[n^2]+\E[(n^2-v)^2].
+\end{equation}
+The first noise moment is the variance $v$. For a Gaussian, the fourth
+moment is three times the variance squared, so the second term is
+\begin{equation}
+ \E[(n^2-v)^2]=3v^2-2v^2+v^2=2v^2.
+\end{equation}
+Combining the two terms therefore gives
+\begin{equation}
+ \Var_n(d_2\mid s)=4s^2v+2v^2.
+\end{equation}
+The first term depends on both signal and noise. A noiseless calculation
+of $s^2$ has none of it. This is a concrete reason to ask exactly which
+terms a proposed noise-free simulation isolates.
+
+\paragraph{A cubic measurement makes the problem more visible.}
+Expand a cubic statistic of the same scalar value:
+\begin{equation}
+ d_3=(s+n)^3=s^3+3s^2n+3sn^2+n^3.
+\end{equation}
+The noise mean is
+\begin{equation}
+ \E_n[d_3\mid s]=s^3+3sv.
+\end{equation}
+It differs from measuring $s^3$ on the noiseless value. To obtain the
+variance, first subtract the conditional mean:
+\begin{equation}
+ d_3-\E_n[d_3\mid s]=3s^2n+3s(n^2-v)+n^3.
+\end{equation}
+There are three zero-mean residual pieces. The squared first piece has
+expectation
+\begin{equation}
+ \E[(3s^2n)^2]=9s^4v.
+\end{equation}
+The squared middle piece uses the same noise-square variance just
+calculated for the quadratic example:
+\begin{equation}
+ \E[(3s(n^2-v))^2]=9s^2(2v^2)=18s^2v^2.
+\end{equation}
+The squared last piece is a sixth Gaussian moment:
+\begin{equation}
+ \E[(n^3)^2]=\E[n^6]=15v^3.
+\end{equation}
+The middle piece has zero covariance with the other two because their
+products contain only odd Gaussian moments. The first and last pieces
+do correlate; the factor of two comes from the two orders in the square:
+\begin{equation}
+ 2\E[(3s^2n)n^3]=6s^2\E[n^4]=18s^2v^2.
+\end{equation}
+Add the three squared terms and this cross term. The two contributions
+proportional to $s^2v^2$ combine to give
+\begin{equation}
+ \Var_n(d_3\mid s)=9s^4v+36s^2v^2+15v^3.
+\end{equation}
+Actual shear estimators often exclude coincident indices or apply explicit
+noise corrections, so these scalar formulas must not be substituted for
+their physical noise model. They explain \emph{why} that model must be
+derived for the estimator being used, including mixed signal-noise terms.
+
+\paragraph{Averaging maps and averaging their measured vectors differ.}
+In the quadratic example, measuring the average of $K$ noisy map values
+gives a conditional mean
+\begin{equation}
+ \E_n[\mathcal T(s+\bar n)\mid s]=s^2+\frac vK.
+\end{equation}
+By contrast, averaging the $K$ separately measured quadratic values gives
+\begin{equation}
+ \E_n\left[\frac1K\sum_k\mathcal T(s+n_k)\,\middle|\,s\right]
+                       =s^2+v.
+\end{equation}
+Both can be useful constructions, but they are different random variables.
+The hierarchy derived above averages measured vectors, not input maps.
+Interchanging the two operations would invalidate its interpretation.
 
 \paragraph{Footprint cuts require another check.}
-Different cuts from the same full sky can share large-scale modes or even
-pixels. Averaging them changes the effective survey rather than producing
-one ordinary DES realization. A conservative initial construction is one
-preselected cut and one preselected noise draw per independent parent.
-This uses less of the archive but gives a clear reference population.
-Using more cuts requires measuring their correlations or deriving an
-estimator that accounts for them. Parent-level resampling can be useful
-for uncertainty checks, but does not magically make cuts independent.
+Different cuts from one parent can share large-scale structure even without
+pixel overlap. Averaging them changes the effective observed footprint.
+A conservative first reference set uses one preselected cut and one
+preselected noise draw per independent parent. Using more of the files
+requires checking their correlations or deriving an estimator that accounts
+for those correlations. Parent-level resampling is useful for an uncertainty
+study, but does not turn the children of one parent into independent skies.
 
 \section{The measurement must match before the covariance can match}
 \paragraph{Pixel size is a physical smoothing scale.}
@@ -419,11 +1879,98 @@ covariance implementation is not already a matched finite-triangle TATT
 covariance for this download. Correcting a matrix cannot repair a wrong
 mean model or supply a physical effect absent from both model and simulations.
 
+
+\subsection{What the simulations can add to an analytic covariance}
+\paragraph{A mean and its covariance involve different orders of correlation.}
+A two-point statistic contains a product of two shears. Multiplying two
+such measurements to form a covariance produces products of four shears.
+A third-order statistic contains three shears, so its covariance involves
+six. A two-/three-point cross-covariance involves five. The physical
+approximations adequate for a mean are therefore not automatically
+adequate for its covariance. Rare structures and correlated long modes
+can change these higher moments even when the predicted average looks
+reasonable.
+
+\paragraph{A zero mean does not imply zero covariance.}
+Take a zero-mean Gaussian scalar variable $g$ with variance $v$, and
+measure its cube. Symmetry makes the cubic mean zero:
+\begin{equation}
+ \E[g^3]=0.
+\end{equation}
+Its variance is nevertheless nonzero, because it involves the sixth
+moment:
+\begin{equation}
+ \Var(g^3)=\E[g^6]=15v^3.
+\end{equation}
+The factor 15 counts pairings of six Gaussian factors. This is a toy
+illustration of how a third-order observable can have a Gaussian-field
+covariance even if its Gaussian-field mean vanishes. Nonlinear structure
+adds correlations not reducible to these Gaussian pairings. A simulation
+can sample them only to the extent that its resolution, volume and physical
+model contain the relevant structure.
+
+\paragraph{A long mode supplies a simple correlated contribution.}
+Suppose a background density fluctuation $\delta_b$ changes the mean
+measurement approximately linearly. Write
+\begin{equation}
+ \boldsymbol\mu(\delta_b)
+        \simeq\boldsymbol\mu(0)+\boldsymbol q\,\delta_b.
+\end{equation}
+The vector $\boldsymbol q$ gives the response of every observable to that
+same background fluctuation. If the variance of $\delta_b$ across survey
+footprints is $\sigma_b^2$, the covariance of the shifted means is
+\begin{equation}
+ \Cov_{\rm background}=\sigma_b^2\boldsymbol q\boldsymbol q\T.
+\end{equation}
+This is a correlated contribution across all rows, including the joint
+cross block. It illustrates why omitting a shared physical response can
+produce a large common-mode error even when individual entries look small.
+This scalar-background example is not a complete super-sample covariance:
+real responses can include additional density and tidal effects and
+survey-window dependence.
+
+\paragraph{Match what the analytic implementation actually includes.}
+The project's current analytic covariance stores a Gaussian family,
+bispectrum-squared terms, power--trispectrum terms, power--bispectrum
+cross terms, a connected one-halo contribution and a halo-abundance
+response contribution. These are a physical approximation to the joint
+covariance, not an exact accounting of every connected correlation. In
+particular, the halo-abundance response is not a complete super-sample
+calculation. The present physical model is gravitational lensing with
+its declared noise model; it does not include all nonlinear intrinsic-
+alignment covariance contributions. The project covariance README and
+core covariance guide describe those choices. PME must be validated against
+a model with matching assumptions, not used to silently rename it as an
+exact survey covariance.
+
+\paragraph{Do not infer a usable component split from term names alone.}
+A sum of analytic terms can be mathematically convenient without each
+term being the covariance of a separately simulatable random vector.
+Some connected contributions or cross contributions need not be positive
+semidefinite on their own. The component PME construction requires a
+physically and statistically valid isolated component. Knowing that an
+analytic integral is called ``noise'' or ``connected'' is not enough to
+supply that construction. The full-covariance route avoids this particular
+split assumption, at the cost of estimating more fluctuations from the
+simulation ensemble.
+
+\paragraph{Design a resolution comparison that answers one question.}
+If a higher-resolution counterpart of a parent is available, measure the
+same vector before and after degrading it, holding the parent, source
+selection and estimator choices fixed. This pairing reduces confusion
+between resolution changes and cosmic scatter. Compare mean differences,
+covariance-sensitive combinations and the parameter projections, while
+changing the retained small-scale rows. Degrading an existing 512 map to
+256 can reveal sensitivity to further smoothing; agreement of that pair
+alone does not prove convergence toward arbitrarily fine resolution.
+The test must be interpreted in the direction it actually explores.
+
 \section{A bounded pilot and the decision it should support}
 \paragraph{First establish the inputs.}
-Obtain \texttt{indices.npy}, the ordering, coordinate frame and label meanings;
-verify two complete files against the producer's expected size or checksum.
-Make the footprint previews, then measure one joint vector with fully
+The local pixel list and RING footprint previews now pass their basic
+consistency checks. Obtain producer confirmation of the component, label
+and noise conventions, and verify input files against a producer checksum
+or release record. Then measure one joint vector with fully
 recorded rows and settings. Repeat with one more selected map to check
 pairing and repeatability. The first purpose is to catch a wrong coordinate
 assignment, sign or row order cheaply. Do not begin by passing the entire
@@ -435,8 +1982,9 @@ parents for model tuning, correction estimation and validation. Use one
 specified footprint/noise draw per parent for the initial full-covariance
 route. Store generated vectors and their labels under \texttt{chains/}.
 The existing notebook loader checks row ordering and rejects repeated or
-excluded parent IDs, but the analyst must still establish their physical
-independence. If two independent groups are used for the quadratic product,
+excluded parent IDs. It operates on measured vectors, not on map files.
+The analyst must still establish the physical independence of the recorded
+parents before this software check has statistical meaning. If two independent groups are used for the quadratic product,
 keep validation parents out of both. A small pilot may simply be too noisy
 to support any correction; that is an informative result.
 
@@ -444,16 +1992,26 @@ to support any correction; that is an informative result.
 Evaluate the analytic precision, first-order PME and, if justified,
 second-order or split-group PME. Keep the mean, data rows, derivatives and
 priors fixed. Record precision eigenvalues, corrections to correlations,
-and parameter uncertainties. For parameter derivatives $D_{i\alpha}
-=\partial m_i/\partial\theta_\alpha$, the Gaussian fixed-covariance Fisher
-matrix is $F=D\T\Psi D+F_{\rm prior}$. Here $F_{\rm prior}$ represents the
-specified prior information. This projects the covariance changes onto
+and parameter uncertainties. Define the derivative of measurement row $i$ with respect to parameter
+$\theta_\alpha$ as one matrix entry:
+\begin{equation}
+ D_{i\alpha}=\frac{\partial m_i}{\partial\theta_\alpha}.
+\end{equation}
+These entries form the derivative matrix $D$. In a Gaussian model with a
+fixed covariance, the Fisher matrix is
+\begin{equation}
+ F=D\T\Psi D+F_{\rm prior}.
+\end{equation}
+The final term represents the specified prior information. This projects the covariance changes onto
 parameter-sensitive directions. A higher figure of merit merely means a
 smaller quoted ellipse; it does not establish more accurate error bars.
 
 \paragraph{Validate weights using data not used to learn them.}
-For independent residuals $\boldsymbol r=\boldsymbol d-\boldsymbol\mu$
-about a known ensemble mean,
+Define a residual about a known ensemble mean:
+\begin{equation}
+ \boldsymbol r=\boldsymbol d-\boldsymbol\mu.
+\end{equation}
+For validation residuals independent of the fitted precision,
 \begin{equation}
  \E[\boldsymbol r\T\Psi\boldsymbol r]=\operatorname{tr}(\Psi\Cov).
 \end{equation}
@@ -465,10 +2023,27 @@ were computed. Examine distributions and parameter-sensitive directions as
 well as this single average; different errors can cancel in a trace.
 
 \paragraph{Check the errors that the analysis reports.}
-In a locally linear model without priors, let
-$H=(D\T\Psi D)^{-1}D\T\Psi$. The fitted parameter displacement is
-$H\boldsymbol r$, so its true scatter is $H\Cov H\T$. This need not equal
-the quoted covariance $(D\T\Psi D)^{-1}$ when the precision is approximate.
+In a locally linear model without priors, the matrix mapping a residual
+into a fitted parameter displacement is
+\begin{equation}
+ H=(D\T\Psi D)^{-1}D\T\Psi.
+\end{equation}
+Its action gives the fitted displacement
+\begin{equation}
+ \delta\widehat{\boldsymbol\theta}=H\boldsymbol r.
+\end{equation}
+Use the covariance transformation rule from the opening matrix guide.
+The actual covariance of these fitted displacements is
+\begin{equation}
+ \Cov_{\theta,\rm actual}=H\Cov H\T.
+\end{equation}
+The assumed likelihood would instead quote
+\begin{equation}
+ \Cov_{\theta,\rm quoted}=(D\T\Psi D)^{-1}.
+\end{equation}
+These need not agree when the precision is approximate. The first formula
+propagates the actual data fluctuations; the second uses the fluctuations
+assumed by the fit.
 Held-out fits can compare these quantities and test whether, for example,
 a nominal 68\% region contains the input parameters at the expected rate.
 Priors, nonlinear models and finite validation samples need their own
@@ -476,6 +2051,185 @@ calibration. Repeating the training/validation split tests sensitivity to
 which parents happened to be available; it does not increase the number
 of independent parent skies.
 
+
+\subsection{Worked example: what adding a correlated observable buys}
+\label{sec:joint-information}
+\paragraph{Hold the physical parameter model fixed.}
+Use two teaching observables with unit variance and correlation $r$.
+Let a single parameter $\theta$ change their means with derivatives
+$u_1$ and $u_2$. These derivatives have units of observable per parameter;
+we have already put the observables in the stated reference units. The
+covariance and derivative column are
+\begin{equation}
+ \Cov=\begin{pmatrix}1&r\\r&1\end{pmatrix},
+ \qquad D=\begin{pmatrix}u_1\\u_2\end{pmatrix}.
+\end{equation}
+For this example there are no priors or nuisance parameters. The Fisher
+information is the parameter curvature of the Gaussian log likelihood:
+\begin{equation}
+ F=D\T\Cov^{-1}D.
+\end{equation}
+A larger positive $F$ gives a smaller local standard error. In this
+one-parameter problem the error is
+\begin{equation}
+ \sigma_\theta=\frac1{\sqrt F}.
+\end{equation}
+We will calculate $F$, not infer it from the sizes of two separate error
+bars.
+
+\paragraph{Do the multiplication explicitly.}
+The inverse of the covariance is
+\begin{equation}
+ \Cov^{-1}=\frac1{1-r^2}
+                \begin{pmatrix}1&-r\\-r&1\end{pmatrix}.
+\end{equation}
+First multiply it by the derivative column:
+\begin{equation}
+ \Cov^{-1}D=\frac1{1-r^2}
+               \begin{pmatrix}u_1-r u_2\\u_2-r u_1\end{pmatrix}.
+\end{equation}
+Then multiply by the derivative row on the left. The result is
+\begin{equation}
+ F=\frac{u_1^2-2r u_1u_2+u_2^2}{1-r^2}.
+\end{equation}
+This expression contains both covariance and parameter-response information.
+A covariance coefficient by itself cannot tell us whether the second
+observable is redundant for the chosen parameter.
+
+\paragraph{Separate old information from new information.}
+Complete the square in the numerator to rewrite the result as
+\begin{equation}
+ F=u_1^2+\frac{(u_2-r u_1)^2}{1-r^2}.
+ \label{eq:added-information}
+\end{equation}
+The first term is the information from the first observable alone. The
+second is the information in the part of the second observable left over
+after predicting its shared fluctuations from the first. To see that
+physically, define a new residual measurement
+\begin{equation}
+ d_{2|1}=d_2-rd_1.
+\end{equation}
+Its covariance with $d_1$ is zero. Its variance is
+\begin{equation}
+ \Var(d_{2|1})=1-r^2.
+\end{equation}
+Its parameter derivative is
+\begin{equation}
+ \frac{\partial m_{2|1}}{\partial\theta}=u_2-r u_1.
+\end{equation}
+Squaring that derivative and dividing by its variance produces the
+second term in Equation~\eqref{eq:added-information}. The new variable
+explains the algebra; it is not a requirement to compress the analysis
+into this particular combination.
+
+\paragraph{Three numerical cases answer three different questions.}
+Set $r=0.8$ and $u_1=1$. If $u_2=0.8$, the conditional derivative vanishes.
+The second observable adds no information on this particular parameter,
+even though it is a distinct measurement. If instead $u_2=1$, the extra
+information is
+\begin{equation}
+ \Delta F=\frac{(1-0.8)^2}{1-0.8^2}=\frac19.
+\end{equation}
+The total is about 1.111, and the parameter error is about 0.949 rather
+than 1. Finally, if $u_2=-1$, the extra information is
+\begin{equation}
+ \Delta F=\frac{(-1-0.8)^2}{1-0.8^2}=9.
+\end{equation}
+The total is 10 and the error is about 0.316. The same correlation can
+accompany no gain, a modest gain or a large gain, depending on the physical
+responses. These are teaching examples, not forecasts for DES or for
+specific intrinsic-alignment amplitudes.
+
+\paragraph{Why this matters for the covariance study.}
+A claim that Map3 separates two feedback or alignment models depends on
+both their mean responses and the joint weighting. An incorrect cross
+block changes the conditional response and its variance. The appropriate
+comparison therefore keeps the physical model and derivatives fixed while
+testing candidate precision matrices. If nuisance parameters are free,
+include their derivative columns and priors, invert the full Fisher matrix,
+and select the desired parameter covariance only afterwards. Holding
+nuisance parameters fixed answers a different scientific question.
+
+\subsection{Why cutting rows of a precision matrix is not the same as a scale cut}
+\paragraph{Keep the measurement you actually intend to fit.}
+Suppose the two observables of Equation~\eqref{eq:correlated-two} have
+correlation 0.8, but a scale cut discards the second one. The covariance
+of the retained first observation is simply
+\begin{equation}
+ \Cov_{\rm kept}=(1).
+\end{equation}
+Its precision is therefore also $(1)$. By contrast, the upper-left entry
+of the full inverse is
+\begin{equation}
+ (\Cov^{-1})_{11}=\frac1{1-0.8^2}=2.777\ldots.
+\end{equation}
+That larger weight assumes the second observable is known and can help
+predict the first one's correlated fluctuation. Dropping the second data
+row removes that information. Thus selecting a block of an already
+inverted matrix generally gives the wrong likelihood for a reduced vector.
+
+\paragraph{Apply selections before the precision construction.}
+Represent a row selection by a matrix $J$ that picks the retained entries.
+Apply it to the covariance model and to the simulated vectors:
+\begin{equation}
+ \M_{\rm kept}=J\M J\T.
+\end{equation}
+The corresponding sample covariance is
+\begin{equation}
+ \widehat\Cov_{\rm kept}=J\widehat\Cov J\T.
+\end{equation}
+Run the precision construction on these reduced covariances. The same
+principle applies to a fixed linear compression: transform both model
+and sample to the actual measured vector, then form its precision.
+If the compression is learned from simulations, keep its training data
+separate from the correction and validation samples or account explicitly
+for the resulting dependence. No compression is required simply because
+PME uses a rank-deficient sample covariance.
+
+\subsection{A practical record for the first measured-vector experiment}
+\paragraph{Record what changes a measurement, not only what names a file.}
+For each saved vector retain the parent, cut and realization labels; the
+ordered source-bin combinations; angular bin edges; filters and cuts;
+pixel ordering and coordinate frame; component convention; weighting;
+noise construction; and a reference to the input files and their release.
+The point is to reconstruct exactly which random variable was measured.
+A short label such as ``Map3'' or ``finite triangles'' cannot reconstruct
+these choices. Use plain text or YAML for this explanatory record and
+numerical arrays for the values themselves.
+
+\paragraph{A small pilot has a small claim.}
+For example, choose four known independent parents and one declared child
+of each. Four vectors are enough to check that the measurement files have
+identical rows, that rerunning the same input reproduces its output, and
+that both statistics are paired correctly. Their 480-dimensional sample
+covariance has rank at most three, so this pilot cannot establish a
+converged DES precision. It can still reveal a wrong axis order, a sign
+mistake or a mismatched scale cut before hundreds of expensive measurements
+are scheduled. The small number here is a workflow example, not a proposed
+training sample for a scientific forecast.
+
+\paragraph{Keep the later statistical roles explicit.}
+A model-tuning set can guide which analytic ingredients need improvement.
+A correction set estimates the residual for the model that has been fixed.
+A validation set checks predictions and parameter coverage without changing
+that choice. If a failed validation motivates another model adjustment,
+those validation data have now informed development; report that fact and
+obtain a new independent final check. Repeatedly trying settings until one
+looks good on the same few skies would underestimate uncertainty in the
+covariance procedure itself.
+
+\paragraph{Report what passing and failing would mean.}
+Passing file and plotting checks establishes a readable archive and a
+plausible coordinate assignment. Passing estimator checks establishes that
+the simulations and theory target the same measured quantities. Passing
+held-out covariance and parameter checks supports the proposed precision
+within that fixed simulation physics and cosmology. A failure at any stage
+points to a different remedy. Additional simulations cannot fix a wrong
+shear rotation; refining a theory integral cannot create missing independent
+parents; changing the PME order cannot repair an unmatched survey window.
+Keep these conclusions separate when deciding the next computation.
+
+\Needspace{11\baselineskip}
 \paragraph{What success would buy us.}
 A validated correction could retain a full joint vector with more reliable
 weights than the analytic model alone, even when the raw sample covariance
@@ -500,5 +2254,9 @@ The public source code is at
 \href{https://github.com/rchgomes/3pcf_integrator}{rchgomes/3pcf\_integrator};
 the theory work also builds on
 \href{https://github.com/git-sunao/fastnc}{git-sunao/fastnc}.
+\bibitem{gatti} M. Gatti et al.,
+\emph{Dark Energy Survey Year 3 results: weak lensing shape catalogue},
+\href{https://academic.oup.com/mnras/article/504/3/4312/6211014}
+{MNRAS 504, 4312 (2021)}, Figure 1.
 \end{thebibliography}
 \end{document}

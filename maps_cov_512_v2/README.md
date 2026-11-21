@@ -4,20 +4,33 @@
 support the covariance work associated with [Gomes et al.](https://arxiv.org/abs/2503.03964)
 and [his analysis code](https://github.com/rchgomes/3pcf_integrator).
 The download is incomplete. This guide describes the files checked on
-20 November 2026; it does not certify the entire archive.
+20–21 November 2026; it does not certify the entire archive.
 
 ## Start with the viewing notebook
 
 Open [EXAMPLE_VIEW_MAPS.ipynb](EXAMPLE_VIEW_MAPS.ipynb) with this directory
 as the working directory. It reads only two explicitly named map files,
 prints their shapes and a small sample, and contains the footprint and
-shear-component plots. Plotting requires `indices.npy`, the HEALPix ordering
-from the producer, and `healpy` in the notebook environment. At the time of
-writing, `indices.npy` had not arrived locally and `healpy` was not installed
-in the project's Python environment. The notebook therefore reports which
-inputs are missing and does not invent coordinates or display a guessed sky.
+shear-component plots. Plotting uses `indices_512.npy` and `astropy-healpix`. The supplied index file
+has 369,190 unique integer entries, matching both inspected maps. Comparing
+RING and NESTED interpretations identifies RING geometrically: it recovers
+the recognizable DES footprint, while NESTED gives disconnected patterns
+across the sky. The notebook displays both interpretations, then uses RING
+for two map previews. This does not determine the shear-component sign or
+basis convention, which still needs the producer's information.
 
-The numerical map files, including `indices.npy`, are ignored by Git.
+For the NumPy 1.x Cocoa environment, the coordinate plots were checked using
+`astropy-healpix==1.0.3` installed in a temporary review environment. To add
+this optional plotting dependency to your active notebook environment:
+
+```bash
+python -m pip install --no-deps astropy-healpix==1.0.3
+```
+
+The saved notebook outputs include the bounded map inspection and plots;
+no covariance measurement was run.
+
+The numerical map files, including `indices_512.npy`, are ignored by Git.
 Only this README and the viewing notebook are tracked here. Save generated
 figures and measured data vectors under the project's `chains/` directory.
 Do not commit the simulation download.
@@ -26,7 +39,7 @@ Do not commit the simulation download.
 
 Rafael confirmed that these are **NSIDE 512 CosmoGrid shear maps**. Only
 pixels where the DES footprint is nonzero are retained. The companion
-`indices.npy` lists those HEALPix pixel indices. Thus the final array axis
+`indices_512.npy` lists those HEALPix pixel indices. Thus the final array axis
 is a list of retained pixels, not a rectangular image and not a list of
 individual galaxies. Missing sky pixels are unobserved; do not fill them
 with zero shear when measuring correlations.
@@ -49,9 +62,9 @@ For a one-dimensional common index list, `maps[b, g, j]` belongs to HEALPix
 pixel `indices[j]`. Here `b` selects a source bin, `g` a shear component and
 `j` the compressed pixel position. **Preserve this pairing.** Sorting indices
 without applying the same permutation to the shear values moves the signal
-to the wrong sky positions. The notebook requires a common one-dimensional
-list; if the downloaded index file instead has separate lists for each cut,
-inspect those lists and select the matching cut explicitly.
+to the wrong sky positions. The inspected index file is a common one-dimensional list. Its application
+to the other `ncut` files still needs the producer's convention; do not infer
+that separate cut labels imply different index files or identical sky rotations.
 
 ## Recovering the DES footprint
 
@@ -63,10 +76,16 @@ HEALPix pixels do not form a rectangular image.
 
 HEALPix has two index conventions, RING and NESTED. Both use the same integer
 range but assign different positions to those integers. **NSIDE alone does
-not specify the ordering.** Set the notebook's `nested` value only after
-confirmation: `False` for RING, `True` for NESTED. `healpy.pix2ang` then turns
-indices into longitude and latitude. Identify them with RA and Dec only
-when the producer confirms that the maps use equatorial coordinates.
+not specify the ordering.** The notebook compares both interpretations with `astropy_healpix.HEALPix`.
+RING gives longitude from -61.17 to 99.40 degrees (wrapped at 180 degrees)
+and latitude from -67.84 to 5.45 degrees, with the recognizable DES southern
+footprint and equatorial extension. NESTED spans all longitudes and reaches
++39.74 degrees in latitude with a disconnected pixel pattern. We therefore
+use `order="ring"` for these previews and interpret coordinates as RA/Dec
+from the footprint match; compare Figure 1 of the
+[DES Y3 shape-catalog paper](https://academic.oup.com/mnras/article/504/3/4312/6211014).
+Record this as geometric evidence rather than
+as a producer-confirmed coordinate or shear-basis declaration.
 
 The notebook plots the retained-pixel footprint and both components of two
 maps in the first source bin. It uses at most 30,000 evenly selected array
@@ -77,20 +96,46 @@ coordinate scatter plot, not an equal-area projection or a science estimator.
 A scalar component plot does not rotate the spin-2 shear basis; any actual
 correlation measurement must use the producer's shear-basis convention.
 
+## Reading a filename
+
+For example, `ShearMaps_DESY3_run_0000_ncut0_nreal17.npy` separates into:
+
+| Part | Meaning and present evidence |
+|---|---|
+| `ShearMaps` | The stored quantities are shear-map values, as Rafael confirmed. |
+| `DESY3` | The maps target DES Year 3; the precise source distributions and weights still need their producer record. |
+| `run_0000` | Run identifier 0, padded to four digits. We interpret this provisionally as the parent density/sky realization. Confirm its link to the underlying CosmoGrid simulation before treating different runs as independent. |
+| `ncut0` | Footprint-cut identifier 0. We interpret different cuts as survey patches obtained from a parent sky; the actual rotations and overlap need the producer's definition. |
+| `nreal17` | Realization identifier 17. The working interpretation is a shape-noise draw at fixed run and cut, but the producer has not yet confirmed what is randomized. With labels starting at zero, it is the eighteenth labeled realization, not seventeen new independent skies. |
+| `.npy` | NumPy's array file format. It records array shape and numerical type, not the scientific meaning of these labels. |
+
+Thus the intended reading is **run 0, footprint cut 0, realization 17**.
+The labels are identifiers, not source-bin indices, shear-component indices,
+resolution settings or version numbers. Source bins and components are axes
+inside each file; NSIDE 512 comes from Rafael's description and the folder.
+The `_v2` in the folder name is a release label, not a noise realization.
+We have not been given a change record explaining that release revision.
+
+Two files differing only in `nreal` are expected to share the parent sky and
+cut, while changing the realization draw. Two files differing only in `ncut`
+are expected to select different patches from the same parent. These are
+working interpretations to confirm, not metadata encoded by the NPY format.
+Until confirmed, retain all three labels in measured-vector records and
+keep the entire `run` group together in training/validation splits. In
+particular, never pass the number of files as the independent-sky count.
+
 ## A file is not an independent Universe
 
-The names contain `run`, `ncut` and `nreal`. They suggest a parent simulation,
-a footprint cut, and a noise realization, respectively; Rafael's message
-confirmed the pixel selection, **not these label meanings**. Confirm them
-before counting independent simulations. In particular, if several files
+The filename table gives the working interpretation, which still needs
+producer confirmation before counting independent simulations. If several files
 share a density realization and differ only in galaxy shape noise, they
 cannot be counted as new independent realizations of cosmic structure.
 Keep all descendants of a parent simulation together when assigning training
 and validation sets. Do not average different footprints and call that one
 DES survey; this changes the measurement whose covariance is being estimated.
 
-Ask the producer for the label meanings, parent simulation IDs and cosmology,
-the HEALPix ordering and coordinate frame, source-bin distributions, shape
+Ask the producer to confirm the label meanings, parent simulation IDs and
+cosmology, the inferred RING/equatorial convention, source-bin distributions, shape
 noise prescription and noiseless-map availability, shear signs/basis,
 footprint weights and pixel occupancies, and checksums or expected file sizes.
 If different cuts use different pixel lists, obtain that mapping too.
