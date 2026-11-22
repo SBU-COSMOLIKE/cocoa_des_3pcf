@@ -48,8 +48,9 @@ export NUMEXPR_NUM_THREADS=1
 ulimit -u 2000000
 
 # Keep the launch and its Slurm allocation in this one file, as in LSST Y1.
-# Forward Cocoa paths and thread settings to every node. Let the cluster's
-# MPI configuration choose the network transport; do not add a second srun.
+# Forward Cocoa paths and thread settings to every node. Use Cocoa's ob1
+# transport: shared memory within a node and TCP between nodes, bypassing UCX.
+# Keep one MPI launcher; do not add a second srun.
 export PYTHONPATH="${PYTHONPATH:-}"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
 cd "${ROOTDIR}/projects/des_3pcf" || exit 1
@@ -68,6 +69,7 @@ fi
 # Keep the same maps folder when resubmitting after the wall-time limit,
 # and never run two jobs writing to that folder at the same time.
 "${CONDA_PREFIX}/bin/mpirun" -n "${SLURM_NTASKS}" \
+  --mca pml ob1 --mca btl vader,tcp,self \
   -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \
   -x OMP_NUM_THREADS -x OMP_PROC_BIND -x OMP_PLACES -x OMP_DYNAMIC \
   -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS -x VECLIB_MAXIMUM_THREADS \

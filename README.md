@@ -691,9 +691,14 @@ cluster throughput. Check peak memory before filling every core on a node.
 The script launches measurements only; it does not generate maps or run the
 covariance analysis automatically.
 
-The scripts leave network transport to the site's MPI configuration and
-forward Cocoa's paths plus OpenMP/BLAS keys explicitly. Consult Cocoa's
-main MPI README for site-specific network choices. The launcher must be
+The Slurm script follows Cocoa's Linux MPI examples with
+`--mca pml ob1 --mca btl vader,tcp,self`: shared memory within a node, TCP
+between nodes, and loopback for messages to the same process. This bypasses
+UCX, whose worker initialization failed on the initial HPC launch. Open MPI
+5 accepts `vader` as an alias for `sm`; see its
+[shared-memory documentation](https://docs.open-mpi.org/en/v5.0.x/tuning-apps/networking/shared-memory.html).
+The script forwards Cocoa's paths plus OpenMP/BLAS keys explicitly. Consult
+Cocoa's main MPI README for site-specific network choices. The launcher must be
 compatible with the MPI library used to build mpi4py. These are Open MPI
 launchers; a site requiring `srun` must use its supported PMI/PMIx settings.
 Actual multi-node execution still requires testing on that cluster.
