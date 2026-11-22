@@ -52,6 +52,8 @@ ulimit -u 2000000
 # transport: shared memory within a node and TCP between nodes, bypassing UCX.
 # Keep one MPI launcher; do not add a second srun. Adapt the TCP exclusion
 # list below to the cluster; remove ib0 from it if using routable IP over IB.
+# This exclusion list was tested across UofA nodes; it leaves enp1s0f1np1
+# available. Other clusters may use different interface names.
 # Each worker is single-threaded, so use Cocoa's slot mapping.
 # Open MPI cannot use TCP include and exclude lists together. Clear an
 # inherited inclusion list so the explicit Cocoa exclusion line below wins.
@@ -80,7 +82,7 @@ fi
   -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS -x VECLIB_MAXIMUM_THREADS \
   -x BLIS_NUM_THREADS -x NUMEXPR_NUM_THREADS \
   --mca mpi_yield_when_idle 1 \
-  --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0 \
+  --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0,eno1,enp1s0f0np0 \
   --bind-to core:overload-allowed --report-bindings \
   --rank-by slot --map-by slot \
   "${ROOTDIR}/.local/bin/python" -u \

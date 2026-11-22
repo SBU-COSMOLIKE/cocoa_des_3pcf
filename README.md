@@ -724,7 +724,7 @@ Actual multi-node execution still requires testing on the cluster.
 
 TCP interface inclusion and exclusion lists are mutually exclusive. The
 batch script unsets inherited `OMPI_MCA_btl_tcp_if_include` before launching
-MPI and retains the explicit `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0`
+MPI and retains the explicit `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0,eno1,enp1s0f0np0`
 line. This keeps Cocoa's exclusion policy even when shell startup or modules
 supply an inclusion setting.
 A successful single-node run does not establish that the selected interface
@@ -734,8 +734,11 @@ is routable between nodes.
 > **Running on more than one node.**
 >
 > 1. **Network interface.** TCP must use an interface routable between compute
->    nodes. A common exclusion list is
->    `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0`; adapt it to the cluster.
+>    nodes. The tested UofA exclusion list is
+>    `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0,eno1,enp1s0f0np0`; adapt it to the cluster.
+>    On the tested UofA nodes this leaves `enp1s0f1np1` available.
+>    Before launching, run `unset OMPI_MCA_btl_tcp_if_include` so an
+>    inherited inclusion list cannot conflict with the explicit exclusion.
 >    Keep `ib0` if routable IP-over-InfiniBand is the intended network. These
 >    examples exchange parameter vectors and scalar scores, so communication
 >    volume is small; actual scaling still depends on the machine.
