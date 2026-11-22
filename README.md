@@ -911,76 +911,72 @@ export GPTG_REMOTE_DIR="/absolute/path/to/gptg"
 ```
 
 ```bash
-export GPTG_TRANSFER_JOBS=8
+export GPTG_TRANSFER_JOBS=20
 ```
 
 `GPTG_TRANSFER_JOBS` controls concurrent uploads, independently of MPI.
-Reduce it if the transfer server limits simultaneous sessions.
-First open one authenticated SSH connection for reuse:
+Reduce it if the transfer server closes connections or limits sessions.
+
+**First terminal: upload using independent SSH connections.** From the local
+`comparison/` folder, run:
+
+```bash
+ls *.npy | xargs -P "$GPTG_TRANSFER_JOBS" -I {} sh -c 'rsync -avP "$1" "${GPTG_TRANSFER_HOST}:${GPTG_REMOTE_DIR}/comparison/" && ssh "$GPTG_TRANSFER_HOST" "touch ${GPTG_REMOTE_DIR}/comparison/$1.ready"; result=$?; if [ "$result" -ne 0 ]; then echo "Retry needed: $1" >&2; exit 1; fi' sh {}
+```
+
+`ls` supplies the filenames; `xargs -P` limits parallel jobs, and `-I {}`
+passes each filename as `$1` to its shell. Rsync's `-a` preserves timestamps,
+`-v` prints progress details, and `-P` retains partial uploads and displays
+transfer progress. The `&&` creates a ready marker only after rsync succeeds.
+The failure handler reports the filename and converts SSH's exit status so
+`xargs` can continue processing other files. Rerun to retry failures.
+
+This uses independent connections rather than forcing all uploads through
+one shared SSH connection. For `validation/`, run from that local folder
+and replace both `/comparison/` occurrences with `/validation/`.
+
+**Second terminal: recover missing ready markers.** Set the same host and
+remote-directory variables in this terminal; exports in the first terminal
+are not automatically shared. Open a reusable connection:
 
 ```bash
 ssh -MNf -o ControlPersist=600 -S "$HOME/.ssh/d3pcf-%C" "$GPTG_TRANSFER_HOST"
 ```
 
-`-M` opens the shared connection; `-N` runs no remote command and `-f`
-puts it in the background. `-S` names its local control socket, which later
-commands use to reach that connection. SSH expands `%C` into a hash of the
-connection identifiers. `ControlPersist=600` retains an idle connection for
-ten minutes. If it has expired or disconnected, repeat the command above
-before resuming transfers. The server's authorization banner at login is
-normal.
+`-M` creates a shared connection, `-N` runs no remote command, `-f` puts it
+in the background, and `-S` names the control socket. `%C` identifies the
+connection. Repeat this command if the connection expires or disconnects.
 
-From the local **comparison/** folder:
+From the local `comparison/` folder, check unmarked files:
 
 ```bash
-ls *.npy | xargs -P "$GPTG_TRANSFER_JOBS" -I {} sh -c 'rsync -avP -e "ssh -S $HOME/.ssh/d3pcf-%C" "$1" "${GPTG_TRANSFER_HOST}:${GPTG_REMOTE_DIR}/comparison/" && ssh -S "$HOME/.ssh/d3pcf-%C" "$GPTG_TRANSFER_HOST" "touch ${GPTG_REMOTE_DIR}/comparison/$1.ready"; result=$?; if [ "$result" -ne 0 ]; then echo "Retry needed: $1" >&2; exit 1; fi' sh {}
+for file in *.npy; do
+  ssh -S "$HOME/.ssh/d3pcf-%C" "$GPTG_TRANSFER_HOST" "test -f ${GPTG_REMOTE_DIR}/comparison/$file.ready" && continue
+  changes=$(rsync -acni -e "ssh -S $HOME/.ssh/d3pcf-%C" "$file" "${GPTG_TRANSFER_HOST}:${GPTG_REMOTE_DIR}/comparison/") || continue
+  if [ -z "$changes" ]; then
+    ssh -S "$HOME/.ssh/d3pcf-%C" "$GPTG_TRANSFER_HOST" "touch ${GPTG_REMOTE_DIR}/comparison/$file.ready"
+  fi
+done
 ```
 
-The parallel jobs reuse the authenticated connection for uploads and
-markers. Opening a fresh connection for every operation can trigger the
-server's connection limits.
+This loop never uploads or modifies a map. Rsync's `-n` is a dry run,
+`-c` compares file checksums, and `-i` reports differences. Only a successful
+check with no reported changes creates a marker. Missing, incomplete or
+different files remain unmarked; a later pass can check them again. Checksums
+read both copies, so this recovery pass adds disk and network work and may
+be slower than a size check. A remote listing or equal byte count alone is
+not enough to mark a file safely while uploads continue.
 
-- `ls *.npy` lists the maps in this folder; `|` passes their names to `xargs`.
-- `xargs -P "$GPTG_TRANSFER_JOBS"` sets the concurrent-job limit. `-I {}` supplies one filename
-  per job, so an additional `-n 1` is unnecessary.
-- `sh -c '...' sh {}` runs the quoted commands with that filename in `$1`.
-- `rsync -a` preserves modification times and other archive attributes;
-  `-v` prints details. Its `-P` retains partial uploads and shows progress.
-- `rsync -e "ssh -S ..."` and the following `ssh -S ...` both select the
-  shared connection. All jobs share the available network bandwidth.
-- `&&` runs `touch` only after rsync succeeds. `touch` creates the remote
-  `.npy.ready` marker and normally prints nothing.
-- `result=$?` records success or failure. A failure prints `Retry needed`
-  and exits with status 1, so SSH's status 255 cannot make `xargs` abandon
-  the remaining filenames. Rerun to retry failed files.
+Use the corresponding local folder and replace `/comparison/` with
+`/validation/` to recover that group's markers. Both workflows assume the
+generated filenames contain no spaces or newlines and completed local maps
+are immutable. Never overwrite marked maps while TreeCorr reads them.
 
-Rsync skips uploads whose remote size and modification time already match;
-this is not a full checksum audit. The following `touch` still runs, so
-files uploaded by the earlier command receive their missing markers.
-Incomplete files are transferred before their markers are created. Existing
-matching files and markers can be revisited safely. Never change a marked
-map's contents while TreeCorr is using it.
-
-Output such as `sent 98 bytes` for an 11.8 MB map means only metadata was
-exchanged: the map was skipped. The displayed bytes-per-second figure for
-that check is not the upload bandwidth. Interleaved output from parallel
-jobs is expected. Repeated authorization banners should disappear while
-the shared connection is being reused.
-
-The generated names, such as `GPTG_DES_000000.npy`, contain no spaces or
-newlines. This filename handling is suitable for this bank, not a general
-recipe for arbitrary filenames. The list includes maps present when `ls`
-runs; repeat the command later to include newly generated maps.
-
-From the local **validation/** folder, use its separate destination:
-
-```bash
-ls *.npy | xargs -P "$GPTG_TRANSFER_JOBS" -I {} sh -c 'rsync -avP -e "ssh -S $HOME/.ssh/d3pcf-%C" "$1" "${GPTG_TRANSFER_HOST}:${GPTG_REMOTE_DIR}/validation/" && ssh -S "$HOME/.ssh/d3pcf-%C" "$GPTG_TRANSFER_HOST" "touch ${GPTG_REMOTE_DIR}/validation/$1.ready"; result=$?; if [ "$result" -ne 0 ]; then echo "Retry needed: $1" >&2; exit 1; fi' sh {}
-```
-
-You can submit TreeCorr with `GPTG_WAIT_FOR_READY=1` while these commands
-run. Workers consume completed, marked maps and wait for later arrivals.
-These transfer commands neither delete local maps nor launch TreeCorr.
+The upload command already creates markers; the second terminal is for
+uploads whose marker command failed or which were transferred previously.
+Each pass lists only maps present when it starts; repeat for later arrivals.
+With `GPTG_WAIT_FOR_READY=1`, TreeCorr can consume marked maps while uploads
+continue. These transfer commands do not launch TreeCorr or delete maps.
 
 From the local parent `chains/gptg_ensemble_15000/` directory, copy the pixel
 indices and provenance files to the remote parent directory:
