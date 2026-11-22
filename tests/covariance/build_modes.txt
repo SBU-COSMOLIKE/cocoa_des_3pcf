@@ -7,3 +7,22 @@ ON -> OFF relink without cleaning: expected bindings and capability pass.
 Final installed extension is OFF, matching installation defaults.
 Standalone Makefile now uses the core-bundled CFASTPT source location.
 Shell syntax and README rendering passed. No simulations were resumed.
+
+Follow-up: exercise the joint mean, not only the aperture contraction.
+The earlier import/aperture check missed mean functions registered only by
+covariance_interface.cpp: quadrature, xi_bin_weights, shear_power_rows,
+nla_power_rows and production/notebook xi_from_power. With covariance OFF,
+real likelihood initialization failed at the first missing quadrature call.
+These bindings now live in threepcf_interface.cpp. The xi C mean kernel
+and Armadillo adapter moved to aperture_3pcf.c and threepcf_wrapper.cpp.
+No physical equations or integration order changed.
+
+ON: 69 tests passed (quadrature, physical covariance, numbered examples,
+sampler checks and actual likelihood initialization).
+OFF: 39 tests passed (quadrature, analytic xi integrals, odd/even padding,
+numbered examples, three real likelihood initializations and source notebook).
+ON -> OFF rebuild without cleaning succeeds; final installed extension is OFF.
+Actual EXAMPLE_EVALUATE1 Cobaya run, production sampling, OpenMP=1, BLAS=1:
+  all 480 NLA mean entries finite
+  normalized log likelihood = 7124.056851076294
+This is a runtime regression check, not an accuracy or posterior validation.

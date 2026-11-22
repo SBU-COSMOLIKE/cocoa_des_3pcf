@@ -56,6 +56,33 @@ def test_cobaya_loads_project_likelihood_defaults(example):
     assert (PROJECT / "data" / data_file).is_file()
 
 
+@pytest.mark.parametrize("number", [1, 2, 3])
+def test_joint_likelihood_initializes_without_generating_covariance(number):
+    """Prepare real measurement rows through the installed Cobaya class.
+
+    Loading YAML alone does not exercise the native mean bindings. This
+    initialization needs quadrature and xi-bin weights even when the
+    covariance generator is excluded from the build. It reads the supplied
+    covariance; it never computes a cosmology or a new covariance matrix.
+    Case 4 needs an independently trained compression file and is separate.
+    """
+    from cobaya.likelihoods.des_3pcf.joint_shear import joint_shear
+    import cosmolike_des_3pcf_interface as ci
+
+    likelihood = joint_shear(info={"data_file": f"des_y3_joint{number}.dataset"})
+    assert likelihood.xi_theta.shape == (400, 32)
+    np.testing.assert_allclose(
+        actual=np.sum(likelihood.xi_weight, axis=1),
+        desired=1.0,
+        rtol=2.0e-15,
+    )
+    assert callable(ci.shear_power_rows)
+    assert callable(ci.production.xi_from_power)
+    assert callable(ci.notebook.xi_from_power)
+    assert ci.get_joint_data().size == 480
+    likelihood.close()
+
+
 @pytest.mark.parametrize("number", [1, 2, 3, 4])
 def test_evaluate_mcmc_and_nautilus_use_the_same_science(number):
     """Changing samplers must preserve data, theory, parameters and priors."""
