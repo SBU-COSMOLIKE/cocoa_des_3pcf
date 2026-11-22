@@ -730,19 +730,63 @@ IDs; old smaller-target completion markers are archived when tasks remain.
 
 #### Copying maps and choosing the HPC folder name
 
-You may name the HPC directory `chains/gptg/`. TreeCorr requires these
-contents inside that directory:
+You may name the HPC directory `chains/gptg/`, including a symlink to
+storage outside the checkout. Set `GPTG_MAP_DIR` to that parent directory,
+not to its `comparison/` child. The parent must exist and be writable.
 
-- `comparison/` and `validation/`, containing the `.npy` maps.
-- `indices_512.npy`, identifying the footprint pixels.
-- `full_joint_480/`, if transferring already completed or partial measurements
-  to resume them; otherwise this output directory is created automatically.
+**Before submission, check this layout under `$GPTG_MAP_DIR`:**
 
-Also retain `ensemble.yaml`, `calibration.yaml`, `calibration.npz`, and the
-two `*_measurements.txt` journals as provenance. Other diagnostic folders
-are not required. The project checkout must include `data/upstream_y3/`.
-Wait until generation finishes and transfers are complete before launching
-the full measurement job; do not expose partially copied `.npy` files.
+| File or folder | Requirement |
+|---|---|
+| `indices_512.npy` | Required at startup; the footprint pixel indices matching these maps |
+| `comparison/` | Create before uploading comparison maps; may initially be empty with `GPTG_WAIT_FOR_READY=1` |
+| `validation/` | Create before uploading validation maps, even if its upload has not started; may initially be empty with `GPTG_WAIT_FOR_READY=1` |
+| `comparison/GPTG_DES_*.npy` and `validation/GPTG_DES_*.npy` | Completed map files; they may arrive during the job in waiting mode |
+| Matching `GPTG_DES_*.npy.ready` files | Required for dispatch with `GPTG_WAIT_FOR_READY=1`; create only after successful transfer |
+| `full_joint_480/` | Output, created automatically; preserve it when resuming, including its partial measurement files |
+
+Create both input folders on the HPC. These commands also work when the
+parent path is a symlink and leave existing files intact:
+
+```bash
+mkdir -p "$GPTG_MAP_DIR/comparison"
+```
+
+```bash
+mkdir -p "$GPTG_MAP_DIR/validation"
+```
+
+The reader tolerates a missing group folder in waiting mode, so a missing
+`validation/` does not itself prevent comparison maps from being measured.
+Creating both folders in advance is the transfer setup convention, not an
+extra startup check in the Python program. Empty folders are allowed; if
+neither group has ready maps, workers wait and still consume allocated wall
+time. The full 40,000-map job cannot finish until both groups are supplied.
+
+**Also required in the project checkout:** the installed TreeCorr, mpi4py,
+NumPy, Astropy and astropy-healpix dependencies, plus these two bundled FITS
+files under `data/upstream_y3/data/dv/`. They define the measurement row order:
+
+- `sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits`
+- `sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits`
+
+**Keep these provenance files in `$GPTG_MAP_DIR` as well:**
+
+- `ensemble.yaml`
+- `calibration.yaml`
+- `calibration.npz`
+- `comparison_measurements.txt`
+- `validation_measurements.txt`
+
+The TreeCorr measurement script does not read those five provenance files,
+but they retain the generation settings and earlier measured diagnostics
+needed to interpret the ensemble. `joint_xip_measurements.txt` and other
+diagnostic folders are optional for the full 480-row measurement.
+
+While transfers continue, use the readiness mode below. Without that mode,
+complete the requested transfers before submission. Never mark a partially
+uploaded map as ready, and never run two measurement jobs writing to the
+same `full_joint_480/` folder.
 
 #### Starting measurement while uploads continue
 
