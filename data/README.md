@@ -86,16 +86,11 @@ teaching assumption, not a recalibration of the DES source model.
 Recorded absolute paths describe where the processing occurred; consumers
 resolve the included file from their YAML configuration and check its hash.
 
-To reproduce the processing without modifying the input data:
-
-```bash
-python projects/des_3pcf/scripts/prepare_demo_sources.py \
-  --input projects/des_3pcf/data/upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits \
-  --output projects/des_3pcf/chains/y3_demo_sources.fits \
-  --extension nz_source --nbin 4
-```
-
-The command writes a FITS file and YAML record under `chains/`. The included
-processed distribution remains the examples' declared input. To adopt a
-different source model, change `source.path` explicitly and prepare new
-theory tables.
+Reproduce the processing in the source-distribution section of
+[EXAMPLE_EVALUATE1.ipynb](../EXAMPLE_EVALUATE1.ipynb). After its setup cell,
+you can jump directly to that section without running a cosmology or Fisher
+calculation. It shows clipping, the removed area and normalization, and
+checks that the resulting samples exactly match the included file.
+An optional cell writes a FITS copy under `chains/`; it never replaces the
+input in `data/`. Changing the source model of an inference requires changing
+`nz_source_file` in its `.dataset` file explicitly.

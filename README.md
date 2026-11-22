@@ -55,67 +55,26 @@ adapters call the same numerical library; their array ownership differs.
 See the [core guide](../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md)
 for implementation details.
 
-## Prepare and evaluate <a name="evaluate"></a>
+## Evaluate with Cobaya <a name="evaluate"></a>
 
-The examples read included survey inputs from `data/`. Fiducial theory
-tables and predictions are calculated locally in `chains/`.
+Follow the numbered YAML examples, as in LSST Y1. Their `theory` blocks
+calculate CAMB power spectra and the supplied matter bispectrum; the
+`likelihood` block selects the joint shear dataset. Survey inputs are
+included in `data/`, and results go to `chains/`. No separate theory-table
+preparation command is needed.
 
-**Step :one:**: select up to six OpenMP workers and keep BLAS serial.
-
-```bash
-export OMP_NUM_THREADS=6
-export OMP_THREAD_LIMIT=6
-export OMP_DYNAMIC=FALSE
-export OPENBLAS_NUM_THREADS=1
-export MKL_NUM_THREADS=1
-export VECLIB_MAXIMUM_THREADS=1
-export BLIS_NUM_THREADS=1
-```
-
-Set the configuration's `threads` field to the intended worker count too.
-For MPI sampling, choose ranks and OpenMP workers within the available cores.
-
-**Step :two:**: inspect the input paths without running a model.
-
-```bash
-python projects/des_3pcf/scripts/run_3pcf.py prepare \
-  projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml --validate-config
-```
-
-**Step :three:**: prepare the fiducial tables shared by the NLA and TATT examples.
-
-```bash
-python projects/des_3pcf/scripts/run_3pcf.py prepare \
-  projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml
-```
-
-This writes `chains/y3_demo_pchip9601_physics.npz`. NLA is nonlinear tidal
-alignment; TATT adds tidal-torquing and density-weighting contributions.
-
-**Step :four:**: calculate the joint mean.
-
-```bash
-python projects/des_3pcf/scripts/run_3pcf.py evaluate \
-  projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml
-```
-
-`--overwrite`: explicitly replace an existing generated output. Recompute
-dependent results after changing inputs or numerical settings; do not
-relabel an old forecast as a result of the changed calculation.
-
-Paths inside each YAML are relative to that file. See the
-[configuration reference](configs/README.md) for its fields.
-
-For an ordinary Cobaya evaluation, use `EXAMPLE_EVALUATE1.yaml`. Its
-theory components calculate the tables; no preparation command is needed.
-Cocoa's project-link setup exposes
-`likelihood/joint_shear.py` as `des_3pcf.joint_shear`, just as it exposes
-the LSST Y1 and DES Y3 likelihoods. The YAML selects a local dataset and
-specifies the parameter point; no custom sampler launcher is needed.
+Activate Cocoa, then evaluate the declared fiducial point:
 
 ```bash
 cobaya-run projects/des_3pcf/EXAMPLE_EVALUATE1.yaml
 ```
+
+Cocoa exposes `likelihood/joint_shear.py` as `des_3pcf.joint_shear` through
+its normal project links. Set `omp_threads` in that likelihood's YAML
+settings to choose the OpenMP worker count; the examples default to one.
+Keep BLAS at one worker and account for all ranks when running MPI.
+[EXAMPLE_EVALUATE1.ipynb](EXAMPLE_EVALUATE1.ipynb) shows the same model call,
+its residuals and a small Fisher calculation using the shared core routines.
 
 The example uses synthetic data and writes its evaluation to `chains/`.
 `EXAMPLE_EVALUATE1–4.yaml`, `EXAMPLE_MCMC1–4.yaml` and the four Nautilus
@@ -316,17 +275,17 @@ measurements are in the [study record](tests/studies/implementation_record.md#ac
 
 ## Appendix: Fisher forecasts and response plots <a name="fisher"></a>
 
-After preparing the shared fiducial tables, run the TATT demonstration
-forecast with the joint covariance:
+Use [EXAMPLE_EVALUATE1.ipynb](EXAMPLE_EVALUATE1.ipynb) for the ordinary
+workflow: evaluate the numbered Cobaya model, differentiate its retained
+data vector, then call the shared Fisher functions. Its three-parameter
+example holds the other parameters fixed and is a conditional demonstration.
+A full survey forecast must vary the intended nuisance parameters and state
+its priors. Derivatives and matrices are saved under `chains/`.
 
-```bash
-python projects/des_3pcf/scripts/run_3pcf.py fisher \
-  projects/des_3pcf/configs/des_y3_tatt_demo_fisher.yaml
-```
-
-`EXAMPLE_FISHER_IA.ipynb` plots the saved parameter responses in units of
-each measurement's error and compares their separation with the full
-cross-covariance. The [shared Fisher guide](../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher)
+The extended IA, feedback and accuracy notebooks still have dependencies on
+the older runner; their migration is unfinished. They must not be treated as
+examples of the standard project calling convention. The
+[shared Fisher guide](../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher)
 defines derivatives, priors, marginalized errors and figures of merit.
 
 ## Appendix: covariance and simulations <a name="covariance"></a>
@@ -1164,8 +1123,9 @@ DES 3PCF follows LSST Y1's build switch: the same native extension is built
 with or without covariance generation. `set_installation_options.sh` sets
 `IGNORE_COSMOLIKE_DES_3PCF_COVARIANCE=1` by default. This omits covariance
 kernels and bindings and exposes `has_covariance=False`. Supplied covariance
-matrices remain usable by the joint likelihood. This key does not control
-TreeCorr or map generation.
+matrices remain usable by the joint likelihood. Fixed quadrature, xi-bin
+weights, shear spectra and xi means are data-vector operations and remain
+available in either build. This key does not control TreeCorr or map generation.
 
 From activated Cocoa, enable analytical covariance generation:
 
@@ -1209,3 +1169,25 @@ their local source is kept in the git-ignored
 `notes/gptg_simulations/development_archive/` and remains in Git history and their recorded numerical evidence
 remains in `tests/gptg_pilot/`. They are not prerequisites for using the maps
 or reproducing the note's scientific figures.
+
+### Which calculations belong in scripts?
+
+Keep expensive production calculations in `scripts/`; put short analysis
+and plotting steps in the notebook that explains their science. Support
+modules stay only when those production programs actually need them.
+
+| Calculation | Location |
+|---|---|
+| Calibrate and generate maps; CPU/GPU spherical transforms; completion checks | Map programs and their support in `scripts/` |
+| Measure survey correlations with TreeCorr across MPI ranks | `scripts/measure_full_joint_mpi.py` and the single Slurm example |
+| Bounded map measurements needed by the covariance comparison | Existing measurement programs in `scripts/`; they still read many maps or run TreeCorr |
+| Source clipping, response plots, covariance algebra and small examples | Visible cells in the associated notebook |
+| Ordinary evaluation or inference | Numbered Cobaya examples and `likelihood/` |
+| Ordinary Fisher calculation | Evaluate notebook using shared core Fisher functions |
+| Explicitly expensive Fisher study | Only when needed: an `interface/cosmolike_des_3pcf_fisher.py` following LSST Y1 × DESI |
+| Hardware probes and superseded exploration | Ignored local diary; retained results in `tests/` |
+
+The remaining `run_3pcf.py`, `run_fisher_accuracy.py` and `scripts/des3pcf/`
+are migration work, not a recommended second framework. Their consumers
+must be changed before removing them. Timing runs are expensive enough for
+a script, but plotting completed timing records belongs in a notebook.

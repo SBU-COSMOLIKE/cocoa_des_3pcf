@@ -93,13 +93,15 @@ are insufficient.
   Cocoa's normal project-link setup exposes it as `des_3pcf.joint_shear`.
   Users must be able to name it in an ordinary evaluate or sampler YAML.
 - `interface/` contains the project bindings and notebook wrappers.
-- `scripts/` contains DES-specific preparation, comparison and run scripts.
-  Do not create a top-level `python/` package.
+- `scripts/` contains expensive production programs and support they actually
+  use. Lightweight preparation, comparisons and plotting belong in the
+  associated notebook. Do not create a top-level `python/` package.
 - There is no `cosmolike_3pcf/` Python package. Numerical preparation and
   evaluation belong in the existing C++ interfaces under `cosmolike/3pcf/`.
   This includes fixed quadrature, aperture row grouping and IA decomposition.
   Extend existing interfaces; do not add Python owner or adapter layers.
-- Survey/FITS/source/pixel readers belong in `scripts/des3pcf/`.
+- The likelihood reads its survey inputs directly, as in LSST Y1. Do not
+  introduce a `scripts/des3pcf/` input or prediction framework.
   Reusable plots and statistical algebra belong in `cosmolike_notebook_utils/`.
 - General Fisher algebra belongs in the existing
   `cosmolike_notebook_utils/fisher.py`, not in a 3PCF-specific duplicate.
@@ -465,3 +467,9 @@ plotting in the associated example or note notebook, with explanatory
 comments. Keep exploratory development diaries in an ignored folder.
 Review existing scripts against this rule; do not merely rename or move
 an unwanted framework into another package.
+
+Source clipping for the authorized demonstration is taught directly in
+EXAMPLE_EVALUATE1.ipynb. Do not recreate a preparation CLI. The bundled source
+file remains the input; the notebook verifies its samples and can write an
+optional copy under chains/. tests/test_prepare_demo_sources.py executes the
+actual teaching cells on hand-integrated curves and the bundled FITS.
