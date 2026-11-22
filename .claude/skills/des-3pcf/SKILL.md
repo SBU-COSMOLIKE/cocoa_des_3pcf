@@ -486,3 +486,33 @@ worker allocations and time limits rather than repeating their current values
 in prose. Use documented environment variables for HPC login and storage
 paths, never a developer's personal directory. Keep exact scientific
 definitions, measured evidence and immutable resume-ID mappings where needed.
+
+## Shared-pixel measurement repair and covariance-review limits
+
+For the current common-position, common-mask, common-weight, equal-radius
+map estimator, recover mixed-source Map3 from auto correlations of field
+sums and differences. The old mixed-catalogue LogMultipole route retained
+coincident-pixel products whose finite Fourier reconstruction leaked into
+nonzero opening angles. The auto polarization cache holds only aperture
+values and is cleared per map. Preserve the input shear sign exactly once.
+Do not apply this identity to different source masks, weights or aperture
+radii without deriving and testing their estimator normalization.
+
+The measurement revision and smoke selection must match before checkpoint
+resume or merge. Legacy final vectors cannot be corrected from their saved
+aperture values. Keep original files; use a fresh output directory for a new
+measurement definition or input ensemble. IDs refer to immutable input maps.
+The present runner is NSIDE512-specific. A new-resolution ensemble needs
+explicit geometry support, harmonic-range and angular-truncation validation,
+noise-area scaling and a one-worker memory check before expensive production.
+A clean small-catalogue regression does not establish those convergence tests.
+
+Finite-population resampling of saved vectors is a statistical control, not
+new independent skies. A fixed-A direct sample-block replacement can be
+indefinite even when the original sample covariance is positive definite;
+compare the conditional-regression construction as well. Distinct-pair raw
+precision polynomials have the stated finite-target unbiasedness, but their
+nonlinear fixed-A reconstruction does not inherit it. Pair-order averaging
+can alter higher-order variance. Two successive precision corrections need
+matched observables, a positive first reference, a newly computed residual
+and attention to Rafael parents reused in generator calibration.

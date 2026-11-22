@@ -1,0 +1,183 @@
+22 November 2026: bounded saved-vector tests; no new skies or production TreeCorr.
+
+AUTO-ONLY FINITE-POPULATION CONTROL
+Block-product identity matches dense orders2/4/6.
+Known population dimension/count 356 1878 eigen range [0.48702632 1.51297368]
+D fractional error 0.1 residual spectral radius 0.5366633718623285
+deterministic 0.1 2 RMS 0.023290698220004253 worst 0.16064712716465163
+deterministic 0.1 4 RMS 0.005134925503285821 worst 0.04537252121681085
+deterministic 0.1 6 RMS 0.0012238900046130396 worst 0.012825326053864373
+finished 0.1 500 elapsed 1.675962375011295
+finished 0.1 1878 elapsed 7.110743124969304
+finished 0.1 4000 elapsed 18.771159167168662
+finished 0.1 10000 elapsed 49.29452662495896
+finished 0.1 40000 elapsed 163.7887708330527
+RESULT 0.1 500 0 valid 0.0 RMS median nan loss median nan
+RESULT 0.1 500 2 valid 4.0 RMS median 0.4247895563487588 loss median 0.05842546365975805
+RESULT 0.1 500 4 valid 4.0 RMS median 0.6798723773094397 loss median 0.10119344841711037
+RESULT 0.1 500 6 valid 1.0 RMS median 3.8697739046987816 loss median 0.402205204466764
+RESULT 0.1 1878 0 valid 4.0 RMS median 0.21417176294257995 loss median 0.015466409037207578
+RESULT 0.1 1878 2 valid 4.0 RMS median 0.17985850955002697 loss median 0.01456639548544104
+RESULT 0.1 1878 4 valid 4.0 RMS median 0.22098136480850827 loss median 0.01968218834574694
+RESULT 0.1 1878 6 valid 4.0 RMS median 0.23288119240745347 loss median 0.021124887208659394
+RESULT 0.1 4000 0 valid 4.0 RMS median 0.11739102516366831 loss median 0.005777213728729024
+RESULT 0.1 4000 2 valid 4.0 RMS median 0.11880319369464455 loss median 0.006908511719368125
+RESULT 0.1 4000 4 valid 4.0 RMS median 0.14099960739179485 loss median 0.009025122433540613
+RESULT 0.1 4000 6 valid 4.0 RMS median 0.14667876392724985 loss median 0.009585208192384984
+RESULT 0.1 10000 0 valid 4.0 RMS median 0.06563206620576198 loss median 0.0020169229983507068
+RESULT 0.1 10000 2 valid 4.0 RMS median 0.07545828187950854 loss median 0.002936155354869993
+RESULT 0.1 10000 4 valid 4.0 RMS median 0.08550176935622199 loss median 0.003566569233552844
+RESULT 0.1 10000 6 valid 4.0 RMS median 0.0882436981473319 loss median 0.0037504794024742143
+RESULT 0.1 40000 0 valid 4.0 RMS median 0.031231664482981855 loss median 0.0004797891120752113
+RESULT 0.1 40000 2 valid 4.0 RMS median 0.042475097747384304 loss median 0.0009513224184961074
+RESULT 0.1 40000 4 valid 4.0 RMS median 0.04259595458560539 loss median 0.0009116756610644476
+RESULT 0.1 40000 6 valid 4.0 RMS median 0.043740863735112614 loss median 0.0009503144345914837
+
+REGRESSION COMPARATOR
+Block-product identity matches dense orders2/4/6.
+Known population dimension/count 356 1878 eigen range [0.48702632 1.51297368]
+REGRESSION 500 PD 4 RMS median 5.800759149788391 loss median 0.9164484623030515 elapsed 0.0573334158398211
+REGRESSION 1878 PD 4 RMS median 0.20535725220577844 loss median 0.014980174924069292 elapsed 0.17012845794670284
+REGRESSION 4000 PD 4 RMS median 0.10962929948303904 loss median 0.00516472042481144 elapsed 0.3118841659743339
+REGRESSION 10000 PD 4 RMS median 0.060412378146967954 loss median 0.0017273227356955064 elapsed 0.5525326249189675
+REGRESSION 40000 PD 4 RMS median 0.02847055210173884 loss median 0.0003995729709221158 elapsed 1.2455052498262376
+PREVIOUS 500 0 PD 0.0 RMS median nan
+PREVIOUS 500 2 PD 4.0 RMS median 0.4247895563487588
+PREVIOUS 500 4 PD 4.0 RMS median 0.6798723773094397
+PREVIOUS 500 6 PD 1.0 RMS median 3.8697739046987816
+PREVIOUS 1878 0 PD 4.0 RMS median 0.21417176294257995
+PREVIOUS 1878 2 PD 4.0 RMS median 0.17985850955002697
+PREVIOUS 1878 4 PD 4.0 RMS median 0.22098136480850827
+PREVIOUS 1878 6 PD 4.0 RMS median 0.23288119240745347
+PREVIOUS 4000 0 PD 4.0 RMS median 0.11739102516366831
+PREVIOUS 4000 2 PD 4.0 RMS median 0.11880319369464455
+PREVIOUS 4000 4 PD 4.0 RMS median 0.14099960739179485
+PREVIOUS 4000 6 PD 4.0 RMS median 0.14667876392724985
+PREVIOUS 10000 0 PD 4.0 RMS median 0.06563206620576198
+PREVIOUS 10000 2 PD 4.0 RMS median 0.07545828187950854
+PREVIOUS 10000 4 PD 4.0 RMS median 0.08550176935622199
+PREVIOUS 10000 6 PD 4.0 RMS median 0.0882436981473319
+PREVIOUS 40000 0 PD 4.0 RMS median 0.031231664482981855
+PREVIOUS 40000 2 PD 4.0 RMS median 0.042475097747384304
+PREVIOUS 40000 4 PD 4.0 RMS median 0.04259595458560539
+PREVIOUS 40000 6 PD 4.0 RMS median 0.043740863735112614
+
+PAIR-ORDER CONTROL
+permutation 0 elapsed 2.0902347089722753
+permutation 1 elapsed 4.240246000001207
+permutation 2 elapsed 6.406064250040799
+permutation 3 elapsed 8.39708916703239
+permutation 4 elapsed 10.639446584042162
+permutation 5 elapsed 12.772852959111333
+permutation 6 elapsed 14.936065417015925
+permutation 7 elapsed 16.98272129194811
+permutation 8 elapsed 18.984578792005777
+permutation 9 elapsed 21.00139212491922
+permutation 10 elapsed 23.02075441693887
+permutation 11 elapsed 25.09320362494327
+permutation 12 elapsed 27.09626091714017
+permutation 13 elapsed 29.39493808406405
+permutation 14 elapsed 31.34276591707021
+permutation 15 elapsed 33.4177022499498
+Maximum raw matrix difference across permutations, orders2/4/6: [8.881784197001252e-16, 0.11712898523961113, 0.22253054272170636]
+Second order permutation invariance passed.
+PERMUTATION raw precision RMS, conditional minimum, valid, conditional RMS:
+[[ 0.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 0.          4.          0.51148523  0.51749848  1.          0.51297328]
+ [ 0.          6.          0.60363975  0.37927394  1.          0.61245576]
+ [ 1.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 1.          4.          0.51188957  0.48060082  1.          0.51221422]
+ [ 1.          6.          0.60917227  0.26686377  1.          0.62154351]
+ [ 2.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 2.          4.          0.51293693  0.50267917  1.          0.51329652]
+ [ 2.          6.          0.61206572  0.31973736  1.          0.62023561]
+ [ 3.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 3.          4.          0.51588902  0.53387006  1.          0.5180609 ]
+ [ 3.          6.          0.61518294  0.32237892  1.          0.62587061]
+ [ 4.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 4.          4.          0.51956213  0.46176849  1.          0.5214077 ]
+ [ 4.          6.          0.62706628  0.32221435  1.          0.64741515]
+ [ 5.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 5.          4.          0.51480248  0.50820246  1.          0.51418875]
+ [ 5.          6.          0.61356893  0.36579838  1.          0.61645963]
+ [ 6.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 6.          4.          0.51362943  0.50752802  1.          0.51381276]
+ [ 6.          6.          0.61150194  0.34820144  1.          0.61889969]
+ [ 7.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 7.          4.          0.51319183  0.45183881  1.          0.51395057]
+ [ 7.          6.          0.60888737  0.30241476  1.          0.61388096]
+ [ 8.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 8.          4.          0.51026584  0.52529703  1.          0.51027332]
+ [ 8.          6.          0.60175351  0.37061518  1.          0.60660336]
+ [ 9.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 9.          4.          0.51540588  0.50454229  1.          0.51542559]
+ [ 9.          6.          0.61458623  0.27461594  1.          0.62754557]
+ [10.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [10.          4.          0.51642418  0.49706165  1.          0.516294  ]
+ [10.          6.          0.61834337  0.30223124  1.          0.63123427]
+ [11.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [11.          4.          0.51632765  0.50928108  1.          0.5161821 ]
+ [11.          6.          0.62187241  0.30771286  1.          0.63189873]
+ [12.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [12.          4.          0.51410089  0.50747922  1.          0.51407438]
+ [12.          6.          0.61579702  0.28707477  1.          0.62760514]
+ [13.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [13.          4.          0.51451126  0.4818272   1.          0.51400759]
+ [13.          6.          0.61732733  0.31680275  1.          0.62422508]
+ [14.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [14.          4.          0.51489296  0.50281239  1.          0.51661934]
+ [14.          6.          0.61577276  0.34390472  1.          0.62210917]
+ [15.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [15.          4.          0.51641704  0.50528246  1.          0.51506544]
+ [15.          6.          0.62421042  0.33223095  1.          0.63217241]]
+AVERAGES nperm order rawRMS Kmin valid conditionalRMS:
+[[ 1.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 1.          4.          0.51148523  0.51749848  1.          0.51297328]
+ [ 1.          6.          0.60363975  0.37927394  1.          0.61245576]
+ [ 2.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 2.          4.          0.49460607  0.55477648  1.          0.49771016]
+ [ 2.          6.          0.55801933  0.42769078  1.          0.5622655 ]
+ [ 4.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 4.          4.          0.48694575  0.57145916  1.          0.49166192]
+ [ 4.          6.          0.53514705  0.53199399  1.          0.54126887]
+ [ 8.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [ 8.          4.          0.48307492  0.58031053  1.          0.48831773]
+ [ 8.          6.          0.52237499  0.55785724  1.          0.52983005]
+ [16.          2.          0.39511543  0.61084015  1.          0.39011257]
+ [16.          4.          0.48089882  0.57979211  1.          0.48621   ]
+ [16.          6.          0.51599049  0.57619031  1.          0.52378153]]
+Direct fixedA RMS: 0.6117582449470519
+elapsed seconds 33.75156374997459
+
+REVIEW AND REGRESSION RECORD
+Implementation: e28476a, shared-pixel-auto-polarization-v1.
+Original review isolated mixed-catalogue coincident-pixel products.
+Follow-up review found smoke/full checkpoint mixing; metadata checks fixed it.
+Post-fix review A: clean for the unchanged NSIDE512 ensemble; MPI exceptions
+reach the existing Abort path; input maps must remain immutable.
+Additional implementation review B: clean; installed TreeCorr 5.1.2 sources
+match the pinned checkout; normalization, signs and cache lifetimes checked.
+Additional review C: corrected two notebook matrix row separators and moved
+MKL/Accelerate thread limits before the first NumPy import.
+Post-documentation-fix review: clean; cell syntax, paths and thread setup checked.
+Additional science review: clean; numerical claims matched trial tables and
+Gaussian residual independently reproduced at -14.919752.
+Additional root review: formulas, checkpoint failure paths, PDF pages 28--36,
+new figure and notebook HTML/schema checked. No further important defect found.
+
+Final bounded tests, one native thread and BLAS=1:
+- Dispatcher: revision and smoke refusal before metadata replacement/merge,
+  whole-map ownership, delayed arrivals, partial resume, preservation and completion PASS.
+- Direct-SAS all twenty triples: dyadic relative norm 9.739361512353113e-16;
+  ordinary floating-point inputs 5.99116799086486e-8 (tolerance 3e-7).
+- Finite-multipole cubic reconstruction: 2.0151080905021436e-15 and
+  1.1213457730430381e-14. This is an algebra check, not Fourier convergence.
+- Shuffled tasks, partial-resume subsets, and cleared cache on doubled shears PASS.
+- Dense versus block-product polynomial at degrees 2/4/6: relative differences
+  2.11e-14, 2.51e-14, 2.76e-14 on the saved full-dimensional vectors.
+
+No real-map TreeCorr, map generation, deletion, remote/HPC execution or full
+Fisher notebook run occurred in these review checks. Existing maps remain.
+Remaining production requirements: actual angular Fourier/bin convergence,
+matched estimator/reference, and separately validated new-resolution input
+physics, geometry, noise normalization, transform precision and memory.

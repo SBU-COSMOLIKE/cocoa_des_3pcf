@@ -499,7 +499,7 @@ separate shared Python `cosmolike_3pcf` package. The optional component
 notebook calls `TransformPlan.aperture_components` and plots its signed
 operator/placement contributions and closure.
 
-### Fixed analytical two-point block in the map experiment
+### Fixed analytical two-point block in the map experiment <a name="fixed-analytical-two-point-block-in-the-map-experiment"></a>
 
 Section 13 of the [covariance teaching note](notes/covariance_from_simulations/covariance_from_simulations.pdf)
 derives the fixed-block correction step by step. The checkpoint layout has
@@ -1274,6 +1274,32 @@ can be run separately:
 python scripts/verify_ensemble.py chains/gptg_ensemble_15000
 ```
 
+**Measurement review (22 November 2026).** Keep production measurements
+paused while the revised estimator and replacement resolution are validated.
+The old mixed-catalogue multipole calls retained coincident-pixel products.
+The repaired runner recovers mixed source moments from auto correlations of
+field sums and differences. It assumes the same positions, mask and weights
+in all source bins, and equal aperture radii. Small direct-triangle tests
+validate the algebra; production angular-cutoff convergence remains open.
+
+The runner records `shared-pixel-auto-polarization-v1` in metadata and vector
+headers. It refuses legacy results and smoke/full mismatches before resuming
+or merging; use a fresh measurement directory for the repaired definition.
+Keep old maps and checkpoints for the documented comparisons. Map IDs must
+refer to unchanged input maps; a replacement ensemble also needs a fresh
+measurement directory. Changing rank counts or the requested ID range does
+not change the observable. The runner still uses NSIDE512 geometry; do not
+feed it new-resolution maps until that geometry support has been updated.
+
+The [map note and companion notebook](notes/gptg_simulations/) explain the
+repair, the covariance controls and the proposed resolution tests. The
+356-entry auto-only resampling control uses a known finite population;
+its larger resampled counts are not new physical skies or a precision
+forecast for the future ensemble. Both direct fixed-block constructions
+and orders two, four and six are compared. Two-stage correction with
+Rafael's maps remains a proposal requiring matched observables and an
+independent first-stage reference.
+
 The declared side cut keeps lower edges at least 8 arcmin from the original
 20-bin 0.5–80 arcmin bank (first retained edge 8.151471). It uses multipoles
 through 100, 63 SAS angle bins with edges 0.016–3.126 radians, and zero
@@ -1291,7 +1317,8 @@ nonlinear and must be assessed by independent validation.
 Results go under `chains/gptg_ensemble_15000/full_joint_480/` and
 `full_joint_comparison/`. Missing entries in partial text vectors are NaNs;
 only complete vectors enter the covariance. No extra map copies or large
-triangle grids are saved. At this revision, full-map results are pending.
+triangle grids are saved. Downloaded legacy results are analyzed in the
+companion notebook, with the measurement qualification above.
 
 The reproducible algebra checks are:
 

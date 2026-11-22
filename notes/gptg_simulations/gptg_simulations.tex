@@ -1042,6 +1042,11 @@ are algebra demonstrations, not answers for the full measurement.
 
 \section{Investigation of the downloaded joint measurements}
 \label{sec:joint-audit}
+\paragraph{Qualification added after the measurement review.}
+The figures in this section use the legacy mixed-source measurement.
+Section~\ref{sec:review-repair} identifies its self-product error and
+explains the repair. These results diagnose the saved vectors; they are
+not a validated covariance comparison for the intended observable.
 \paragraph{The target of this experiment.}
 Our immediate question is whether a precision expansion estimates the
 covariance of the Kunhao-generated ensemble better than a direct sample
@@ -1322,6 +1327,353 @@ reused calibration information explicitly. Noise rotations and separate
 footprints of the same parent are not new independent parents. This is
 separate from the immediate conditional Kunhao-ensemble experiment, for
 which the new maps are independent draws from the fitted model.
+
+\section{Two further reviews: what the old measurements can establish}
+\label{sec:review-repair}
+\paragraph{Read this qualification before using the preceding comparison.}
+The preceding audit correctly identifies empty angular bins and a failed
+precision expansion for its supplied reference. A further review found
+an independent error in the mixed-source three-point measurement. Those
+legacy vectors therefore cannot establish the performance of covariance
+estimation for the intended observable. Keep the original maps: the error
+is in measuring them, not evidence of an error in generating them. Existing
+two-point results remain available for analysis. New mixed-source results
+must use a new measurement directory and definition.
+
+\paragraph{Different source bins can occupy the same pixel.}
+Our four source fields share one list of sky positions. The shear in source
+bin $a$ and the shear in source bin $b$ can differ at a given position,
+but the position itself is identical. In the old three-catalogue multipole
+call, products involving this same neighbour were retained. An auto
+correlation removes these self products. Merely dropping the zero opening
+angle after a truncated Fourier reconstruction is insufficient: a finite
+Fourier series spreads a contribution at zero angle into neighbouring
+angle bins. Thus a nonzero lower angle cut does not repair this mistake.
+
+\paragraph{Which old entries need reconsideration?}
+There are twenty unordered source triples and four aperture radii per
+triple. Four triples use a single source bin three times. Their sixteen
+entries already used the auto route. The other sixty-four entries used
+mixed catalogues with common pixel positions. Tiny spherical tests isolate
+the problem for repeated-source triples; the distinct-source triples also
+share coincident positions and are included in the repaired definition.
+The remaining auto entries still require angular-truncation convergence;
+being unaffected by this particular error is not a complete validation.
+
+\paragraph{Recover mixed moments from ordinary auto measurements.}
+Let $a$ and $b$ denote complete shear fields, not individual numbers. Write
+$P(a)$ for the auto third aperture moment of field $a$. With common
+positions and weights, the same triangle counts normalize every combined
+field. Equal aperture radii make the associated trilinear operation $T$
+symmetric. Expanding the product gives
+\begin{equation}
+ P(a+b)=P(a)+3T(a,a,b)+3T(a,b,b)+P(b).
+\end{equation}
+The coefficient three counts the choices of which of the three factors
+supplies the different field. Changing $b$ to $-b$ changes terms with an
+odd number of $b$ factors:
+\begin{equation}
+ P(a-b)=P(a)-3T(a,a,b)+3T(a,b,b)-P(b).
+\end{equation}
+Now subtract the second equation from the first. The pure $a$ terms cancel;
+the terms with two $b$ factors cancel as well. The remaining terms are
+\begin{equation}
+ P(a+b)-P(a-b)=6T(a,a,b)+2P(b).
+\end{equation}
+Move the last term to the left and divide by six:
+\begin{equation}
+ T(a,a,b)=\frac{P(a+b)-P(a-b)-2P(b)}{6}.
+\end{equation}
+For the other repeated-source moment, add the first two equations instead.
+This cancels terms with an odd number of $b$ factors:
+\begin{equation}
+ P(a+b)+P(a-b)=2P(a)+6T(a,b,b).
+\end{equation}
+Solving for the unknown mixed moment yields
+\begin{equation}
+ T(a,b,b)=\frac{P(a+b)+P(a-b)-2P(a)}{6}.
+\end{equation}
+These identities use only auto measurements, so their triangle exclusion
+is consistent. They apply to this common-mask, common-weight, equal-radius
+runner; they are not a replacement formula for arbitrary galaxy catalogues.
+
+\paragraph{Three different source fields.}
+Expand $P(a+b+c)$. It contains three pure cubes, six types of terms with
+two source labels, and six permutations with three different labels.
+Subtracting $P(a+b)$, $P(a+c)$ and $P(b+c)$ removes all two-label terms.
+Each pure cube occurs in two of these subtractions, so its net coefficient
+is $1-2=-1$. Adding the three pure cubes back leaves just
+\begin{equation}
+\begin{split}
+ 6T(a,b,c)={}&P(a+b+c)-P(a+b)-P(a+c)-P(b+c)\\
+            &+P(a)+P(b)+P(c).
+\end{split}
+\end{equation}
+For four source bins we need four single-field autos, six pair sums,
+six pair differences and four triple sums: twenty auto calculations in
+all. Only their four aperture values are cached for a map. The cache is
+cleared when the worker receives another map. The original input shear
+sign convention is applied once, before fields are combined.
+
+\paragraph{What the repair tests actually show.}
+A small spherical catalogue permits direct triangle enumeration. For
+exactly representable test shears, all twenty recovered triples agree
+with this independent calculation to a relative norm of
+$9.74\times10^{-16}$. Two fresh linear combinations checked against the
+actual multipole auto route give relative differences of
+$2.02\times10^{-15}$ and $1.12\times10^{-14}$.
+These tests check algebra, normalization and signs. They do not establish
+that the production angular Fourier cutoff is adequate. TreeCorr also
+stores weighted shear internally at single precision; arbitrary floating
+inputs need a rounding allowance when comparing a sum of catalogues with
+a catalogue of summed shears. An ordinary floating-point fixture gives
+$5.99\times10^{-8}$, while shuffled tasks, partial-resume subsets and
+cache clearing for a new doubled-shear field pass their exact checks.
+
+\paragraph{Why resuming old mixed results is forbidden.}
+A checkpoint contains final aperture values, not all intermediate
+correlations. We cannot subtract the unwanted terms retrospectively from
+those four values. The repaired runner writes a measurement revision in
+both metadata and vector headers. It refuses legacy vectors before writing
+new metadata or merging shards. The smoke-pixel setting must also match.
+Changing the MPI allocation or requested map count is allowed; changing
+the observable while retaining completed entries is not. The old files
+remain evidence and are not silently migrated. Map IDs must continue to
+refer to immutable input files. Replacing the ensemble requires a fresh
+measurement directory even if the estimator revision is unchanged.
+
+\paragraph{An analytical Gaussian three-point reference was also tested.}
+The first audit's three-point reference came from a released simulation
+covariance. We separately formed a Gaussian full-aperture approximation
+from the frozen generator spectra, its pixel-noise level and the measured
+footprint area. Gaussian six-point moments contain fifteen pairings:
+six pairings link all three fields between aperture centres; nine have
+one link and an internal pair at each centre. A circular window of equal
+area approximates the footprint. Doubling the integration sampling changes
+the covariance by $1.79\times10^{-5}$ in the largest entry normalized by
+the corresponding diagonal standard deviations.
+
+\paragraph{Integration accuracy is not estimator agreement.}
+This calculation integrates full aperture filters, whereas TreeCorr uses
+finite triangle cuts. It lacks the generator's connected higher moments
+and does not reproduce the actual irregular window. Its whitened residual
+still has an eigenvalue near $-14.92$, outside the convergence interval.
+Second-, fourth- and sixth-order corrections to the legacy measurements
+remain invalid. The result rules out this particular approximate reference
+for these vectors; it does not isolate missing connected covariance as
+the cause. The measurement error and the filter difference must be resolved
+before making that physical attribution.
+
+\paragraph{A control with a covariance that really is known.}
+To separate numerical algebra from uncertain physical truth, consider the
+finite population consisting of the saved complete vectors. Define its
+mean and covariance using every population member, with denominator $N$.
+We then draw from this fixed discrete distribution with replacement.
+Conditional on that population, its covariance is known exactly and new
+indices are independent draws. Repeatedly selecting an existing vector
+creates a new statistical draw from this discrete model; it does not
+create a new independent cosmological sky.
+
+\paragraph{Remove the affected mixed-source entries in this control.}
+One version retains the 340 supported two-point entries and the sixteen
+auto three-point entries, giving 356 dimensions. We change units separately
+within each block so their population covariances become identities. This
+is a constructed control with an exact two-point block. It neither fits
+nor replaces the stipulated production analytical block. A model with a
+zero cross block and a three-point block $1.1$ times its exact value has
+residual spectral radius $0.537$, so the noiseless series converges.
+
+\paragraph{Separate truncation from sampling.}
+For this control the noiseless second-, fourth- and sixth-order polynomials
+have root-mean-square relative precision errors of $0.02329$, $0.005135$
+and $0.001224$. Higher order therefore removes truncation error as expected.
+When the powers are estimated from noisy draws, their variance also enters.
+The error we report is
+\begin{equation}
+ e_{\rm RMS}=\frac{\|L_*^T\widehat\Psi L_*-I\|_F}{\sqrt d},
+ \qquad C_*=L_*L_*^T.
+\end{equation}
+Here $C_*$ is the exact covariance of the chosen discrete population.
+The Frobenius norm squares every matrix entry, adds them, and takes a
+square root. A correct precision makes the matrix inside the norm zero.
+This average error is not a bound on every parameter error or eigenmode.
+
+\paragraph{The direct comparator needs care when $A$ is fixed.}
+Replacing the upper-left block of a sample covariance by $A$ gives one
+simple hybrid. Even if the original sample covariance is positive definite,
+the replacement can violate the Schur condition
+\begin{equation}
+ S_{yy}-S_{yx}A^{-1}S_{xy}>0.
+\end{equation}
+Thus a failed hybrid must not be described as a failed ordinary sample
+covariance. Another direct estimator uses the sample regression and its
+residual covariance:
+\begin{equation}
+ H=S_{yx}S_{xx}^{-1}.
+\end{equation}
+This matrix predicts the three-point vector from the two-point vector.
+Subtract the covariance explained by that prediction:
+\begin{equation}
+ V=S_{yy}-S_{yx}S_{xx}^{-1}S_{xy}.
+\end{equation}
+Rebuild a joint model using the stipulated $A$ for the predictor:
+\begin{equation}
+ C_{\rm reg}=\begin{pmatrix} A&A H^T\\H A&V+H A H^T\end{pmatrix}.
+\end{equation}
+Its conditional covariance is $V$. It is positive definite when $A$ and
+$V$ are positive definite. It also has sampling bias and variance; positivity
+alone does not make it the best estimator. The notebook compares both direct
+constructions rather than treating the simple block replacement as the
+only possible simulation-based method.
+
+\paragraph{Higher order is not a promise of lower total error.}
+In four repetitions of the 356-dimensional control at 4,000 draws, median
+RMS errors are $0.1174$ for direct block replacement and $0.1188$, $0.1410$,
+$0.1467$ for orders two, four and six. At 40,000 resampled draws they are
+$0.03123$, $0.04248$, $0.04260$, $0.04374$. The regression construction
+reduces the direct-method errors to $0.10963$ and $0.02847$ at these two
+counts, on exactly the same random draws. At 1,878 draws second order
+has error $0.17986$, compared with $0.20536$ for regression; the ranking
+changes with sample count. These are conditional tests of
+one population, reference and estimator implementation. They neither
+predict the error from 40,000 new skies nor establish one-percent accuracy.
+A quadratic-error ranking can differ from a likelihood-loss ranking.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{plots/full_joint_audit/empirical_controls.png}
+\caption{Known finite-population control restricted to auto-source Map3
+entries. Every method uses the same draws. Four-trial medians describe
+this experiment, not an accuracy forecast for new skies. Left: average
+precision error. Right: a Gaussian loss sensitive to a different combination
+of eigenvalue errors. Neither is a bound on the worst mode.}
+\end{figure}
+\FloatBarrier
+
+\paragraph{Pair ordering adds another variance contribution.}
+The distinct-pair recurrence multiplies factors in their input order and
+then symmetrizes by transpose. From third degree onward this is not the
+average over every possible multiplication order. Independent factors
+still give an unbiased finite polynomial, but permutations can change its
+variance. In a separate 420-dimensional discrete-population control,
+averaging sixteen raw estimates from the same pairs in different orders
+reduced fourth-order RMS error from a typical $0.514$ to $0.486$ and
+sixth-order error from $0.623$ to $0.524$. These are not sixteen independent
+experiments. The second-order result is invariant. The nonlinear operation
+that restores fixed $A$ has no general unbiasedness guarantee, with or
+without this averaging.
+
+\section{Resolution and two successive precision corrections}
+\paragraph{Pixel count and physical resolution are different.}
+NSIDE2048 is a candidate for the replacement maps. It has a characteristic
+pixel scale of $1.72$ arcmin, compared with $6.87$ arcmin at NSIDE512.
+More pixels remove the empty-bin problem but cannot invent high-multipole
+power. The current fitted spectrum ends at $\ell=1024$ and its distribution
+was fitted to a ten-arcminute-smoothed proxy. Merely interpolating that fit
+onto more pixels does not calibrate small-scale non-Gaussian structure.
+
+\paragraph{Why the harmonic cutoff matters for the smallest xi-minus bin.}
+In the flat-sky expression the relevant oscillatory kernel is
+\begin{equation}
+ \xi_-(\theta)=\int_0^\infty\frac{\ell\,d\ell}{2\pi}
+ C_\ell J_4(\ell\theta).
+\end{equation}
+The first maximum of $J_4(x)$ is near $x=5.318$. At $2.5$ arcmin this
+corresponds to $\ell\simeq7312$. This locates an important kernel scale;
+it is not a universal accuracy cutoff, since the spectrum and bin averaging
+also matter. NSIDE2048 with harmonic cutoff 4096 needs comparison with a
+higher cutoff, such as 6143, and with stricter science cuts. Neither setting
+is already certified for the uncut smallest-angle vector.
+
+\paragraph{A small aperture-filter example.}
+The Gaussian compensated aperture filter is
+\begin{equation}
+ U(x)=\frac{x^2}{2}e^{-x^2/2},\qquad x=\ell R.
+\end{equation}
+For a white power spectrum the fraction of its second-moment integral
+above $X=\ell_{\max}R$ is
+\begin{equation}
+ f_{\rm tail}=e^{-X^2}\left(1+X^2+\frac{X^4}{2}\right).
+\end{equation}
+At seven arcminutes it is about $0.191$ for cutoff 1024 and
+$4.75\times10^{-6}$ for cutoff 2048. This worked example demonstrates
+sensitivity to the harmonic range. It is not a missing-fraction estimate
+for the finite-triangle third-moment covariance.
+
+\paragraph{Keep angular noise power fixed when pixels shrink.}
+For independent pixel noise the angular white-noise level is
+\begin{equation}
+ N_\ell=\sigma_{\rm pix}^2\Omega_{\rm pix}.
+\end{equation}
+Increasing NSIDE by four divides the pixel area by sixteen. To preserve
+$N_\ell$, the variance per pixel must increase by sixteen, and its standard
+deviation by four. Keeping the old pixel standard deviation would instead
+reduce the angular noise power by sixteen. This scaling must be chosen
+explicitly alongside the source-density and weight model.
+
+\paragraph{Storage and working memory are separate constraints.}
+Refining each retained pixel to its sixteen children gives 5,907,040
+positions at NSIDE2048. Four bins, two shear components and four bytes
+per saved value require about 189 MB per map. A 3,000-map batch needs
+about 567 GB before other files. The currently retained low-resolution
+maps must not be removed until their diagnostics are recorded and the
+replacement pilot is ready. Free space must be checked again before
+starting each batch, with a reserve for the operating system and transfers.
+
+\paragraph{The current GPU reduction cannot simply be enlarged.}
+Its intermediate array stores partial sums for batches of latitude rings.
+At NSIDE2048 and cutoff 4096 this array alone occupies about 17.2 GB;
+at cutoff 6143 it occupies about 38.7 GB. Persistent arrays and concurrent
+CPU work add to those figures. The latter cannot fit a 32 GB machine in
+its present form. A CPU transform or a bounded-memory GPU reduction must
+be tested before production. Reducing the number of maps in a batch does
+not reduce the memory needed for one transform.
+
+\paragraph{A replacement pilot has several independent questions.}
+First specify the high-multipole input model and what its calibration
+means. Then check transform accuracy, saved float32 accuracy, pixel noise,
+mask geometry and the actual peak memory for a single worker. Finally test
+the repaired measurement against angular-bin and Fourier-cutoff refinements.
+The measurement runner still declares NSIDE512; it must read and check the
+new geometry before any NSIDE2048 files are sent to it. The published
+science cuts also need to be distinguished from our uncut demonstration.
+Only after these checks can a large replacement ensemble serve the
+small-scale test that motivated it.
+
+\paragraph{Can Eifler be applied twice?}
+Yes, provided each reference is a valid positive covariance for the same
+observable. Suppose the first stage yields $M_K$ from Kunhao maps. Freeze
+this matrix and factor it:
+\begin{equation}
+ M_K=L_K L_K^T.
+\end{equation}
+The Rafael target is $C_R$. In the new units the residual is
+\begin{equation}
+ E_R=I-L_K^{-1}C_R L_K^{-T}.
+\end{equation}
+The second stage estimates powers of this residual from independent
+Rafael realizations. Its finite precision approximation is
+\begin{equation}
+ \widehat\Psi_R=L_K^{-T}
+ \left(\sum_{j=0}^q\widehat{E_R^j}\right)L_K^{-1}.
+\end{equation}
+This corrects the discrepancy remaining after the first stage. Adding the
+old correction again would count it twice. The residual eigenvalues must
+permit useful truncation, and the resulting conditional precision must
+remain positive. A large direct Kunhao sample covariance is also a possible
+first reference and should be compared rather than ruled out in advance.
+
+\paragraph{Independence must be checked by parent simulation.}
+The first-stage model was calibrated using some of Rafael's parent skies.
+Independent synthetic seeds do not erase dependence on those parents.
+The clean independent-reference argument for the second stage uses Rafael
+parents absent from that calibration; alternatives require an explicit
+dependence treatment. Conditional on a frozen independent first-stage
+reference, the polynomial argument still holds. Uncertainty in that
+reference and finite-order truncation remain when interpreting the final
+result. Footprints or noise realizations sharing a parent cannot simply
+be counted as independent skies. This proposal is scientifically meaningful,
+but the present legacy measurements and failed reference do not yet test it.
 
 \section{From harmonic coefficients to pixels, and back again}
 \label{sec:sht-teaching}
