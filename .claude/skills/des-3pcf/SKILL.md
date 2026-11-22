@@ -480,3 +480,9 @@ limits in explanatory comments. Keep those values in the executable options
 or Slurm directives; describe the coordinator, remaining workers, requested
 map count and configured time limit in words. Scientific constants and exact
 file names may still need explicit documentation.
+
+README instructions follow the same rule: refer to configured map counts,
+worker allocations and time limits rather than repeating their current values
+in prose. Use documented environment variables for HPC login and storage
+paths, never a developer's personal directory. Keep exact scientific
+definitions, measured evidence and immutable resume-ID mappings where needed.

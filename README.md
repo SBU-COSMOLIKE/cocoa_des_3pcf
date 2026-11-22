@@ -342,8 +342,8 @@ DES covariance model. A conditional resampling experiment tests second-,
 fourth- and sixth-order precision estimates without claiming new physical skies.
 Scripts and compact records are committed; generated maps remain in `chains/`.
 New maps use float32 storage after a measured rounding check; computations
-remain float64. A separate run is generating 10,000 comparison and 5,000
-independent validation maps. Its fixed validation score does not assume the
+remain float64. The ensemble generator produces separate comparison and
+independent validation groups. Its fixed validation score does not assume the
 direct-sample inverse is true; results are pending completion.
 
 ### Generate and analyze the fitted maps
@@ -368,7 +368,7 @@ This writes `calibration.yaml` and `calibration.npz` under
 python scripts/generate_maps.py generate --count 64 --workers 4
 ```
 
-Generate the full 10,000 comparison plus 5,000 validation ensemble:
+Generate an ensemble using the generator's default group counts:
 
 ```bash
 mpirun -n 1 python scripts/generate_ensemble_mpi.py --threads 4
@@ -386,7 +386,8 @@ The ensemble copies and freezes the calibration on its first launch. Repeating
 this command resumes from its saved-map journal. Use `--limit 1000` for a
 bounded first run, then omit that option to continue. Do not launch two
 writers to the same ensemble directory. BLAS stays at one worker.
-The 15,000 float32 maps need about 177 GB, plus a 50 GB free-space reserve.
+Budget storage from the requested count and saved map size, plus the
+generator's configured free-space reserve.
 Their shape is `(4 source bins, 2 shear components, 369190 footprint pixels)`;
 `indices_512.npy` identifies the RING pixels. Computation remains float64.
 Maps, measured aperture moments and progress records stay in the ignored
@@ -525,8 +526,8 @@ python projects/des_y3/covariance/compute_covariance.py projects/des_y3/EXAMPLE_
 
 Submit the full measurement using the single Slurm file below. After the
 saved vectors are complete, use `analyze_full_joint()` in the companion
-notebook. Its default 1,000-map calculation is explicitly labeled; measuring
-40,000 maps does not silently change the chosen analysis ensemble. The
+notebook. Its analysis selection is explicitly labeled; measuring more maps does
+not silently change the chosen analysis ensemble. The
 notebook separates measurement, estimation and independent validation.
 
 ### MPI generation and TreeCorr measurements on HPC
@@ -578,26 +579,31 @@ bitwise with the serial generator in both saved pixels and aperture moments.
 The laptop uses three generation workers with four transform threads each;
 the Linux HPC launcher additionally binds ranks to their allocated cores.
 
-Measure the complete 40,000-map ensemble with the single submission file
+Measure the requested ensemble with the single submission file
 below. It contains both the Slurm allocation and the MPI command, following
 the LSST Y1 examples; there is no separate shell launcher. Workers read saved
 maps, and only the coordinator writes the small 480-entry vectors. No
 per-rank map copies or large triangle outputs are saved. The existing
-analysis driver still selects its early 1,000+500 experiment; measuring all
+analysis driver still selects its explicitly labeled pilot experiment; measuring all
 maps does not silently change that statistical selection.
 
-### UofA Slurm: ten nodes with 96 cores each
+### UofA Slurm submission
 
-[EXAMPLE_GPTG_TREECORR_UOFA.sbatch](scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch) requests **10 nodes,
-960 MPI ranks, and one CPU per rank**. One rank coordinates; 959 measure
-whole maps, each with its unfinished TreeCorr tasks. OpenMP and BLAS stay at one. It uses your UofA partition
-`high_priority`, QoS `user_qos_timeifler`, account `timeifler`, and a 24-hour
-wall-time limit. These account and queue settings come from your supplied
-script; acceptance depends on the site's allocation limits. No socket count
-is assumed.
+[EXAMPLE_GPTG_TREECORR_UOFA.sbatch](scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch)
+contains the allocation and requested measurement count. Adjust its Slurm
+node, task, account, queue and time directives for your allocation before
+submission. One MPI rank coordinates; the remaining ranks measure whole
+maps. Each worker uses one CPU, with OpenMP and BLAS set to one. Acceptance
+depends on the site's allocation limits; no socket count is assumed.
 
-Copy the completed ensemble to the HPC project's
-`chains/gptg_ensemble_15000/`, retaining `comparison/`, `validation/`,
+Set `GPTG_MAP_DIR` to the ensemble's absolute parent path on the HPC:
+
+```bash
+export GPTG_MAP_DIR="/absolute/path/to/gptg"
+```
+
+Replace this example path with your shared storage directory or a project
+`chains/gptg/` symlink. Retain `comparison/`, `validation/`,
 `indices_512.npy`, calibration files and journals. The project also needs its
 bundled `data/upstream_y3/` inputs. These paths must be visible at the same
 location on every node. Build/install Cocoa, TreeCorr and mpi4py for the
@@ -631,9 +637,9 @@ directory. Inspect your jobs with:
 squeue -u "$USER"
 ```
 
-#### Resuming after the 24-hour limit
+#### Resuming after the wall-time limit
 
-The Slurm script requests 24 hours per allocation. If that limit is reached,
+If the configured Slurm wall-time limit is reached,
 Slurm stops the job; the script does **not** automatically requeue itself.
 Keep the existing output folder and its partial vectors. From the same
 activated HPC Cocoa checkout, first check that the old job has ended:
@@ -643,7 +649,7 @@ squeue -u "$USER"
 ```
 
 Wait until the old job has left the queue, including its `COMPLETING` state.
-Then submit the same script again for the next 24-hour allocation:
+Then submit the same script again for another allocation:
 
 ```bash
 sbatch projects/des_3pcf/scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch
@@ -673,16 +679,15 @@ each other's partial vectors. Resubmit only after the previous job has
 ended. A separate Slurm log filename does not create a separate measurement
 output folder.
 
-Measurements live under `chains/gptg_ensemble_15000/full_joint_480/`.
-Successful completion writes `COMPLETE.txt`; its contents must report **40000
-full joint vectors**, since an older smaller run may have its own completion
-marker. Generation journals and float32 maps are not modified by measurement.
+Measurements live under `$GPTG_MAP_DIR/full_joint_480/`.
+Successful completion writes `COMPLETE.txt`; its vector count must match the
+requested `--count` in the submission script, since an older smaller run
+may have its own completion marker. Generation journals and float32 maps are not modified by measurement.
 
-At the recorded laptop-equivalent per-core speed, 959 measurement workers
-imply about **13.5 days ideal**, or **16–19.2 days at 70–85% parallel efficiency** for 40,000 maps.
-Thus plan for roughly 16–20 daily allocations, revising this from the first
-HPC job's actual timings and peak memory. Running 96 workers per node requires
-enough RAM for 96 TreeCorr tasks; that peak has not yet been established.
+Estimate wall time as the remaining map count times the measured time per
+map, divided by the number of measurement workers and parallel efficiency.
+Use timings from your first HPC allocation: laptop timings do not establish
+cluster throughput. Check peak memory before filling every core on a node.
 The script launches measurements only; it does not generate maps or run the
 covariance analysis automatically.
 
@@ -693,13 +698,13 @@ compatible with the MPI library used to build mpi4py. These are Open MPI
 launchers; a site requiring `srun` must use its supported PMI/PMIx settings.
 Actual multi-node execution still requires testing on that cluster.
 
-### Extended generation target: 40,000 maps
+### Extending the ensemble
 
-The current target is **30,000 comparison maps plus 10,000 independent
-validation maps**. The existing `chains/gptg_ensemble_15000/` directory keeps
-its historical name; it is not duplicated or renamed. All original 15,000
-maps retain their IDs and seeds. Comparison seeds start at 341104759 and
-validation seeds at 441104759, so the enlarged ranges remain disjoint.
+Set comparison and validation counts in the generation command below.
+The existing `chains/gptg_ensemble_15000/` directory keeps its historical
+name; extending an ensemble does not require duplicating or renaming it.
+Existing maps retain their IDs and seeds. Keep the recorded seed ranges
+disjoint when extending either group.
 
 From the project directory, with the tested MLX and map dependencies available:
 
@@ -709,11 +714,14 @@ OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREAD
 
 Repeat this exact command to resume the extended target. The final audit
 reads group counts from `ensemble.yaml`; old completion markers are archived
-with `.before_40000` when extension starts. The retained float32 ensemble
-requires about 473 GB total, with a separate 50 GB free-space reserve.
+with `.before_40000` when extension starts. Estimate storage from the
+requested map count times the saved map size,
+and retain the generator's configured free-space reserve.
 
-The HPC measurement job now targets all 40,000 maps. It preserves the
-original output IDs so existing partial and complete measurements remain
+Set the measurement script's `--count` to the intended supported target.
+Its current ID mapping below is an implementation constraint, not a suggested
+ensemble size. Extending beyond this mapping requires updating the reader
+while preserving existing IDs so partial and complete measurements remain
 valid. Measurement IDs are not a contiguous comparison/validation split:
 
 | Measurement ID | Input group | Local map ID |
@@ -724,7 +732,7 @@ valid. Measurement IDs are not a contiguous comparison/validation split:
 | 35000–39999 | validation | 5000–9999 |
 
 Use this mapping when selecting groups for later analysis. The earlier
-1,000+500 analysis is unchanged; it does not automatically analyze the larger
+pilot analysis is unchanged; it does not automatically analyze the larger
 ensemble. Measurement resumption retains finite entries under the original
 IDs; old smaller-target completion markers are archived when tasks remain.
 
@@ -761,7 +769,7 @@ The reader tolerates a missing group folder in waiting mode, so a missing
 Creating both folders in advance is the transfer setup convention, not an
 extra startup check in the Python program. Empty folders are allowed; if
 neither group has ready maps, workers wait and still consume allocated wall
-time. The full 40,000-map job cannot finish until both groups are supplied.
+time. The job cannot finish until all requested maps are supplied.
 
 **Also required in the project checkout:** the installed TreeCorr, mpi4py,
 NumPy, Astropy and astropy-healpix dependencies, plus these two bundled FITS
@@ -802,9 +810,10 @@ tomographic tasks. There are no fixed strides or predetermined map ranges
 per rank. The worker retains that map's catalogs and sends each task result
 to the coordinator for an immediate checkpoint; it receives another map only
 after finishing the current one. Saved tasks are skipped on resume.
-Unavailable maps are skipped until they arrive. With 2,000 ready maps there
-is enough initial work for all 959 measurement workers; fewer ready maps
-than workers will leave some workers waiting. New arrivals are checked every ten seconds.
+Unavailable maps are skipped until they arrive. Supply at least as many
+ready maps as measurement workers to keep the initial allocation occupied.
+Fewer ready maps will leave some workers waiting; the coordinator polls
+for later arrivals.
 Idle ranks wait when no ready work remains. Waiting consumes allocated wall
 time, so upload a useful initial batch before submission.
 
@@ -828,16 +837,35 @@ python projects/des_3pcf/tests/gptg_pilot/test_map_dispatch.py
 Actual multi-node execution still needs HPC validation; no local TreeCorr
 run was made.
 
-#### Transferring the maps to UofA
+#### Transferring the maps to the HPC
 
 Run these commands on the laptop. The remote `comparison/` and
 `validation/` directories must already exist. Stop an earlier transfer loop
 before starting its replacement; completed files are retained.
 
+Set these variables on the laptop, replacing the host and path with your
+HPC transfer login and ensemble parent directory. Use ordinary paths without
+spaces or shell metacharacters in these transfer examples. `export` makes
+the values available to the shells launched by `xargs`.
+
+```bash
+export GPTG_TRANSFER_HOST="your_username@your_transfer_host"
+```
+
+```bash
+export GPTG_REMOTE_DIR="/absolute/path/to/gptg"
+```
+
+```bash
+export GPTG_TRANSFER_JOBS=8
+```
+
+`GPTG_TRANSFER_JOBS` controls concurrent uploads, independently of MPI.
+Reduce it if the transfer server limits simultaneous sessions.
 First open one authenticated SSH connection for reuse:
 
 ```bash
-ssh -MNf -o ControlPersist=600 -S "$HOME/.ssh/d3pcf-%C" vivianmiranda@filexfer.hpc.arizona.edu
+ssh -MNf -o ControlPersist=600 -S "$HOME/.ssh/d3pcf-%C" "$GPTG_TRANSFER_HOST"
 ```
 
 `-M` opens the shared connection; `-N` runs no remote command and `-f`
@@ -851,22 +879,21 @@ normal.
 From the local **comparison/** folder:
 
 ```bash
-ls *.npy | xargs -P 8 -I {} sh -c 'rsync -avP -e "ssh -S $HOME/.ssh/d3pcf-%C" "$1" vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/comparison/ && ssh -S "$HOME/.ssh/d3pcf-%C" vivianmiranda@filexfer.hpc.arizona.edu "touch /xdisk/timeifler/vivianmiranda/gptg/comparison/$1.ready"; result=$?; if [ "$result" -ne 0 ]; then echo "Retry needed: $1" >&2; exit 1; fi' sh {}
+ls *.npy | xargs -P "$GPTG_TRANSFER_JOBS" -I {} sh -c 'rsync -avP -e "ssh -S $HOME/.ssh/d3pcf-%C" "$1" "${GPTG_TRANSFER_HOST}:${GPTG_REMOTE_DIR}/comparison/" && ssh -S "$HOME/.ssh/d3pcf-%C" "$GPTG_TRANSFER_HOST" "touch ${GPTG_REMOTE_DIR}/comparison/$1.ready"; result=$?; if [ "$result" -ne 0 ]; then echo "Retry needed: $1" >&2; exit 1; fi' sh {}
 ```
 
-This uses eight parallel jobs over the shared SSH connection, instead of
-opening fresh authenticated connections for each upload and marker. The
-previous twenty-connection approach encountered remote connection closures.
-If the server reports a session/channel limit, reduce `-P 8` to `-P 4`.
+The parallel jobs reuse the authenticated connection for uploads and
+markers. Opening a fresh connection for every operation can trigger the
+server's connection limits.
 
 - `ls *.npy` lists the maps in this folder; `|` passes their names to `xargs`.
-- `xargs -P 8` allows eight concurrent jobs. `-I {}` supplies one filename
+- `xargs -P "$GPTG_TRANSFER_JOBS"` sets the concurrent-job limit. `-I {}` supplies one filename
   per job, so an additional `-n 1` is unnecessary.
 - `sh -c '...' sh {}` runs the quoted commands with that filename in `$1`.
 - `rsync -a` preserves modification times and other archive attributes;
   `-v` prints details. Its `-P` retains partial uploads and shows progress.
 - `rsync -e "ssh -S ..."` and the following `ssh -S ...` both select the
-  shared connection. Eight jobs still share the available network bandwidth.
+  shared connection. All jobs share the available network bandwidth.
 - `&&` runs `touch` only after rsync succeeds. `touch` creates the remote
   `.npy.ready` marker and normally prints nothing.
 - `result=$?` records success or failure. A failure prints `Retry needed`
@@ -882,7 +909,7 @@ map's contents while TreeCorr is using it.
 
 Output such as `sent 98 bytes` for an 11.8 MB map means only metadata was
 exchanged: the map was skipped. The displayed bytes-per-second figure for
-that check is not the upload bandwidth. Interleaved output from the eight
+that check is not the upload bandwidth. Interleaved output from parallel
 jobs is expected. Repeated authorization banners should disappear while
 the shared connection is being reused.
 
@@ -894,7 +921,7 @@ runs; repeat the command later to include newly generated maps.
 From the local **validation/** folder, use its separate destination:
 
 ```bash
-ls *.npy | xargs -P 8 -I {} sh -c 'rsync -avP -e "ssh -S $HOME/.ssh/d3pcf-%C" "$1" vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/validation/ && ssh -S "$HOME/.ssh/d3pcf-%C" vivianmiranda@filexfer.hpc.arizona.edu "touch /xdisk/timeifler/vivianmiranda/gptg/validation/$1.ready"; result=$?; if [ "$result" -ne 0 ]; then echo "Retry needed: $1" >&2; exit 1; fi' sh {}
+ls *.npy | xargs -P "$GPTG_TRANSFER_JOBS" -I {} sh -c 'rsync -avP -e "ssh -S $HOME/.ssh/d3pcf-%C" "$1" "${GPTG_TRANSFER_HOST}:${GPTG_REMOTE_DIR}/validation/" && ssh -S "$HOME/.ssh/d3pcf-%C" "$GPTG_TRANSFER_HOST" "touch ${GPTG_REMOTE_DIR}/validation/$1.ready"; result=$?; if [ "$result" -ne 0 ]; then echo "Retry needed: $1" >&2; exit 1; fi' sh {}
 ```
 
 You can submit TreeCorr with `GPTG_WAIT_FOR_READY=1` while these commands
@@ -905,14 +932,14 @@ From the local parent `chains/gptg_ensemble_15000/` directory, copy the pixel
 indices and provenance files to the remote parent directory:
 
 ```bash
-rsync -avP indices_512.npy ensemble.yaml calibration.yaml calibration.npz comparison_measurements.txt validation_measurements.txt vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/
+rsync -avP indices_512.npy ensemble.yaml calibration.yaml calibration.npz comparison_measurements.txt validation_measurements.txt "${GPTG_TRANSFER_HOST}:${GPTG_REMOTE_DIR}/"
 ```
 
 To retain existing TreeCorr measurements, also copy `full_joint_480/` from
 that local parent directory, before any HPC measurement job starts:
 
 ```bash
-rsync -avP full_joint_480/ vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/full_joint_480/
+rsync -avP full_joint_480/ "${GPTG_TRANSFER_HOST}:${GPTG_REMOTE_DIR}/full_joint_480/"
 ```
 
 Do not repeat this last copy over newer HPC measurements: choose one
@@ -922,18 +949,17 @@ at that time. Repeat the map transfers and refresh the parent journals after
 generation finishes. Never start TreeCorr on files still being transferred;
 partial remote `.npy` files are not valid completed maps.
 
-For this exact `/xdisk` destination, set the input directory on the HPC
-before submitting the Slurm job:
+On the HPC, set `GPTG_REMOTE_DIR` to the same absolute destination chosen
+on the laptop; shell variables are not copied by SSH. Then select it for
+measurement:
 
 ```bash
-export GPTG_MAP_DIR="/xdisk/timeifler/vivianmiranda/gptg"
+export GPTG_MAP_DIR="${GPTG_REMOTE_DIR:?Set GPTG_REMOTE_DIR on the HPC first}"
 ```
 
-With this setting, measurements are written to
-`/xdisk/timeifler/vivianmiranda/gptg/full_joint_480/`. This explicitly selected
-external storage replaces the default project `chains/` location; a second
-copy of the maps inside the project is unnecessary. Keep this same setting
-on resubmission.
+Measurements are written to `$GPTG_MAP_DIR/full_joint_480/`. This explicitly
+selected storage replaces the default project location; a second copy of
+the maps inside the project is unnecessary. Keep the same setting on resume.
 
 Alternatively, if you copied into the project's `chains/gptg/` directory,
 select that location from activated Cocoa on the HPC:
@@ -1127,10 +1153,10 @@ output directory and free the required CPUs first:
 # Companion notebook: benchmark_gpu_sht_mpi()
 ```
 
-When generation reaches 15,000 maps, its coordinator checks exact file IDs,
+When generation reaches its configured target, the coordinator checks exact file IDs,
 journal seeds, finite journal entries, array headers, dtype and file lengths,
 then writes `COMPLETENESS.txt`. This checks missing/truncated maps without
-reading all 177 GB of pixels again. It does not start TreeCorr. The same audit
+reading every pixel again. It does not start TreeCorr. The same audit
 can be run separately:
 
 ```bash
