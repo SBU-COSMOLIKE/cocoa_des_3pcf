@@ -53,15 +53,9 @@ ulimit -u 2000000
 # Keep one MPI launcher; do not add a second srun. Adapt the TCP exclusion
 # list below to the cluster; remove ib0 from it if using routable IP over IB.
 # Each worker is single-threaded, so use Cocoa's slot mapping.
-# Open MPI cannot use TCP include and exclude lists together. Respect a
-# site/user inclusion list; otherwise use the supplied exclusion list or
-# Cocoa's default. MCA environment variables configure mpirun directly.
-if [ -n "${OMPI_MCA_btl_tcp_if_include:-}" ]; then
-  unset OMPI_MCA_btl_tcp_if_exclude
-else
-  unset OMPI_MCA_btl_tcp_if_include
-  export OMPI_MCA_btl_tcp_if_exclude="${OMPI_MCA_btl_tcp_if_exclude:-lo,docker0,virbr0,ib0}"
-fi
+# Open MPI cannot use TCP include and exclude lists together. Clear an
+# inherited inclusion list so the explicit Cocoa exclusion line below wins.
+unset OMPI_MCA_btl_tcp_if_include
 export PYTHONPATH="${PYTHONPATH:-}"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
 cd "${ROOTDIR}/projects/des_3pcf" || exit 1
@@ -86,6 +80,7 @@ fi
   -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS -x VECLIB_MAXIMUM_THREADS \
   -x BLIS_NUM_THREADS -x NUMEXPR_NUM_THREADS \
   --mca mpi_yield_when_idle 1 \
+  --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0 \
   --bind-to core:overload-allowed --report-bindings \
   --rank-by slot --map-by slot \
   "${ROOTDIR}/.local/bin/python" -u \

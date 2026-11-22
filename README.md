@@ -700,11 +700,11 @@ the general hybrid OpenMP guidance below applies when allocating multiple
 threads per rank. The MPI library used by mpi4py must match the launcher.
 Actual multi-node execution still requires testing on the cluster.
 
-TCP interface inclusion and exclusion lists are mutually exclusive. If the
-submitting environment sets `OMPI_MCA_btl_tcp_if_include`, the batch script
-keeps it and unsets `OMPI_MCA_btl_tcp_if_exclude`. Otherwise it uses the
-existing exclusion list or Cocoa's default. This selects the interface policy
-before `mpirun`; do not also add a conflicting `--mca` interface option.
+TCP interface inclusion and exclusion lists are mutually exclusive. The
+batch script unsets inherited `OMPI_MCA_btl_tcp_if_include` before launching
+MPI and retains the explicit `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0`
+line. This keeps Cocoa's exclusion policy even when shell startup or modules
+supply an inclusion setting.
 A successful single-node run does not establish that the selected interface
 is routable between nodes.
 
