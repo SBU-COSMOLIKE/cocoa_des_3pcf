@@ -624,7 +624,7 @@ Submit the allocation:
 sbatch projects/des_3pcf/scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch
 ```
 
-Slurm writes `DES3PCF_TREECORR-<jobid>.out` and `.err` in the submission
+Slurm writes `D3PCF_TC-<jobid>.out` and `.err` in the submission
 directory. Inspect your jobs with:
 
 ```bash
