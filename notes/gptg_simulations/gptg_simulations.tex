@@ -2416,6 +2416,206 @@ memory at the new cutoff, and validate the matching TreeCorr geometry
 and angular convergence. The timing above is not a prediction for that
 larger calculation. Existing ensembles remain available for comparison.
 
+\section{Which maximum multipole is being tested?}
+\paragraph{The sky and a triangle have different angular coordinates.}
+The methods paper uses final NSIDE1024 covariance maps, a TreeCorr
+opening-angle Fourier order of 100, and approximately eight-arcminute
+minimum triangle sides~\cite{gomes}. Its map-generation spherical-harmonic
+cutoff is not specified in the inspected description. The separate TATT
+paper reports $L_{\max}=50$ for the bispectrum's triangle-angle Legendre
+expansion and $M_{\max}=100$ for the natural components' opening-angle
+expansion~\cite{gomes_tatt}. Those two integers do not limit the angular
+harmonics on a full-sky shear map.
+
+\paragraph{A theory window is another distinct choice.}
+The inspected public integrator applies an NSIDE1024 HEALPix pixel window
+to its theory and zero-fills that window above $\ell=3071$. This is evidence
+about the prediction's window, not proof that the maps were generated with
+that harmonic cutoff. Our supplied input maps have NSIDE512, and our fitted
+target spectrum ends at $\ell=1024$. These are different statements about
+different products. Matching a name or a pixel count cannot establish an
+identical estimator or ensemble.
+
+\paragraph{What is missing from the current calibration.}
+The spectrum fit divides an E-minus-B pseudo-spectrum by the observed sky
+fraction and the spherical shear-to-convergence factor. It does not undo
+a pixel window or perform an exact mask deconvolution. Any averaging
+already present in the supplied input is not removed by that operation.
+Separately, the one-point-distribution fit uses a masked convergence
+reconstruction smoothed with
+\begin{equation}
+ W_\ell=\exp\left[-\frac{\ell(\ell+1)\sigma^2}{2}\right],
+ \qquad \sigma=10\ \mathrm{arcmin}.
+\end{equation}
+Here the stated width is the Gaussian standard deviation. Its full width
+at half maximum is
+\begin{equation}
+ \mathrm{FWHM}=2\sqrt{2\ln2}\,\sigma\simeq23.55\ \mathrm{arcmin}.
+\end{equation}
+This smoothing belongs to the distribution reconstruction; it is not an
+extra filter applied to the spectrum fit. Finer output pixels cannot turn
+this fitted proxy into a calibrated unsmoothed convergence distribution.
+
+\subsection{An exact filter calculation before a map test}
+\paragraph{Ask which modes an aperture weights.}
+The compensated Gaussian aperture has Fourier filter
+\begin{equation}
+ \widehat U(x)=\frac{x^2}{2}\exp(-x^2/2),\qquad x=\ell R.
+\end{equation}
+For constant angular power, its variance is proportional to
+\begin{equation}
+ \int_0^\infty \ell\,d\ell\,|\widehat U(\ell R)|^2.
+\end{equation}
+Substitute $x=\ell R$. Constants cancel in the ratio of a missing tail
+to the full integral, leaving
+\begin{equation}
+ f_{>L}=\frac{\int_{LR}^{\infty}x^5e^{-x^2}\,dx}
+ {\int_0^{\infty}x^5e^{-x^2}\,dx}.
+\end{equation}
+To evaluate the numerator, use $t=x^2$, for which $dt=2x\,dx$ and
+$x^5dx=t^2dt/2$. The denominator becomes $\Gamma(3)/2=1$. Therefore
+\begin{equation}
+ f_{>L}=\frac12\int_{(LR)^2}^{\infty}t^2e^{-t}\,dt.
+\end{equation}
+Integrating twice by parts gives
+\begin{equation}
+ \int_a^{\infty}t^2e^{-t}\,dt=e^{-a}(a^2+2a+2).
+\end{equation}
+Setting $a=(LR)^2$ finally yields
+\begin{equation}
+ f_{>L}=e^{-(LR)^2}\left[1+(LR)^2+\frac{(LR)^4}{2}\right].
+\end{equation}
+At seven arcminutes, this fraction is 0.19146 for $L=1024$ and
+$4.75\times10^{-6}$ for $L=2048$. Direct quadrature verifies the formula.
+These are filter-norm fractions for a flat spectrum, \emph{not} errors
+in the DES covariance. The actual signal spectrum, finite-triangle
+measurement and small-angle two-point rows must still be tested. Our
+independent pixel noise is not removed at this harmonic cutoff, so the
+calculation is not a missing-noise correction to the saved maps.
+
+\subsection{Recover a known band-limited field}
+\paragraph{Begin with a test whose answer is known.}
+We synthesize a sky from chosen coefficients $a_{\ell m}$, then apply the
+production iterative analysis to recover $\widehat a_{\ell m}$. The tests
+contain low modes and modes at the retained band edge, including $m=0$
+and $m=\ell$. This tests both polar and equatorial behavior. The scalar
+case uses spin zero; the shear case supplies known E and B coefficients.
+The relative coefficient error is
+\begin{equation}
+ \epsilon_a=\left[
+ \frac{\sum_{\ell m}w_m|\widehat a_{\ell m}-a_{\ell m}|^2}
+ {\sum_{\ell m}w_m|a_{\ell m}|^2}\right]^{1/2}.
+\end{equation}
+Only nonnegative $m$ is stored. We use $w_0=1$ and $w_m=2$ for positive
+$m$ to count the conjugate negative-$m$ partners as well.
+
+\paragraph{Test the settings actually used in generation.}
+At NSIDE2048, with tolerance $10^{-6}$ and at most thirty iterations, the
+measured errors are
+\begin{center}
+\begin{tabular}{rrrl}
+\toprule
+Retained $L$ & Scalar $\epsilon_a$ & Spin-two $\epsilon_a$ & Outcome\\
+\midrule
+2048 & $1.86\times10^{-8}$ & $1.70\times10^{-8}$ & Converged\\
+4096 & $3.41\times10^{-8}$ & $1.24\times10^{-7}$ & Converged\\
+6143 & $2.53\times10^{-2}$ & Not run & Iteration limit\\
+\bottomrule
+\end{tabular}
+\end{center}
+The failed scalar case is already band limited. Missing physical
+high-frequency power cannot explain its error. The current production
+status check correctly rejects it. A nominal indexing range extending to
+$3\,\mathrm{NSIDE}-1$ is therefore not a promise that every field in that
+range is accurately recovered with these solver settings.
+
+\subsection{A nonlinear transformation needs an additional test}
+\paragraph{Squaring creates new harmonics.}
+Choose the known axisymmetric field
+\begin{equation}
+ g(\theta)=\sqrt{2q+1}\,P_q(\cos\theta).
+\end{equation}
+Legendre orthogonality gives zero sky mean and unit sky-averaged square.
+Apply the simple nonlinear transformation
+\begin{equation}
+ \kappa=g+0.1(g^2-1).
+\end{equation}
+The square contains angular degrees through $2q$. When the retained cutoff
+$L$ is smaller than $2q$, some of that field cannot be represented by the
+retained coefficients. We must distinguish convergence of a discrete fit
+from accuracy of its retained spherical projection.
+
+\paragraph{Obtain that projection independently.}
+For an axisymmetric field, only $m=0$ contributes. The spherical harmonic
+normalization is
+\begin{equation}
+ Y_{\ell0}(\theta)=\sqrt{\frac{2\ell+1}{4\pi}}P_\ell(\cos\theta).
+\end{equation}
+Insert this into the coefficient integral. Integrating over azimuth gives
+a factor $2\pi$, and setting $\mu=\cos\theta$ gives
+\begin{equation}
+ a_{\ell0}=\sqrt{\pi(2\ell+1)}
+ \int_{-1}^{1}\kappa(\mu)P_\ell(\mu)\,d\mu.
+\end{equation}
+The integrand is a polynomial of degree at most $2q+L$. An $n$-point
+Gauss--Legendre rule integrates polynomials through degree $2n-1$, so we
+choose enough nodes to satisfy
+\begin{equation}
+ 2n-1\geq2q+L.
+\end{equation}
+Increasing the quadrature count independently checks floating-point
+accuracy of this reference. The reference is not fitted to the pixels.
+
+\paragraph{The stress test finds a sampling error.}
+For $q=3072$ and retained $L=4096$, the continuous field contains degrees
+through 6144. The discrete solver converges at both tested pixel
+resolutions, but the retained coefficient error is 1.702\% at NSIDE2048
+and 0.332\% at NSIDE4096. The independently refined reference changes by
+about $9\times10^{-9}$ in relative norm. Finer pixels help, yet a successful
+solver status alone does not certify the continuous projection. This
+axisymmetric field concentrates signal near the poles. Its errors are
+not estimates of biases in a Gaussian random sky or DES covariance.
+
+\paragraph{Now test a smoother common random input.}
+A second experiment fills all $m$ modes using one synthetic smooth spectrum
+proportional to $(\ell+10)^{-2.5}$, normalized to unit sky variance, and
+applies the fitted source-bin-zero point function. The random coefficients
+and retained $L=4096$ are identical on NSIDE2048 and NSIDE4096. Both solves
+converge. Their coefficient vectors differ by 0.002912\% overall and
+0.02475\% within degrees 3073--4096. This is reassuring for that input.
+The finer-grid answer is a comparison, not exact truth, and the spectrum
+is explicitly invented for the numerical test. One such sky cannot bound
+covariance errors or calibrate missing physical power.
+
+\subsection{Measure memory before choosing MPI workers}
+\paragraph{A single transform is not a complete worker.}
+The four-bin generator retains random coefficients, correlated
+coefficients, sky arrays, footprint arrays and iterative-solver workspace.
+Running its actual kernel once with synthetic spectra at NSIDE2048 and
+$L=4096$ took 132.5 seconds with four CPU threads and peaked at
+6.737 GiB resident memory. The output was a temporary float32 map;
+no scientific ensemble or calibration was replaced. This timing does
+not describe the old $L=1024$ calculation or a measured HPC throughput.
+
+\paragraph{The previous rank count cannot simply be reused.}
+Multiplying that peak by ninety workers gives approximately 606 GiB per
+node, above the script's 450-GiB memory request. About forty-eight such
+workers would project to 323 GiB before platform-dependent changes.
+An HPC pilot must measure its own peak and timing before increasing
+concurrency. Raising a cutoff affects both numerical accuracy and the
+number of independent maps that fit in memory.
+
+\paragraph{What is validated, and what remains.}
+The controlled band-limited and smooth-field tests make $L=4096$ a
+candidate for further work; they do not complete a small-scale DES
+validation. We still need a specified high-multipole signal and one-point
+model, tests against higher-resolution measurements, matched pixel and
+triangle conventions, and convergence of the actual selected observables.
+The present calibration remains unchanged and production stays paused.
+All test calculations are visible in the companion notebook; the bounded
+results and settings are recorded in
+\texttt{tests/gptg\_pilot/high\_multipole\_validation.txt}.
+
 \begin{thebibliography}{9}
 \bibitem{zhong} K. Zhong, G. Bernstein, S. S. Boruah, B. Jain and S. Kobla,
 \emph{Fast Generation of Weak Lensing Maps with Analytical Point
@@ -2433,5 +2633,9 @@ in estimating errors on cosmological parameters},
 \emph{Cosmology with second and third-order shear statistics for the Dark
 Energy Survey: Methods and simulated analysis},
 \href{https://arxiv.org/abs/2503.03964}{arXiv:2503.03964}.
+\bibitem{gomes_tatt} R. C. H. Gomes et al.,
+\emph{Tidal alignment and tidal torquing modeling for the cosmic shear
+three-point correlation function and mass aperture skewness},
+\href{https://arxiv.org/abs/2601.09133}{arXiv:2601.09133}.
 \end{thebibliography}
 \end{document}

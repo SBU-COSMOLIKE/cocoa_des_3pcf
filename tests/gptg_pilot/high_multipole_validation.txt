@@ -1,0 +1,129 @@
+NSIDE 2048 higher-multipole engineering checks (2026-11-22)
+
+These are transform and memory checks, NOT a fit of missing high-ell DES
+power. The original calibration and all old ensembles remain unchanged.
+CPU only; ducc0 0.42.0; float64 maps and complex128 coefficients; four
+transform threads; BLAS=1. No TreeCorr run and no production ensemble.
+
+Band-limited roundtrip
+---------------------
+At each L, synthesize known sparse coefficients, then use exactly the
+production pseudo_analysis epsilon=1e-6, maxiter=30. The common modes are
+(ell,m)=(2,0),(13,3),(101,72). Additional modes at (L-1,0),(L,L/2),(L,L)
+exercise the polar and equatorial limits. Scalar amplitudes are respectively
+0.3,0.2+0.15i,0.1-0.1i,0.5,0.4+0.3i,0.3-0.2i. The spin-2 test supplies
+these E coefficients and B=E/4. The coefficient norm counts both signs of m.
+
+L       spin  status iterations rel_alm_L2       rel_map_residual  peak_RSS_bytes  synth_s    analysis_s
+2048    0     1      2          1.856315154e-8   1.856307034e-8    1705099264      0.502331   2.828961
+2048    2     1      2          1.695281406e-8   1.695281798e-8    3333111808      0.973554   5.785606
+4096    0     1      3          3.414723016e-8   3.404538734e-8    2464972800      1.623771  11.857759
+4096    2     1      3          1.240378738e-7   1.240284349e-7    4884283392      3.266016  24.051577
+6143    0     7     30          2.527049487e-2   1.281816421e-3    3588554752      3.474791 193.720316
+
+Status 1 means an approximate solution was found. Status 7 means the
+iteration limit was reached: the L=6143 test FAILS the production guard.
+Its maximum coefficient error is 0.004382627286679772. The input is already
+band limited, so discarded nonlinear power cannot explain this failure.
+It demonstrates poor recovery of an allowed difficult edge-of-band field.
+No spin-2 L=6143 test was needed after this scalar failure.
+
+These sparse tests do not certify every dense spectrum. A successful solve
+also does not establish that nonlinear point transformations have negligible
+power above L, or that sampling that extra power leaves low ell unbiased.
+Timing is a bounded local observation, not an HPC performance forecast.
+
+Four-bin allocation lower bound
+-------------------------------
+The current generator simultaneously retains white and alms (each four
+complex128 arrays), ell and factor (each one eight-byte array). Coefficient
+mixing also materializes roots[ell], sixteen doubles per harmonic. Their
+combined allocation alone is 272*Nalm bytes, where Nalm=(L+1)(L+2)/2:
+L=4096: 2,283,372,816 bytes; L=6143: 5,134,663,680 bytes.
+This excludes full-sky maps, footprint maps, aperture matrices, and the
+iterative solver workspace. The 90-rank/node allocation measured for the
+L=1024 pilot is not validated by the single-source transform tests above.
+
+Same-field nonlinear projection stress test
+-------------------------------------------
+Take g=sqrt(2l+1)*P_l(cos(theta)), with l=3072, and transform it to
+kappa=g+0.1*(g*g-1). Its exact maximum multipole is 6144. Retain L=4096
+at both NSIDE=2048 and 4096. The exact retained coefficients are computed
+by Gauss-Legendre quadrature, using enough points to integrate the full
+polynomial degree exactly. Increasing that reference quadrature by 32
+points changes the coefficient vector by only 9.047484774e-9 relatively.
+The pseudo_analysis solve has mmax=0 because this toy is axisymmetric.
+
+NSIDE  status  iterations  relative_alm_L2  low_ell_0_100_error/full_norm  RSS_bytes  solve_s
+2048   2       4           0.01702347329    0.0003987838151               1274314752 1.014238
+4096   2       3           0.003320091787   0.00008146748056              4906926080 3.436834
+
+The map residuals are 0.137157748 and 0.143321897, respectively. They include
+the intentionally discarded modes above L and are not stochastic errors.
+Both solves converge as discrete least-squares problems (status 2); that
+does not make their retained coefficients equal to the continuous-sphere
+projection. Higher pixel resolution reduces this error for the SAME input
+field. This deliberately difficult polar field is not a Gaussian ensemble
+and these percentages must not be quoted as expected DES biases.
+
+Full four-bin generator memory measurement at L=4096
+--------------------------------------------------
+The actual generate_one path was run once with the full NSIDE2048 footprint,
+float64 calculation and float32 saved output, four CPU threads, and BLAS=1.
+The four input Gaussian fields were independent and had an explicitly
+synthetic spectrum C_l proportional to (l+10)^(-2.5), zero for l<2, normalized
+to unit sky variance. The existing fitted point-function parameters were
+used only to exercise the kernel; the convergence amplitude was 0.01 and
+pixel noise was rescaled by four. This is NOT a high-ell calibration.
+The temporary map was removed after the check; no ensemble was changed.
+
+Elapsed generate/save/diagnostic time: 132.531981958 seconds.
+Peak process RSS: 7,233,585,152 bytes (6.7368 GiB).
+Output shape: (4,2,5907040), float32.
+All source solves converged with status 2 in [6,6,7,7] iterations.
+The four solve times were [20.784318,20.562578,23.577588,23.525161] seconds.
+
+Ninety such workers would require about 606 GiB before platform differences,
+exceeding the example's 450-GiB allocation. A 48-worker/node pilot projects
+about 323 GiB; measure the actual HPC maximum RSS before increasing it.
+This measurement is conditional on L=4096, NSIDE2048 and the current code.
+It is not transferable to L=6143 or to a larger working sky grid.
+
+Dense Gaussian-like common-input projection test
+------------------------------------------------
+One source field uses all m modes of the same synthetic smooth spectrum
+C_l proportional to (l+10)^(-2.5), l>=2, normalized to unit sky variance.
+Both runs use the identical seed 76418 and identical complex coefficients.
+The fitted source-bin-0 normalized point transformation is applied at
+NSIDE2048 and 4096, then both maps are projected to the SAME L=4096. All
+coefficient norms count the unstored negative-m partners. The higher-grid
+result is a numerical comparison, not an exact truth or a new DES fit.
+
+NSIDE  status iterations  map_residual    total_s   solve_s  peak_RSS_bytes
+2048   2      7           0.001089418710  27.12853  23.64422 3564732416
+4096   2      4           0.001089779613  40.09962  31.25798 6943981568
+
+Coefficient changes when using NSIDE2048 instead of 4096:
+ell range  relative_alm_L2      fractional_band_power_change
+0..4096    2.911682090e-5      -1.909680525e-9
+2..100     1.622001246e-7       4.649201690e-9
+101..1024  2.537967566e-6       3.121340519e-9
+1025..2048 1.611206528e-5      -1.390242299e-8
+2049..3072 6.309437812e-5      -1.243473318e-7
+3073..4096 2.475364620e-4      -2.054622877e-7
+
+The full coefficient-vector change is 0.002912%, and the highest listed
+band changes by 0.02475% in coefficient norm. Those are reassuring for
+THIS spectrum and point transformation. Tiny changes in integrated power
+alone would hide part of the coefficient change; both are therefore shown.
+This one sky does not establish covariance accuracy, small-scale DES
+calibration, or convergence for a rougher spectrum or stronger transform.
+The known-polynomial polar stress case above deliberately demonstrates
+that convergence cannot be guaranteed for every nonlinear field.
+The original NSIDE512/lmax1024 calibration has not been extended here.
+
+The Gaussian pixel map was freed before the one-source iterative solve to
+keep the comparison below 9.5 GB. This changes memory retention only, not
+the input kappa or any numerical transform. Hence these one-source RSS
+figures must not replace the full four-bin memory measurement above.
+No full-sky or footprint sky maps were retained from this comparison.

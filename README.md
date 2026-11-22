@@ -1502,3 +1502,13 @@ own calibration, memory measurement and TreeCorr geometry checks before
 expensive production. The [map note](notes/gptg_simulations/gptg_simulations.pdf)
 and [companion notebook](notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb)
 explain the distinction.
+
+
+The [higher-multipole checks](tests/gptg_pilot/high_multipole_validation.txt)
+separate band-limited recovery, nonlinear projection and complete-worker
+memory. The current solver fails a difficult band-edge test at the nominal
+maximum cutoff. At a lower tested cutoff, smoother-field agreement is good,
+but worker memory exceeds the allowance for the existing rank count.
+The Slurm allocation remains for the original band-limited calibration;
+remeasure and reduce concurrency before using a higher-cutoff calibration.
+Finer pixels alone do not validate the missing high-multipole input physics.

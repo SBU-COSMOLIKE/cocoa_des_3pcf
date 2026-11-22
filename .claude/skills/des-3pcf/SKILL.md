@@ -558,3 +558,21 @@ The Gaussian-reference residual radius can be below one after large-scale
 cuts, while the released-D reference remains outside convergence even with
 positive conditional precisions. Check both convergence radius and
 positivity. Pair-order averaging supplies no additional independent maps.
+
+
+Higher-multipole validation is in the existing GPTG note/notebook and
+tests/gptg_pilot/high_multipole_validation.txt. Distinguish sky ell from
+fastnc triangle-angle L/M and TreeCorr opening-angle n. Rafael's papers
+specify final NSIDE1024 maps and angle orders, not an established map
+harmonic cutoff. The inspected theory pixel window is not generation proof.
+The current fit does not deconvolve pixel averaging; its PDF proxy uses
+Gaussian sigma=10arcmin (not FWHM), separately from the spectrum fit.
+Do not silently extend that calibration by changing lmax or NSIDE.
+
+At NSIDE2048, band-limited L4096 tests pass while scalar L6143 fails the
+production iteration limit. A nonlinear stress field can converge in the
+discrete fit and still have projection error. Common-input grid refinements
+and actual observable convergence are distinct requirements. The synthetic
+four-bin L4096 kernel measured 6.737GiB/process; the 90-worker allocation is
+not safe for that case. Keep explicit OMP_NUM_THREADS values when importing
+map support; use defaults only when the caller has supplied no setting.
