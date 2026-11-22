@@ -3,8 +3,8 @@
 #SBATCH --output=D3PCF_TC-%j.out
 #SBATCH --error=D3PCF_TC-%j.err
 #SBATCH --nodes=10
-#SBATCH --ntasks=960
-#SBATCH --ntasks-per-node=96
+#SBATCH --ntasks=940
+#SBATCH --ntasks-per-node=94
 #SBATCH --cpus-per-task=1
 #SBATCH --time=24:00:00
 #SBATCH --partition=high_priority
