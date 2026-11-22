@@ -1,0 +1,65 @@
+22 November 2026: saved-vector audit, no map generation or TreeCorr.
+Complete maps: 1878; partial checkpoints excluded: 1878
+Full dimension: 480; constant rows: 60; active dimension: 420
+Independent pairs used: 939; fixed A dimension: 340
+Residual eigenvalue range: -58.598489, 0.8759726
+Active sample minimum whitened eigenvalue: 0.26743458
+A/sample diagonal ratio [min, median, max]: [0.18837325 0.59147613 1.45751961]
+Dref/sample diagonal ratio [min, median, max]: [0.02667394 0.08624479 0.26066291]
+Order, minimum conditional precision, maximum, valid:
+[[ 2.00000000e+00 -2.52540557e+00  3.54961243e+03  0.00000000e+00]
+ [ 4.00000000e+00 -1.69011558e+05  1.19508303e+07  0.00000000e+00]
+ [ 6.00000000e+00 -2.09181703e+09  3.89392464e+10  0.00000000e+00]]
+Reference: analytical noisy A; released simulation D; zero B.
+Map measurements: NSIDE512 with fitted independent pixel shape noise. This is not a matched DES validation.
+
+minimum separation arcmin 5.613444602706883
+edges [ 2.5         3.14731353  3.96223298  4.98815579  6.27971608  7.90569415
+  9.95267926 12.52968084 15.77393361]
+unordered pairs per bin [      0.       0.       0.   75869.  578948.  472301.  438774. 1343072.]
+Equal-pixel footprint [deg2]: 4841.544076179854
+Analytical survey area [deg2]: 4143.0
+Generated / analytical pixel noise variance: [1.47646718 1.50242096 1.5193693  1.57878471]
+Published source labels and all three aperture radii agree.
+Fixed-A sample Schur eigenvalue range: [ 0.35997485 38.94984325]
+Order 2 largest plug-in polynomial relative error: 201214.4889999289
+Order 4 largest plug-in polynomial relative error: 690926871.3065894
+Order 6 largest plug-in polynomial relative error: 2372492874972.244
+Map ID range 0 5000 N= 939 median Map3 variance / starting D: 11.862525046517174
+Map ID range 5000 10000 N= 939 median Map3 variance / starting D: 11.807393635636224
+Map3 sample/reference variance by radius; rows=min,median,max:
+[[13.52966907 13.56933576  4.29760491  3.83637245]
+ [16.95704469 17.4892102   6.73529593  5.67806145]
+ [37.48977988 24.67755659 10.1442575   8.92974968]]
+Matched Gaussian control, order 2 conditional precision min/max [0.37802393 1.69036622] positive: True
+Matched Gaussian control, order 4 conditional precision min/max [0.37102366 1.9444796 ] positive: True
+Matched Gaussian control, order 6 conditional precision min/max [0.14347506 2.11940113] positive: True
+Distinct-factor recurrence equals explicit products through sixth order.
+Unbiased cross-square formula equals explicit distinct-pair sum.
+order 2 maximum mean discrepancy / Monte Carlo SE 2.59215633166888
+order 4 maximum mean discrepancy / Monte Carlo SE 2.5293911735037895
+order 6 maximum mean discrepancy / Monte Carlo SE 2.5455220281259305
+Every returned constrained covariance retains A exactly and passes the inverse identity.
+D multiplier; whitened C min/max; worst plug-in inverse relative error q=2,4,6
+[[1.00000000e+00 1.24027404e-01 5.95984889e+01 2.01214489e+05
+  6.90926871e+08 2.37249287e+12]
+ [4.00000000e+00 6.67929866e-02 1.52073819e+01 2.86775581e+03
+  5.78855655e+05 1.16841841e+08]
+ [1.60000000e+01 2.09178846e-02 4.16383953e+00 3.16696558e+01
+  3.17009473e+02 3.17322696e+03]
+ [3.20000000e+01 1.08502926e-02 2.39002465e+00 2.68576185e+00
+  5.18934449e+00 1.00266880e+01]
+ [6.40000000e+01 5.52446060e-03 1.58860528e+00 9.83518009e-01
+  9.72681212e-01 9.61963820e-01]]
+
+Unique complete vectors: 1878 / 1878
+Calibration SHA256: 4f5d7119eadbd537d984e47db3c93845b76b510e4af919372b67870e04117019
+0_5000 : measurement.txt absent; checkpoint files alone do not verify all settings.
+5000_10000 : 480 rows: 200 xi-plus, 200 xi-minus, 80 Map3.
+TreeCorr 5.1.2; NSIDE512 RING; equal pixel weights.
+Side bank .5..80, 20 log bins, keep lower edge >=8: index 11, minimum 8.1514711308706111 arcmin.
+Multipole max_n=100; 63 SAS bins, edges 0.016..3.126 radians.
+bin_slop=0; angle_slop=0; symmetrized tomographic legs.
+939 MPI compute ranks; one coordinator; BLAS=1; native threads=1.
+smoke_pixels=0; smoke outputs are not science vectors.
+

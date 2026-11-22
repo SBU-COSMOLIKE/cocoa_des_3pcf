@@ -19,7 +19,7 @@
 {\large A student introduction to point-transformed Gaussian fields,\par}
 {\large calibration from Rafael's maps, and covariance tests\par}
 \vspace{0.5em}
-21 November 2026
+22 November 2026
 \end{center}
 
 \section{What this experiment is trying to achieve}
@@ -974,9 +974,10 @@ asymptotic estimate, since centering by a sample mean introduces weak
 within-group dependence. Indefinite precisions receive no such score.
 
 \paragraph{Storage precision is tested separately from arithmetic precision.}
-New generated maps are stored as float32. Generation, harmonic transforms,
-filter weights, aperture accumulation, covariance and inversion remain
-float64. Saved pixels are decoded to float64 before measuring the recorded
+The storage-only test used float64 generation and transforms, with
+float32 saved maps. The later production run also uses tested float32
+arithmetic on some workers, as described in Section~\ref{sec:sht-teaching}.
+Covariance and inversion remain float64. Saved pixels are decoded to float64 before measuring the recorded
 vectors. This ensures the journal can be reproduced from the files later
 read by a student. The 64 original pilot maps remain float64 solely as a
 small precision-test reference.
@@ -1005,7 +1006,7 @@ mpirun -n 1 python projects/des_3pcf/scripts/generate_ensemble_mpi.py --threads 
 The serial command above is available for small runs. The current large
 run instead uses MPI with three CPU workers and one GPU scalar-transform
 worker, each with three CPU transform threads, plus a coordinator. BLAS
-remains one. Full TreeCorr measurement is paused for the HPC run. Previously
+remains one. Local generation is now paused at the user's request. Previously
 saved maps are preserved, and the numerical-mode history records changes
 in worker allocation and arithmetic. Section~\ref{sec:sht-teaching}
 explains the transforms and the numerical checks for the GPU path.
@@ -1024,19 +1025,303 @@ twenty source-bin triples and four aperture radii. These measurements
 replace the small aperture diagnostic as the science comparison.
 
 The updated TreeCorr build supports OpenMP. For multi-node measurement,
-mpi4py and Open MPI distribute independent tomographic tasks over workers;
+mpi4py and Open MPI assign each ready map to one worker, which completes
+its unfinished tomographic tasks;
 CPU allocations must count both MPI ranks and native threads. A separate
-coordinator receives results and writes small text vectors. Full measurement
-is currently paused for HPC; laptop resources are assigned to map generation.
+coordinator receives results and writes small text vectors. The downloaded HPC measurements are investigated below; neither map
+generation nor a new TreeCorr run is started by this investigation.
 BLAS is one per process. The measurement keeps every two-/three-point
 cross entry, while the analytical 400-by-400 G+SSC+cNG block stays fixed.
 
 Section 13 of the covariance teaching note gives the precise triangle cuts,
 row ordering, starting covariance and correction algebra. It distinguishes
 NSIDE512 equal-pixel measurements from the published catalogue estimator.
-The first 1,000 full vectors train the estimators; the next 500 validate
-them independently. Full-map results are pending: the older 16-entry tests
-are algebra demonstrations, not answers for the 480-entry matrix.
+The initial first-1,000-map plan is superseded by the all-complete-vector
+comparison in Section~\ref{sec:joint-audit}. The older sixteen-entry tests
+are algebra demonstrations, not answers for the full measurement.
+
+\section{Investigation of the downloaded joint measurements}
+\label{sec:joint-audit}
+\paragraph{The target of this experiment.}
+Our immediate question is whether a precision expansion estimates the
+covariance of the Kunhao-generated ensemble better than a direct sample
+calculation. Reproducing Rafael's published covariance is a different
+question. New random seeds generate independent maps conditional on the
+chosen calibration. Fitting that calibration to Rafael's maps does not
+invalidate this conditional experiment. The comparison below uses all
+complete downloaded vectors for both methods; it does not divide them
+into calibration, correction and validation groups.
+
+\paragraph{Begin with the saved measurements.}
+The 22 November investigation found 1,878 complete vectors: map IDs
+0--938 and 5000--5938. It excluded 1,878 partial checkpoints and counted
+any repeated complete ID only once, after checking equality. Each stored
+vector has 480 positions. A position in a file, however, is not necessarily
+a measured random variable. We must check that its angular bin actually
+contains pairs before interpreting its variance.
+
+\paragraph{Why sixty entries are identically zero.}
+The catalogue given to TreeCorr contains one position per retained
+NSIDE512 pixel. A nearest-neighbor calculation on the actual footprint
+finds the minimum distinct-pixel separation
+\begin{equation}
+ \theta_{\mathrm{nearest}}=5.6134446\ \mathrm{arcmin}.
+\end{equation}
+The first three requested angular intervals are
+\begin{equation}
+ [2.5,3.1473],\quad[3.1473,3.9622],\quad[3.9622,4.9882]
+ \quad\mathrm{arcmin}.
+\end{equation}
+Every upper edge is smaller than the minimum separation. Consequently
+these intervals contain no distinct pairs. Direct counting of positions,
+without running TreeCorr, gives zero pairs in all three intervals. The
+next interval contains 75,869 unordered pairs, followed by 578,948 in the
+following interval. The abrupt change illustrates how discrete pixel
+geometry differs from a continuously sampled annulus.
+
+\paragraph{A missing measurement is not a measured zero correlation.}
+There are ten source-bin pairs and two shear correlations. Repeating
+three empty intervals for each produces
+\begin{equation}
+ 3\times10\times2=60
+\end{equation}
+constant zero entries. Their sample covariance has zero rows and columns,
+so the full 480-dimensional sample covariance has no inverse. The runner
+checked that entries were finite, but did not distinguish an empty-bin
+zero from a measured value. This is a measurement-configuration failure
+that should have been detected before the large run. It does not show
+that the saved shear maps are corrupt. Interpolating them to more pixel
+centers would not create the unresolved signal or independent galaxy noise.
+
+\paragraph{What can still be studied.}
+We retain the complete vectors and explicitly select their 420 varying
+entries: 340 two-point entries and 80 third-order entries. The notebook
+checks that the removed rows are exactly those predicted by geometry;
+it does not discard other inconvenient modes. The selected sample
+covariance is positive definite. That establishes the existence of its
+inverse, not convergence to the population covariance. The remaining
+small-angle measurements still have discrete angular weights; removing
+empty bins alone does not establish agreement with a catalogue estimator.
+
+\paragraph{Both fixed-block methods must use the same block.}
+Write the ordinary sample covariance of the selected vector as
+\begin{equation}
+ S=\begin{pmatrix}S_{xx}&S_{xy}\\S_{yx}&S_{yy}\end{pmatrix}.
+\end{equation}
+For the experiment in which the analytical two-point block $A$ is
+stipulated exact, the direct comparison with a fixed-$A$ expansion is
+\begin{equation}
+ C_h=\begin{pmatrix}A&S_{xy}\\S_{yx}&S_{yy}\end{pmatrix}.
+\end{equation}
+We keep $A$ unchanged. Comparing only an unconstrained $S$ with a
+constrained estimate would mix a change in the two-point block with the
+change in covariance estimator. The notebook therefore shows both $S$
+and $C_h$, and explains which comparison each serves. If the supplied
+$A$ differs from this generator's two-point covariance, $C_h$ is a
+stipulated hybrid target, not the full covariance of the original random
+vector. This distinction does not question the accuracy of the analytical
+calculation for its own specified survey.
+
+\paragraph{Check that the fixed-block target is possible.}
+With $A$ positive definite, the remaining condition is positivity of
+its Schur complement. Compute it by solving a linear system:
+\begin{equation}
+ AU=S_{xy}.
+\end{equation}
+Then subtract the part of the third-order covariance accounted for by
+its correlation with the two-point vector:
+\begin{equation}
+ C_{y\mid x}=S_{yy}-S_{yx}U.
+\end{equation}
+Its smallest eigenvalue in starting-Map3-covariance units is 0.360 in
+this sample. It is positive. Thus the failed precision corrections below
+are not explained by an intrinsically impossible fixed-$A$ sample target.
+No negative eigenvalues were clipped to obtain this result.
+
+\paragraph{Identify the actual starting covariance.}
+The starting matrix is
+\begin{equation}
+ M=\begin{pmatrix}A&0\\0&D_0\end{pmatrix}.
+\end{equation}
+Here $A$ is the production Gaussian+SSC+cNG covariance, whereas $D_0$
+comes from the released simulation covariance FITS file. This matrix
+must not be described as a fully analytical joint covariance. The FITS
+row labels match our source-bin ordering, and all three aperture radii
+match the equal-filter radii used by the runner. These checks exclude a
+simple row-order error, but do not establish that $D_0$ approximates the
+Kunhao-generated ensemble.
+
+\paragraph{The generated maps include shape noise.}
+Both the CPU and GPU production paths add independent Gaussian noise
+per shear component, source bin and pixel. Earlier discussion that called
+these production maps noiseless was incorrect; noiseless maps occur only
+in separate numerical comparison tests. The amplitudes are recorded in
+\texttt{calibration.npz}. For comparison, a uniform galaxy-density model
+would imply a pixel noise variance
+\begin{equation}
+ \sigma_{\mathrm{pixel},i}^{2}
+ =\frac{\sigma_{e,i}^{2}}{n_i\Omega_{\mathrm{pixel}}}.
+\end{equation}
+The denominator is the expected number of galaxies in a pixel. The actual
+fitted noise variances divided by this expression from the analytical
+settings are 1.476, 1.502, 1.519 and 1.579. The equal-pixel footprint covers
+4841.54 square degrees; the analytical settings use 4143 square degrees.
+These are different experimental specifications. A precise covariance
+for one specification is not automatically the covariance of the other.
+
+\paragraph{A large mismatch in the third-order reference.}
+Across the 80 third-order variances, the sample variance divided by
+$D_0$'s corresponding diagonal ranges from 3.84 to 37.49. Its median is
+about 11.6. The dependence on aperture radius is explicit:
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+Radius [arcmin]&Minimum ratio&Median ratio&Maximum ratio\\
+\midrule
+7 &13.53&16.96&37.49\\
+14&13.57&17.49&24.68\\
+25&4.30&6.74&10.14\\
+40&3.84&5.68&8.93\\
+\bottomrule
+\end{tabular}
+\end{center}
+These are comparisons of measured variances, not correction factors to
+apply to data vectors. Noise and area differences do not by themselves
+explain the whole table. The initial generator fit, angular resolution,
+triangle weights and finite multipole reconstruction remain possible
+contributors. Assigning the excess to one of them without a matched
+measurement test would go beyond the evidence.
+
+\paragraph{The expansion fails before considering noisy products.}
+Take the Cholesky factor of the reference:
+\begin{equation}
+ M=LL^{\mathsf T}.
+\end{equation}
+Measure the stipulated target in reference units:
+\begin{equation}
+ W=L^{-1}C_hL^{-\mathsf T}.
+\end{equation}
+Define its departure from the identity by
+\begin{equation}
+ E=I-W.
+\end{equation}
+The desired inverse in these units is
+\begin{equation}
+ W^{-1}=(I-E)^{-1}.
+\end{equation}
+For an eigenvector of $E$ with eigenvalue $e$, this reduces to the scalar
+problem of approximating $1/(1-e)$. Multiplying a finite geometric sum
+makes every interior term cancel:
+\begin{equation}
+ (1-e)(1+e+e^2+\cdots+e^q)=1-e^{q+1}.
+\end{equation}
+Divide by $1-e$ and subtract the desired inverse:
+\begin{equation}
+ \sum_{j=0}^{q}e^j-\frac{1}{1-e}
+ =-\frac{e^{q+1}}{1-e}.
+\end{equation}
+Finally divide by $1/(1-e)$ to obtain the relative inverse error:
+\begin{equation}
+ \epsilon_q=-e^{q+1}.
+\end{equation}
+It tends to zero only when $|e|<1$. Our sample diagnostic gives eigenvalues
+from $-58.5985$ to $0.8760$. The largest magnitude is far outside that
+range. More maps reduce sampling error around the generator's covariance;
+they do not make a badly chosen starting matrix approach it.
+
+\paragraph{Why simply inflating the reference is insufficient.}
+As a diagnostic, we multiply only $D_0$ by fixed trial factors and repeat
+the deterministic sample calculation. These choices were inspected after
+seeing the data; they are not independently specified PME estimates. Even
+a factor of 32 leaves an eigenvalue of $W$ near 2.39, outside the interval
+$(0,2)$ needed for convergence. A factor of 64 puts the sample spectrum
+inside that interval, but its smallest eigenvalue is about 0.00552.
+The corresponding sixth-order relative error has magnitude about 0.962.
+The series now converges eventually, yet six terms beyond the identity
+are nowhere near sufficient in that direction. A useful low-order
+reference must describe covariance directions as well as overall scale.
+
+\paragraph{Test the implementation separately from the reference.}
+The notebook's distinct-independent-pair recurrence agrees with explicit
+enumeration of matrix products through degree six. A small repeated
+Gaussian experiment checks its mean against the deterministic polynomial.
+For a further control with 1,878 draws and 420 dimensions, the reference
+is set to the exact identity covariance and its leading 340-dimensional
+block is fixed. The minimum conditional-precision eigenvalues at orders
+2, 4 and 6 are respectively 0.378, 0.371 and 0.143: all positive in this
+seeded control. This checks a relevant numerical regime. One such control
+does not establish estimator accuracy or positivity for every realization.
+
+\paragraph{What fails on the measured vectors.}
+The corresponding minimum conditional-precision eigenvalues for the
+actual vectors, in the original reference units, are approximately
+$-2.53$, $-1.69\times10^5$ and $-2.09\times10^9$. None defines a covariance
+through the conditional construction. Unbiased estimation of a finite
+matrix polynomial does not guarantee positivity in each realization.
+Our estimator uses distinct pair factors in their original order, so
+individual estimates also depend on pairing and order. It is an extension
+of the precision-expansion idea, not the original paper's Gaussian
+second-order formula. Its final fixed-$A$ reconstruction is nonlinear
+and is not claimed unbiased. These qualifications must accompany any
+future performance comparison.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{plots/full_joint_audit/comparison.png}
+\caption{The varying rows only. Upper triangles show the direct sample;
+lower triangles show either the starting reference or fixed $A$ with
+sample cross and third-order blocks. Differences use the same sample
+standard deviations in both panels. These are not PME covariance plots:
+no valid PME covariance was obtained in this run.}
+\end{figure}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.94\linewidth]{plots/full_joint_audit/precision_eigenvalues.png}
+\caption{Signed conditional-precision eigenvalues. A negative eigenvalue
+invalidates the proposed covariance. The vertical scale is logarithmic
+away from zero and linear near zero, so both signs remain visible.}
+\end{figure}
+\FloatBarrier
+
+\paragraph{What the published measurement comparison establishes.}
+Gomes et al.~\cite{gomes} use NSIDE1024, with galaxy-position noise before
+pixel averaging. Their roughly eight-arcminute lower triangle-side cut
+was checked at that resolution. It cannot be assumed validated at our
+coarser NSIDE512 resolution. The file supplied here also records
+\texttt{NSIM=500}, whereas the paper describes 796 footprints; the lineage
+of this particular covariance should be confirmed before using its
+simulation count in a likelihood. Neither issue makes Rafael's result
+inconsistent: our measurement and this specific archived file need to
+be identified correctly. For the present estimator benchmark, no exact
+reproduction of that published experiment is required.
+
+\paragraph{The next decision is about the benchmark, not more map count.}
+Retain the maps and completed measurements. Use the same selected rows
+and the same fixed $A$ on both sides of the estimator comparison. Develop
+a positive reference close enough to this generated ensemble's stipulated
+covariance that low-order truncation is actually small. References chosen
+using the correction data need their dependence acknowledged; they cannot
+inherit an independent-reference unbiasedness claim automatically. Before
+resuming a large measurement allocation, decide whether the supported
+pixel-scale observable is the intended benchmark. For subsequent DES
+interpretation, small matched Rafael/GPTG measurements should retain pair
+and triangle weights and vary angular cuts and multipole truncation.
+The existing final-vector checkpoints do not contain those weights, so
+they cannot resolve all those questions retrospectively.
+
+\paragraph{A later correction with Rafael's simulations is possible.}
+A positive covariance constructed from GPTG can serve as a new reference
+for precision expansion using Rafael's maps. The reference need not be
+purely analytical. It must describe the same observable and be sufficiently
+close for the chosen truncation. The present indefinite PME results cannot
+be used for this purpose. Moreover, the calibration uses Rafael parent
+runs 0--31. New synthetic random seeds do not remove dependence on those
+parents. To apply the independent-reference argument in that second
+experiment, use correction parents absent from the fit, or account for
+reused calibration information explicitly. Noise rotations and separate
+footprints of the same parent are not new independent parents. This is
+separate from the immediate conditional Kunhao-ensemble experiment, for
+which the new maps are independent draws from the fitted model.
 
 \section{From harmonic coefficients to pixels, and back again}
 \label{sec:sht-teaching}

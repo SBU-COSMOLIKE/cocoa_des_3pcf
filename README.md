@@ -502,11 +502,16 @@ operator/placement contributions and closure.
 ### Fixed analytical two-point block in the map experiment
 
 Section 13 of the [covariance teaching note](notes/covariance_from_simulations/covariance_from_simulations.pdf)
-derives the fixed-block correction step by step. The main test uses **all
-480 entries**: 400 xi-plus/minus entries and 80 third-order aperture entries.
-The full analytical G+SSC+cNG 400-by-400 block stays fixed. Only cross and
-three-point information is corrected. The earlier 16-entry and four-xi-bin
-exercises remain historical algebra diagnostics, not this science comparison.
+derives the fixed-block correction step by step. The checkpoint layout has
+400 xi-plus/minus entries and 80 third-order aperture entries. **At NSIDE512,
+the first three angular bins of every xi pair contain no distinct pixel
+pairs.** Their zero entries are missing measurements, so the full sample
+covariance cannot be inverted. The [map note](notes/gptg_simulations/gptg_simulations.pdf)
+and its companion notebook explain the geometry and explicitly select the
+varying rows for diagnosis. Both fixed-block methods keep the same analytical
+G+SSC+cNG two-point block on those rows; only cross and three-point information
+is estimated. The immediate target is the covariance of the generated ensemble,
+not reproduction of Rafael's published covariance.
 
 **TreeCorr 5.1.2**, by Mike Jarvis and contributors, measures the vector:
 `GGCorrelation` for ten source pairs and twenty angular bins, then
@@ -514,8 +519,9 @@ exercises remain historical algebra diagnostics, not this science comparison.
 and four equal aperture radii. **mpi4py and Open MPI** distribute independent
 measurements across ranks. Each measurement rank uses one CPU, even when
 TreeCorr was built with OpenMP. A separate coordinator writes the results.
-The laptop currently prioritizes map generation: three MPI workers each use
-four transform threads; the full measurement is paused. BLAS stays one.
+BLAS stays one. Before a large measurement run, check angular-bin support
+and match the starting covariance to the generated-map experiment. A finite
+output value alone does not establish that a bin contained pairs.
 
 From activated **Cocoa/**, with DES Y3 covariance support compiled, calculate
 and save all analytical components:
@@ -524,11 +530,15 @@ and save all analytical components:
 python projects/des_y3/covariance/compute_covariance.py projects/des_y3/EXAMPLE_EVALUATE_COVARIANCE.yaml --output projects/des_3pcf/chains/gptg_ensemble_15000/des_y3_full_covariance.npz
 ```
 
-Submit the full measurement using the single Slurm file below. After the
-saved vectors are complete, use `analyze_full_joint()` in the companion
-notebook. Its analysis selection is explicitly labeled; measuring more maps does
-not silently change the chosen analysis ensemble. The
-notebook separates measurement, estimation and independent validation.
+The single Slurm file below describes submission and resume. For existing
+measurements, use the **Audit the downloaded full-vector measurements** section
+of the companion notebook. It reads all complete checkpoints, excludes partial
+vectors, checks duplicate IDs, and saves the selected IDs. It runs no TreeCorr
+measurement. Additional downloaded checkpoints change this explicitly reported
+sample on rerun. The starting Map3 block currently comes from a released
+simulation covariance, not an analytical calculation. The audit tests whether
+that reference is close enough for precision expansion and refuses to present
+an indefinite precision as a valid covariance.
 
 ### MPI generation and TreeCorr measurements on HPC
 
