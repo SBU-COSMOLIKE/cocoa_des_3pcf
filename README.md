@@ -812,6 +812,40 @@ are not required. The project checkout must include `data/upstream_y3/`.
 Wait until generation finishes and transfers are complete before launching
 the full measurement job; do not expose partially copied `.npy` files.
 
+#### Starting measurement while uploads continue
+
+Set `GPTG_WAIT_FOR_READY=1` before `sbatch` to enable arrival-aware dispatch:
+
+```bash
+export GPTG_WAIT_FOR_READY=1
+```
+
+The coordinator maintains one shared queue of tomographic tasks. Workers
+receive tasks from uploaded maps, not fixed strides through the ensemble.
+A map has 30 tasks, so several ranks may work on the same uploaded map.
+Unavailable maps are skipped until they arrive; completed measurement tasks
+are still skipped on resume. New arrivals are checked every ten seconds.
+Idle ranks wait when no ready work remains. Waiting consumes allocated wall
+time, so upload a useful initial batch before submission.
+
+In this mode a map needs a companion `.npy.ready` file created **only after
+a successful transfer**. File existence alone cannot distinguish a complete
+map from an interrupted `rsync -P` upload. From local `comparison/`, use:
+
+```bash
+ls *.npy | xargs -P 20 -I {} sh -c 'rsync -avP "$1" vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/comparison/ && ssh vivianmiranda@filexfer.hpc.arizona.edu "touch /xdisk/timeifler/vivianmiranda/gptg/comparison/$1.ready"' sh {}
+```
+
+The `&&` creates the marker only if rsync succeeds. Repeat from validation/
+with both remote `comparison/` occurrences changed to `validation/`.
+Rerunning this command for already uploaded files skips matching data and
+creates any missing markers. Do not create markers merely from a remote
+file listing, and never overwrite a marked map while measurements run.
+Transfer `indices_512.npy` and the required project inputs before submitting.
+Keep `GPTG_MAP_DIR` set to the remote parent directory as described below.
+The default mode still assumes transfers are complete. This scheduling
+change has not yet been exercised on the HPC; no local TreeCorr run was made.
+
 #### Transferring the maps to UofA
 
 Vivian transfers the comparison maps from a terminal on the laptop, with

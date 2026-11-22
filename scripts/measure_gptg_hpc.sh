@@ -17,6 +17,11 @@ export VECLIB_MAXIMUM_THREADS=1
 export PYTHONPATH="${PYTHONPATH:-}"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
 cd "${ROOTDIR}/projects/des_3pcf"
+# Opt in while maps are still arriving. Markers must follow successful rsync.
+GPTG_READY_ARGS=()
+if [ "${GPTG_WAIT_FOR_READY:-0}" = 1 ]; then
+  GPTG_READY_ARGS=(--wait-for-ready)
+fi
 # Leave the transport to the cluster's MPI configuration. In particular,
 # do not exclude its inter-node network or force a legacy Open MPI BTL.
 "${CONDA_PREFIX}/bin/mpirun" -n "${1:?Supply total MPI ranks}" \
@@ -27,5 +32,5 @@ cd "${ROOTDIR}/projects/des_3pcf"
   --mca mpi_yield_when_idle 1 --bind-to core --report-bindings \
   --map-by slot:PE=${OMP_NUM_THREADS} \
   "${ROOTDIR}/.local/bin/python" -u \
-  notes/gptg_simulations/measure_full_joint_mpi.py --count "${2:-40000}" \
+  notes/gptg_simulations/measure_full_joint_mpi.py --count "${2:-40000}" "${GPTG_READY_ARGS[@]}" \
   --maps-dir "${GPTG_MAP_DIR:-${ROOTDIR}/projects/des_3pcf/chains/gptg_ensemble_15000}"

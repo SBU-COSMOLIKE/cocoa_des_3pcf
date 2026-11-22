@@ -15,6 +15,7 @@ import os
 for name in ('OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS',
              'VECLIB_MAXIMUM_THREADS', 'OMP_NUM_THREADS'):
     os.environ[name] = '1'
+from collections import deque
 import argparse
 from itertools import combinations_with_replacement
 from pathlib import Path
@@ -34,6 +35,8 @@ def main():
     parser.add_argument('--maps-dir', type=Path,
                         default=PROJECT / 'chains/gptg_ensemble_15000')
     parser.add_argument('--smoke-pixels', type=int, default=0)
+    parser.add_argument('--wait-for-ready', action='store_true',
+                        help='Only dispatch maps with a completed-transfer .npy.ready marker.')
     args = parser.parse_args()
     if not 1 <= args.count <= 40000:
         raise ValueError('count must be between 1 and 40000.')
@@ -92,15 +95,40 @@ def main():
         # enlarged target finished. Keep its history while new tasks run.
         if pending and (output / 'COMPLETE.txt').exists():
             (output / 'COMPLETE.txt').rename(output / f'COMPLETE.before_{args.count}.txt')
-        iterator = iter(pending)
+        # Workers receive the next available task, never a fixed map slice.
+        # Readiness markers are written only after rsync succeeds. A visible
+        # .npy alone may be an interrupted partial upload.
+        waiting = pending
+        available = deque()
+        idle = list(range(1, size))
         active = 0
-        for worker in range(1, size):
-            task = next(iterator, None)
-            comm.send(task, dest=worker)
-            active += task is not None
-        while active:
-            while not comm.Iprobe(source=MPI.ANY_SOURCE):
+        next_scan = 0.
+        while waiting or available or active:
+            if waiting and time.monotonic() >= next_scan:
+                ready = set()
+                if args.wait_for_ready:
+                    for group in ('comparison', 'validation'):
+                        for marker in (folder / group).glob('GPTG_DES_*.npy.ready'):
+                            local = int(marker.name.split('_')[-1].split('.')[0])
+                            if group == 'comparison':
+                                number = local if local < 10000 else local+5000
+                            else:
+                                number = local+10000 if local < 5000 else local+30000
+                            ready.add(number)
+                remaining = []
+                for task in waiting:
+                    if not args.wait_for_ready or task[0] in ready:
+                        available.append(task)
+                    else:
+                        remaining.append(task)
+                waiting = remaining
+                next_scan = time.monotonic()+10.
+            while idle and available:
+                comm.send(available.popleft(), dest=idle.pop())
+                active += 1
+            if not comm.Iprobe(source=MPI.ANY_SOURCE):
                 time.sleep(.02)
+                continue
             status = MPI.Status()
             number, job, result, seconds = comm.recv(source=MPI.ANY_SOURCE, status=status)
             values = vectors[number]
@@ -117,10 +145,10 @@ def main():
                   'complete', np.count_nonzero(np.isfinite(values)), flush=True)
             if np.all(np.isfinite(values)):
                 del vectors[number]
-            task = next(iterator, None)
-            comm.send(task, dest=status.Get_source())
-            if task is None:
-                active -= 1
+            idle.append(status.Get_source())
+            active -= 1
+        for worker in range(1, size):
+            comm.send(None, dest=worker)
         (output / 'COMPLETE.txt').write_text(f'{args.count} full joint vectors complete.\n')
         return
     indices = np.load(folder / 'indices_512.npy')
