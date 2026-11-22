@@ -473,3 +473,10 @@ EXAMPLE_EVALUATE1.ipynb. Do not recreate a preparation CLI. The bundled source
 file remains the input; the notebook verifies its samples and can write an
 optional copy under chains/. tests/test_prepare_demo_sources.py executes the
 actual teaching cells on hand-integrated curves and the bundled FITS.
+
+Comments should explain behavior without repeating changeable run settings.
+Do not hard-code ensemble sizes, allocated MPI worker counts or wall-time
+limits in explanatory comments. Keep those values in the executable options
+or Slurm directives; describe the coordinator, remaining workers, requested
+map count and configured time limit in words. Scientific constants and exact
+file names may still need explicit documentation.

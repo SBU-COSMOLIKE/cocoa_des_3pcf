@@ -13,7 +13,7 @@
 #SBATCH --export=ALL
 
 # Submit from the activated Cocoa directory containing start_cocoa.sh.
-# One of the 960 ranks coordinates; the other 959 measure whole maps.
+# One MPI rank coordinates; the remaining ranks measure whole maps.
 # No per-socket constraint: use Slurm's configured topology for these nodes.
 echo "Running on host $(hostname)"
 echo "Time is $(date)"
@@ -62,11 +62,11 @@ if [ "${GPTG_WAIT_FOR_READY:-0}" = 1 ]; then
   GPTG_READY_OPTION="--wait-for-ready"
 fi
 
-# Measure all 30000 comparison + 10000 validation maps. Rank zero keeps the
-# saved vectors in the maps folder's full_joint_480/ directory. Finite entries
-# survive resubmission; only unfinished tasks are dispatched to workers.
-# Keep the same maps folder when resubmitting after the 24-hour limit, and
-# never run two jobs writing to that folder at the same time.
+# Measure the map count requested below. The coordinator saves vectors in
+# the maps folder's measurement output directory. Finite entries survive
+# resubmission; only unfinished tasks are dispatched to workers.
+# Keep the same maps folder when resubmitting after the wall-time limit,
+# and never run two jobs writing to that folder at the same time.
 "${CONDA_PREFIX}/bin/mpirun" -n "${SLURM_NTASKS}" \
   -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \
   -x OMP_NUM_THREADS -x OMP_PROC_BIND -x OMP_PLACES -x OMP_DYNAMIC \
