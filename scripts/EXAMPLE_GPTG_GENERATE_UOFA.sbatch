@@ -2,10 +2,10 @@
 #SBATCH --job-name=D3PCF_GEN
 #SBATCH --output=D3PCF_GEN-%j.out
 #SBATCH --error=D3PCF_GEN-%j.err
-#SBATCH --nodes=3
-#SBATCH --ntasks=270
-#SBATCH --ntasks-per-node=90
-#SBATCH --ntasks-per-socket=45
+#SBATCH --nodes=5
+#SBATCH --ntasks=300
+#SBATCH --ntasks-per-node=60
+#SBATCH --ntasks-per-socket=30
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=450G
 #SBATCH --time=24:00:00
@@ -33,15 +33,41 @@ fi
 # The calibration folder contains calibration.yaml, calibration.npz and
 # the input indices_<calibration NSIDE>.npy. Its fitted harmonic cutoff is
 # retained: changing the output pixels does not invent small-scale power.
-# Use a new output folder for the new resolution. Counts are explicit so
-# submitting this example cannot silently start a large unvalidated ensemble.
+# Use a new output folder for a new resolution or calibration.
+# Counts may be reduced through the environment for a generation pilot.
 : "${GPTG_CALIBRATION_DIR:?Set the folder containing the frozen calibration}"
 : "${GPTG_OUTPUT_DIR:?Set a separate output folder for this ensemble}"
-: "${GPTG_COMPARISON_COUNT:?Set the number of comparison maps}"
-: "${GPTG_VALIDATION_COUNT:?Set the independent validation count, or zero}"
+GPTG_COMPARISON_COUNT="${GPTG_COMPARISON_COUNT:-10000}"
+GPTG_VALIDATION_COUNT="${GPTG_VALIDATION_COUNT:-5000}"
 GPTG_NSIDE="${GPTG_NSIDE:-2048}"
+GPTG_LMAX="${GPTG_LMAX:-4096}"
 echo "Output ensemble: ${GPTG_OUTPUT_DIR}"
-echo "Target NSIDE: ${GPTG_NSIDE}; harmonic cutoff comes from calibration.yaml"
+echo "Target NSIDE: ${GPTG_NSIDE}; required harmonic cutoff: ${GPTG_LMAX}"
+echo "Maps: ${GPTG_COMPARISON_COUNT} comparison; ${GPTG_VALIDATION_COUNT} validation"
+
+# Check before launching MPI. LMAX selects a required calibration; it does
+# not extrapolate its spectrum. Check the frozen output copy on resume too.
+"${ROOTDIR}/.local/bin/python" - "${GPTG_CALIBRATION_DIR}" "${GPTG_OUTPUT_DIR}" "${GPTG_LMAX}" <<'PYTHON'
+from pathlib import Path
+import sys
+import yaml
+
+expected = int(sys.argv[3])
+for index, directory in enumerate(sys.argv[1:3]):
+    path = Path(directory) / 'calibration.yaml'
+    if index == 1 and not path.exists():
+        continue
+    record = yaml.safe_load(path.read_text())
+    if record['lmax'] != expected:
+        raise SystemExit(
+            f'{path}: lmax={record["lmax"]}, expected {expected}. '
+            'Supply a calibration fitted at the requested cutoff; '
+            'do not change only its YAML value.'
+        )
+PYTHON
+if [ "$?" -ne 0 ]; then
+    exit 1
+fi
 
 export OMP_PROC_BIND=close
 export OMP_PLACES=cores
@@ -61,8 +87,8 @@ ulimit -u 2000000
 unset OMPI_MCA_btl_tcp_if_include
 # Each worker owns one CPU core. Limit native transforms and BLAS to one
 # thread so independent maps use the allocation without oversubscription.
-# CPU memory was checked for the band-limited engineering pilot; remeasure
-# before increasing the harmonic cutoff or workers per node.
+# Worker memory was measured locally at this cutoff. Check HPC peak RSS
+# in a pilot before filling the allocation with production workers.
 "${CONDA_PREFIX:?Activate Cocoa}/bin/mpirun" -n "${SLURM_NTASKS}" \
   --mca pml ob1 --mca btl vader,tcp,self \
   -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \

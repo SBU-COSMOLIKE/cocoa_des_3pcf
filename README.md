@@ -1457,7 +1457,13 @@ python -m pip install --no-deps --prefer-binary --prefix="${ROOTDIR}/.local" 'du
 The calibration folder must contain `calibration.yaml`, `calibration.npz`
 and `indices_<calibration NSIDE>.npy` in RING order. The output must be a
 separate folder for a different resolution. Set its counts deliberately;
-validation may be zero for a generation pilot.
+validation may be zero for a generation pilot. The script provides the
+comparison and validation count defaults; the environment overrides them.
+Its required harmonic cutoff is also declared in the script. Both the input
+calibration and any frozen output calibration must match it before MPI starts.
+`GPTG_LMAX` checks that cutoff; it does not extrapolate a spectrum. The old
+calibration stops at 1024 and cannot be used for this production configuration.
+A physically specified higher-multipole calibration is still needed.
 
 ```bash
 export GPTG_CALIBRATION_DIR="/absolute/path/to/frozen_calibration"
@@ -1472,15 +1478,17 @@ export GPTG_NSIDE=2048
 ```
 
 ```bash
-export GPTG_COMPARISON_COUNT=10
+export GPTG_COMPARISON_COUNT=10000
 ```
 
 ```bash
-export GPTG_VALIDATION_COUNT=0
+export GPTG_VALIDATION_COUNT=5000
 ```
 
-These count settings request a small pilot. Change them for a reviewed
-production run, then submit the same standalone script:
+These counts select the comparison ensemble and a separate validation
+ensemble. For a small HPC memory pilot, reduce the counts and the Slurm rank
+allocation first. Check maximum resident memory before the production run.
+After the calibration is available, submit the same standalone script:
 
 ```bash
 sbatch projects/des_3pcf/scripts/EXAMPLE_GPTG_GENERATE_UOFA.sbatch
@@ -1508,7 +1516,7 @@ The [higher-multipole checks](tests/gptg_pilot/high_multipole_validation.txt)
 separate band-limited recovery, nonlinear projection and complete-worker
 memory. The current solver fails a difficult band-edge test at the nominal
 maximum cutoff. At a lower tested cutoff, smoother-field agreement is good,
-but worker memory exceeds the allowance for the existing rank count.
-The Slurm allocation remains for the original band-limited calibration;
-remeasure and reduce concurrency before using a higher-cutoff calibration.
+and the updated Slurm allocation leaves room below its memory request
+using the measured local worker peak. That estimate is not an HPC memory
+measurement; check peak RSS before production at the selected cutoff.
 Finer pixels alone do not validate the missing high-multipole input physics.
