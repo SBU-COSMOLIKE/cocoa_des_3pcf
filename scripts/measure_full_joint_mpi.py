@@ -134,6 +134,10 @@ def main():
             status = MPI.Status()
             number, job, result, seconds = comm.recv(source=MPI.ANY_SOURCE, status=status)
             values = vectors[number]
+            # Announce a block only when this result completes it. Checking
+            # the previous state also avoids repeating milestones on resume.
+            block = values[:400] if job < 10 else values[400:]
+            block_was_complete = np.all(np.isfinite(block))
             if job < 10:
                 values[20*job:20*job+20] = result[:20]
                 values[200+20*job:220+20*job] = result[20:]
@@ -143,10 +147,11 @@ def main():
             temporary = path.with_suffix('.tmp')
             np.savetxt(temporary, values, header='xip[200] xim[200] Map3[80]; NaN means unfinished')
             temporary.replace(path)
-            print('map', number, 'task', job, 'seconds', round(seconds, 3),
-                  'completed entries',
-                  f'{np.count_nonzero(np.isfinite(values))}/{values.size}',
-                  flush=True)
+            if not block_was_complete and np.all(np.isfinite(block)):
+                print('map', number, '2pt done' if job < 10 else '3pt done',
+                      'completed entries',
+                      f'{np.count_nonzero(np.isfinite(values))}/{values.size}',
+                      flush=True)
             if np.all(np.isfinite(values)):
                 del vectors[number]
                 # Intermediate task messages checkpoint progress but do not

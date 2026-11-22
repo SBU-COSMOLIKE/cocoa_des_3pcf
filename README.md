@@ -639,25 +639,26 @@ squeue -u "$USER"
 
 #### Reading measurement progress
 
-A progress line describes one saved task for one simulation:
+Progress is printed when a map finishes a measurement block:
 
 ```text
-map 60 task 0 seconds 65.161 completed entries 40/480
+map 60 2pt done completed entries 400/480
+map 60 3pt done completed entries 480/480
 ```
 
-`map` is the simulation ID, and `task` identifies its tomographic
-calculation. Task zero measures source bin 1 correlated with itself:
-the angular bins of xi-plus and xi-minus supply the first saved entries.
-`seconds` is elapsed wall time for that task. The first task on a map also
-includes loading its data and constructing the TreeCorr catalogs; the timer
-does not include the coordinator's subsequent checkpoint write.
+`map` is the simulation ID. `2pt done` means all xi-plus and xi-minus
+entries are saved; `3pt done` means all Map3 entries are saved.
+`completed entries` counts finite entries for that map, not completed maps.
+The current vector has 400 two-point and 80 three-point entries; the map
+is complete when numerator and denominator agree.
 
-`completed entries` counts finite, saved data-vector entries for this map,
-not completed simulations. Its denominator is the vector length: the current
-measurement contains 400 two-point entries and 80 three-point entries.
-A map is finished when numerator and denominator agree. On resume, the count
-includes entries saved by earlier jobs. Early two-point timings alone cannot
-predict total runtime because the three-point tasks still remain.
+Every task still writes its checkpoint, even though individual tasks no
+longer print progress. A quiet log can therefore mean workers are computing
+within a block. Resume retains saved entries and announces only blocks that
+become complete during this run. Blocks already complete are not announced
+again. Older jobs retain the earlier per-task log format. The number of
+saved entries is not a fraction of elapsed work: three-point entries cost
+much more to measure than two-point entries.
 
 #### Resuming after the wall-time limit
 
