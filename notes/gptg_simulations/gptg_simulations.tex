@@ -1000,7 +1000,7 @@ after every completed map. A temporary file is renamed only after a map
 save completes; full-sky intermediates stay in memory. Restarting the same
 command resumes completed records instead of regenerating them:
 \begin{lstlisting}
-python projects/des_3pcf/scripts/generate_ensemble.py --workers 4
+mpirun -n 1 python projects/des_3pcf/scripts/generate_ensemble_mpi.py --threads 4
 \end{lstlisting}
 The serial command above is available for small runs. The current large
 run instead uses MPI with three CPU workers and one GPU scalar-transform

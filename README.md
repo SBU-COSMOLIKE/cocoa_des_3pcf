@@ -412,8 +412,16 @@ python scripts/generate_maps.py generate --count 64 --workers 4
 Generate the full 10,000 comparison plus 5,000 validation ensemble:
 
 ```bash
-python scripts/generate_ensemble.py --workers 4
+mpirun -n 1 python scripts/generate_ensemble_mpi.py --threads 4
 ```
+
+This is the same generator used for larger MPI runs. With `-n 1`, the sole
+process generates maps and writes the journals itself; it does not reserve
+a coordinator-only process. `--threads 4` gives that process four native
+transform threads. Use `--threads 1` for one computing thread. With `-n N`
+and N greater than one, rank zero coordinates and the other N-1 processes
+generate maps. BLAS stays at one in both cases.
+
 
 The ensemble copies and freezes the calibration on its first launch. Repeating
 this command resumes from its saved-map journal. Use `--limit 1000` for a
@@ -1190,7 +1198,7 @@ opening or running the teaching cells does not start those measurements.
 Production programs live in `scripts/`: `generate_maps.py` prepares the
 calibration, `generate_ensemble_mpi.py` generates maps, and
 `measure_full_joint_mpi.py` measures the full vector with TreeCorr.
-The serial generator, GPU transform implementation and completion verifier
+The GPU transform implementation and completion verifier
 are support code for those programs. `measure_joint_xip.py` retains the
 bounded TreeCorr measurement used in the early comparison. Submit the full
 measurement with `EXAMPLE_GPTG_TREECORR_UOFA.sbatch` as explained above.

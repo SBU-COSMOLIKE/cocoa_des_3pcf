@@ -439,3 +439,8 @@ normalization, each mathematical step and what each result establishes.
 
 Keep this note in one TeX source, `gptg_simulations.tex`; do not split
 its sections into additional TeX files. It has one PDF and one companion notebook.
+
+Use one ensemble entry point, scripts/generate_ensemble_mpi.py. With one MPI
+process rank zero computes and journals directly; with multiple processes
+rank zero coordinates. Do not recreate a separate serial driver. --threads
+controls native transform threads per computing process; BLAS stays one.
