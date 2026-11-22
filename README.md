@@ -820,11 +820,15 @@ Set `GPTG_WAIT_FOR_READY=1` before `sbatch` to enable arrival-aware dispatch:
 export GPTG_WAIT_FOR_READY=1
 ```
 
-The coordinator maintains one shared queue of tomographic tasks. Workers
-receive tasks from uploaded maps, not fixed strides through the ensemble.
-A map has 30 tasks, so several ranks may work on the same uploaded map.
-Unavailable maps are skipped until they arrive; completed measurement tasks
-are still skipped on resume. New arrivals are checked every ten seconds.
+The coordinator maintains one shared queue of **whole maps**. Each free
+worker takes the next uploaded, unfinished map and computes its remaining
+tomographic tasks. There are no fixed strides or predetermined map ranges
+per rank. The worker retains that map's catalogs and sends each task result
+to the coordinator for an immediate checkpoint; it receives another map only
+after finishing the current one. Saved tasks are skipped on resume.
+Unavailable maps are skipped until they arrive. With 2,000 ready maps there
+is enough initial work for all 959 measurement workers; fewer ready maps
+than workers will leave some workers waiting. New arrivals are checked every ten seconds.
 Idle ranks wait when no ready work remains. Waiting consumes allocated wall
 time, so upload a useful initial batch before submission.
 
@@ -843,8 +847,16 @@ creates any missing markers. Do not create markers merely from a remote
 file listing, and never overwrite a marked map while measurements run.
 Transfer `indices_512.npy` and the required project inputs before submitting.
 Keep `GPTG_MAP_DIR` set to the remote parent directory as described below.
-The default mode still assumes transfers are complete. This scheduling
-change has not yet been exercised on the HPC; no local TreeCorr run was made.
+The default mode still assumes transfers are complete. The coordinator was tested with fake MPI messages for whole-map ownership,
+late arrivals, partial resume and preservation of existing entries. Run that
+non-numerical test with:
+
+```bash
+python projects/des_3pcf/tests/gptg_pilot/test_map_dispatch.py
+```
+
+Actual multi-node execution still needs HPC validation; no local TreeCorr
+run was made.
 
 #### Transferring the maps to UofA
 

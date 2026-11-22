@@ -411,3 +411,12 @@ GPTG_MAP_DIR selects an absolute HPC folder (e.g. chains/gptg); the launcher
 passes --maps-dir and outputs remain in its full_joint_480 subfolder.
 The earlier paragraph describing the 15000-only HPC limit is superseded.
 Keep the selected folder identical on resubmission, with only one writer.
+
+
+TreeCorr scheduling uses a shared queue of whole ready maps. Each MPI worker
+owns its map through all unfinished tomographic jobs; intermediate results
+are checkpointed by rank zero without releasing the worker. Existing finite
+rows and map IDs are retained. Arrival-aware mode requires successful-rsync
+.npy.ready markers. tests/gptg_pilot/test_map_dispatch.py executes the actual
+coordinator AST with fake MPI messages, never TreeCorr, covering late arrivals
+and partial resume. Do not revert to static strides or task-level dispatch.

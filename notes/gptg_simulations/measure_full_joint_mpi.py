@@ -6,7 +6,7 @@ an explicit lower-edge >=8 arcmin cut on the original 20-bin side bank.
 NSIDE512 pixels have equal weights; these are not the original NSIDE1024
 catalogue measurements. No claim of exact published covariance reproduction.
 
-Rank zero dispatches independent tomographic measurements and saves small
+Rank zero dispatches whole maps with unfinished tomographic measurements and saves small
 text vectors. Other ranks use one CPU each; BLAS and native threads are one.
 With eight compute ranks plus four map-generation threads, the CPU budget
 is twelve. Rank zero handles messages/files only. No map copies are saved.
@@ -85,17 +85,19 @@ def main():
             values = np.loadtxt(path) if path.exists() else np.full(480, np.nan)
             if values.shape != (480,):
                 raise ValueError(f'Unexpected vector shape: {path}')
+            jobs = []
             for job in range(30):
                 indices = np.r_[np.arange(20*job, 20*job+20), np.arange(200+20*job, 220+20*job)] if job < 10 else np.arange(400+4*(job-10), 404+4*(job-10))
                 if not np.all(np.isfinite(values[indices])):
-                    pending.append((number, job))
-            if not np.all(np.isfinite(values)):
+                    jobs.append(job)
+            if jobs:
+                pending.append((number, jobs))
                 vectors[number] = values
         # A completion marker from a smaller prefix is not proof that the
         # enlarged target finished. Keep its history while new tasks run.
         if pending and (output / 'COMPLETE.txt').exists():
             (output / 'COMPLETE.txt').rename(output / f'COMPLETE.before_{args.count}.txt')
-        # Workers receive the next available task, never a fixed map slice.
+        # Workers receive the next available whole map, never a fixed map slice.
         # Readiness markers are written only after rsync succeeds. A visible
         # .npy alone may be an interrupted partial upload.
         waiting = pending
@@ -145,8 +147,10 @@ def main():
                   'complete', np.count_nonzero(np.isfinite(values)), flush=True)
             if np.all(np.isfinite(values)):
                 del vectors[number]
-            idle.append(status.Get_source())
-            active -= 1
+                # Intermediate task messages checkpoint progress but do not
+                # release the worker. It owns this map until all rows finish.
+                idle.append(status.Get_source())
+                active -= 1
         for worker in range(1, size):
             comm.send(None, dest=worker)
         (output / 'COMPLETE.txt').write_text(f'{args.count} full joint vectors complete.\n')
@@ -161,74 +165,78 @@ def main():
         task = comm.recv(source=0)
         if task is None:
             return
-        number, job = task
-        started = time.monotonic()
-        if cached_number != number:
-            # Preserve the original 15000 output IDs, including validation.
-            # Append new comparison maps, then new validation maps. Moving
-            # the old validation boundary would reuse results for wrong skies.
-            if number < 10000:
-                group, local_number = 'comparison', number
-            elif number < 15000:
-                group, local_number = 'validation', number-10000
-            elif number < 35000:
-                group, local_number = 'comparison', number-5000
+        number, jobs = task
+        # Keep all thirty tomographic calculations for a map on one worker.
+        # A resumed map receives only unfinished jobs. Send each result back
+        # immediately so the coordinator can save it before the next job ends.
+        for job in jobs:
+            started = time.monotonic()
+            if cached_number != number:
+                # Preserve the original 15000 output IDs, including validation.
+                # Append new comparison maps, then new validation maps. Moving
+                # the old validation boundary would reuse results for wrong skies.
+                if number < 10000:
+                    group, local_number = 'comparison', number
+                elif number < 15000:
+                    group, local_number = 'validation', number-10000
+                elif number < 35000:
+                    group, local_number = 'comparison', number-5000
+                else:
+                    group, local_number = 'validation', number-30000
+                path = folder / group / f'GPTG_DES_{local_number:06d}.npy'
+                while not path.exists():
+                    time.sleep(10)
+                maps = np.load(path, mmap_mode='r')
+                catalogs = []
+                for source in range(4):
+                    catalogs.append(treecorr.Catalog(
+                        ra=ra.degree,
+                        dec=dec.degree,
+                        ra_units='deg',
+                        dec_units='deg',
+                        g1=np.array(maps[source, 0, :len(indices)], dtype=np.float64),
+                        g2=np.array(maps[source, 1, :len(indices)], dtype=np.float64),
+                        flip_g2=True,
+                    ))
+                cached_number = number
+            if job < 10:
+                first, second = pairs[job]
+                corr = treecorr.GGCorrelation(
+                    min_sep=2.5,
+                    max_sep=250.,
+                    nbins=20,
+                    sep_units='arcmin',
+                    metric='Arc',
+                    bin_slop=0.,
+                    angle_slop=0.,
+                )
+                corr.process(cat1=catalogs[first],
+                             cat2=None if first == second else catalogs[second],
+                             num_threads=1)
+                result = np.r_[corr.xip, corr.xim]
             else:
-                group, local_number = 'validation', number-30000
-            path = folder / group / f'GPTG_DES_{local_number:06d}.npy'
-            while not path.exists():
-                time.sleep(10)
-            maps = np.load(path, mmap_mode='r')
-            catalogs = []
-            for source in range(4):
-                catalogs.append(treecorr.Catalog(
-                    ra=ra.degree,
-                    dec=dec.degree,
-                    ra_units='deg',
-                    dec_units='deg',
-                    g1=np.array(maps[source, 0, :len(indices)], dtype=np.float64),
-                    g2=np.array(maps[source, 1, :len(indices)], dtype=np.float64),
-                    flip_g2=True,
-                ))
-            cached_number = number
-        if job < 10:
-            first, second = pairs[job]
-            corr = treecorr.GGCorrelation(
-                min_sep=2.5,
-                max_sep=250.,
-                nbins=20,
-                sep_units='arcmin',
-                metric='Arc',
-                bin_slop=0.,
-                angle_slop=0.,
-            )
-            corr.process(cat1=catalogs[first],
-                         cat2=None if first == second else catalogs[second],
-                         num_threads=1)
-            result = np.r_[corr.xip, corr.xim]
-        else:
-            first, second, third = triples[job-10]
-            corr = treecorr.GGGCorrelation(
-                bin_type='LogMultipole',
-                min_sep=float(side_edges[first_side]),
-                max_sep=80.,
-                nbins=20-first_side,
-                max_n=100,
-                sep_units='arcmin',
-                metric='Arc',
-                bin_slop=0.,
-                angle_slop=0.,
-            )
-            if first == third:
-                corr.process(cat1=catalogs[first], num_threads=1)
-            else:
-                corr.process(cat1=catalogs[first], cat2=catalogs[second],
-                             cat3=catalogs[third], ordered=False, num_threads=1)
-            sas = corr.toSAS(min_phi=.016, max_phi=3.126, nphi_bins=63, phi_units='radians')
-            result = sas.calculateMap3(R=radii)[0]
-        if result.shape != ((40,) if job < 10 else (4,)) or not np.isfinite(result).all():
-            raise ValueError(f'Nonfinite or incorrectly sized measurement: map {number}, task {job}')
-        comm.send((number, job, result, time.monotonic()-started), dest=0)
+                first, second, third = triples[job-10]
+                corr = treecorr.GGGCorrelation(
+                    bin_type='LogMultipole',
+                    min_sep=float(side_edges[first_side]),
+                    max_sep=80.,
+                    nbins=20-first_side,
+                    max_n=100,
+                    sep_units='arcmin',
+                    metric='Arc',
+                    bin_slop=0.,
+                    angle_slop=0.,
+                )
+                if first == third:
+                    corr.process(cat1=catalogs[first], num_threads=1)
+                else:
+                    corr.process(cat1=catalogs[first], cat2=catalogs[second],
+                                 cat3=catalogs[third], ordered=False, num_threads=1)
+                sas = corr.toSAS(min_phi=.016, max_phi=3.126, nphi_bins=63, phi_units='radians')
+                result = sas.calculateMap3(R=radii)[0]
+            if result.shape != ((40,) if job < 10 else (4,)) or not np.isfinite(result).all():
+                raise ValueError(f'Nonfinite or incorrectly sized measurement: map {number}, task {job}')
+            comm.send((number, job, result, time.monotonic()-started), dest=0)
 
 
 if __name__ == '__main__':
