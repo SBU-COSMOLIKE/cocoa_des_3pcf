@@ -99,10 +99,29 @@ def spectra(first, second, ell, lmax):
     )/(2*np.arange(lmax+1)+1)
 
 
-def setup(lmax):
-    """Set fixed pixel geometry, quadrature and the convergence-to-shear factor."""
-    indices = np.load(file=PROJECT/'maps_cov_512_v2/indices_512.npy')
-    geometry = ducc0.healpix.Healpix_Base(512, 'RING').sht_info()
+def setup(lmax, nside=512, indices=None, index_nside=512):
+    """Set geometry and retain the same footprint when pixels are refined.
+
+    Input indices use RING ordering at index_nside. In NESTED ordering each
+    parent has contiguous children. Convert through that ordering to select
+    every child, then sort the resulting RING IDs for map storage. This keeps
+    the old mask boundary; it does not supply a finer measured DES mask.
+    Refining pixels does not extend the supplied harmonic spectrum.
+    """
+    if (index_nside < 1 or nside < index_nside or nside % index_nside
+            or nside & (nside-1) or index_nside & (index_nside-1)
+            or not 1 <= lmax < 3*nside):
+        raise ValueError('Use power-of-two NSIDE refinement and lmax < 3*NSIDE.')
+    if indices is None:
+        indices = np.load(file=PROJECT/'maps_cov_512_v2/indices_512.npy')
+    if nside != index_nside:
+        parent = ducc0.healpix.Healpix_Base(index_nside, 'RING')
+        target = ducc0.healpix.Healpix_Base(nside, 'RING')
+        children = (nside//index_nside)**2
+        nested = parent.ring2nest(indices.astype(np.int64))
+        nested = (nested[:, None]*children + np.arange(children)).ravel()
+        indices = np.sort(target.nest2ring(nested))
+    geometry = ducc0.healpix.Healpix_Base(nside, 'RING').sht_info()
     ell = harmonic_indices(lmax=lmax)
     factor = np.zeros(len(ell))
     valid = ell >= 2

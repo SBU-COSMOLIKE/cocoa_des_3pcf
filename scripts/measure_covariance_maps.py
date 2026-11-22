@@ -50,7 +50,7 @@ from threadpoolctl import threadpool_limits
 PROJECT = Path(__file__).resolve().parents[1]
 
 
-def aperture_weights(indices):
+def aperture_weights(indices, nside=512):
     """Build the fixed tangential-shear weights without reading any map.
 
     Equal-area HEALPix pixels approximate the angular integral. The Gaussian
@@ -61,14 +61,15 @@ def aperture_weights(indices):
     retained weight is saved; missing pixels are never filled with zero.
 
     Arguments:
-      indices = one-dimensional HEALPix RING pixel IDs at NSIDE 512.
+      indices = one-dimensional HEALPix RING pixel IDs at the given NSIDE.
+      nside = map resolution; the angular apertures stay fixed.
     Returns:
       first, second = sparse [128,npixel] matrices multiplying g1 and g2.
       geometry = [64,5] center pixel ID, RA, Dec, two retained Q weights.
     Raises:
       ValueError if there are fewer than 64 sufficiently enclosed centers.
     """
-    healpix = HEALPix(nside=512, order="ring")
+    healpix = HEALPix(nside=nside, order="ring")
     longitude, latitude = healpix.healpix_to_lonlat(healpix_index=indices)
     ra = longitude.to_value(unit=u.rad)
     dec = latitude.to_value(unit=u.rad)
@@ -79,7 +80,7 @@ def aperture_weights(indices):
     radii = np.deg2rad([0.5, 1.0])
     outer_angle = 4. * radii[-1]
     chord = 2. * np.sin(outer_angle / 2.)
-    pixel_area = 4. * np.pi / (12 * 512**2)
+    pixel_area = 4. * np.pi / (12 * nside**2)
     expected_count = 2. * np.pi * (1. - np.cos(outer_angle)) / pixel_area
     # Pick centers from geometry alone, before any covariance is inspected.
     # The broad candidates follow the retained pixels' deterministic order.

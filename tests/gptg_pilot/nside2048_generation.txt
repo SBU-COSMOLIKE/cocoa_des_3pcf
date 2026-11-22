@@ -1,0 +1,73 @@
+NSIDE2048 CPU engineering pilot, 22 November 2026
+
+Scope
+-----
+Ten comparison maps, IDs 0 through 9, under
+chains/gptg_nside2048_pilot/comparison/.
+There are no validation maps in this bounded pilot. Old ensembles are unchanged.
+The same seed schedule as the existing ensemble is used; different resolution
+does not make these seeds independent of their earlier-resolution counterparts.
+
+NSIDE=2048; lmax=1024, unchanged from the frozen NSIDE512 calibration.
+This checks generation at a finer pixel resolution. It does not establish
+new high-multipole calibration, finite-triangle convergence or DES accuracy.
+No TreeCorr calculation was run.
+
+One CPU process; four native transform threads; BLAS=1; no GPU.
+Generation and aperture arithmetic float64; saved pixels float32 and decoded
+to float64 for the saved 30/60-arcminute diagnostic aperture moments.
+
+Geometry and storage
+--------------------
+Full sky: 50,331,648 HEALPix pixels.
+Retained footprint: 5,907,040 RING pixels, the sixteen children of each
+retained original NSIDE512 pixel. Parent membership and uniqueness checked.
+This preserves the coarse mask boundary, not a new measured fine-resolution mask.
+Every saved map has shape (4,2,5907040) and float32 dtype.
+All pixels in all ten maps scanned for finiteness: pass.
+Exact requested IDs, seeds, journal counts and complete byte lengths: pass.
+Total ten-map file size: 1,890,254,080 bytes, including NumPy headers.
+Frozen calibration.npz and calibration.yaml bytes match their source files.
+
+Noise and saved precision
+-------------------------
+Pixel-noise standard deviation multiplier: four. Pixel area decreases by
+sixteen, so sigma_pixel^2 times pixel_area is unchanged.
+Disjoint neighbouring-pixel difference variance divided by twice the declared
+noise variance ranges from 0.99243637 to 1.00907412 over bins/components/maps.
+This is a finite-sample noise diagnostic; sky gradients also contribute.
+All saved aperture journal moments reproduced exactly from decoded pixels.
+
+Regenerating the first seed reproduced its saved float32 values exactly.
+For that map, maximum storage-rounding error / component noise sigma:
+2.1001138570902694e-7.
+Maximum fractional second-moment storage change: 1.2828113581870832e-8.
+Maximum absolute third-moment storage change: 2.5437633352725415e-16.
+These diagnostics do not substitute for the unperformed small-scale TreeCorr
+and covariance precision tests.
+
+Timing and memory
+-----------------
+Generation seconds per map: median 15.19107377; min 15.05801546;
+max 16.31312492. Save/decoded-measurement median: 0.24841371 seconds.
+Single-new-map process peak RSS: 4,145,676,288 bytes.
+Continuation producing eight maps peak RSS: 4,394,876,928 bytes.
+Peak RSS measured using Python resource.getrusage on macOS.
+These timings are for lmax1024, not an estimate for lmax4096 or lmax6143.
+
+The current Slurm allocation is declared in the single generation script.
+The per-worker peak is a memory estimate for allocation planning, not a
+measured multi-rank HPC peak; inspect MaxRSS during the first run. The pilot
+used four native threads, while the current allocation uses one per rank.
+Higher harmonic cutoffs require a fresh worker-memory measurement.
+
+Tests
+-----
+test_generation_geometry.py: exact RING child membership, unchanged base
+geometry, invalid refinement refusal, noise-area identity, new indices filename
+and comparison-only completion audit: pass.
+Single-file Slurm syntax and mocked CPU/rank/thread/path/transport launch: pass.
+Resume skips all completed maps; their byte sizes and modification times
+remain unchanged. A changed NSIDE is refused before rewriting metadata or
+journals: pass.
+ducc0==0.42.0 metadata requires numpy>=1.17.0; Cocoa's NumPy pin is retained.

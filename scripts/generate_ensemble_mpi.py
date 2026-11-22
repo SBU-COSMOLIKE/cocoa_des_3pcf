@@ -12,6 +12,13 @@ worker; --gpu-pipeline overlaps its CPU shear with next-bin scalar work.
 BLAS always one. Worker-count and overlap timing tests use fresh maps.
 One process computes directly, with no separate coordinator. The first launch
 copies the pilot calibration if the output folder has no frozen copy yet.
+
+--nside refines pixels inside the original footprint. The frozen harmonic
+cutoff and fitted transformation stay unchanged; this is an engineering
+test of finer pixels, not a calibration of new small-scale power. Independent
+pixel noise is rescaled to preserve its angular power. Use a separate output
+folder for each resolution. --calibration-dir makes the same inputs usable
+on another machine without copying the original large simulation archive.
 """
 import os
 for name in ('OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS'):
@@ -275,6 +282,12 @@ def generate_one(
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--threads', type=int, default=4)
+    parser.add_argument('--nside', type=int, default=None,
+                        help='Pixel NSIDE; defaults to the frozen calibration resolution.')
+    parser.add_argument('--calibration-dir', type=Path, default=OUTPUT,
+                        help='Folder containing the frozen calibration.yaml and calibration.npz.')
+    parser.add_argument('--indices-file', type=Path, default=None,
+                        help='RING footprint IDs at the calibration NSIDE.')
     parser.add_argument('--limit', type=int, default=None)
     parser.add_argument('--comparison-count', type=int, default=10000)
     parser.add_argument('--validation-count', type=int, default=5000)
@@ -323,8 +336,8 @@ def main():
     total = args.comparison_count + args.validation_count
     if args.limit is None:
         args.limit = total
-    if not 1 <= args.comparison_count <= 100000000 or args.validation_count < 1:
-        raise ValueError('Positive group counts and disjoint seed ranges are required')
+    if not 1 <= args.comparison_count <= 100000000 or args.validation_count < 0:
+        raise ValueError('Use positive comparison count and nonnegative validation count.')
     if args.threads < 1 or not 1 <= args.limit <= total:
         raise ValueError('Use positive threads and a limit within group totals.')
     generation_workers = max(1, size-1)
@@ -339,9 +352,38 @@ def main():
         for filename in ('calibration.yaml', 'calibration.npz'):
             destination = folder / filename
             if not destination.exists():
-                shutil.copy2(OUTPUT / filename, destination)
+                shutil.copy2(args.calibration_dir / filename, destination)
     comm.Barrier()
     record = yaml.safe_load((folder / 'calibration.yaml').read_text())
+    calibration_nside = int(record['nside'])
+    nside = calibration_nside if args.nside is None else args.nside
+    # Keep the fitted spectrum and point-transform parameters unchanged. The
+    # target NSIDE controls only pixel geometry and its white-noise variance.
+    # Noise power is sigma_pixel^2 * pixel_area, so sigma scales with NSIDE.
+    noise_scale = nside/calibration_nside
+    source_indices = args.indices_file
+    if source_indices is None:
+        source_indices = args.calibration_dir / f'indices_{calibration_nside}.npy'
+        if not source_indices.exists():
+            source_indices = PROJECT / 'maps_cov_512_v2' / f'indices_{calibration_nside}.npy'
+    input_indices = np.load(source_indices, allow_pickle=False)
+    indices, geometry, ell, factor, nodes, weights = setup(
+        lmax=record['lmax'],
+        nside=nside,
+        indices=input_indices,
+        index_nside=calibration_nside,
+    )
+    index_name = f'indices_{nside}.npy'
+    # Refuse a changed geometry before initializing large worker arrays or
+    # opening journals. The original ensemble's metadata predates this key.
+    if (folder / 'ensemble.yaml').exists():
+        previous = yaml.safe_load((folder / 'ensemble.yaml').read_text())
+        if previous.get('nside', calibration_nside) != nside:
+            raise ValueError('NSIDE changed; use a separate output ensemble.')
+        if previous.get('lmax', record['lmax']) != record['lmax']:
+            raise ValueError('Harmonic cutoff changed; use a separate ensemble.')
+    if (folder / index_name).exists():
+        np.testing.assert_array_equal(np.load(folder / index_name), indices)
     fit_hash = hashlib.sha256((folder / 'calibration.npz').read_bytes()).hexdigest()
     reserve = 50_000_000_000
     counts = [('comparison', args.comparison_count, 341104759),
@@ -349,9 +391,12 @@ def main():
     # With one MPI process, rank zero also computes maps. Otherwise only
     # worker ranks allocate the transform tables; the coordinator stays light.
     if size == 1 or rank != 0:
-        data = np.load(folder / 'calibration.npz')
-        indices, geometry, ell, factor, nodes, weights = setup(lmax=record['lmax'])
-        first, second, centers = aperture_weights(indices=indices)
+        # Own the small calibration arrays so the noise rescaling cannot
+        # modify the frozen file or another worker's input state.
+        with np.load(folder / 'calibration.npz') as saved:
+            data = {name: saved[name] for name in saved.files}
+        data['noise_sigma'] = data['noise_sigma']*noise_scale
+        first, second, centers = aperture_weights(indices=indices, nside=nside)
         latent, variance, repair, diagonal = gaussian_spectra(
             cl=data['cl_target'], parameters=data['parameters'], nodes=nodes, weights=weights)
         eigenvalues, eigenvectors = np.linalg.eigh(latent)
@@ -367,11 +412,8 @@ def main():
         metadata = yaml.safe_load(manifest.read_text()) if manifest.exists() else {}
         if metadata.get('calibration_sha256', fit_hash) != fit_hash:
             raise ValueError('Frozen calibration hash changed; do not mix ensembles.')
-        indices = np.load(PROJECT / 'maps_cov_512_v2/indices_512.npy')
-        if (folder / 'indices_512.npy').exists():
-            np.testing.assert_array_equal(np.load(folder / 'indices_512.npy'), indices)
-        else:
-            np.save(folder / 'indices_512.npy', indices)
+        if not (folder / index_name).exists():
+            np.save(folder / index_name, indices)
         bytes_per_map = 4*2*len(indices)*4+128
         pending = []
         streams = {}
@@ -446,6 +488,16 @@ def main():
                         comparison_count=args.comparison_count,
                         validation_count=args.validation_count,
                         comparison_seed_start=341104759, validation_seed_start=441104759)
+        metadata.update(
+            nside=nside,
+            lmax=int(record['lmax']),
+            calibration_nside=calibration_nside,
+            indices_file=index_name,
+            pixel_noise_sigma_multiplier=noise_scale,
+            footprint='all children of the supplied calibration RING pixels',
+            resolution_scope=('original fitted resolution' if nside == calibration_nside
+                              else 'engineering pilot; frozen band-limited calibration, not high-resolution DES validation'),
+        )
         # An earlier smaller ensemble may already have passed its audit.
         # Archive those records before extending it so they cannot be mistaken
         # for completion of the new target. Existing maps stay untouched.

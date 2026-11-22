@@ -11,9 +11,9 @@ import yaml
 
 
 def verify_ensemble(folder):
-    indices = np.load(folder / 'indices_512.npy')
-    shape = (4, 2, len(indices))
     metadata = yaml.safe_load((folder / 'ensemble.yaml').read_text())
+    indices = np.load(folder / metadata.get('indices_file', 'indices_512.npy'))
+    shape = (4, 2, len(indices))
     comparison_count = int(metadata['comparison_count'])
     validation_count = int(metadata['validation_count'])
     checked = 0
@@ -21,7 +21,16 @@ def verify_ensemble(folder):
         ('comparison', comparison_count, int(metadata['comparison_seed_start'])),
         ('validation', validation_count, int(metadata['validation_seed_start'])),
     ):
-        journal = np.loadtxt(folder / f'{group}_measurements.txt', ndmin=2)
+        journal_path = folder / f'{group}_measurements.txt'
+        if count:
+            journal = np.loadtxt(journal_path, ndmin=2)
+        else:
+            # A comparison-only pilot still creates both group directories.
+            # Its unused validation journal must contain only the header.
+            if any(line.strip() and not line.startswith('#')
+                   for line in journal_path.read_text().splitlines()):
+                raise ValueError(f'{group}: unexpected rows for an empty group')
+            journal = np.empty((0, 20))
         if journal.shape != (count, 20):
             raise ValueError(f'{group}: incomplete journal or unexpected columns')
         np.testing.assert_array_equal(journal[:, 0], np.arange(count))
