@@ -2611,11 +2611,319 @@ candidate for further work; they do not complete a small-scale DES
 validation. We still need a specified high-multipole signal and one-point
 model, tests against higher-resolution measurements, matched pixel and
 triangle conventions, and convergence of the actual selected observables.
-The present calibration remains unchanged and production stays paused.
+These engineering tests did not alter the original calibration. The next
+section defines and tests a separate model with physical input power.
 All test calculations are visible in the companion notebook; the bounded
 results and settings are recorded in
 \texttt{tests/gptg\_pilot/high\_multipole\_validation.txt}.
 
+
+\section{A specified model through multipole 4096}
+\label{sec:physical4096}
+\paragraph{Separate a controlled experiment from a reproduction of DES.}
+Our immediate question is whether precision-matrix expansion can recover
+cross and three-point covariances in a large measured vector. We therefore
+need a reproducible probability model from which independent maps can be
+drawn. We can define that model without first proving that it reproduces
+every correlation of an expensive gravity simulation. The model below uses
+physical lensing power and prescribed nonlinear point transformations.
+It permits an estimator experiment. Agreement with Rafael's small-scale
+measurements is a further scientific question, not a consequence of
+successful map generation.
+
+\paragraph{Specify the background before the random sky.}
+For the maps we choose
+\begin{equation}
+ \Omega_m=0.26,\qquad \Omega_b=0.0493,\qquad h=0.673.
+\end{equation}
+The primordial tilt, present-day fluctuation amplitude and neutrino mass are
+\begin{equation}
+ n_s=0.9649,\qquad \sigma_8=0.84,\qquad \sum m_\nu=0.06\ {\rm eV}.
+\end{equation}
+The matter fraction includes cold dark matter, baryons and massive
+neutrinos. Dark energy has $w_0=-1$ and $w_a=0$. The source distributions
+are the project's demonstration DES Y3 input, including its recorded
+clipping and normalization. Intrinsic alignments, shear-calibration
+multipliers and baryonic response are set to zero. CAMB supplies the
+Takahashi nonlinear matter power through the ordinary Cobaya model;
+CosmoLike projects it into the ten source-pair shear spectra. The
+calibration cell does not implement a separate cosmological calculator.
+
+\paragraph{Convert the field that theory supplies into the field we generate.}
+The point transformation acts on convergence. The core supplies E-mode
+shear power. Their spherical coefficients differ by the spin-two factor
+\begin{equation}
+ q_\ell=\sqrt{\frac{(\ell+2)(\ell-1)}{\ell(\ell+1)}},\qquad \ell\geq2.
+\end{equation}
+A power spectrum contains a product of two coefficients, so
+\begin{equation}
+ C_{\ell,ij}^{EE}=q_\ell^2 C_{\ell,ij}^{\kappa\kappa}.
+\end{equation}
+The input to the convergence generator is consequently
+\begin{equation}
+ C_{\ell,ij}^{\kappa\kappa}=\frac{C_{\ell,ij}^{EE}}{q_\ell^2}.
+\end{equation}
+Indices $i,j$ visit the four source bins. Each multipole has a four-by-four
+matrix, which must be positive semidefinite to generate correlated random
+coefficients. All supplied matrices from multipole two through 4096 pass
+that test. We set the monopole and dipole to zero. No additional pixel
+window is multiplied into this point-sampled model.
+
+\paragraph{State exactly what is prescribed about non-Gaussianity.}
+The point-function parameters come from the existing fitted record. That
+fit used masked, smoothed proxies from the lower-resolution supplied maps;
+it is not a fit of noiseless high-resolution convergence. Here those
+parameters define the model rather than certify its physical accuracy.
+For each bin the normalized function has zero Gaussian expectation and
+unit Gaussian variance. Multiplying it by the square root of the target
+convergence variance restores the physical amplitude. Because a nonlinear
+function changes correlations as well as individual pixel values, its
+Gaussian input power must be solved for anew at the new target spectrum.
+We do not extend the old power array by changing a cutoff in YAML.
+
+\subsection{Check the inverse correlation construction in the forward direction}
+\paragraph{The power supplied to a Gaussian draw is not the final power.}
+Let $T_i(g)$ denote the normalized point function and expand it in
+orthonormal Hermite polynomials $h_n$:
+\begin{equation}
+ T_i(g)=\sum_{n=1}^{\infty}c_{in}h_n(g).
+\end{equation}
+For two jointly Gaussian unit-variance variables with correlation $\rho$,
+the Hermite polynomials obey
+\begin{equation}
+ \E[h_n(g_1)h_m(g_2)]=\delta_{nm}\rho^n.
+\end{equation}
+The first polynomial is $h_1(g)=g$, so its case is the definition of
+correlation. The next polynomial is
+\begin{equation}
+ h_2(g)=\frac{g^2-1}{\sqrt{2}}.
+\end{equation}
+To obtain the needed fourth moment, introduce an independent unit Gaussian
+variable $u$ and write
+\begin{equation}
+ g_2=\rho g_1+\sqrt{1-\rho^2}\,u.
+\end{equation}
+This variable has unit variance and correlation $\rho$ with $g_1$.
+Squaring it, multiplying by $g_1^2$ and taking expectations gives
+\begin{equation}
+ \E[g_1^2g_2^2]=\rho^2\E[g_1^4]
+ +2\rho\sqrt{1-\rho^2}\E[g_1^3]\E[u]
+ +(1-\rho^2)\E[g_1^2]\E[u^2].
+\end{equation}
+The unit Gaussian fourth moment is three; odd moments vanish and the two
+second moments equal one. Therefore
+\begin{equation}
+ \E[g_1^2g_2^2]=3\rho^2+0+(1-\rho^2)=1+2\rho^2.
+\end{equation}
+Substitution shows explicitly how the second Hermite power appears:
+\begin{equation}
+ \E[h_2(g_1)h_2(g_2)]
+ =\frac{(1+2\rho^2)-1-1+1}{2}=\rho^2.
+\end{equation}
+Now insert the two series and average their product. The double sum is
+\begin{equation}
+ \E[T_i(g_1)T_j(g_2)]
+ =\sum_{n=1}^{\infty}\sum_{m=1}^{\infty}
+ c_{in}c_{jm}\E[h_n(g_1)h_m(g_2)].
+\end{equation}
+The Kronecker delta removes terms with different indices. Setting $m=n$
+in the remaining terms leaves
+\begin{equation}
+ \E[T_i(g_1)T_j(g_2)]=\sum_{n=1}^{\infty}c_{in}c_{jn}\rho^n.
+\end{equation}
+The inverse construction finds Gaussian correlations that produce the
+desired final correlations. A matrix-positivity repair and normalization
+are applied before drawing maps. Those steps can slightly change the
+answer. We therefore repeat the forward calculation using the actual
+repaired Gaussian spectra, not the spectra before repair.
+
+\paragraph{Return to angular power step by step.}
+First sum the repaired Gaussian spectra with Legendre polynomials:
+\begin{equation}
+ \rho_{ij}(\mu)=\sum_{\ell=0}^{4096}
+ \frac{2\ell+1}{4\pi}C_{\ell,ij}^{g}P_\ell(\mu),
+ \qquad \mu=\cos\theta.
+\end{equation}
+Next apply the Hermite relation and restore the two physical amplitudes:
+\begin{equation}
+ \xi_{ij}^{\kappa}(\mu)=\sqrt{v_i v_j}
+ \sum_{n=1}^{\infty}c_{in}c_{jn}\rho_{ij}(\mu)^n.
+\end{equation}
+Here $v_i$ is the target convergence variance of source bin $i$. Finally,
+Legendre orthogonality recovers the output spectrum:
+\begin{equation}
+ C_{\ell,ij}^{\rm forward}=2\pi\int_{-1}^{1}
+ \xi_{ij}^{\kappa}(\mu)P_\ell(\mu)\,d\mu.
+\end{equation}
+Comparing this result with the requested spectrum tests the inverse
+construction, including its repair. The measured maximum relative
+mismatch is 0.02214\% over all retained source pairs and multipoles.
+The relative size of the positive-semidefinite repair is
+$5.29\times10^{-6}$. Increasing the Gaussian quadrature from 160 to
+256 nodes changes the latent spectra by less than $2.3\times10^{-13}$
+when normalized by the geometric mean of their auto-spectra.
+The forward angular integral uses a composite Gauss--Legendre rule.
+Doubling its intervals from 32 to 64, with 2048 nodes per interval,
+changes the recovered spectra by at most $1.63\times10^{-8}$ of
+the target. This separates quadrature error from the residual mismatch
+of the repaired inverse construction.
+
+\paragraph{Refine the theory independently of the random maps.}
+Increasing CAMB's matter-power range from 20 to $40\,\mathrm{Mpc}^{-1}$,
+with the other refined settings held fixed, changes the projected spectra
+by at most 0.00941\% over multipoles 1025--4096. We adopt the larger range.
+This check matters because a harmonic transform can accurately generate
+the wrong input spectrum. Conversely, convergence of the theoretical
+spectrum does not test the pixel projection. They are separate numerical
+questions.
+
+\paragraph{Then change the pixel grid while preserving the same sky.}
+We draw one common four-bin set of Gaussian harmonic coefficients, apply
+the prescribed point transformations at NSIDE2048 and NSIDE4096, and
+recover coefficients through the same retained cutoff. Every solve
+converges. The largest relative coefficient-norm difference across source
+bins is 0.0571\% for the full retained range and 0.1439\% in the highest
+band, multipoles 3073--4096. The corresponding band-power changes are much
+smaller because signed coefficient changes can cancel in the summed power.
+This is a test on one common random sky. It is not a statistical bound on
+every covariance element or a validation of higher connected moments.
+
+\subsection{What finite harmonic support does to the measured statistic}
+\paragraph{A smaller pixel is not additional physical power.}
+After the point transformation, we retain signal coefficients only through
+4096. Independent pixel noise is added afterwards. Thus the signal is
+band limited while the pixel noise is not. The two-point mean illustrates
+why this distinction matters. In the flat-sky expression,
+\begin{equation}
+ \xi_\pm(\theta)=\int_0^\infty\frac{\ell\,d\ell}{2\pi}
+ C_\ell^{EE}J_{0/4}(\ell\theta).
+\end{equation}
+The plus statistic uses $J_0$, and the minus statistic uses $J_4$.
+For the map signal the upper integration limit becomes 4096. A finite
+angular bin also averages this expression with its measurement weights.
+Changing the upper limit can remove contributions of either sign because
+the Bessel functions oscillate. A truncated result need not always be
+smaller than the full result.
+
+\paragraph{Measure this effect instead of guessing from pixel size.}
+We compare bin-averaged predictions at the stated cutoff with the ordinary
+core integral through multipole 40000, for the same massive-neutrino model.
+Independent Bessel quadrature confirms the following approximate maximum
+fractional changes:
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Row selection & $\xi_+$ & $\xi_-$\\
+\midrule
+All twenty angular bins per source pair & 11.7\% & 79.1\%\\
+Current public DES Y3 pair-dependent cuts & 7.1\% & 0.56\%\\
+\bottomrule
+\end{tabular}
+\end{center}
+The latter selection has 227 rows, consistent with the published count.
+The supplied analysis configuration references an external scale-cut
+file; matching this count does not establish its exact historical version.
+These numbers concern means, not measured covariance biases. They prevent
+us from calling this calibration a reproduction of every small-scale
+observable in Rafael's analysis. They do not invalidate a controlled
+covariance-estimation experiment with an explicitly specified signal
+cutoff. The small-scale Map3 and cross-covariance question still requires
+matching the measured statistic and its starting reference.
+
+\subsection{Keep the analytical two-point block and the neutrino convention explicit}
+\paragraph{The total matter fraction stays the same.}
+The accepted approximation uses massive neutrinos in the maps and a
+massless-neutrino calculation for the analytical covariance. Its inputs are
+\begin{equation}
+ \Omega_m^{\rm maps}=\Omega_m^{A}=0.26.
+\end{equation}
+Only the neutrino-mass input differs between the two calculations:
+\begin{equation}
+ (\sum m_\nu)_{\rm maps}=0.06\ {\rm eV},\qquad
+ (\sum m_\nu)_{A}=0.
+\end{equation}
+We do not subtract the neutrino matter fraction from the total before
+passing it to the covariance code. With the baryon fraction unchanged,
+the massless approximation assigns the remaining matter to cold dark
+matter. The covariance calculation retains the stated $\sigma_8$ by using
+the primordial amplitude appropriate to that approximation. No new
+massive-neutrino halo-covariance prescription is introduced.
+
+\paragraph{Only two blocks receive simulation corrections.}
+The experiment continues to use
+\begin{equation}
+ C=\begin{pmatrix}A_{\rm G+SSC+cNG}&B\\B^{\mathsf T}&D\end{pmatrix}.
+\end{equation}
+The upper-left block is fixed by assumption. The cross block $B$ and the
+Map3 block $D$ are the quantities estimated or corrected using simulations.
+We compute a new analytical block at the chosen total matter fraction,
+source distributions, footprint area and angular noise power, rather than
+reuse the earlier archive at $\Omega_m=0.3$. The analytical window is
+a circular equal-area approximation to the footprint. Its ordinary theory integral
+is not silently truncated to the map cutoff. This remaining signal-range
+difference is recorded with the result. A prescribed GPTG transformation
+also does not promise the same connected four-point function as a physical
+halo model. Those distinctions limit a claim about reproducing DES; they
+do not change the stipulated fixed-$A$ rule in the estimator comparison.
+
+\subsection{What the existing TreeCorr measurements teach us}
+\paragraph{More maps cannot repair a divergent geometric series.}
+The useful large-scale comparison above retains 140 two-point entries
+and four auto-source aperture entries from 1,878 complete measured maps.
+Its Gaussian starting reference has residual radius 0.806, below one.
+The released covariance used as a three-point starting reference has
+radius 8.186 for the same rows. Increasing order in that second case
+moves the exact polynomial farther from the inverse even before sampling
+noise is added. This is a reference mismatch, not evidence that more
+random skies would eventually make the series converge.
+
+\paragraph{Higher order trades truncation error against sampling error.}
+With the convergent reference, exact powers of the measured residual
+have precision discrepancies 6.55\%, 3.85\% and 2.35\% at orders two,
+four and six. Estimating the powers with independent map-pair factors
+instead gives 8.34\%, 8.15\% and 8.51\%. The starting reference gives
+12.02\%. These discrepancies use the same measured matrix as comparison;
+they are not errors relative to known population truth. Averaging sixteen \emph{orderings} of the same pairs creates no
+additional independent maps. That changes
+the higher-order discrepancies only modestly.
+
+\paragraph{The next ensemble has a defined purpose.}
+Independent validation maps will test whether an apparent improvement
+persists outside the sample used for the correction. We will compare
+orders and sample counts at fixed rows, fixed $A$ and fixed starting
+reference. Neither a positive precision nor agreement with a same-data
+sample inverse alone establishes sub-percent accuracy. The legacy
+mixed-source TreeCorr vectors must not be mixed with measurements using
+the repaired shared-pixel estimator. Until new measurements exist, the
+results above are evidence for the larger-scale auto-source selection,
+not for the complete small-scale joint covariance.
+
+\subsection{What is ready to transfer to the HPC}
+\paragraph{A calibration package and a measured worker.}
+The companion notebook writes one frozen YAML description, its spectrum
+and point-function arrays in a NumPy archive, and the RING footprint
+indices. The output resolution is already encoded in that package;
+noise has already been rescaled to preserve angular white-noise power.
+The full four-bin numerical pilot produced a finite float32 map and
+reproduced its aperture journal exactly on rereading. It took 134 seconds
+with four local CPU threads and peaked at 6.88 GiB. The one-thread run took 470 seconds, peaked at 6.74 GiB,
+and produced identical saved pixels for the same seed. Those are laptop
+measurements, not promised cluster timings. A new float32-storage test at
+this resolution gives RMS pixel changes below $2.54\times10^{-8}$ of
+the pixel-noise standard deviation. The bounded aperture changes are below
+$7.6\times10^{-8}$ of their RMS amplitude. This is a rounding test, not
+a full TreeCorr covariance comparison.
+
+\paragraph{Keep the production run distinct from this bounded test.}
+The single generation Slurm script supplies the requested node allocation,
+CPU-only execution and resume behavior. The README gives the environment
+keys and the files to transfer. Its required harmonic cutoff is checked
+before MPI starts. Each worker owns a map; the coordinator writes the
+journals. Resubmission preserves completed IDs. Generation does not invoke
+TreeCorr. This package is ready for the controlled, band-limited model
+defined here; it is not a certified DES small-scale covariance model.
+
+\Needspace{18\baselineskip}
 \begin{thebibliography}{9}
 \bibitem{zhong} K. Zhong, G. Bernstein, S. S. Boruah, B. Jain and S. Kobla,
 \emph{Fast Generation of Weak Lensing Maps with Analytical Point

@@ -29,8 +29,11 @@ with tempfile.TemporaryDirectory() as temporary:
     np.save(project / 'maps_cov_512_v2/indices_512.npy', np.arange(2))
     pilot = project / 'pilot'
     pilot.mkdir()
-    (pilot / 'calibration.yaml').write_text('lmax: 1\n')
-    np.savez(pilot / 'calibration.npz', cl_target=np.zeros((2,4,4)), parameters=np.ones(4))
+    # The frozen geometry and per-pixel noise are required inputs even
+    # when this dispatch test replaces the expensive transform itself.
+    (pilot / 'calibration.yaml').write_text('lmax: 1\nnside: 512\n')
+    np.savez(pilot / 'calibration.npz', cl_target=np.zeros((2,4,4)),
+             parameters=np.ones(4), noise_sigma=np.ones(4))
     journals = []
     for size in (1, 2):
         calls = []

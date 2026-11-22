@@ -1,0 +1,92 @@
+22 November 2026: controlled physical-power GPTG calibration
+Numerical validation, not a fit or certification of DES small-scale higher-order statistics.
+Reproduction: physical-power section of notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb.
+No production ensemble and no new TreeCorr measurement launched.
+
+MODEL
+Total Omega_m=0.26, Omega_b=0.0493, h=0.673, ns=0.9649, sigma8=0.84.
+Maps mnu=0.06 eV; w0=-1, wa=0; Takahashi power; no IA or baryonic response.
+Point functions prescribed from tests/gptg_pilot/calibration.yaml.
+NSIDE2048, retained signal ell=2..4096, RING child footprint, point-sampled shear.
+Pixel noise is not band limited; sigma scales with NSIDE to preserve angular noise power.
+Float64 arithmetic; float32 saved pixels; BLAS=1.
+
+NUMERICAL CHECKS
+Minimum target spectral eigenvalue: 2.97866901807e-14
+Maximum relative spectrum change kmax20 -> kmax40, ell1025..4096: 9.40360866224e-05
+Latent PSD repair relative Frobenius norm: 5.28713970056e-06
+Maximum forward spectrum mismatch, refined angular rule: 0.000221332989499
+Angular integration change 32 -> 64 panels, 2048 nodes/panel: 1.62222773025e-08
+Global angular rules were also checked; their cancellation error did not decrease monotonically at large degree. The recorded closure uses the independently refined composite rule.
+Gaussian expectation 160 -> 256 nodes: scaled latent-spectrum change <2.3e-13.
+Hermite variance deficit through degree64: [1.83174587e-11 3.66373598e-15 1.02846620e-11 3.99680289e-15]
+Common-sky grid refinement largest full-range alm norm change: 0.000570342157554
+Common-sky grid refinement largest top-band alm norm change: 0.00143810685401
+These are coefficient errors for one sky, not covariance-error bounds.
+
+COMPLETE KERNEL AND ENTRY POINT
+Four-thread kernel: 134.13 s, peak 6.8766 GiB; one thread: 470.13 s, peak 6.7425 GiB.
+One-versus-four threads: all saved float32 pixels identical; same seed and square-root convention.
+Both saved-map replays: identical aperture journals; map mtime unchanged.
+Actual production entry point, three threads: one map, 168.965 s after worker preparation.
+Production uses eigenvectors times sqrt(eigenvalues); the separate common-sky tests use the symmetric root. Both generate the stipulated covariance but do not assign identical skies to a seed.
+Entry-point resume: map and journal SHA256 unchanged; full finite-pixel scan passed; verify_ensemble passed.
+Map shape (4,2,5907040), float32, 189025408 bytes including header.
+HPC throughput and peak RSS still require the documented one-worker cluster pilot.
+
+FIXED ANALYTICAL A
+Full 400x400 G+SSC+cNG; same total Omega_m=0.26, mnu=0 by explicit user decision.
+Do not subtract the massive-neutrino matter fraction before passing Omega_m.
+Massless sigma8-normalized As: 2.95236624109791e-09
+Survey area deg2: 4841.54407618
+Noise sigma_e at unit density per arcmin2: [0.24357304670337931, 0.2642281967232904, 0.26198873596262384, 0.3218966517752535]
+Source shapes from the same clipped/normalized demonstration file, installed as dense linear samples.
+All entries finite; total Cholesky passed; G, SSC and cNG saved separately.
+Construction 42.21 s, three threads; no massive-neutrino covariance implementation added.
+Analytical window is a circular equal-area approximation. Its usual full signal range is retained.
+Only B and D are corrected; A remains fixed by assumption. Matching power does not prove matching connected four-point statistics.
+
+OBSERVABLE SUPPORT
+Native cutoff test vs ordinary ell40000 integral: maximum uncut xi+ 11.61%, xi- 79.00%.
+With current public Y3 pair cuts (227 rows): xi+ 7.04%, xi- 0.556%.
+Independent exact-endpoint Bessel quadrature confirms these effects. These are mean changes, not covariance-bias estimates.
+The supplied paper pipeline references an external cut file; count agreement alone does not pin its historical revision.
+
+EXISTING EIFLER/PME EVIDENCE (not new high-resolution measurements)
+1878 complete legacy measured skies; mixed-source Map3 excluded after shared-pixel bug diagnosis.
+Large-scale selection: 140 xi rows +4 auto-source Map3 rows; fixed analytical A.
+Gaussian starting D: residual radius 0.8059478; released starting D: 8.1862889.
+Precision discrepancy vs same-data hybrid, orders2/4/6: 0.0833501, 0.0814551, 0.0851231.
+Uncorrected starting reference: 0.1202130. Exact residual powers: 0.0654812, 0.0384990, 0.0234934.
+Same-data comparison is not population truth; higher order does not guarantee lower sampling error.
+Independent validation and matched small-scale references remain necessary; no sub-percent covariance claim.
+
+PACKAGE SHA256
+calibration.yaml acd328f19a81d129cae7eb291df1858384e99648e408fc46a2ad1eb718a4e829
+calibration.npz 31d92ec06aa3e4779988ae03842acc0c5b6960a700947bcee8b88f5fd24c64a4
+indices_2048.npy 90b8495074f478572471ed0ecce4e2ee7e0600a6fb0bd8939100a39d75868dbe
+
+FRESH STORAGE CHECK AT THE NEW RESOLUTION
+One regenerated four-bin sky matches every saved production-pilot pixel.
+Maximum RMS pixel rounding error / pixel noise sigma: 2.5373e-8.
+Maximum absolute pixel rounding error / pixel noise sigma: 2.1014e-7.
+Maximum aperture rounding error / aperture RMS: 7.5941e-8.
+Maximum square change / aperture RMS squared: 9.0183e-9.
+Maximum cube change / aperture RMS cubed: 2.0822e-8.
+These use the existing bounded fixed-center aperture diagnostics, not the
+full finite-triangle TreeCorr covariance. File storage alone does not
+validate single-precision harmonic arithmetic; generation stays float64.
+
+CHECKS AND DIDACTIC REVIEWS
+Actual production resume and completion audit passed. Shell syntax and
+cutoff preflight accepted the matching package and rejected a mismatch.
+Generation dispatch, geometry/noise scaling, TreeCorr dispatch metadata
+and partial-resume tests passed without running TreeCorr.
+The generation dispatch fixture needed its newly required NSIDE and noise
+inputs; only that outdated test fixture changed, not generation physics.
+Notebook physical-theory, composite forward-closure, independent Hankel,
+cut-selection and calibration-writing cells executed successfully.
+The common-sky and analytical covariance calculations were executed
+separately with the same numerical statements before their notebook port.
+Five didactic passes: definitions/units; algebra transitions; evidence and
+scope; executable paths and comments; final PDF/README rendering.

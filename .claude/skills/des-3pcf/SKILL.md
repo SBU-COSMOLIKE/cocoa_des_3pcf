@@ -576,3 +576,38 @@ and actual observable convergence are distinct requirements. The synthetic
 four-bin L4096 kernel measured 6.737GiB/process; the 90-worker allocation is
 not safe for that case. Keep explicit OMP_NUM_THREADS values when importing
 map support; use defaults only when the caller has supplied no setting.
+
+
+### Physical-power GPTG benchmark (22 November 2026)
+
+The existing map notebook prepares chains/gptg_physical_l4096 with
+calibration.yaml, calibration.npz and indices_2048.npy. Use ordinary
+numbered Cobaya theory to supply the gravity-only target shear power,
+convert it to convergence with the spherical spin factor, and recompute
+the latent Gaussian spectra. Point functions are prescribed from the
+committed pilot record, not validated high-resolution DES distributions.
+Keep float64 arithmetic and float32 saved maps for this CPU-only ensemble.
+
+User decision: maps keep mnu=0.06 eV. The full G+SSC+cNG analytical A may
+use mnu=0 with the SAME TOTAL Omega_m=0.26, including the matter assigned
+to neutrinos in the map model. Do not subtract Omega_nu. Do not implement
+massive-neutrino covariance support for this task. A remains fixed by
+assumption; correct only B and D. Record source shapes, noise, footprint
+and the massless approximation with the analytical result.
+
+The new model passed theory-range, forward-correlation, common-sky grid
+and full-kernel checks. The signal cutoff still changes some small-scale
+xi means substantially, including rows surviving the current public Y3
+cuts. Mean changes are not covariance-bias measurements. This is ready
+as a controlled band-limited estimator experiment, not certified
+reproduction of Rafael's small-scale covariance. The ordinary analytical
+A retains its full signal range; do not silently replace it by a truncated
+or simulation-estimated A. GPTG point functions also do not guarantee the
+physical halo-model connected four-point function.
+
+The standalone generation Slurm script uses the calibrated package and
+CPU workers only. Keep production paused until the user launches it;
+bounded local pilots and the documented one-worker HPC pilot are separate.
+All calibration/check code belongs in the existing companion notebook;
+do not add a calibration driver or another note. Saved map data stay
+ignored. Reproducible numerical evidence belongs in tests/gptg_pilot.

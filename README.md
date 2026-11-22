@@ -1441,82 +1441,127 @@ timing records belongs in a notebook.
 ## CPU map generation on the HPC <a name="cpu-map-generation"></a>
 
 The standalone [Slurm example](scripts/EXAMPLE_GPTG_GENERATE_UOFA.sbatch)
-uses MPI to distribute independent maps, with one CPU thread per rank
-and no GPU. Ranks are divided equally between the sockets. Its allocation is declared once in the Slurm header;
-check that allocation against the memory of your chosen harmonic cutoff.
-BLAS remains at one thread. Submit from the activated Cocoa directory.
+distributes independent maps with MPI, one CPU thread per rank and BLAS=1.
+One rank coordinates; the others generate maps. The allocation and default
+ensemble counts are declared in the script. TreeCorr runs separately.
 
-Fresh Cocoa setup installs the pinned CPU transform dependency. For an
-existing installation that reports `No module named ducc0`, install it once
-on a network-enabled login node, not inside the batch job:
+The [map notebook](notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb),
+section “Prepare the physical-power model through multipole 4096”, prepares
+`chains/gptg_physical_l4096/`. Its numerical checks are recorded in the
+[calibration test](tests/gptg_pilot/physical_calibration_validation.txt).
+The model uses physical lensing power and prescribed GPTG point functions.
+It is ready for a **controlled band-limited covariance experiment**; it is
+not a validated reproduction of DES small-scale covariance. The
+[map note](notes/gptg_simulations/gptg_simulations.pdf) explains the cutoff
+test and the existing Eifler results.
+
+Maps use total Omega_m=0.26 and mnu=0.06 eV. The fixed analytical two-point
+block uses that same total Omega_m with mnu=0; do not subtract the neutrino
+matter fraction. Only cross and Map3 blocks receive simulation corrections.
+The notebook computes the full Gaussian+SSC+cNG two-point block separately.
+
+**Step :one:**: Prepare or use the tested calibration in an activated local
+Cocoa directory. These are the only generation inputs to transfer:
+
+| File | Meaning |
+|---|---|
+| `calibration.yaml` | Cosmology, resolution, noise and model assumptions |
+| `calibration.npz` | Target convergence spectra, point parameters and pixel noise |
+| `indices_2048.npy` | RING pixel addresses of the refined footprint |
+
+The package already contains noise at its stated resolution. The generator
+retains its harmonic cutoff; `GPTG_LMAX` checks the input and any frozen
+output copy before MPI starts. It does not extend the old calibration.
+Keep the package files together and use a fresh output directory.
+
+**Step :two:**: Copy the package to the HPC. Set `GPTG_TRANSFER_HOST` to
+your transfer login and `GPTG_REMOTE_CALIBRATION_DIR` to its absolute
+calibration directory. The directory must exist before rsync:
 
 ```bash
-python -m pip install --no-deps --prefer-binary --prefix="${ROOTDIR}/.local" 'ducc0==0.42.0'
+export GPTG_CALIBRATION_DIR="${ROOTDIR}/projects/des_3pcf/chains/gptg_physical_l4096"
+export GPTG_TRANSFER_HOST="your_login@your_transfer_host"
+export GPTG_REMOTE_CALIBRATION_DIR="/absolute/path/to/gptg_calibration"
 ```
 
-The calibration folder must contain `calibration.yaml`, `calibration.npz`
-and `indices_<calibration NSIDE>.npy` in RING order. The output must be a
-separate folder for a different resolution. Set its counts deliberately;
-validation may be zero for a generation pilot. The script provides the
-comparison and validation count defaults; the environment overrides them.
-Its required harmonic cutoff is also declared in the script. Both the input
-calibration and any frozen output calibration must match it before MPI starts.
-`GPTG_LMAX` checks that cutoff; it does not extrapolate a spectrum. The old
-calibration stops at 1024 and cannot be used for this production configuration.
-A physically specified higher-multipole calibration is still needed.
-
 ```bash
-export GPTG_CALIBRATION_DIR="/absolute/path/to/frozen_calibration"
+ssh "$GPTG_TRANSFER_HOST" "mkdir -p '$GPTG_REMOTE_CALIBRATION_DIR'"
 ```
 
 ```bash
+rsync -avP "$GPTG_CALIBRATION_DIR/calibration.yaml" "$GPTG_CALIBRATION_DIR/calibration.npz" "$GPTG_CALIBRATION_DIR/indices_2048.npy" "$GPTG_TRANSFER_HOST:$GPTG_REMOTE_CALIBRATION_DIR/"
+```
+
+The output maps, old ensemble and analytical covariance are not needed to
+generate this new ensemble. Calibration arrays and map files are binary
+NumPy files because text would increase their size and parsing cost.
+
+**Step :three:**: On the HPC, activate Cocoa from its top directory:
+
+```bash
+source start_cocoa.sh
+```
+
+Set the calibration path to the directory just transferred. Choose the
+output on a volume with space for the requested maps and the generator's
+free-space reserve. Keep this path unchanged on resubmission.
+
+```bash
+export GPTG_CALIBRATION_DIR="/absolute/path/to/gptg_calibration"
 export GPTG_OUTPUT_DIR="${ROOTDIR}/projects/des_3pcf/chains/gptg_refined"
-```
-
-```bash
 export GPTG_NSIDE=2048
+export GPTG_LMAX=4096
 ```
+
+To use the script's count defaults rather than values left in the shell:
 
 ```bash
-export GPTG_COMPARISON_COUNT=10000
+unset GPTG_COMPARISON_COUNT GPTG_VALIDATION_COUNT
 ```
+
+Alternatively, export `GPTG_COMPARISON_COUNT` and `GPTG_VALIDATION_COUNT`
+with your chosen counts. Their seed ranges are separate. Validation may be zero
+for a pilot. Do not point these commands at the old ensemble.
+
+**Step :four:**: Check one worker on the HPC before filling the allocation.
+Use a separate pilot directory; command-line Slurm options override the
+header for this submission:
 
 ```bash
-export GPTG_VALIDATION_COUNT=5000
+sbatch --nodes=1 --ntasks=2 --ntasks-per-node=2 --ntasks-per-socket=1 --export="ALL,GPTG_OUTPUT_DIR=${GPTG_OUTPUT_DIR}_pilot,GPTG_COMPARISON_COUNT=1,GPTG_VALIDATION_COUNT=0" projects/des_3pcf/scripts/EXAMPLE_GPTG_GENERATE_UOFA.sbatch
 ```
 
-These counts select the comparison ensemble and a separate validation
-ensemble. For a small HPC memory pilot, reduce the counts and the Slurm rank
-allocation first. Check maximum resident memory before the production run.
-After the calibration is available, submit the same standalone script:
+Check the completed job's `MaxRSS` and map-generation time with `sacct`.
+The local measured peak is recorded in the calibration test; Linux
+allocator behavior and cluster timing must be measured on the cluster.
+Fresh Cocoa setup installs ducc0. Do not install packages inside this job.
+
+**Step :five:**: Submit the production allocation after the pilot succeeds:
 
 ```bash
 sbatch projects/des_3pcf/scripts/EXAMPLE_GPTG_GENERATE_UOFA.sbatch
 ```
 
-Resubmit with the same output, calibration, resolution and counts after
-the wall-time limit. Completed IDs are skipped. A complete atomic map file
-saved before its journal entry is remeasured for the small diagnostics,
-without regenerating the map. Never run two jobs writing the same ensemble.
-Generation outputs include the maps, journals, frozen calibration, ensemble
-metadata and `indices_<output NSIDE>.npy`. TreeCorr runs separately.
+Resubmit the same command with the same output and calibration after the
+time limit. Completed IDs are skipped. A complete atomic map saved before
+its journal entry is remeasured for the inexpensive aperture diagnostics;
+it is not regenerated. Never run two jobs writing to the same ensemble.
+The output includes maps, journals, frozen calibration, ensemble metadata
+and footprint indices. Keep all of them for resume and later measurement.
 
-**Changing NSIDE does not extend the fitted harmonic spectrum.** The
-[ten-map test](tests/gptg_pilot/nside2048_generation.txt) retained lmax=1024,
-refined the existing footprint and rescaled pixel noise to keep angular
-noise power fixed. It passed generation, storage and resume checks. It does
-not establish small-scale accuracy. A higher harmonic cutoff requires its
-own calibration, memory measurement and TreeCorr geometry checks before
-expensive production. The [map note](notes/gptg_simulations/gptg_simulations.pdf)
-and [companion notebook](notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb)
-explain the distinction.
+**Step :six:**: After completion, audit expected IDs, seeds, map headers
+and lengths. This does not run TreeCorr or scan every pixel:
 
+```bash
+python projects/des_3pcf/scripts/verify_ensemble.py "$GPTG_OUTPUT_DIR"
+```
 
-The [higher-multipole checks](tests/gptg_pilot/high_multipole_validation.txt)
-separate band-limited recovery, nonlinear projection and complete-worker
-memory. The current solver fails a difficult band-edge test at the nominal
-maximum cutoff. At a lower tested cutoff, smoother-field agreement is good,
-and the updated Slurm allocation leaves room below its memory request
-using the measured local worker peak. That estimate is not an HPC memory
-measurement; check peak RSS before production at the selected cutoff.
-Finer pixels alone do not validate the missing high-multipole input physics.
+The current full-vector TreeCorr driver still selects NSIDE512 geometry.
+Its geometry and angular settings need separate validation before measuring
+this new ensemble; the generation job does not invoke that driver.
+
+The [earlier resolution pilot](tests/gptg_pilot/nside2048_generation.txt)
+kept the old harmonic cutoff. It is separate from the new physical-power
+calibration. Numerical projection accuracy, sky cutoff and agreement with
+DES higher-order statistics are separate questions; finer pixels alone
+answer none of the latter two.
