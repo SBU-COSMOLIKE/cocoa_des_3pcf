@@ -254,18 +254,19 @@ BiHalofit fallback is used.
 The evaluation and Nautilus YAMLs select `camb` and `bihalofit` as separate
 Cobaya theory blocks. The likelihood reads their products through
 `self.provider`; replacing the bispectrum block requires the same supplied
-array contract. The older explicit-table Fisher studies still prepare their
-inputs directly and do not exercise this Cobaya dependency graph.
+array contract. The IA, accuracy and BACCO Fisher notebooks use this same
+Cobaya dependency graph; they do not prepare a separate CAMB calculation.
 The [theory-component documentation](../../external_modules/code/cosmolike_core/theory/bihalofit/README.md) owns its
 fit equations, sampling and calibration limits. Survey assumptions belong
 in the project configuration independently of that theory choice.
 
 ## Appendix: accuracy controls <a name="accuracy"></a>
 
-Use `EXAMPLE_FISHER_ACCURACY.ipynb` with the settings in
-`configs/des_y3_fisher_accuracy.yaml`. It compares individually refined
-derivative columns with a default-accuracy base; selected candidates
-still need full paired forecasts.
+Use `EXAMPLE_FISHER_ACCURACY.ipynb`. Its cells load a numbered evaluate
+YAML, state physical parameter steps and priors, and change ordinary
+likelihood settings for each refinement. The full default-accuracy base
+is computed once; candidate screening varies selected columns. A final
+full derivative comparison at both step sizes is still required.
 
 The [core accuracy reference](../../external_modules/code/cosmolike_core/cosmolike/3pcf/README.md#accuracy-controls)
 defines global and individual boosts. The
@@ -282,9 +283,20 @@ example holds the other parameters fixed and is a conditional demonstration.
 A full survey forecast must vary the intended nuisance parameters and state
 its priors. Derivatives and matrices are saved under `chains/`.
 
-The extended IA, feedback and accuracy notebooks still have dependencies on
-the older runner; their migration is unfinished. They must not be treated as
-examples of the standard project calling convention. The
+The IA, accuracy and BACCO Fisher notebooks now follow that calling pattern:
+load the numbered YAML, evaluate through Cobaya, and call the shared core
+Fisher routines in visible cells. The IA notebook retains finite sign
+comparisons and normalized derivative plots. The accuracy notebook separates
+cheap noise screening from full convergence checks. The BACCO notebook
+separates physical extrapolation choices from numerical sampling and labels
+its restricted parameter forecast as conditional. These examples use the
+unmasked, uncompressed rows of numbered examples 1 and 2.
+
+The migrated notebook cells passed small API and algebra tests; their full
+physical forecasts have not been rerun. Old numerical outputs were cleared
+to avoid presenting results from the retired route as new calculations.
+Historical study scripts still use the older Fisher/accuracy wrappers;
+those dependencies remain migration work, not the recommended workflow. The
 [shared Fisher guide](../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher)
 defines derivatives, priors, marginalized errors and figures of merit.
 

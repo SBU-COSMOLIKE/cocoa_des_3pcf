@@ -516,3 +516,16 @@ nonlinear fixed-A reconstruction does not inherit it. Pair-order averaging
 can alter higher-order variance. Two successive precision corrections need
 matched observables, a positive first reference, a newly computed residual
 and attention to Rafael parents reused in generator calibration.
+
+
+The IA, accuracy and BACCO Fisher notebooks now evaluate numbered Cobaya
+models directly and call shared core Fisher functions in visible cells,
+following the ordinary LSST Y1 pattern. Do not reintroduce FisherWorkflow,
+AccuracyStudy or a private CAMB route into these examples. Their unmasked,
+uncompressed row labels match numbered cases 1 and 2; other selections need
+matching labels and covariance. DES steps are absolute physical offsets;
+the noise helper receives zero-centered offsets so negative or zero
+fiducials cannot change that meaning. Gaussian priors enter once. Full
+physical reruns remain distinct from the small API/algebra tests. Historical
+study callers of older Fisher/accuracy wrappers remain to be migrated before
+those modules can be deleted without breaking their reproducibility.

@@ -316,18 +316,17 @@ emulator's training range.
 
 ## Reproducing the records <a name="reproduction"></a>
 
-Use the environment, working-directory and thread setup in
-[Running the BACCO examples](../../README.md#feedback). That sequence prepares
-CAMB tables, evaluates the joint mean, opens the notebook and runs the
-separate off-grid interpolation study. The notebook reads saved cases only
-after verifying their inputs, settings, emulator weights and implementation
-identities. Set its `RUN_CALCULATIONS` switch to true to compute missing
-cases sequentially. The notebook refuses an existing case with a different
-identity; choose another output directory to preserve both records.
+The committed records on this page describe the calculation and numerical
+choices stated above. Reading their arrays and figures requires no new forecast.
+They are historical evidence, not output from the current notebook source.
 
-Inspecting the committed JSON records and figures requires no forecast
-run. The full per-case derivative arrays remain in the local
-`chains/bacco_joint_study/` directory, and the notebook can regenerate them;
-their hashes are in the execution record. The interpolation sample arrays
-accompany this page. A later input or implementation change does not
-relabel any copied result.
+For a new calculation, open `EXAMPLE_FISHER_BACCO.ipynb`. It reads the numbered
+TATT YAML, enables the separate BACCO theory block and calls Cobaya directly.
+Its cells contain the parameter steps, continuation comparisons and shared
+Fisher operations. Running those cells performs real calculations and saves
+new arrays and configurations under `chains/fisher_bacco/`. The notebook does
+not silently load old forecasts. A rerun through this route is required before
+comparing its results numerically with this record.
+
+The interpolation sample arrays accompany this page. A later input or
+implementation change does not relabel any copied result.
