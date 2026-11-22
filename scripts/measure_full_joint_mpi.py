@@ -144,7 +144,9 @@ def main():
             np.savetxt(temporary, values, header='xip[200] xim[200] Map3[80]; NaN means unfinished')
             temporary.replace(path)
             print('map', number, 'task', job, 'seconds', round(seconds, 3),
-                  'complete', np.count_nonzero(np.isfinite(values)), flush=True)
+                  'completed entries',
+                  f'{np.count_nonzero(np.isfinite(values))}/{values.size}',
+                  flush=True)
             if np.all(np.isfinite(values)):
                 del vectors[number]
                 # Intermediate task messages checkpoint progress but do not
