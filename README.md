@@ -319,7 +319,10 @@ The [PME notebook](EXAMPLE_COVARIANCE_PME.ipynb) teaches the
 with scalar and two-by-two worked calculations, then controlled Gaussian
 and lognormal experiments. It derives unbiased matrix powers through sixth order
 under Gaussian sampling, tests a distinct-pair alternative using
-one complete ensemble, and explains jackknife error bars step by step. The [map study](EXAMPLE_COVARIANCE_MAPS.ipynb) measures coarse
+one complete ensemble, and explains jackknife error bars step by step.
+Its final study asks whether a Kunhao covariance can serve as the reference
+for a second correction using Rafael’s maps. It derives fixed-block controls,
+a sampling-noise counterexample, and the calibration-independence requirements. The [map study](EXAMPLE_COVARIANCE_MAPS.ipynb) measures coarse
 second- and third-order aperture moments and tests a separately calibrated
 Gaussian reference. It also compares four measured xi-plus bins with the
 released joint covariance and tests shared shear between realization labels.

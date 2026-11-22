@@ -23,7 +23,7 @@
 \vspace{0.5em}
 {\large The Friedrich--Eifler precision expansion and Rafael's DES shear maps\par}
 \vspace{0.5em}
-21 November 2026
+22 November 2026
 \end{center}
 
 \section{The question and how to read this note}
@@ -3916,7 +3916,706 @@ so those two questions cannot be confused.
 
 \input{fixed_two_point_block}
 
-\begin{thebibliography}{9}
+\clearpage
+\section{Can Kunhao maps improve a second correction using Rafael's maps?}
+\label{sec:two-stage-pme}
+
+\paragraph{The proposal, stated as a statistical question.}
+We have many inexpensive maps generated with a fitted point transformation
+and far fewer expensive gravitational simulations. Could the inexpensive
+maps first improve an analytical covariance, after which the expensive maps
+correct the remaining error? Yes: a positive covariance obtained from the
+first calculation can be the reference for a new precision expansion.
+Whether the second calculation \emph{reduces total error} is a separate
+question. A small residual can still be measured very noisily. This section
+derives the proposed procedure, audits the available inputs, and tests the
+idea where the population covariance is known. The construction is our
+application of established statistical methods; it is not an already
+validated DES result.
+
+\paragraph{There are no ``Eifler-corrected samples.''}
+A simulated map is a realization of a specified random field. Measuring it
+produces a data vector. PME estimates a precision matrix from an ensemble
+of such vectors. It neither changes the maps nor produces additional
+independent DES universes. Posterior chains are another object: they sample
+a likelihood after its covariance treatment has been specified. A second
+PME must operate on simulation measurements and a new reference matrix,
+not on the parameter samples in a chain. Changing an existing chain's
+weights would require a separately justified likelihood ratio and an
+overlap test.
+
+\subsection{What the literature supports}
+
+\paragraph{Precision expansion supplies the starting argument.}
+Friedrich and Eifler~\cite{pme}, Sections 3 and Appendix C, expand the
+inverse covariance about a model and estimate low-order corrections from
+simulations. Their removable additive-component construction requires that
+the component can actually be isolated in the simulations. Knowing one
+diagonal block of a joint covariance is a different constraint. Their
+numerical demonstrations do not guarantee the same simulation savings for
+our non-Gaussian, finite-triangle observables.
+
+\paragraph{A covariance model can also act as a prior.}
+Pope and Szapudi~\cite{shrinkage} study shrinkage: averaging a noisy sample
+covariance with a model to trade some model bias against sampling variance.
+Hall and Taylor~\cite{halltaylor} derive a likelihood that combines a
+covariance model with simulations using an informative inverse-Wishart
+prior. Their reference and simulated covariance are assumed independent.
+The prior confidence describes uncertainty about the target covariance;
+it is not simply the number of cheap simulations. Their full-matrix
+formula would require adaptation to keep our analytical block exactly
+fixed. These are useful comparison methods, not interchangeable names
+for PME.
+
+\paragraph{Paired cheap simulations provide a different kind of gain.}
+CARPool covariance~\cite{carpool} uses correlated expensive/cheap
+realizations to cancel fluctuations in covariance estimates. In its
+demonstration, both calculations use the same initial conditions.
+CARPool Bayes~\cite{carpoolbayes} combines paired information and priors
+with a construction that preserves positive semidefiniteness. Our
+independent GPTG maps do not supply those realization pairs. Matching seed
+integers in unrelated generators would not create them. A covariance
+reference from independent maps can still help, but the published
+paired-control gains cannot be assigned to our ensemble.
+
+\paragraph{The likelihood must match the estimator.}
+The Sellentin--Heavens likelihood~\cite{sellentin} marginalizes the
+uncertainty of an ordinary covariance estimated from independent Gaussian
+vectors under a specified covariance prior. A PME estimate or a matrix
+with one block replaced analytically has a different sampling distribution.
+Putting either into that likelihood, or multiplying its inverse by the
+usual sample-covariance bias factor, does not follow from their derivation.
+A useful matrix estimate still needs an inference and coverage test.
+
+\paragraph{A point-transformation model does not fix every higher moment.}
+Zhong et al.~\cite{gptg} test covariance estimates from their generated
+fields and discuss limits of local point transformations. Their tests
+support studying this approach; they do not validate our complete
+small-scale joint DES measurement. Matching the power spectrum and a
+one-point probability distribution leaves freedom in joint higher-order
+correlations. In our problem the cross covariance of a quadratic and a
+cubic shear statistic involves fifth-order shear moments. The covariance
+of two cubic statistics involves sixth-order moments. Those moments contain
+products of lower correlations as well as connected terms. Survey windows,
+noise contractions and long-wavelength responses also enter. A good mean
+power spectrum and bispectrum therefore do not establish a good cross or
+three-point covariance.
+
+\subsection{Construct a new reference, then a new residual}
+
+\paragraph{Keep the scientific target explicit.}
+Write the target covariance of the expensive-simulation measurements as
+\begin{equation}
+ C_R=\begin{pmatrix}A&B_R\\B_R^{\mathsf T}&D_R\end{pmatrix}.
+\end{equation}
+The subscript $R$ distinguishes this target from the GPTG model. We assume
+that the analytical Gaussian plus SSC plus connected non-Gaussian
+two-point block $A$ is exact. It is never fitted or corrected here. For
+the nominal joint vector its dimension is 400, while the three-point
+dimension is 80. Smaller valid subsets use the same algebra.
+
+\paragraph{Choose the best first-stage covariance rather than insisting
+on two expansions.}
+Let the many cheap maps supply the positive reference
+\begin{equation}
+ M_G=\begin{pmatrix}A&B_G\\B_G^{\mathsf T}&D_G\end{pmatrix}.
+\end{equation}
+It may come from a first PME, or from a direct estimate with the known
+block enforced and positivity checked. If the first calculation produces
+a precision, obtain its corresponding positive covariance before defining
+this reference. Do not use an indefinite polynomial as a covariance.
+The first-stage choice should be tested on the cheap ensemble: a second
+PME is not a reason to force the first stage to use PME as well.
+
+\paragraph{Remove units using the new reference.}
+Factor the chosen matrix once:
+\begin{equation}
+ M_G=L_G L_G^{\mathsf T}.
+\end{equation}
+Here $L_G$ is lower triangular. Transforming a covariance by its inverse
+expresses fluctuations in the units and correlations of the reference.
+The remaining dimensionless discrepancy is
+\begin{equation}
+ E_R=L_G^{-1}(C_R-M_G)L_G^{-\mathsf T}.
+ \label{eq:second-stage-residual}
+\end{equation}
+Multiply this definition by the two factors of $L_G$ to recover
+\begin{equation}
+ C_R=L_G(I+E_R)L_G^{\mathsf T}.
+\end{equation}
+Inverting the three factors reverses their order:
+\begin{equation}
+ C_R^{-1}=L_G^{-\mathsf T}(I+E_R)^{-1}L_G^{-1}.
+\end{equation}
+The required inverse can now be expanded about identity:
+\begin{equation}
+ C_R^{-1}=L_G^{-\mathsf T}
+ \left(I-E_R+E_R^2-E_R^3+\cdots\right)L_G^{-1}.
+ \label{eq:second-stage-series}
+\end{equation}
+Every eigenvalue of $E_R$ must have magnitude smaller than one for this
+series to converge. The condition concerns correlated modes, not just
+diagonal variances. A very small variance in one conditional three-point
+mode can make that mode sensitive to a modest-looking matrix error.
+
+\paragraph{Why the previous correction is not added again.}
+Equation~\eqref{eq:second-stage-residual} compares the expensive target
+directly with the \emph{finished} first-stage covariance. Any improvement
+already contained in $M_G$ is already present in the expansion. Adding
+the old analytical-to-GPTG precision correction a second time would count
+it twice. Multiplying two independently constructed precision corrections
+has no general justification either: matrix products depend on order,
+and the two calculations use different reference coordinates.
+
+\paragraph{Why subtracting a baseline alone cannot reduce noise.}
+Suppose $S_R$ is an expensive sample covariance. A covariance-level
+``model plus measured residual'' gives
+\begin{equation}
+ M_G+(S_R-M_G)=S_R.
+\end{equation}
+The reference cancels exactly. Knowing it from many cheap maps does not
+cancel the random fluctuation in $S_R$. PME can help because it estimates
+a \emph{truncated inverse}, uses known structure and avoids directly
+inverting a noisy sample covariance. The competing costs are truncation
+error and sampling error. Both must be measured; a smaller true residual
+alone does not guarantee a better estimated precision.
+
+\subsection{Estimate the second power without assuming Gaussian maps}
+
+\paragraph{Use independent parents, not repeated children of one sky.}
+For a clean first experiment take one consistently selected measurement
+from each independent expensive parent. With $2m$ such vectors, form
+disjoint differences:
+\begin{equation}
+ v_r=\frac{d_{2r}-d_{2r-1}}{\sqrt{2}},\qquad r=1,\ldots,m.
+\end{equation}
+The unknown common mean cancels. The covariance of a difference of two
+independent vectors is the sum of their covariances, so
+\begin{equation}
+ \E[v_r v_r^{\mathsf T}]=\frac{C_R+C_R}{2}=C_R.
+\end{equation}
+Different $r$ use different parents. Reusing a parent in two factors would
+invalidate the independence argument below. This simple construction uses
+all selected parents but is not claimed to be the most statistically
+efficient use of every possible pair.
+
+\paragraph{Insert exact knowledge only where it is available.}
+Split $v_r$ into its two-point and three-point parts. In the outer product,
+replace the upper-left block by $A$:
+\begin{equation}
+ F_r=\begin{pmatrix}
+ A&v_{r,x}v_{r,y}^{\mathsf T}\\
+ v_{r,y}v_{r,x}^{\mathsf T}&v_{r,y}v_{r,y}^{\mathsf T}
+ \end{pmatrix}.
+\end{equation}
+Every block has the desired expectation, so $\E[F_r]=C_R$. Individual
+$F_r$ need not be positive. They are unbiased \emph{matrix factors}, not
+independent covariance components with a Wishart distribution. In
+particular, the matrix containing zero in the first diagonal block and
+nonzero cross blocks is generally indefinite. This is why the removable
+additive-component formula cannot be applied to our block constraint.
+
+\paragraph{Estimate the residual, then its square.}
+For a frozen reference independent of these parents, define
+\begin{equation}
+ T_r=L_G^{-1}(F_r-M_G)L_G^{-\mathsf T}.
+\end{equation}
+Its mean is $E_R$. Average the factors to estimate the first power:
+\begin{equation}
+ \overline T=\frac{1}{m}\sum_{r=1}^{m}T_r.
+\end{equation}
+Squaring that average introduces same-factor noise. Instead use
+\begin{equation}
+ Q=\frac{1}{m(m-1)}\sum_{r\ne s}T_rT_s.
+ \label{eq:two-stage-q}
+\end{equation}
+For each distinct pair, independence gives
+\begin{equation}
+ \E[T_rT_s\mid M_G]
+ =\E[T_r\mid M_G]\E[T_s\mid M_G]=E_R^2.
+\end{equation}
+This is matrix multiplication: element $(i,j)$ sums products over an
+intermediate index. Independence factors each of those scalar expectations;
+it does not require the individual matrices to commute.
+
+\paragraph{Compute the ordered sum without a double loop.}
+Expand the square of the total sum into diagonal and off-diagonal terms:
+\begin{equation}
+ \left(\sum_rT_r\right)^2
+ =\sum_r T_r^2+\sum_{r\ne s}T_rT_s.
+\end{equation}
+Subtract the first term and divide by the number of ordered distinct pairs:
+\begin{equation}
+ Q=\frac{(\sum_rT_r)^2-\sum_rT_r^2}{m(m-1)}.
+\end{equation}
+Both orders occur for every pair. Their combined contribution is symmetric
+when each factor is symmetric. The resulting second-order precision is
+\begin{equation}
+ \widehat\Psi_2=L_G^{-\mathsf T}(I-\overline T+Q)L_G^{-1}.
+\end{equation}
+Its conditional expectation is the second-order polynomial in
+Equation~\eqref{eq:second-stage-series}, not the exact infinite inverse.
+Finite moments are needed for the expectations and error bars to exist.
+There is no guarantee that a realization of this noise-corrected polynomial
+is positive. A negative conditional precision is a failed estimate, not
+an eigenvalue to clip silently.
+
+\subsection{Restore the fixed block and understand the price}
+
+\paragraph{A precision polynomial does not automatically preserve $A$.}
+Partition a raw estimated precision $P$. Keep its three-point precision
+block and define
+\begin{equation}
+ K=P_{yy}.
+\end{equation}
+If $K$ is positive definite, its inverse is the Schur residual covariance
+of the reconstructed model. For Gaussian vectors this is also the covariance
+conditional on $x$. For non-Gaussian vectors the actual conditional
+covariance can depend on $x$; the block identity alone does not determine it.
+The corresponding linear prediction of $y$ from $x$ has coefficient
+\begin{equation}
+ R=-K^{-1}P_{yx}.
+\end{equation}
+A covariance satisfying our exact marginal constraint is then
+\begin{equation}
+ C_{\rm fixed}=\begin{pmatrix}
+ A&AR^{\mathsf T}\\
+ RA&K^{-1}+RAR^{\mathsf T}
+ \end{pmatrix}.
+\end{equation}
+One can construct this matrix by writing $y=Rx+\epsilon$, taking the
+covariance of $x$ to be $A$, and making $\epsilon$ uncorrelated with $x$
+with covariance $K^{-1}$. This explains both positivity and the cross
+block. It is a covariance identity; conditional independence of the
+random variables would require additional assumptions such as joint
+Gaussianity.
+
+\paragraph{The reconstruction changes the statistical question.}
+Inverting $K$ and multiplying noisy regression coefficients are nonlinear
+operations. Therefore $C_{\rm fixed}$ does not inherit the unbiased
+finite-polynomial expectation of the raw PME. Tests must distinguish raw
+polynomial accuracy from the accuracy of this final constrained estimate.
+All the numerical comparisons below impose the same fixed-$A$ rule; none
+claims an unbiased exact inverse after reconstruction.
+
+\subsection{A useful control already present in the DES measurement}
+
+\paragraph{Known two-point covariance can remove some cross-block noise.}
+We do not have paired GPTG and expensive initial conditions, but we do have
+the two- and three-point measurements of each expensive map. Since $A$ is
+assumed known, fluctuations in their measured two-point sample covariance
+have known zero mean. They can act as an internal control variate. This
+uses the user's exact-$A$ assumption more fully than replacing only the
+upper-left block of a noisy matrix.
+
+\paragraph{Learn a prediction from the independent reference.}
+Freeze the reference regression coefficient
+\begin{equation}
+ R_0=B_G^{\mathsf T}A^{-1}.
+\end{equation}
+For centered measurements define the prediction residual
+\begin{equation}
+ e=y-R_0x.
+\end{equation}
+The residual need not be independent of $x$. Denote their covariance by
+\begin{equation}
+ T=\cov(x,e).
+\end{equation}
+Taking the covariance of $x$ with $y=R_0x+e$ gives
+\begin{equation}
+ B_R=AR_0^{\mathsf T}+T.
+\end{equation}
+Taking the covariance of $y$ with itself gives four terms:
+\begin{equation}
+ D_R=R_0AR_0^{\mathsf T}+R_0T+T^{\mathsf T}R_0^{\mathsf T}+\cov(e,e).
+\end{equation}
+These identities hold even when the reference regression is imperfect.
+The extra covariance $T$ retains what that imperfect prediction misses.
+
+\paragraph{Replace only unknown quantities by sample covariances.}
+Use ordinary mean-subtracted sample covariances from independent target
+parents. With the same fixed $R_0$ their residual cross covariance is
+\begin{equation}
+ S_{xe}=S_{xy}-S_{xx}R_0^{\mathsf T}.
+\end{equation}
+Substitute this into the expression for $B_R$:
+\begin{equation}
+ \widehat B_{\rm control}
+ =AR_0^{\mathsf T}+S_{xy}-S_{xx}R_0^{\mathsf T}.
+\end{equation}
+Collecting the known and measured two-point terms gives
+\begin{equation}
+ \widehat B_{\rm control}
+ =S_{xy}-(S_{xx}-A)R_0^{\mathsf T}.
+\end{equation}
+The analogous residual auto covariance is
+\begin{equation}
+ S_{ee}=S_{yy}-R_0S_{xy}-S_{yx}R_0^{\mathsf T}
+                 +R_0S_{xx}R_0^{\mathsf T}.
+\end{equation}
+Insert it and both cross terms into the expression for $D_R$:
+\begin{align}
+ \widehat D_{\rm control}={}&R_0AR_0^{\mathsf T}
+ +R_0(S_{xy}-S_{xx}R_0^{\mathsf T})\nonumber\\
+ &+(S_{yx}-R_0S_{xx})R_0^{\mathsf T}
+ +S_{yy}-R_0S_{xy}-S_{yx}R_0^{\mathsf T}
+ +R_0S_{xx}R_0^{\mathsf T}.
+\end{align}
+The terms in $R_0S_{xy}$ and $S_{yx}R_0^{\mathsf T}$ cancel. Of the three
+terms containing $R_0S_{xx}R_0^{\mathsf T}$, two are negative and one is
+positive. Hence
+\begin{equation}
+ \widehat D_{\rm control}
+ =S_{yy}-R_0(S_{xx}-A)R_0^{\mathsf T}.
+\end{equation}
+Both subtractions have zero expectation because $\E[S_{xx}]=A$. They
+preserve the target means of $B$ and $D$ when $R_0$ is independent of the
+target sample. Applying the same construction to each independent-pair
+factor gives another valid input to Equation~\eqref{eq:two-stage-q}.
+
+\paragraph{A scalar example shows an actual noise reduction.}
+Let $x$ and $e$ be independent standard Gaussian numbers and set $y=x+e$.
+Then $A=1$, the true regression is $R_0=1$, and the residual variance is
+one. The ordinary cross estimate contains two fluctuating terms:
+\begin{equation}
+ S_{xy}=S_{xx}+S_{xe}.
+\end{equation}
+The Gaussian sample-covariance moment identity used earlier gives
+\begin{equation}
+ \Var(S_{ij})=\frac{C_{ii}C_{jj}+C_{ij}^2}{\nu},\qquad \nu=N-1.
+\end{equation}
+For $x$ and $e$ their variances are one and their covariance is zero.
+Substituting these values, $S_{xx}$ has variance $2/\nu$, while $S_{xe}$ has variance $1/\nu$.
+Their covariance vanishes because the mixed Gaussian moments contain an
+odd power of $e$. Consequently
+\begin{equation}
+ \Var(S_{xy})=\Var(S_{xx})+\Var(S_{xe})
+              +2\cov(S_{xx},S_{xe})
+              =\frac{2}{\nu}+\frac{1}{\nu}+0.
+\end{equation}
+Combining the fractions gives
+\begin{equation}
+ \Var(S_{xy})=\frac{3}{\nu}.
+\end{equation}
+The controlled cross estimate is $1+S_{xe}$, whose variance is
+\begin{equation}
+ \Var(\widehat B_{\rm control})=\frac{1}{\nu}.
+\end{equation}
+The subtraction removes the fluctuating estimate of $\Var(x)$ from the
+cross measurement, reducing its variance by a factor of three. For the
+three-point-labelled variable in this scalar teaching example,
+\begin{equation}
+ \Var(S_{yy})=\frac{8}{\nu}.
+\end{equation}
+The sample variance of $y=x+e$ expands as
+\begin{equation}
+ S_{yy}=S_{xx}+2S_{xe}+S_{ee}.
+\end{equation}
+The controlled estimate replaces its first term by the known value one:
+\begin{equation}
+ \widehat D_{\rm control}=1+2S_{xe}+S_{ee}.
+\end{equation}
+The covariance between $S_{xe}$ and $S_{ee}$ is zero by the same odd-moment
+argument. The constant contributes no variance. Squaring the coefficient
+of $S_{xe}$ therefore gives
+\begin{equation}
+ \Var(\widehat D_{\rm control})
+ =4\Var(S_{xe})+\Var(S_{ee})
+ =\frac{4}{\nu}+\frac{2}{\nu}=\frac{6}{\nu}.
+\end{equation}
+This example proves a possible gain, not a universal one. Non-Gaussian
+fourth moments change these variance expressions. A poor coefficient can
+increase noise, and subsequent precision reconstruction can amplify rare
+errors even when individual covariance entries improve.
+
+\subsection{Why about two hundred parents remain a limitation}
+
+\paragraph{Known $A$ does not leave only eighty unknown numbers.}
+The cross block contains
+\begin{equation}
+ 400\times80=32000
+\end{equation}
+entries. The symmetric three-point block has
+\begin{equation}
+ \frac{80(80+1)}{2}=3240
+\end{equation}
+independent entries. Smoothness and physical structure can reduce the
+effective number that needs fitting, but an unrestricted correction treats
+all of them as free noisy directions. A sample covariance of 200 vectors
+has rank at most 199; simply swapping its first diagonal block for an
+exact matrix does not guarantee a positive result.
+
+\paragraph{An exactly solved large-matrix noise example.}
+The Frobenius norm squares every matrix entry before summing:
+\begin{equation}
+ \|Z\|_F^2=\sum_i\sum_j Z_{ij}^2.
+\end{equation}
+It measures an aggregate matrix error, not an entrywise percentage.
+Take the population and reference both equal to identity, so there is
+\emph{no model error}. Let $p$ and $q$ be the two block dimensions.
+For independent Gaussian vectors, a cross entry has variance $1/\nu$.
+There are $pq$ entries, appearing twice in the symmetric precision.
+In the second diagonal block, each diagonal entry has variance $2/\nu$
+and each off-diagonal entry has variance $1/\nu$. Adding their squared
+errors gives
+\begin{equation}
+ \E\|\widehat\Psi_1-I\|_F^2
+ =\frac{2pq+2q+q(q-1)}{\nu}.
+\end{equation}
+Combining the last two terms and dividing by matrix dimension yields
+\begin{equation}
+ \epsilon_{\rm raw,1}
+ =\sqrt{\frac{2pq+q(q+1)}{\nu(p+q)}}.
+\end{equation}
+For $p=400$, $q=80$ and $N=200$, an ordinary sample covariance has
+$\nu=199$ and this RMS is $0.859$. The disjoint-pair estimator has
+$m=100$ independent outer products and gives $1.212$ instead. These
+numbers describe a raw first-order full-matrix norm, before fixed-block
+reconstruction; they are \emph{not} errors on cosmological parameters.
+They demonstrate why reference closeness alone cannot suppress the noise
+of an unrestricted correction.
+
+\paragraph{The Schur complement explains failed direct block substitution.}
+For this identity example the target cross covariance is zero. Its sample
+estimate still fluctuates. The conditional covariance obtained by directly
+replacing $S_{xx}$ with $I$ is
+\begin{equation}
+ \widehat H=S_{yy}-S_{yx}S_{xy}.
+\end{equation}
+For each of its diagonal entries, the subtracted term contains the squares
+of $p$ noisy cross entries. Each has expectation $1/\nu$. Thus
+\begin{equation}
+ \E[\widehat H]=\left(1-\frac{p}{\nu}\right)I_q.
+\end{equation}
+With the dimensions above this coefficient is $-1.010$. This negative
+expectation is not a statement that every realization fails, but it proves
+that the construction cannot generally preserve positivity. Even an exact
+Gaussian regression control leaves the analogous residual Schur estimate
+with this dimensional penalty. Controls alone do not solve the
+high-dimensional inverse problem.
+
+\paragraph{Regularization need not compress the observed two-point vector.}
+One can retain every measured row while fitting a small number of physically
+motivated covariance corrections, or shrinking noisy correction modes toward
+the reference. Such a procedure changes the covariance estimator, not the
+data vector. Its bias and prior dependence need testing. The simplest
+comparison is a fixed-weight average of two positive, fixed-$A$
+covariances. This stays positive and keeps $A$ exactly. If one input is
+indefinite, positivity no longer follows. A conditional covariance prior
+or a regression model may then be preferable; those require their own
+statistical specification rather than a new numerical clipping rule.
+
+\subsection{Calibration overlap is a real dependence, not a naming issue}
+
+\paragraph{The audited local files.}
+The current point-transformation parameters and noise amplitudes inherit a
+fit to Rafael runs 0000--0031, cut 0, realization 0, recorded in
+\nolinkurl{tests/gptg_pilot/calibration.yaml}. The current physical calibration
+in \nolinkurl{chains/gptg_physical_l4096/calibration.yaml} inherits those
+parameters; that generated package is not a new independent calibration. Supplying a new
+theory power spectrum through multipole 4096 does not remove this
+dependence. The local directory contains 200 run labels and 15997 files;
+the methods paper~\cite{gomes} describes 199 parent skies and 796 footprints. The
+mapping of those inventories needs the producer's record. Multiple cuts
+or noise draws of one parent are not additional independent gravitational
+universes. A count of files must not become a covariance degrees-of-freedom
+count.
+
+\paragraph{A fitted scalar reference exposes the error.}
+Suppose the true variance is one, and we fit the cheap model variance to
+the expensive sample variance $S_R$. Infinitely many cheap maps would then
+determine the fitted value $M_G=S_R$ perfectly. The first-order scalar PME
+would give
+\begin{equation}
+ \widehat\Psi_1=\frac{2}{M_G}-\frac{S_R}{M_G^2}.
+\end{equation}
+Substitute the fitted equality before simplifying:
+\begin{equation}
+ \widehat\Psi_1=\frac{2}{S_R}-\frac{1}{S_R}=\frac{1}{S_R}.
+\end{equation}
+Although the fitted residual is zero, a Gaussian sample variance obeys
+\begin{equation}
+ \E[1/S_R]=\frac{\nu}{\nu-2},\qquad \nu>2.
+\end{equation}
+For twenty expensive samples this is $19/17$, not one. More cheap maps
+cannot remove the bias caused by using the same target fluctuations to
+fit the reference and to correct it.
+
+\paragraph{A simple initial design does not require three expensive groups.}
+Freeze the current calibration and use the remaining parent labels for
+correction, after parent identity is confirmed. With the local inventory
+this leaves 168 labels outside the original fit. All eligible correction
+parents can enter one ensemble; no separate calibration/correction/validation
+thirds are required. The abundant synthetic ensemble supports method
+development and independent controlled validation. Producer confirmation
+and parent-level uncertainty assessment are still needed for DES claims.
+
+\paragraph{If all parents must be reused, rerun the fitting step honestly.}
+Cross-fitting can train a reference on parents outside a fold and form
+correction products from parents inside that fold. At second order the
+reference must exclude every parent entering a product. In our disjoint-pair
+construction, $T_rT_s$ uses four original parent skies; all four must be
+absent from that reference's training set. Excluding only one factor's
+parents is insufficient.
+Different folds then have different fitted references, and their training
+sets overlap. Averaging their estimates is not automatically an unbiased
+exact inverse. An alternative is to study the entire fit-and-correct
+procedure in repeated synthetic experiments and report its measured bias
+and coverage. Neither approach is equivalent to pretending the existing
+reference is independent.
+
+\subsection{Controlled numerical results, with a known population}
+
+\paragraph{The notebook makes a deliberately smaller test.}
+Section 18 of \nolinkurl{EXAMPLE_COVARIANCE_PME.ipynb} uses 24 known
+two-point-labelled rows and eight three-point-labelled rows. They are
+ordinary random-vector coordinates, not measured shear statistics.
+The target covariance is constructed from exact $A=I$, a fixed random
+cross matrix and a positive diagonal conditional covariance. The cheap
+population reduces that cross matrix by 20 percent and increases its
+conditional covariance by 20 percent. These are stipulated toy errors,
+not measurements of GPTG model error. A single independent ensemble of
+10000 cheap vectors supplies either direct blocks or a first PME.
+Every target experiment then supplies 200 fresh vectors. The cheap
+reference is frozen across 128 repetitions, so the reported scatter is
+conditional on that reference; it does not include refitting uncertainty.
+
+\paragraph{Define the error before presenting the numbers.}
+The exact target covariance has Cholesky factor $L_R$. For each positive
+precision estimate we compute
+\begin{equation}
+ \epsilon=\frac{\|L_R^{\mathsf T}\widehat\Psi L_R-I\|_F}{\sqrt{32}}.
+\end{equation}
+The table reports the square root of the mean of $\epsilon^2$ over
+successful repetitions. Failures are listed separately and are not
+converted into a favorable finite error. The skewed case uses independent
+centered lognormal coordinates, standardized to unit variance and multiplied
+by the same $L_R$. Both distributions therefore have the same known target
+covariance. Their fourth and higher moments differ. PME uses 100 independent
+pair factors, whereas direct estimation and shrinkage use the ordinary
+covariance of all 200 vectors. They have the same simulation budget but
+different statistical efficiency. This counterexample is not a ranking
+of optimally efficient PME against all competing methods.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+Estimator & Gaussian RMS & Failures & Skewed RMS & Failures\\
+\midrule
+Cheap direct reference only & 0.1009 & 0 & 0.1009 & 0\\
+First cheap PME reference only & 0.1311 & 0 & 0.1311 & 0\\
+Target sample, replace $A$ & 0.4274 & 0 & 0.5425 & 1\\
+Half sample, half cheap direct & 0.1430 & 0 & 0.1540 & 0\\
+Cheap direct then target PME1 & 0.3671 & 0 & 0.4285 & 1\\
+Cheap direct then target PME2 & 0.4324 & 0 & 0.5967 & 5\\
+Cheap PME2 then target PME2 & 0.4167 & 0 & 0.4643 & 4\\
+Known-$A$ control then PME2 & 0.3987 & 0 & 0.8199 & 3\\
+\bottomrule
+\end{tabular}
+\caption{A controlled counterexample to automatic improvement from a second
+correction. Failures are counts out of 128 target experiments, except that
+the reference-only rows describe the same frozen positive matrix in every
+experiment. All final matrices retain the exact analytical $A$. Values
+measure a full precision norm, not a DES parameter error.}
+\label{tab:two-stage-toy}
+\end{table}
+
+\paragraph{Read the adverse result rather than hiding it.}
+The cheap direct reference is already fairly close in this example. The
+population residual radius is 0.2412, compared with 0.5852 about the
+original analytical toy model. The first cheap PME produces radius 0.3030.
+All three deterministic expansions converge. Nevertheless, the second
+correction introduces enough noise to make the final estimate worse than
+the reference alone. Partial shrinkage performs better than the tested
+full corrections, though worse than the reference in this chosen example.
+It uses a weight fixed in advance, not an optimized or universal weight.
+The known-$A$ control helps the Gaussian PME2 case modestly but worsens
+the skewed RMS after nonlinear reconstruction. A smaller number of failed
+positive-definiteness checks is not evidence of smaller total error.
+The notebook also reports medians and 95th percentiles: for the skewed
+known-$A$ control these are 0.4222 and 0.5068, despite its RMS of 0.8199.
+Rare near-singular reconstructions dominate that RMS. With only 128
+repetitions these are illustrative measurements, not precise population
+rankings of the tails.
+
+\paragraph{Additional checks distinguish algebra from a favorable example.}
+The notebook explicitly enumerates ordered products to check the compact
+square formula. It verifies the fixed block after inverting reconstructed
+precisions. A separate scalar test repeats the known-$A$ control experiment
+10000 times and recovers its predicted covariance variance reductions.
+Another test samples the fitted-reference scalar example and recovers its
+biased mean inverse. The algebra establishes raw-polynomial unbiasedness; the multivariate
+experiment measures error after reconstruction, not an ensemble proof of
+raw-polynomial unbiasedness. These checks do
+not prove DES accuracy, and the small vector experiment does not replace a
+480-dimensional test. The exact large-dimensional calculation above
+explains why that larger test can be harder even with perfect $A$.
+
+\subsection{What the existing maps can and cannot establish}
+
+\paragraph{The current real-map measurements do not yet match the target.}
+The downloaded Rafael ensemble has coarse sixteen-entry aperture-moment
+diagnostics and a small four-bin pair comparison, not a completed matching
+480-entry measurement ensemble. The saved full-vector checkpoints belong
+to the old GPTG experiment. Their mixed-source cubic rows have the
+documented coincident-pixel issue; the validated auto-source subset avoids
+that issue. The low-resolution empty small-angle pair bins are another
+measurement restriction. Neither can be cured by a covariance formula.
+
+\paragraph{The useful existing result is narrower.}
+For the audited large-scale subset of 140 pair entries and four auto-source
+three-point entries, the 1878 completed GPTG maps give same-data precision
+discrepancies of approximately 12.02 percent for the Gaussian starting
+reference and 8.34, 8.15 and 8.51 percent for second, fourth and sixth
+orders. This is agreement with a noisy, fixed-$A$ direct comparison using
+the same maps, not error against known population truth. It demonstrates
+some improvement on that subset, no sixth-order advantage, and no
+sub-percent certification. It is not a second correction using Rafael's
+maps. The separate GPTG note records the estimator and scale selections.
+
+\paragraph{Match the physics and the measurement before comparing models.}
+Both ensembles must describe the same source distributions, angular bins,
+triangle cuts, source triples, shear conventions, weights, noise,
+footprint and pixel response. The local Rafael maps are NSIDE512; the
+published construction~\cite{gomes} uses NSIDE1024 catalog-position noise and pixel
+averaging, while the proposed GPTG production is NSIDE2048 with a specified
+band limit and pixel-noise prescription. The present local maps cannot
+independently validate newly resolved small-scale DES covariance. The
+approved benchmark keeps map neutrino mass at 0.06 eV and lets the
+analytical covariance use zero neutrino mass with the same total matter
+density. That is an explicit approximation, not a reason to alter $A$
+during these tests.
+
+\paragraph{The next decisive experiment.}
+First use two deliberately different synthetic map models, with matched
+measurements, to emulate cheap reference and expensive target. Repeatedly
+select an expensive-sized parent ensemble while a much larger independent
+target ensemble measures benchmark uncertainty. Compare reference only,
+direct constrained estimation, PME1/2, known-$A$ controls and a simple
+shrinkage choice. Keep every two-point row that the measurement supports;
+restricting covariance corrections need not compress the data. Record
+conditional eigenmodes, positivity failures, likelihood quadratic forms,
+Fisher errors and interval coverage. Then repeat the full calibration and
+correction with intentional training overlap. Only after those tests
+should matching Rafael measurements decide which residual structure can
+be learned reliably from the available independent parents.
+
+\paragraph{The decision supported by this study.}
+Use the Kunhao ensemble to build and test a useful covariance reference.
+Do not start the expensive correction at fourth or sixth order merely
+because the cheap ensemble is large: those extra powers must still be
+learned from the limited expensive parents and can increase sampling noise.
+Treat a second low-order correction as a candidate, alongside known-$A$
+control variates and shrinkage. Preserve the distinction between precision
+polynomial unbiasedness, positivity, model discrepancy and inference
+accuracy. There is no present evidence that two unrestricted Eifler
+corrections will yield sub-percent DES covariance or posterior errors from
+roughly two hundred expensive parents. There is a sound mathematical route
+to investigate that goal, and the tests above identify where its statistical
+cost enters.
+
+\begin{thebibliography}{99}
 \bibitem{pme} O. Friedrich and T. Eifler,
 \emph{Precision matrix expansion --- efficient use of numerical simulations
 in estimating errors on cosmological parameters},
@@ -3939,5 +4638,29 @@ the theory work also builds on
 {shear conventions} and
 \href{https://rmjarvis.github.io/TreeCorr/_build/html/gg.html}
 {GGCorrelation documentation}. The bounded measurement uses version 5.1.2.
+
+\bibitem{halltaylor} A. Hall and A. Taylor,
+\emph{A Bayesian method for combining theoretical and simulated covariance
+matrices for large-scale structure surveys},
+\href{https://arxiv.org/abs/1807.06875}{arXiv:1807.06875}.
+\bibitem{shrinkage} A. C. Pope and I. Szapudi,
+\emph{Shrinkage Estimation of the Power Spectrum Covariance Matrix},
+\href{https://arxiv.org/abs/0711.2509}{arXiv:0711.2509}.
+\bibitem{carpool} N. Chartier and B. D. Wandelt,
+\emph{CARPool Covariance: Fast, unbiased covariance estimation for
+large-scale structure observables},
+\href{https://arxiv.org/abs/2106.11718}{arXiv:2106.11718}.
+\bibitem{carpoolbayes} N. Chartier and B. D. Wandelt,
+\emph{Bayesian Control Variates for optimal covariance estimation with
+pairs of simulations and surrogates},
+\href{https://arxiv.org/abs/2204.03070}{arXiv:2204.03070}.
+\bibitem{sellentin} E. Sellentin and A. F. Heavens,
+\emph{Parameter inference with estimated covariance matrices},
+\href{https://arxiv.org/abs/1511.05969}{arXiv:1511.05969}.
+\bibitem{gptg} K. Zhong et al.,
+\emph{Fast Generation of Weak Lensing Maps with Analytical Point
+Transformation Functions},
+\href{https://arxiv.org/abs/2411.04759}{arXiv:2411.04759}.
+
 \end{thebibliography}
 \end{document}
