@@ -16,7 +16,8 @@
 14. [Appendix: optional compression](#compression)
 15. [Appendix: estimator and publication comparisons](#estimator)
 16. [Appendix: original-code comparisons and timing](#comparison)
-17. [Fixed analytical two-point block](#fixed-analytical-two-point-block-in-the-map-experiment)
+17. [CPU map generation on the HPC](#cpu-map-generation)
+18. [Fixed analytical two-point block](#fixed-analytical-two-point-block-in-the-map-experiment)
 
 ## Purpose <a name="scope"></a>
 
@@ -166,8 +167,13 @@ samples means no chain is written.
 
 ## Notebooks <a name="notebooks"></a>
 
-Open these with the Cocoa kernel and `projects/des_3pcf` as the notebook
-directory. Generated results and figures use `chains/`.
+Open these with the Cocoa kernel. The IA and baryonic-feedback studies live
+under `notes/`, each with its TeX source, PDF and companion notebook, as in
+LSST Y1 × DESI. Their visible cells reproduce the calculations explained in
+the notes; they use the numbered Cobaya likelihoods and shared Fisher
+functions. Physical reruns are deferred, so these refactored notebooks have
+empty outputs and the notes report no new forecast values. Generated results
+and figures use the project’s `chains/` directory.
 
 ```bash
 jupyter lab projects/des_3pcf --no-browser
@@ -175,12 +181,12 @@ jupyter lab projects/des_3pcf --no-browser
 
 | Notebook | Question addressed |
 |---|---|
-| [EXAMPLE_FISHER_IA.ipynb](EXAMPLE_FISHER_IA.ipynb) | How do NLA/TATT responses and joint Fisher constraints compare? |
+| [IA notebook](notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb) and [teaching note](notes/intrinsic_alignments/intrinsic_alignments.pdf) | How do NLA/TATT responses and joint Fisher constraints compare? |
 | [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Which sampling controls and derivative steps stabilize the forecast? |
 | [EXAMPLE_IA_COMPONENTS.ipynb](EXAMPLE_IA_COMPONENTS.ipynb) | How do ordered intrinsic-alignment terms enter the aperture signal? |
 | [EXAMPLE_JOINT_FEEDBACK.ipynb](EXAMPLE_JOINT_FEEDBACK.ipynb) | How do separate power and bispectrum responses change the joint mean? |
 | [EXAMPLE_FEEDBACK_SCENARIOS.ipynb](EXAMPLE_FEEDBACK_SCENARIOS.ipynb) | What changes among the installed Cocoa feedback scenarios? |
-| [EXAMPLE_FISHER_BACCO.ipynb](EXAMPLE_FISHER_BACCO.ipynb) | How do neutrino conversion and extrapolation affect BACCO forecasts? |
+| [BACCO notebook](notes/baryonic_feedback/EXAMPLE_FISHER_BACCO.ipynb) and [teaching note](notes/baryonic_feedback/baryonic_feedback.pdf) | How do neutrino conversion and extrapolation affect BACCO forecasts? |
 | [EXAMPLE_COMPRESSION.ipynb](EXAMPLE_COMPRESSION.ipynb) | What local information does each optional compression preserve? |
 | [EXAMPLE_COVARIANCE_PME.ipynb](EXAMPLE_COVARIANCE_PME.ipynb) | How do we compute the noisy-square correction, one matrix operation at a time? |
 | [EXAMPLE_COVARIANCE_MAPS.ipynb](EXAMPLE_COVARIANCE_MAPS.ipynb) | What can a bounded aperture-moment experiment establish with Rafael’s maps? |
@@ -1424,7 +1430,75 @@ modules stay only when those production programs actually need them.
 | Explicitly expensive Fisher study | Only when needed: an `interface/cosmolike_des_3pcf_fisher.py` following LSST Y1 × DESI |
 | Hardware probes and superseded exploration | Ignored local diary; retained results in `tests/` |
 
-The remaining `run_3pcf.py`, `run_fisher_accuracy.py` and `scripts/des3pcf/`
-are migration work, not a recommended second framework. Their consumers
-must be changed before removing them. Timing runs are expensive enough for
-a script, but plotting completed timing records belongs in a notebook.
+The old Fisher CLI and Fisher/accuracy/template wrappers have been removed.
+The accuracy notebook contains the step, angular-order and conditioning
+studies directly. Remaining non-Fisher `run_3pcf.py` preparation and native
+mean/covariance diagnostics still have test consumers; they are not the
+public forecast path. Timing runs may use a script, but plotting completed
+timing records belongs in a notebook.
+
+
+## CPU map generation on the HPC <a name="cpu-map-generation"></a>
+
+The standalone [Slurm example](scripts/EXAMPLE_GPTG_GENERATE_UOFA.sbatch)
+uses MPI to distribute independent maps, with one CPU thread per rank
+and no GPU. Ranks are divided equally between the sockets. Its allocation is declared once in the Slurm header;
+check that allocation against the memory of your chosen harmonic cutoff.
+BLAS remains at one thread. Submit from the activated Cocoa directory.
+
+Fresh Cocoa setup installs the pinned CPU transform dependency. For an
+existing installation that reports `No module named ducc0`, install it once
+on a network-enabled login node, not inside the batch job:
+
+```bash
+python -m pip install --no-deps --prefer-binary --prefix="${ROOTDIR}/.local" 'ducc0==0.42.0'
+```
+
+The calibration folder must contain `calibration.yaml`, `calibration.npz`
+and `indices_<calibration NSIDE>.npy` in RING order. The output must be a
+separate folder for a different resolution. Set its counts deliberately;
+validation may be zero for a generation pilot.
+
+```bash
+export GPTG_CALIBRATION_DIR="/absolute/path/to/frozen_calibration"
+```
+
+```bash
+export GPTG_OUTPUT_DIR="${ROOTDIR}/projects/des_3pcf/chains/gptg_refined"
+```
+
+```bash
+export GPTG_NSIDE=2048
+```
+
+```bash
+export GPTG_COMPARISON_COUNT=10
+```
+
+```bash
+export GPTG_VALIDATION_COUNT=0
+```
+
+These count settings request a small pilot. Change them for a reviewed
+production run, then submit the same standalone script:
+
+```bash
+sbatch projects/des_3pcf/scripts/EXAMPLE_GPTG_GENERATE_UOFA.sbatch
+```
+
+Resubmit with the same output, calibration, resolution and counts after
+the wall-time limit. Completed IDs are skipped. A complete atomic map file
+saved before its journal entry is remeasured for the small diagnostics,
+without regenerating the map. Never run two jobs writing the same ensemble.
+Generation outputs include the maps, journals, frozen calibration, ensemble
+metadata and `indices_<output NSIDE>.npy`. TreeCorr runs separately.
+
+**Changing NSIDE does not extend the fitted harmonic spectrum.** The
+[ten-map test](tests/gptg_pilot/nside2048_generation.txt) retained lmax=1024,
+refined the existing footprint and rescaled pixel noise to keep angular
+noise power fixed. It passed generation, storage and resume checks. It does
+not establish small-scale accuracy. A higher harmonic cutoff requires its
+own calibration, memory measurement and TreeCorr geometry checks before
+expensive production. The [map note](notes/gptg_simulations/gptg_simulations.pdf)
+and [companion notebook](notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb)
+explain the distinction.

@@ -2196,6 +2196,226 @@ must be considered together. The selected production allocation therefore
 retains one GPU worker and enables overlap. The scheduling evidence is
 stored under \texttt{tests/gptg\_pilot/gpu\_sht/scheduling/}.
 
+\section{Removing small scales: when does the expansion begin to behave?}
+\paragraph{Make the smaller experiment explicit.}
+The preceding full-vector failure does not imply that every selection of
+observables has a divergent inverse expansion. We now remove the smallest
+angular scales while keeping the same complete maps. We also retain only
+three-point entries in which all three source labels are equal. This
+avoids the confirmed mixed-source measurement defect; it does not repair
+those defective entries. We select a two-point angular bin only when its
+\emph{lower edge} exceeds the chosen cut, so no retained bin straddles that
+cut. The aperture radius is a separate selection. A forty-arcminute
+aperture is a weighted statistic, not a rule that every contributing
+triangle side exceeds forty arcminutes.
+
+\paragraph{Hold the analytical block fixed throughout.}
+Let $S$ be the ordinary covariance of all selected measured vectors.
+Its two-point/three-point partition is
+\begin{equation}
+ S=\begin{pmatrix}S_{22}&S_{23}\\S_{32}&S_{33}\end{pmatrix}.
+\end{equation}
+The two-point block $A$ remains the stipulated Gaussian plus SSC plus
+connected non-Gaussian analytical result. We do not fit it to the maps.
+For comparison, replace only the upper-left block of $S$:
+\begin{equation}
+ C_* = \begin{pmatrix}A&S_{23}\\S_{32}&S_{33}\end{pmatrix}.
+\end{equation}
+This matrix uses the same measured cross and three-point blocks as the
+correction. It is therefore a \emph{same-data comparison}, not independent
+validation or the generator's known population covariance. Its Schur
+complement must be positive before it can be used as a covariance. That
+check passes for the selections reported below.
+
+\paragraph{Define the starting point separately from the comparison.}
+Both tested starting models have zero cross block:
+\begin{equation}
+ M=\begin{pmatrix}A&0\\0&D_0\end{pmatrix}.
+\end{equation}
+The first uses the released simulation covariance for $D_0$. The second
+uses the Gaussian calculation from the frozen generator spectra described
+above, with all fifteen Wick pairings. Its full aperture filters and
+circular equal-area window do not match the finite-triangle measurement,
+and it omits connected GPTG moments. It is a candidate reference for an
+expansion, not a demonstrated accurate analytical covariance of our
+measured statistic. Neither choice changes $A$.
+
+\paragraph{Test convergence in dimensionless coordinates.}
+Factor the positive starting matrix as
+\begin{equation}
+ M=LL^{\mathsf T}.
+\end{equation}
+The residual in those coordinates is
+\begin{equation}
+ X=I-L^{-1}C_*L^{-\mathsf T}.
+\end{equation}
+Rearrange this definition to recover the comparison covariance:
+\begin{equation}
+ C_*=L(I-X)L^{\mathsf T}.
+\end{equation}
+Inverting the factors in reverse order gives
+\begin{equation}
+ C_*^{-1}=L^{-\mathsf T}(I-X)^{-1}L^{-1}.
+\end{equation}
+The geometric series replaces the middle inverse by
+\begin{equation}
+ (I-X)^{-1}=I+X+X^2+X^3+\cdots.
+\end{equation}
+To understand its condition, follow an eigenvector of $X$ with eigenvalue
+$x$. Along that direction the matrix series becomes the familiar scalar
+series $1+x+x^2+\cdots$. Its terms decrease only when $|x|<1$. Every
+direction must pass that test. We therefore record the largest absolute
+eigenvalue, called the spectral radius:
+\begin{equation}
+ \rho(X)=\max_i |x_i|<1.
+\end{equation}
+A positive truncated answer does not establish this condition. A series
+can remain positive and grow farther from the desired inverse at every
+successive order.
+
+\paragraph{What changed after the larger-scale selection.}
+With the current 1,878 complete maps, two-point bins with lower edges at
+least forty arcminutes and auto-source apertures at forty arcminutes
+retain 140 two-point entries and four aperture entries. The Gaussian
+reference gives
+\begin{equation}
+ \rho(X)=0.80595.
+\end{equation}
+This is inside the convergence region for the measured comparison matrix.
+With the released simulation $D_0$, the same rows instead give
+\begin{equation}
+ \rho(X)=8.18629.
+\end{equation}
+All three tested even orders yield positive conditional precisions in
+both cases, but only the first reference passes the residual-radius test.
+At the less restrictive twenty-arcminute two-point cut and
+25-arcminute aperture cut, even the Gaussian reference has radius 2.271.
+Changing the starting model and changing the retained scales are both
+relevant; simply increasing the expansion order is insufficient.
+
+\paragraph{Specify what the plotted discrepancy measures.}
+Factor the comparison matrix as
+\begin{equation}
+ C_*=L_*L_*^{\mathsf T}.
+\end{equation}
+For an estimated precision $\widehat\Psi$, define its discrepancy matrix
+\begin{equation}
+ E=L_*^{\mathsf T}\widehat\Psi L_*-I.
+\end{equation}
+If the estimate equals $C_*^{-1}$, the product is the identity and $E=0$.
+We sum the squared entries and divide by the dimension $d$ before taking
+the square root:
+\begin{equation}
+ \epsilon=\left(\frac{1}{d}\sum_{i,j}E_{ij}^2\right)^{1/2}.
+\end{equation}
+This is a dimensionless precision-matrix discrepancy. It is not a
+percentage error on a cosmological parameter, and its comparison matrix
+is still estimated from the same maps.
+
+\paragraph{Separate truncation from noisy products.}
+First evaluate the powers of the measured residual $X$ directly, without
+estimating each power from independent map pairs. This tests how well the
+finite polynomial approximates the inverse of $C_*$. Then repeat using
+the distinct-pair estimators and the fixed-$A$ conditional reconstruction.
+Both rows below use that same nonlinear fixed-$A$ reconstruction; they
+are not errors of the raw polynomials alone. The forty-arcminute
+Gaussian-reference results are
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Calculation & Order 2 & Order 4 & Order 6\\
+\midrule
+Exact powers of the measured residual & 0.0655 & 0.0385 & 0.0235\\
+Distinct-pair estimates & 0.0834 & 0.0815 & 0.0851\\
+\bottomrule
+\end{tabular}
+\end{center}
+The uncorrected reference has discrepancy 0.1202. Exact powers improve
+steadily because their truncation error decreases. The estimated powers
+do not follow that improvement: high-degree products also carry sampling
+and pair-order fluctuations. Agreement with this same-data comparison
+cannot decide whether PME or the direct estimator is closer to the
+unknown population covariance.
+
+\paragraph{What pair-order averaging changes.}
+The ordered-product recurrence assigns an order to independent map pairs.
+Different permutations have the same expectation but different realized
+higher-degree products. Keep each pair intact, permute the pairs, and
+average the raw precision polynomials before the nonlinear conditional
+reconstruction. Averaging sixteen such orderings gives discrepancies
+0.08335, 0.08100 and 0.08313 at orders two, four and six. This modest
+change reduces one variance contribution. It creates no new maps and
+cannot remove the sampling fluctuation common to all permutations.
+
+\paragraph{Read the covariance plots with a common normalization.}
+The companion notebook produces split-triangle correlation plots: the
+same-data $C_*$ appears above the diagonal and each PME covariance below.
+The difference plots divide by the same comparison standard deviations:
+\begin{equation}
+ \Delta_{ij}=\frac{(\widehat C_{\rm PME})_{ij}-(C_*)_{ij}}
+ {\sqrt{(C_*)_{ii}(C_*)_{jj}}}.
+\end{equation}
+We do not divide by an off-diagonal covariance entry, which could be nearly
+zero. The upper-left block of each difference is zero because $A$ is
+fixed. These plots diagnose which cross and three-point entries change;
+they do not convert the same-data comparison into an accuracy validation.
+
+\paragraph{What this test establishes.}
+There is a larger-scale selection for which the tested Gaussian starting
+model permits a convergent expansion and positive conditional estimates.
+That is progress relative to the full-vector failure. It does not settle
+the small-scale question: only four aperture entries remain, the reference
+is approximate, and the available sample is finite. The next scientific
+step is a matched measurement and reference at adequate angular resolution,
+followed by sample-size and expansion-order comparisons.
+
+\section{A bounded finer-pixel generation test}
+\paragraph{Pixels and harmonic range are different controls.}
+A ten-map CPU test refines NSIDE from 512 to 2048 while retaining the
+existing fitted harmonic cutoff $\ell_{\max}=1024$. The NESTED indexing
+relation supplies every child of each retained parent pixel; the saved
+maps remain RING ordered. This exactly retains the coarse footprint's
+boundary. It does not supply a new fine-resolution survey mask or new
+high-multipole signal. The test therefore checks geometry, generation,
+storage and resume behavior, not small-scale DES accuracy.
+
+\paragraph{Preserve the angular noise when changing pixels.}
+For independent component noise with pixel variance $\sigma_{\rm pix}^2$,
+the white angular power is
+\begin{equation}
+ N_\ell=\sigma_{\rm pix}^2\Omega_{\rm pix}.
+\end{equation}
+HEALPix has $12\,\mathrm{NSIDE}^2$ equal-area pixels, so
+\begin{equation}
+ \Omega_{\rm pix}=\frac{4\pi}{12\,\mathrm{NSIDE}^2}.
+\end{equation}
+Increasing NSIDE by four divides the area by sixteen. Keeping $N_\ell$
+fixed requires multiplying the variance by sixteen, or the standard
+deviation by four. The generator makes this change in memory without
+modifying the frozen calibration file.
+
+\paragraph{What was measured.}
+All ten saved maps have finite float32 pixels and the expected footprint
+and shape. They occupy 1.89 GB in total. With four native CPU threads,
+BLAS at one thread and no GPU, generation took 154.02 seconds in total;
+saving and the small aperture diagnostics added 2.48 seconds. These
+exclude startup and verification. Median generation time was 15.19
+seconds per map; measured peak resident memory was about 4.09 GiB.
+Saved aperture diagnostics were reproduced exactly from the decoded
+pixels. Resuming skipped all completed maps without changing their
+sizes or modification times. A changed NSIDE was refused before journal
+or metadata replacement. The detailed record is
+\texttt{tests/gptg\_pilot/nside2048\_generation.txt}.
+
+\paragraph{Preparing a scientific production run.}
+The project README explains the single CPU-only Slurm example and its
+calibration, output, count and NSIDE environment keys. The script retains
+the calibration's harmonic cutoff and uses a fresh output folder. Before
+raising that cutoff, establish the high-multipole model, check one-worker
+memory at the new cutoff, and validate the matching TreeCorr geometry
+and angular convergence. The timing above is not a prediction for that
+larger calculation. Existing ensembles remain available for comparison.
+
 \begin{thebibliography}{9}
 \bibitem{zhong} K. Zhong, G. Bernstein, S. S. Boruah, B. Jain and S. Kobla,
 \emph{Fast Generation of Weak Lensing Maps with Analytical Point

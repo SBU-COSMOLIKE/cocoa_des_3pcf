@@ -526,6 +526,35 @@ uncompressed row labels match numbered cases 1 and 2; other selections need
 matching labels and covariance. DES steps are absolute physical offsets;
 the noise helper receives zero-centered offsets so negative or zero
 fiducials cannot change that meaning. Gaussian priors enter once. Full
-physical reruns remain distinct from the small API/algebra tests. Historical
-study callers of older Fisher/accuracy wrappers remain to be migrated before
-those modules can be deleted without breaking their reproducibility.
+physical reruns remain distinct from the small API/algebra tests. The old Fisher CLI, three private wrapper modules and six study programs
+are removed. Their scientific calculations now live in the accuracy
+notebook, tested through its actual cells. Do not recreate the archive or
+workflow abstraction in another file.
+
+IA and baryon studies belong in notes/intrinsic_alignments/ and
+notes/baryonic_feedback/, respectively, with one teaching TeX/PDF and its
+companion notebook. These use the ordinary numbered Cobaya likelihoods and
+shared Fisher functions; no model is prepared privately inside a wrapper.
+Small examples and plotting stay visible in the notebooks, not in new
+analysis scripts. Empty outputs mean the new physical calculation has not
+run; never present older results as its output. Preserve actual numerical
+evidence in tests without making a second historical workflow.
+
+
+NSIDE refinement in generate_ensemble_mpi.py preserves the frozen harmonic
+cutoff. The ten-map NSIDE2048/lmax1024 pilot is an engineering check, not
+small-scale calibration. The RING footprint is expanded through NESTED
+parent/child membership; pixel noise sigma scales as NSIDE to hold angular
+noise power fixed. Keep float32 map storage and the explicit arithmetic
+mode. The CPU-only HPC launcher is the single standalone
+scripts/EXAMPLE_GPTG_GENERATE_UOFA.sbatch. It requires explicit calibration,
+output and count keys, supports resume, and must never have concurrent
+writers to one ensemble. Raising lmax requires fresh memory and numerical
+checks; do not extrapolate the low-bandlimit timing as a production result.
+
+Large-scale saved-vector checks use auto-source Map3 only, fixed analytical
+A and xi lower-bin-edge cuts. The same-data hybrid is not population truth.
+The Gaussian-reference residual radius can be below one after large-scale
+cuts, while the released-D reference remains outside convergence even with
+positive conditional precisions. Check both convergence radius and
+positivity. Pair-order averaging supplies no additional independent maps.
