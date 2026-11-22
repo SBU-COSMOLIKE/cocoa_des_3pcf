@@ -596,6 +596,33 @@ submission. One MPI rank coordinates; the remaining ranks measure whole
 maps. Each worker uses one CPU, with OpenMP and BLAS set to one. Acceptance
 depends on the site's allocation limits; no socket count is assumed.
 
+The same script also accepts Slurm array indices. With its default range
+size, array task `0` handles map IDs `[0, 5000)`, task `1` handles
+`[5000, 10000)`, and task `2` handles `[10000, 15000)`. Each range writes
+under `full_joint_480_shards/<start>_<stop>/`, separate from the original
+job's `full_joint_480/`. The range size is a setting in the script; keep
+the same value when resubmitting an array task so it finds its checkpoints.
+Do not run two copies of the **same** array index at once.
+
+The original, already running job has no upper map limit. Start another
+allocation with array task `1` to begin at map 5000:
+
+```bash
+sbatch --array=1 projects/des_3pcf/scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch
+```
+
+To queue the next range for a later start, submit a separate array index:
+
+```bash
+sbatch --begin=now+1hour --array=2 projects/des_3pcf/scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch
+```
+
+These jobs may overlap in time because their checkpoint directories differ.
+The older job may eventually compute a map from one of those ranges as well;
+that duplicates work but cannot overwrite a shard checkpoint. The example
+output below stays in the selected `$GPTG_MAP_DIR`. Do not submit array task
+`0` alongside the original job unless that duplicate work is intentional.
+
 Set `GPTG_MAP_DIR` to the ensemble's absolute parent path on the HPC:
 
 ```bash
@@ -703,11 +730,24 @@ result was saved must run again. Results already saved remain available to
 the next allocation. This is task-level resumption, not resumption inside
 an unfinished TreeCorr calculation.
 
-**Never run two measurement jobs against the same output folder at the
-same time.** There is no inter-job lock: two coordinators could overwrite
-each other's partial vectors. Resubmit only after the previous job has
-ended. A separate Slurm log filename does not create a separate measurement
-output folder.
+**Never run two measurement jobs against the same checkpoint directory at
+the same time.** There is no inter-job lock. Different array indices have
+separate directories, but repeating one index concurrently is unsafe. The
+original job's directory is also exclusive to that job while it runs.
+
+After all measurement jobs have ended, combine the shard checkpoints into
+`full_joint_480/` from the activated Cocoa directory:
+
+```bash
+python projects/des_3pcf/scripts/measure_full_joint_mpi.py --merge-shards --maps-dir "$GPTG_MAP_DIR"
+```
+
+The merge fills missing entries in the original vectors and refuses
+conflicting finite values. It saves each updated vector atomically and can
+be repeated after later allocations. Run it only when **all** writers have
+stopped; a running job could otherwise overwrite a merged vector. A shard
+completion marker covers only its own range. The main `COMPLETE.txt` is
+written by a full main-directory measurement job, not by this merge.
 
 Measurements live under `$GPTG_MAP_DIR/full_joint_480/`.
 Successful completion writes `COMPLETE.txt`; its vector count must match the
@@ -859,7 +899,7 @@ diagnostic folders are optional for the full 480-row measurement.
 While transfers continue, use the readiness mode below. Without that mode,
 complete the requested transfers before submission. Never mark a partially
 uploaded map as ready, and never run two measurement jobs writing to the
-same `full_joint_480/` folder.
+same checkpoint directory.
 
 #### Starting measurement while uploads continue
 
@@ -1039,9 +1079,9 @@ Slurm exports this variable to the batch job, which passes the absolute path
 to every measurement rank. Results are written to
 `$GPTG_MAP_DIR/full_joint_480/`. Set the same variable before each resubmission.
 Without it, the historical `chains/gptg_ensemble_15000/` path is used.
-Never run two jobs against the same measurement directory, even if submitted
-with different job names. Do not mix copies of independently changed output
-vectors; use one authoritative measurement folder.
+Never run two jobs against the same checkpoint directory, even if submitted
+with different job names. Array indices write to separate shard directories;
+merge their results after the jobs stop as described above.
 
 ### Optional float32 computation and Apple GPU point transforms
 

@@ -32,23 +32,71 @@ PROJECT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--count', type=int, default=40000)
+    parser.add_argument('--start', type=int, default=0,
+                        help='First global map ID assigned to this job.')
+    parser.add_argument('--stop', type=int, default=None,
+                        help='Exclusive final global map ID; defaults to --count.')
+    parser.add_argument('--output-dir', type=Path, default=None,
+                        help='Separate checkpoint directory for a concurrent map range.')
+    parser.add_argument('--merge-shards', action='store_true',
+                        help='After all jobs stop, combine saved shard entries into full_joint_480.')
     parser.add_argument('--maps-dir', type=Path,
                         default=PROJECT / 'chains/gptg_ensemble_15000')
     parser.add_argument('--smoke-pixels', type=int, default=0)
     parser.add_argument('--wait-for-ready', action='store_true',
                         help='Only dispatch maps with a completed-transfer .npy.ready marker.')
     args = parser.parse_args()
+    if args.merge_shards:
+        # Run once without mpirun, after every writer has stopped. Retain
+        # saved entries from the original job and fill gaps from the shards.
+        folder = args.maps_dir.resolve()
+        output = folder / 'full_joint_480'
+        merged = 0
+        for shard in sorted((folder / 'full_joint_480_shards').glob('*_*')):
+            first, stop = (int(part) for part in shard.name.split('_'))
+            for path in sorted(shard.glob('map_*.txt')):
+                number = int(path.stem.split('_')[1])
+                if not first <= number < stop:
+                    raise ValueError(f'Map ID outside shard range: {path}')
+                incoming = np.loadtxt(path)
+                target = output / path.name
+                existing = np.loadtxt(target) if target.exists() else np.full(480, np.nan)
+                if incoming.shape != (480,) or existing.shape != (480,):
+                    raise ValueError(f'Unexpected vector shape: {path}')
+                both = np.isfinite(incoming) & np.isfinite(existing)
+                if not np.array_equal(incoming[both], existing[both]):
+                    raise ValueError(f'Conflicting saved entries for map {number}')
+                fill = np.isfinite(incoming) & ~np.isfinite(existing)
+                if np.any(fill):
+                    existing[fill] = incoming[fill]
+                    output.mkdir(parents=True, exist_ok=True)
+                    temporary = target.with_suffix('.tmp')
+                    np.savetxt(temporary, existing,
+                               header='xip[200] xim[200] Map3[80]; NaN means unfinished')
+                    temporary.replace(target)
+                    merged += 1
+        print(f'Updated {merged} map vectors from shard checkpoints.')
+        return
     if not 1 <= args.count <= 40000:
         raise ValueError('count must be between 1 and 40000.')
+    if args.stop is None:
+        args.stop = args.count
+    if not 0 <= args.start < args.stop <= args.count:
+        raise ValueError('Require 0 <= start < stop <= count.')
+    if args.start and args.output_dir is None:
+        raise ValueError('A nonzero start needs a separate --output-dir.')
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
     if size < 2:
         raise ValueError('Use mpiexec with one coordinator and at least one worker.')
     folder = args.maps_dir.resolve()
-    output = folder / ('full_joint_smoke' if args.smoke_pixels else 'full_joint_480')
+    output = (args.output_dir.resolve() if args.output_dir is not None else
+              folder / ('full_joint_smoke' if args.smoke_pixels else 'full_joint_480'))
+    if args.output_dir is not None and output == folder / 'full_joint_480':
+        raise ValueError('A range must not share the legacy output directory.')
     if rank == 0:
-        output.mkdir(exist_ok=True)
+        output.mkdir(parents=True, exist_ok=True)
     comm.Barrier()
     pairs = list(combinations_with_replacement(range(4), 2))
     triples = list(combinations_with_replacement(range(4), 3))
@@ -83,7 +131,7 @@ def main():
         # Sum worker task times separately for each map and measurement block.
         # These cover current-run work, not queue waits or previous allocations.
         block_seconds = {}
-        for number in range(args.count):
+        for number in range(args.start, args.stop):
             path = output / f'map_{number:06d}.txt'
             values = np.loadtxt(path) if path.exists() else np.full(480, np.nan)
             if values.shape != (480,):
@@ -166,7 +214,9 @@ def main():
                 active -= 1
         for worker in range(1, size):
             comm.send(None, dest=worker)
-        (output / 'COMPLETE.txt').write_text(f'{args.count} full joint vectors complete.\n')
+        (output / 'COMPLETE.txt').write_text(
+            f'{args.stop - args.start} full joint vectors complete '
+            f'for map IDs [{args.start}, {args.stop}).\n')
         return
     indices = np.load(folder / 'indices_512.npy')
     if args.smoke_pixels:

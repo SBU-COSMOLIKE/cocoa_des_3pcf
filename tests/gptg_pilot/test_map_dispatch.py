@@ -72,7 +72,7 @@ with TemporaryDirectory() as temporary:
     clock = iter(range(0, 100000, 11))
     comm = Comm()
     environment = dict(np=np, deque=deque, folder=folder, output=output, size=3,
-        args=SimpleNamespace(count=4, wait_for_ready=True), comm=comm,
+        args=SimpleNamespace(count=4, start=0, stop=4, wait_for_ready=True), comm=comm,
         MPI=SimpleNamespace(ANY_SOURCE=-1, Status=Status),
         time=SimpleNamespace(monotonic=lambda: next(clock), sleep=lambda _: None),
         print=lambda *a, **k: None)
@@ -85,4 +85,20 @@ with TemporaryDirectory() as temporary:
     assert np.loadtxt(output/'map_000001.txt')[0] == 9.
     assert (output/'COMPLETE.before_4.txt').exists()
     assert (output/'COMPLETE.txt').read_text().startswith('4 full joint')
+    # A concurrent range reads only its assigned global IDs and writes to a
+    # different directory. The original result remains byte-for-byte intact.
+    original = (output / 'map_000002.txt').read_bytes()
+    shard = folder / 'full_joint_480_shards/2_4'
+    shard.mkdir(parents=True)
+    shard_clock = iter(range(0, 100000, 11))
+    environment.update(output=shard, comm=Comm(),
+                       args=SimpleNamespace(count=4, start=2, stop=4,
+                                            wait_for_ready=True),
+                       time=SimpleNamespace(monotonic=lambda: next(shard_clock),
+                                            sleep=lambda _: None))
+    exec(code, environment)
+    environment['run']()
+    assert [n for n, jobs in environment['comm'].assignments] == [2, 3]
+    assert (output / 'map_000002.txt').read_bytes() == original
+    assert (shard / 'COMPLETE.txt').read_text().startswith('2 full joint')
 print('PASS: whole-map ownership, delayed arrival, partial resume, saved rows and completion')
