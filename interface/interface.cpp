@@ -6,7 +6,9 @@ namespace py = pybind11;
 #include "cosmolike/3pcf/threepcf_interface.hpp"
 #include "cosmolike/3pcf/physics_interface.hpp"
 #include "cosmolike/3pcf/transform_interface.hpp"
+#ifndef COSMOLIKE_NO_COVARIANCE
 #include "cosmolike/3pcf/covariance_interface.hpp"
+#endif
 
 // Register the existing two-point initializers and spectra beside the
 // three-point kernels. Both probes use this project's native state.
@@ -17,7 +19,12 @@ PYBIND11_MODULE(cosmolike_des_3pcf_interface, module)
   cosmolike_interface::bind_threepcf(module);
   cosmolike_interface::bind_threepcf_physics(module);
   cosmolike_interface::bind_threepcf_transform(module);
+#ifndef COSMOLIKE_NO_COVARIANCE
   cosmolike_interface::bind_threepcf_covariance(module);
+  module.attr("has_covariance") = true;
+#else
+  module.attr("has_covariance") = false;
+#endif
 
 
   module.def("init_ntable_ell_internal",

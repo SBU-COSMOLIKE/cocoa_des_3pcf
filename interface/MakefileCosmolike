@@ -57,6 +57,13 @@ SOFLAGS := -shared
 COMMON += -fsignaling-nans
 endif
 
+# Match LSST Y1: omit covariance generators and their Python bindings.
+# Separate object directories prevent stale defines when switching modes.
+ifdef IGNORE_COSMOLIKE_DES_3PCF_COVARIANCE
+CXXFLAGS += -DCOSMOLIKE_NO_COVARIANCE
+BUILD := $(BUILD)/no_covariance
+endif
+
 OBJECTS := $(BUILD)/aperture_3pcf.o $(BUILD)/covariance_3pcf.o
 OBJECTS += $(BUILD)/threepcf_wrapper.o $(BUILD)/threepcf_interface.o
 OBJECTS += $(BUILD)/physics_3pcf.o $(BUILD)/physics_reference_3pcf.o
@@ -81,6 +88,12 @@ OBJECTS += $(BUILD)/redshift_spline.o $(BUILD)/pt_cfastpt.o
 OBJECTS += $(BUILD)/generic_interface.o $(BUILD)/cosmo2D_wrapper.o
 OBJECTS += $(BUILD)/cosmo2D_scuts_wrapper.o $(BUILD)/halo_wrapper.o
 OBJECTS += $(BUILD)/cfastpt.o $(BUILD)/utils_cfastpt.o $(BUILD)/utils_complex_cfastpt.o
+
+ifdef IGNORE_COSMOLIKE_DES_3PCF_COVARIANCE
+OBJECTS := $(filter-out $(BUILD)/covariance_3pcf.o \
+  $(BUILD)/covariance_physics_3pcf.o $(BUILD)/covariance_wrapper.o \
+  $(BUILD)/covariance_interface.o,$(OBJECTS))
+endif
 
 $(BUILD)/bias.o: $(CORE)/cosmolike/bias.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
@@ -118,13 +131,13 @@ $(BUILD)/cosmo2D_scuts_wrapper.o: $(CORE)/cosmolike/cosmo2D_scuts_wrapper.cpp | 
 $(BUILD)/halo_wrapper.o: $(CORE)/cosmolike/halo_wrapper.cpp | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-$(BUILD)/cfastpt.o: $(ROOTDIR)/external_modules/code/cfastpt/cfastpt.c | $(BUILD)
+$(BUILD)/cfastpt.o: $(CORE)/cfastpt/cfastpt.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(BUILD)/utils_cfastpt.o: $(ROOTDIR)/external_modules/code/cfastpt/utils_cfastpt.c | $(BUILD)
+$(BUILD)/utils_cfastpt.o: $(CORE)/cfastpt/utils_cfastpt.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(BUILD)/utils_complex_cfastpt.o: $(ROOTDIR)/external_modules/code/cfastpt/utils_complex_cfastpt.c | $(BUILD)
+$(BUILD)/utils_complex_cfastpt.o: $(CORE)/cfastpt/utils_complex_cfastpt.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
 .PHONY: all clean FORCE

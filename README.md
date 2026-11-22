@@ -1183,3 +1183,31 @@ account for the shared sampling fluctuations of B and D, and compare on
 independent validation maps. Check joint positivity through
 `D_sample - B_corrected.T @ solve(A, B_corrected)` without clipping failed
 matrices. This is a deferred alternative, not a change to the running test.
+
+
+### Optional analytical covariance build
+
+DES 3PCF follows LSST Y1's build switch: the same native extension is built
+with or without covariance generation. `set_installation_options.sh` sets
+`IGNORE_COSMOLIKE_DES_3PCF_COVARIANCE=1` by default. This omits covariance
+kernels and bindings and exposes `has_covariance=False`. Supplied covariance
+matrices remain usable by the joint likelihood. This key does not control
+TreeCorr or map generation.
+
+From activated Cocoa, enable analytical covariance generation:
+
+```bash
+unset IGNORE_COSMOLIKE_DES_3PCF_COVARIANCE
+```
+
+Rebuild through the normal project compilation script:
+
+```bash
+source projects/des_3pcf/scripts/compile_des_3pcf.sh
+```
+
+To keep covariance enabled across Cocoa sessions, comment out its export in
+`set_installation_options.sh`. To disable it again, set the key and recompile.
+`stop_cocoa` unsets the key through the shared cleanup file. Covariance and
+non-covariance objects use separate directories to avoid stale compilation
+flags when changing modes; restart Python after rebuilding its extension.

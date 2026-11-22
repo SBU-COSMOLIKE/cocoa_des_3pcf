@@ -1,0 +1,9 @@
+Covariance build-mode verification, 21 November 2026.
+OFF build: import succeeds; has_covariance=False; analytical covariance
+bindings absent; get_joint_covariance remains available. Aperture: 11 passed.
+ON build: import succeeds; has_covariance=True; Gaussian covariance binding
+present. Covariance components + aperture: 16 passed.
+ON -> OFF relink without cleaning: expected bindings and capability pass.
+Final installed extension is OFF, matching installation defaults.
+Standalone Makefile now uses the core-bundled CFASTPT source location.
+Shell syntax and README rendering passed. No simulations were resumed.
