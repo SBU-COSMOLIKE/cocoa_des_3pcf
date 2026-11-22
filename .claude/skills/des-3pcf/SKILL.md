@@ -368,7 +368,7 @@ adjoint identity, full noiseless maps and forward/reversed 32-map MPI tests.
 Elapsed time improved about 20% against CPU float64. Numerical agreement
 is not a physical validation or a full TreeCorr covariance comparison.
 Repeat gates for changed geometry or algorithm. The companion teaching
-section `notes/gptg_simulations/spherical_transforms.tex` derives every
+section in `notes/gptg_simulations/gptg_simulations.tex` derives every
 stage with small examples. Keep it consistent with the actual backend;
 the normal residual is not the map residual, and pixel-area scaling alone
 does not improve the normal matrix's condition number.
@@ -436,3 +436,6 @@ belong in scripts/. Do not accumulate small analysis .py files under notes/.
 Retire one-off hardware probes instead of exposing internal exploration as
 a public workflow. Notebook code needs explanations of inputs, array shapes,
 normalization, each mathematical step and what each result establishes.
+
+Keep this note in one TeX source, `gptg_simulations.tex`; do not split
+its sections into additional TeX files. It has one PDF and one companion notebook.
