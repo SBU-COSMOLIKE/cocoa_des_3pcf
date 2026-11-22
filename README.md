@@ -623,28 +623,6 @@ that duplicates work but cannot overwrite a shard checkpoint. The example
 output below stays in the selected `$GPTG_MAP_DIR`. Do not submit array task
 `0` alongside the original job unless that duplicate work is intentional.
 
-After the original job has fully stopped, **copy** its first-range
-checkpoints into the array task `0` directory. Keep the originals as a
-backup. From the activated HPC shell with `GPTG_MAP_DIR` set:
-
-```bash
-mkdir -p "$GPTG_MAP_DIR/full_joint_480_shards/0_5000"
-```
-
-```bash
-for file in "$GPTG_MAP_DIR"/full_joint_480/map_00[0-4]???.txt; do
-  [ -e "$file" ] || continue
-  cp -n "$file" "$GPTG_MAP_DIR/full_joint_480_shards/0_5000/"
-done
-```
-
-The filename pattern selects global IDs 0–4999. `cp -n` leaves any existing
-shard checkpoint intact, so a rerun cannot overwrite progress already made
-by array task `0`. The original vectors remain in `full_joint_480/`.
-Submit array task `0` after this copy; it reads its own copied checkpoints
-and computes only missing tasks. Run the copy only when the original job has
-ended, and do not copy again while array task `0` is writing.
-
 Set `GPTG_MAP_DIR` to the ensemble's absolute parent path on the HPC:
 
 ```bash
