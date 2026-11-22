@@ -29,6 +29,113 @@ import treecorr
 PROJECT = Path(__file__).resolve().parents[1]
 
 
+MEASUREMENT_REVISION = 'shared-pixel-auto-polarization-v1'
+VECTOR_HEADER = (f'measurement_revision={MEASUREMENT_REVISION}\n'
+                 'xip[200] xim[200] Map3[80]; NaN means unfinished')
+
+
+def check_measurement_revision(output, smoke_pixels=None):
+    """Refuse older measurements before writing metadata or merging rows."""
+    metadata = output / 'measurement.txt'
+    expected = f'measurement_revision={MEASUREMENT_REVISION}'
+    recorded_smoke = None
+    if metadata.exists():
+        lines = metadata.read_text().splitlines()
+        if lines[:1] != [expected]:
+            raise ValueError(f'Legacy measurement definition in {output}; use a fresh folder.')
+        smoke = [line for line in lines if line.startswith('smoke_pixels=')]
+        if len(smoke) != 1:
+            raise ValueError(f'Missing smoke_pixels definition in {metadata}.')
+        recorded_smoke = int(smoke[0].split(';', 1)[0].split('=', 1)[1])
+        # A smoke run uses a different pixel subset. Even with the repaired
+        # estimator, its rows must never be resumed as a full-footprint run.
+        # Worker counts and requested map ranges may change on resubmission.
+        if smoke_pixels is not None and recorded_smoke != smoke_pixels:
+            raise ValueError(f'smoke_pixels mismatch in {output}; use a fresh folder.')
+    for path in output.glob('map_*.txt'):
+        with path.open() as stream:
+            first_line = stream.readline().strip()
+        if not metadata.exists() or first_line != '# ' + expected:
+            raise ValueError(f'Legacy measurement vector {path}; use a fresh folder.')
+    return recorded_smoke
+
+
+def polarized_map3(catalogs, triple, radii, configuration, cache):
+    """Measure one symmetric source triple through cached auto correlations.
+
+    All four fields must share positions, pixel weights and the same mask.
+    The three aperture radii must be equal at each requested radius. These
+    are properties of this map runner, not assumptions for general catalogues.
+    Only the four aperture values are cached; the dictionary is cleared for
+    each new map. All source triples together require twenty auto evaluations.
+    """
+    first, second, third = triple
+    unit = np.eye(4, dtype=int)
+    # P(a) is the auto aperture moment of shear field a. The common triangle
+    # counts and mean geometry do not depend on shear, so P is cubic even
+    # after normalization. Equal radii make its trilinear form symmetric.
+    # P(a+b) = P(a) + 3 T(a,a,b) + 3 T(a,b,b) + P(b).
+    # P(a-b) = P(a) - 3 T(a,a,b) + 3 T(a,b,b) - P(b).
+    # Subtracting leaves 6 T(a,a,b) + 2 P(b); adding leaves
+    # 2 P(a) + 6 T(a,b,b). This explains both factors of six below.
+    if first == third:
+        terms = [(1., unit[first])]
+    elif first == second:
+        terms = [(1/6, unit[first] + unit[third]),
+                 (-1/6, unit[first] - unit[third]),
+                 (-1/3, unit[third])]
+    elif second == third:
+        terms = [(1/6, unit[first] + unit[second]),
+                 (1/6, unit[first] - unit[second]),
+                 (-1/3, unit[first])]
+    else:
+        # In P(a+b+c), subtracting all three pair sums removes the mixed
+        # terms with only two source labels. Each pure cube was subtracted
+        # twice, so add the three pure cubes back. The remaining six terms
+        # are the permutations of T(a,b,c), which are equal here.
+        terms = [(1/6, unit[first] + unit[second] + unit[third]),
+                 (-1/6, unit[first] + unit[second]),
+                 (-1/6, unit[first] + unit[third]),
+                 (-1/6, unit[second] + unit[third]),
+                 (1/6, unit[first]), (1/6, unit[second]),
+                 (1/6, unit[third])]
+    result = np.zeros(len(radii))
+    for factor, coefficients in terms:
+        key = tuple(coefficients)
+        if key not in cache:
+            if np.count_nonzero(coefficients) == 1:
+                catalog = catalogs[int(np.argmax(coefficients))]
+            else:
+                # Catalogue shears already include the input flip_g2 sign.
+                # Combining them must not apply that sign a second time.
+                catalog = treecorr.Catalog(
+                    ra=catalogs[0].ra,
+                    dec=catalogs[0].dec,
+                    ra_units='rad',
+                    dec_units='rad',
+                    g1=sum(c * cat.g1 for c, cat in zip(coefficients, catalogs)),
+                    g2=sum(c * cat.g2 for c, cat in zip(coefficients, catalogs)),
+                    w=catalogs[0].w,
+                )
+            corr = treecorr.GGGCorrelation(**configuration)
+            # Always use the auto path: it excludes coincident pixels. The
+            # mixed-field multipole paths retain unwanted self products when
+            # different source fields occupy the same pixel positions.
+            corr.process(
+                cat1=catalog,
+                num_threads=1,
+            )
+            sas = corr.toSAS(
+                min_phi=.016,
+                max_phi=3.126,
+                nphi_bins=63,
+                phi_units='radians',
+            )
+            cache[key] = sas.calculateMap3(R=radii)[0].copy()
+        result += factor * cache[key]
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--count', type=int, default=40000)
@@ -51,8 +158,16 @@ def main():
         # saved entries from the original job and fill gaps from the shards.
         folder = args.maps_dir.resolve()
         output = folder / 'full_joint_480'
+        shards = sorted((folder / 'full_joint_480_shards').glob('*_*'))
+        # Validate every input before changing any output. A repaired result
+        # must never silently absorb rows from the old measurement definition.
+        merge_smoke = check_measurement_revision(output)
+        for shard in shards:
+            shard_smoke = check_measurement_revision(shard, merge_smoke)
+            if merge_smoke is None:
+                merge_smoke = shard_smoke
         merged = 0
-        for shard in sorted((folder / 'full_joint_480_shards').glob('*_*')):
+        for shard in shards:
             first, stop = (int(part) for part in shard.name.split('_'))
             for path in sorted(shard.glob('map_*.txt')):
                 number = int(path.stem.split('_')[1])
@@ -70,9 +185,12 @@ def main():
                 if np.any(fill):
                     existing[fill] = incoming[fill]
                     output.mkdir(parents=True, exist_ok=True)
+                    if not (output / 'measurement.txt').exists():
+                        (output / 'measurement.txt').write_text(
+                            (shard / 'measurement.txt').read_text())
                     temporary = target.with_suffix('.tmp')
                     np.savetxt(temporary, existing,
-                               header='xip[200] xim[200] Map3[80]; NaN means unfinished')
+                               header=VECTOR_HEADER)
                     temporary.replace(target)
                     merged += 1
         print(f'Updated {merged} map vectors from shard checkpoints.')
@@ -115,13 +233,15 @@ def main():
     side_edges = np.geomspace(.5, 80., 21)
     first_side = np.flatnonzero(side_edges >= 8.)[0]
     if rank == 0:
+        check_measurement_revision(output, args.smoke_pixels)
         (output / 'measurement.txt').write_text(
+            f'measurement_revision={MEASUREMENT_REVISION}\n'
             f'480 rows: 200 xi-plus, 200 xi-minus, 80 Map3.\n'
             f'TreeCorr {treecorr.__version__}; NSIDE512 RING; equal pixel weights.\n'
             f'Side bank .5..80, 20 log bins, keep lower edge >=8: index {first_side}, '
             f'minimum {side_edges[first_side]:.17g} arcmin.\n'
             'Multipole max_n=100; 63 SAS bins, edges 0.016..3.126 radians.\n'
-            'bin_slop=0; angle_slop=0; symmetrized tomographic legs.\n'
+            'bin_slop=0; angle_slop=0; equal-radius auto polarization.\n'
             f'{size-1} MPI compute ranks; one coordinator; BLAS=1; native threads=1.\n'
             f'smoke_pixels={args.smoke_pixels}; smoke outputs are not science vectors.\n')
         # Each task owns disjoint vector entries. Rank zero is the only writer.
@@ -198,7 +318,7 @@ def main():
                 values[400+4*(job-10):404+4*(job-10)] = result
             path = output / f'map_{number:06d}.txt'
             temporary = path.with_suffix('.tmp')
-            np.savetxt(temporary, values, header='xip[200] xim[200] Map3[80]; NaN means unfinished')
+            np.savetxt(temporary, values, header=VECTOR_HEADER)
             temporary.replace(path)
             if not block_was_complete and np.all(np.isfinite(block)):
                 print('map', number, '2pt done' if job < 10 else '3pt done',
@@ -224,6 +344,7 @@ def main():
     ra, dec = HEALPix(nside=512, order='ring').healpix_to_lonlat(indices)
     cached_number = None
     catalogs = None
+    map3_cache = {}
     while True:
         task = comm.recv(source=0)
         if task is None:
@@ -262,6 +383,7 @@ def main():
                         flip_g2=True,
                     ))
                 cached_number = number
+                map3_cache.clear()
             if job < 10:
                 first, second = pairs[job]
                 corr = treecorr.GGCorrelation(
@@ -278,8 +400,7 @@ def main():
                              num_threads=1)
                 result = np.r_[corr.xip, corr.xim]
             else:
-                first, second, third = triples[job-10]
-                corr = treecorr.GGGCorrelation(
+                configuration = dict(
                     bin_type='LogMultipole',
                     min_sep=float(side_edges[first_side]),
                     max_sep=80.,
@@ -290,13 +411,13 @@ def main():
                     bin_slop=0.,
                     angle_slop=0.,
                 )
-                if first == third:
-                    corr.process(cat1=catalogs[first], num_threads=1)
-                else:
-                    corr.process(cat1=catalogs[first], cat2=catalogs[second],
-                                 cat3=catalogs[third], ordered=False, num_threads=1)
-                sas = corr.toSAS(min_phi=.016, max_phi=3.126, nphi_bins=63, phi_units='radians')
-                result = sas.calculateMap3(R=radii)[0]
+                result = polarized_map3(
+                    catalogs=catalogs,
+                    triple=triples[job-10],
+                    radii=radii,
+                    configuration=configuration,
+                    cache=map3_cache,
+                )
             if result.shape != ((40,) if job < 10 else (4,)) or not np.isfinite(result).all():
                 raise ValueError(f'Nonfinite or incorrectly sized measurement: map {number}, task {job}')
             comm.send((number, job, result, time.monotonic()-started), dest=0)
