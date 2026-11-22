@@ -642,9 +642,16 @@ squeue -u "$USER"
 Progress is printed when a map finishes a measurement block:
 
 ```text
-map 60 2pt done completed entries 400/480
-map 60 3pt done completed entries 480/480
+map 60 2pt done compute seconds this run 1040.5 completed entries 400/480
+map 60 3pt done compute seconds this run 24000.8 completed entries 480/480
 ```
+
+The times above illustrate the format; they are not performance estimates.
+`compute seconds this run` sums the worker's task times for that block only,
+separately for each map. It excludes queue waits, other maps, MPI sends and
+coordinator checkpoint writes. The first task on a map includes loading the
+map and constructing catalogs. On resume, only tasks computed in the current
+allocation contribute; earlier saved work has no retained timing.
 
 `map` is the simulation ID. `2pt done` means all xi-plus and xi-minus
 entries are saved; `3pt done` means all Map3 entries are saved.

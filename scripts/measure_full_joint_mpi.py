@@ -80,6 +80,9 @@ def main():
         # Partial text vectors retain NaNs for unfinished tasks and can resume.
         pending = []
         vectors = {}
+        # Sum worker task times separately for each map and measurement block.
+        # These cover current-run work, not queue waits or previous allocations.
+        block_seconds = {}
         for number in range(args.count):
             path = output / f'map_{number:06d}.txt'
             values = np.loadtxt(path) if path.exists() else np.full(480, np.nan)
@@ -133,6 +136,8 @@ def main():
                 continue
             status = MPI.Status()
             number, job, result, seconds = comm.recv(source=MPI.ANY_SOURCE, status=status)
+            timing_key = (number, job < 10)
+            block_seconds[timing_key] = block_seconds.get(timing_key, 0.0) + seconds
             values = vectors[number]
             # Announce a block only when this result completes it. Checking
             # the previous state also avoids repeating milestones on resume.
@@ -149,6 +154,7 @@ def main():
             temporary.replace(path)
             if not block_was_complete and np.all(np.isfinite(block)):
                 print('map', number, '2pt done' if job < 10 else '3pt done',
+                      'compute seconds this run', round(block_seconds.pop(timing_key), 3),
                       'completed entries',
                       f'{np.count_nonzero(np.isfinite(values))}/{values.size}',
                       flush=True)
