@@ -13,7 +13,7 @@
 #SBATCH --export=ALL
 
 # Submit from the activated Cocoa directory containing start_cocoa.sh.
-# One of the 960 ranks coordinates; the other 959 measure tomographic tasks.
+# One of the 960 ranks coordinates; the other 959 measure whole maps.
 # No per-socket constraint: use Slurm's configured topology for these nodes.
 echo "Running on host $(hostname)"
 echo "Time is $(date)"
@@ -32,7 +32,6 @@ if [ -z "${ROOTDIR:-}" ]; then
     conda activate cocoa || exit 1
     source start_cocoa.sh || exit 1
 fi
-set -e
 : "${ROOTDIR:?Cocoa activation must define ROOTDIR}"
 : "${CONDA_PREFIX:?Activate the HPC MPI environment}"
 
@@ -48,10 +47,34 @@ export NUMEXPR_NUM_THREADS=1
 # UofA recommendation for large MPI jobs. The site's hard limit must permit it.
 ulimit -u 2000000
 
-# The existing launcher forwards Cocoa paths and numerical-thread settings to
-# all nodes and binds each rank to one core. Do not wrap it in a second srun.
-# It processes all 30000 comparison + 10000 validation maps. On resubmission,
-# finite task entries in full_joint_480/map_*.txt are retained; missing/NaN
-# entries are recomputed. Do not delete partial vectors between allocations.
-bash "${ROOTDIR}/projects/des_3pcf/scripts/measure_gptg_hpc.sh" \
-    "${SLURM_NTASKS}" 40000
+# Keep the launch and its Slurm allocation in this one file, as in LSST Y1.
+# Forward Cocoa paths and thread settings to every node. Let the cluster's
+# MPI configuration choose the network transport; do not add a second srun.
+export PYTHONPATH="${PYTHONPATH:-}"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
+cd "${ROOTDIR}/projects/des_3pcf" || exit 1
+
+# Set GPTG_WAIT_FOR_READY=1 before sbatch while maps are still transferring.
+# A .npy.ready marker must be written only after that map's rsync succeeds.
+# The unquoted option below expands to either one flag or no argument.
+GPTG_READY_OPTION=""
+if [ "${GPTG_WAIT_FOR_READY:-0}" = 1 ]; then
+  GPTG_READY_OPTION="--wait-for-ready"
+fi
+
+# Measure all 30000 comparison + 10000 validation maps. Rank zero keeps the
+# saved vectors in the maps folder's full_joint_480/ directory. Finite entries
+# survive resubmission; only unfinished tasks are dispatched to workers.
+# Keep the same maps folder when resubmitting after the 24-hour limit, and
+# never run two jobs writing to that folder at the same time.
+"${CONDA_PREFIX}/bin/mpirun" -n "${SLURM_NTASKS}" \
+  -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \
+  -x OMP_NUM_THREADS -x OMP_PROC_BIND -x OMP_PLACES -x OMP_DYNAMIC \
+  -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS -x VECLIB_MAXIMUM_THREADS \
+  -x BLIS_NUM_THREADS -x NUMEXPR_NUM_THREADS \
+  --mca mpi_yield_when_idle 1 --bind-to core --report-bindings \
+  --map-by slot:PE=1 \
+  "${ROOTDIR}/.local/bin/python" -u \
+  notes/gptg_simulations/measure_full_joint_mpi.py --count 40000 \
+  ${GPTG_READY_OPTION} \
+  --maps-dir "${GPTG_MAP_DIR:-${ROOTDIR}/projects/des_3pcf/chains/gptg_ensemble_15000}"

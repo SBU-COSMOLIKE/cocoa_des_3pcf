@@ -420,3 +420,10 @@ rows and map IDs are retained. Arrival-aware mode requires successful-rsync
 .npy.ready markers. tests/gptg_pilot/test_map_dispatch.py executes the actual
 coordinator AST with fake MPI messages, never TreeCorr, covering late arrivals
 and partial resume. Do not revert to static strides or task-level dispatch.
+
+
+HPC measurement submission follows LSST Y1: use one standalone
+`scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch` containing the Slurm directives,
+Cocoa activation, exported MPI environment and direct mpirun command.
+Do not split it into a Slurm file plus a shell launcher. Keep the 40000-map
+selection, existing journal IDs and arrival-aware resume behavior intact.

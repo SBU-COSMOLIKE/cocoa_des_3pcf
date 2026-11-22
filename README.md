@@ -638,27 +638,19 @@ bitwise with the serial generator in both saved pixels and aperture moments.
 The laptop uses three generation workers with four transform threads each;
 the Linux HPC launcher additionally binds ranks to their allocated cores.
 
-After generation, measure the complete 40,000-map ensemble, for example with
-64 allocated single-CPU tasks:
-
-```bash
-bash projects/des_3pcf/scripts/measure_gptg_hpc.sh 64 40000
-```
-
-There are 63 measurement workers and one coordinator in this example.
-Global IDs 0--9999 are the comparison maps; IDs 10000--14999 refer to
-validation maps 0--4999. Workers read saved maps; only the coordinator writes
-small 480-entry vectors. No per-rank map copies or large triangle outputs
-are saved. Repeat the command to resume. Never run two coordinators against
-the same journals or measurement directory. The existing analysis driver
-still analyzes its early 1,000+500 experiment; measuring all maps does not
-silently change that statistical selection.
+Measure the complete 40,000-map ensemble with the single submission file
+below. It contains both the Slurm allocation and the MPI command, following
+the LSST Y1 examples; there is no separate shell launcher. Workers read saved
+maps, and only the coordinator writes the small 480-entry vectors. No
+per-rank map copies or large triangle outputs are saved. The existing
+analysis driver still selects its early 1,000+500 experiment; measuring all
+maps does not silently change that statistical selection.
 
 ### UofA Slurm: ten nodes with 96 cores each
 
-[measure_gptg_uofa.slurm](scripts/measure_gptg_uofa.slurm) requests **10 nodes,
+[EXAMPLE_GPTG_TREECORR_UOFA.sbatch](scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch) requests **10 nodes,
 960 MPI ranks, and one CPU per rank**. One rank coordinates; 959 measure
-TreeCorr tasks. OpenMP and BLAS stay at one. It uses your UofA partition
+whole maps, each with its unfinished TreeCorr tasks. OpenMP and BLAS stay at one. It uses your UofA partition
 `high_priority`, QoS `user_qos_timeifler`, account `timeifler`, and a 24-hour
 wall-time limit. These account and queue settings come from your supplied
 script; acceptance depends on the site's allocation limits. No socket count
@@ -689,7 +681,7 @@ source start_cocoa.sh
 Submit the allocation:
 
 ```bash
-sbatch projects/des_3pcf/scripts/measure_gptg_uofa.slurm
+sbatch projects/des_3pcf/scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch
 ```
 
 Slurm writes `DES3PCF_TREECORR-<jobid>.out` and `.err` in the submission
@@ -714,7 +706,7 @@ Wait until the old job has left the queue, including its `COMPLETING` state.
 Then submit the same script again for the next 24-hour allocation:
 
 ```bash
-sbatch projects/des_3pcf/scripts/measure_gptg_uofa.slurm
+sbatch projects/des_3pcf/scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch
 ```
 
 No additional resume flag is needed. Use the same input maps, measurement
@@ -952,7 +944,7 @@ export GPTG_MAP_DIR="${ROOTDIR}/projects/des_3pcf/chains/gptg"
 Submit using the same Slurm script:
 
 ```bash
-sbatch projects/des_3pcf/scripts/measure_gptg_uofa.slurm
+sbatch projects/des_3pcf/scripts/EXAMPLE_GPTG_TREECORR_UOFA.sbatch
 ```
 
 Slurm exports this variable to the batch job, which passes the absolute path
