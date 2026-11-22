@@ -55,6 +55,19 @@ quantity.
 
 ## Consistency comes first
 
+Consistency with LSST Y1 and Roman is a non-negotiable requirement. Ordinary
+prediction and inference run through Cobaya and the project's likelihood
+class; do not create a parallel run_3pcf driver, provider framework or
+scripts/des3pcf package. For ordinary Fisher calculations follow LSST Y1: write the orchestration
+in EXAMPLE_EVALUATE notebooks and call the shared core Fisher functions.
+Only an explicitly identified expensive Fisher calculation justifies an
+interface/cosmolike_des_3pcf_fisher.py module, following LSST Y1 x DESI
+interface/cosmolike_lssty1xdesi_fisher.py. Do not add a general Fisher CLI
+or a top-level python package as an automatic exception. Native numerical operations and their
+validation belong in the existing generic 3pcf or project C++ interface.
+Do not disguise a second run framework as a renamed helper module.
+
+
 **Do not overengineer.** Do not add abstractions, wrappers or protective
 layers when straightforward code already serves the purpose. Use the same
 programming model as the existing projects. In particular, do not introduce
@@ -444,3 +457,11 @@ Use one ensemble entry point, scripts/generate_ensemble_mpi.py. With one MPI
 process rank zero computes and journals directly; with multiple processes
 rank zero coordinates. Do not recreate a separate serial driver. --threads
 controls native transform threads per computing process; BLAS stays one.
+
+Script-count rule: avoid an explosion of Python files. scripts/ is for
+expensive production jobs such as map generation and TreeCorr, plus the
+necessary support code they actually call. Put lightweight analysis and
+plotting in the associated example or note notebook, with explanatory
+comments. Keep exploratory development diaries in an ignored folder.
+Review existing scripts against this rule; do not merely rename or move
+an unwanted framework into another package.

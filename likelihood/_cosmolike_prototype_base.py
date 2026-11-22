@@ -425,7 +425,11 @@ class _cosmolike_prototype_base(DataSetLikelihood):
 
     def logp(self, **params):
         """Return the likelihood of the supplied nuisance-parameter point."""
-        return self.compute_logp(datavector=self.get_datavector(**params))
+        # Retain the vector that was actually scored, as in LSST Y1 x DESI.
+        # Notebook Fisher derivatives can read it after model.loglike without
+        # repeating the entire native projection or bypassing Cobaya theory.
+        self.last_datavector = self.get_datavector(**params)
+        return self.compute_logp(datavector=self.last_datavector)
 
     def get_datavector(self, **params):
         """Return every xi+/xi-/Map3 row in the input measurement order."""
