@@ -622,12 +622,6 @@ The older job may eventually compute a map from one of those ranges as well;
 that duplicates work but cannot overwrite a shard checkpoint. The example
 output below stays in the selected `$GPTG_MAP_DIR`. Do not submit array task
 `0` alongside the original job unless that duplicate work is intentional.
-After the original job stops, submit array task `0` to finish its first range.
-For a map without a shard checkpoint, the array job reads the original job's
-saved vector and computes only unfinished tasks. It writes subsequent
-checkpoints in `full_joint_480_shards/0_5000/`; no files need moving. A shard's
-own checkpoint takes precedence on later resumes. Keep the same map inputs
-and measurement settings across these jobs.
 
 Set `GPTG_MAP_DIR` to the ensemble's absolute parent path on the HPC:
 

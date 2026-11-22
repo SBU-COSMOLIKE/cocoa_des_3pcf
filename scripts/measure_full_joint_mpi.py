@@ -133,13 +133,7 @@ def main():
         block_seconds = {}
         for number in range(args.start, args.stop):
             path = output / f'map_{number:06d}.txt'
-            # A new shard starts from the original job's saved work when it
-            # has no checkpoint yet. Once it writes its own checkpoint, that
-            # copy takes precedence on every later resume. Never write back
-            # to the original job's directory while jobs may overlap.
-            original = folder / 'full_joint_480' / path.name
-            source = path if path.exists() else original if args.output_dir is not None and original.exists() else None
-            values = np.loadtxt(source) if source is not None else np.full(480, np.nan)
+            values = np.loadtxt(path) if path.exists() else np.full(480, np.nan)
             if values.shape != (480,):
                 raise ValueError(f'Unexpected vector shape: {path}')
             jobs = []
