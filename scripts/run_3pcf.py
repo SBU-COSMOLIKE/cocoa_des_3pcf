@@ -1,4 +1,4 @@
-"""Prepare, predict and forecast explicitly defined DES three-point rows.
+"""Prepare and predict explicitly defined DES three-point rows.
 
 Example, from this project directory:
   python scripts/run_3pcf.py evaluate configs/y3_full_filter_example.yaml
@@ -8,8 +8,9 @@ JSON or YAML file is relative to that file. ``--validate-config`` reads the
 configuration and reports missing inputs. Native code resolves numerical
 settings; no CAMB solve or physical integral runs.
 
-The four commands separate expensive physical-table preparation, repeated
-mean predictions, one fiducial covariance, and parameter derivatives. The
+The commands separate expensive physical-table preparation, repeated
+mean predictions and one fiducial covariance. Fisher forecasts use the
+numbered Cobaya model in the teaching notebooks. The
 three-point and covariance integrals run in C; CAMB prepares background
 and power tables. Output NPZ files retain
 the full row labels, input choices and named arrays; no data compression or
@@ -60,12 +61,7 @@ from des3pcf.feedback import load_feedback
 from theory.bacco_bispectrum.response import BaccoFeedback, BaccoSettings, BACCO_PARAMETERS
 from theory.bacco_bispectrum.emulator import installed_bacco_weights
 from des3pcf.pixel_window import load_healpix_window
-from cosmolike_des_3pcf_interface import covariance_inputs, shape_noise
-from cosmolike_notebook_utils.fisher import ExactMeanCache, differentiate, fisher_matrix
-from cosmolike_notebook_utils.fisher import parameter_covariance, figure_of_merit
 from cosmolike_notebook_utils.fisher import symmetric_matrix
-from cosmolike_notebook_utils.fisher import compare_information, marginalized_errors
-from cosmolike_notebook_utils.covariance.precision import precision_expansion
 from des3pcf.provenance import prediction_identity
 from des3pcf.provenance import verify_prediction_identity
 
@@ -357,8 +353,6 @@ def load_configuration(path, command):
     if config.get("feedback", {}).get("mode") == "bacco":
         if amplitude != 1.0:
             raise ValueError("Dynamic BACCO requires fixed feedback_amplitude=1.")
-        if "feedback_amplitude" in config.get("fisher", {}).get("steps", {}):
-            raise ValueError("Vary BACCO's physical parameters, not feedback_amplitude.")
     rows = config["rows"]
     if rows.get("mode") == "forecast":
         checked_fields(
@@ -428,19 +422,18 @@ def load_configuration(path, command):
     has_xi = rows.get("xi_edges_arcmin") is not None
     if rows["mode"] == "measurement":
         has_xi = rows.get("two_point") is not None
-    if has_xi and command in ("evaluate", "fisher"):
+    if has_xi and command == "evaluate":
         unsupported = ("ct", "fb")
         if two_point["mode"] == "isolated_nla":
             unsupported = ("a2", "bta", "ct", "fb")
-        varied = config.get("fisher", {}).get("steps", {})
         for name in unsupported:
             value = config["parameters"].get(name, config["ia"].get(name, 0))
-            if value != 0 or (command == "fisher" and name in varied):
+            if value != 0:
                 raise ValueError(
                     f"The selected xi route cannot vary/use {name}; "
                     "choose a model supplying its E/B spectra."
                 )
-    if command in ("covariance", "fisher"):
+    if command == "covariance":
         if "covariance" not in config:
             raise ValueError(f"{command} requires covariance settings.")
         covariance = config["covariance"]
@@ -492,58 +485,10 @@ def load_configuration(path, command):
                 "A supplied covariance must declare the same aperture "
                 "estimator as the mean; do not identify them by row count."
             )
-    if command == "fisher":
-        validate_fisher(config=config)
     digest = hashlib.sha256(content.encode()).hexdigest()
     return config, configuration_path, digest
 
 
-def validate_fisher(config):
-    """Check varied names, central steps and explicitly chosen priors."""
-    if "fisher" not in config:
-        raise ValueError("fisher command requires a fisher object.")
-    settings = config["fisher"]
-    checked_fields(
-        mapping=settings,
-        allowed={"steps", "bounds", "priors", "fom_pairs", "precision"},
-        required={"steps", "priors"}, name="fisher",
-    )
-    if not settings["steps"]:
-        raise ValueError("At least one finite-difference step is required.")
-    discrete = {"num_massive_neutrinos", "power_mode", "ct_mode",
-                "suppress_only"}
-    reference = dict(config["ia"])
-    reference.update(config["parameters"])
-    for name, step in settings["steps"].items():
-        if name not in reference or name in discrete:
-            raise ValueError(f"Cannot differentiate absent/discrete {name}.")
-        if not np.isfinite(step) or step <= 0:
-            raise ValueError(f"Derivative step for {name} must be positive.")
-        if (name in COSMOLOGY_NAMES
-                and config["physics"]["cosmology_mode"] != "camb"):
-            raise ValueError("Cosmological derivatives require camb mode.")
-    for name, width in settings["priors"].items():
-        if (name not in settings["steps"] or not np.isfinite(width)
-                or width <= 0):
-            raise ValueError(f"Prior {name} needs a varied name and sigma>0.")
-    for pair in settings.get("fom_pairs", []):
-        if (len(pair) != 2 or pair[0] == pair[1]
-                or any(name not in settings["steps"] for name in pair)):
-            raise ValueError("Each FoM pair needs two distinct varied names.")
-    precision = settings.get("precision", {"mode": "inverse"})
-    if precision.get("mode") not in ("inverse", "pme"):
-        raise ValueError("Precision mode must be inverse or pme.")
-    if precision["mode"] == "pme":
-        count = precision.get("independent_count", 0)
-        if (isinstance(count, bool) or int(count) != count or count <= 2
-                or precision.get("order") not in (1, 2)):
-            raise ValueError(
-                "PME needs integer independent_count>2 and order 1/2."
-            )
-        if precision.get("sample_assumption") != "independent_gaussian_vectors":
-            raise ValueError("PME must declare independent_gaussian_vectors.")
-        if "sample_covariance" not in precision:
-            raise ValueError("PME needs the full joint sample covariance.")
 
 
 def required_files(config, path, command):
@@ -574,15 +519,10 @@ def required_files(config, path, command):
             directory = resolve_path(path, core["directory"])
             requirements.append(("ordinary-core extension",
                                  str(directory / (core["module"] + ".so"))))
-    if command in ("covariance", "fisher"):
+    if command == "covariance":
         covariance = config["covariance"]
-        if covariance["mode"] == "file" or command == "fisher":
+        if covariance["mode"] == "file":
             requirements.append(("fiducial covariance", covariance["path"]))
-    if command == "fisher":
-        precision = config["fisher"].get("precision", {"mode": "inverse"})
-        if precision["mode"] == "pme":
-            requirements.append(("joint sample covariance",
-                                 precision["sample_covariance"]["path"]))
     missing = []
     for name, value in requirements:
         if value is None:
@@ -982,6 +922,10 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
     calculation can refuse it without hiding which term caused the problem.
     """
     settings = config["covariance"]
+    # Covariance is an optional build, as in LSST Y1. Mean-only runs
+    # must not import bindings omitted by that build selection.
+    from cosmolike_des_3pcf_interface import covariance_inputs, shape_noise
+
     if settings["mode"] != "analytic":
         raise ValueError("covariance command requires mode=analytic.")
     destination = resolve_path(path, settings["path"])
@@ -1066,166 +1010,13 @@ def covariance(compiled, config, path, metadata, rows, provider, overwrite):
     return destination
 
 
-def fisher(compiled, config, path, metadata, rows, provider, overwrite):
-    """Hold fiducial covariance fixed while saving both derivative stencils.
-
-    Every central displacement changes the mean only. The one loaded joint
-    covariance, or its explicitly requested PME precision, is used for all
-    derivatives. Comparing h and h/2 exposes finite-difference sensitivity;
-    it does not test quadrature accuracy or missing physical terms. Both
-    derivative arrays are retained before checking whether the information
-    matrix can constrain every requested parameter combination.
-    """
-    destination = resolve_path(path, config["outputs"]["fisher"])
-    check_destination(path=destination, overwrite=overwrite)
-    fixed = read_matrix(settings=config["covariance"], path=path,
-                        rows=rows, positive=True)
-    settings = config["fisher"]
-    precision_settings = settings.get("precision", {"mode": "inverse"})
-    precision = None
-    if precision_settings["mode"] == "pme":
-        sample = read_matrix(settings=precision_settings["sample_covariance"],
-                             path=path, rows=rows, positive=False)
-        precision, diagnostics = precision_expansion(
-            analytic=fixed, sample=sample,
-            independent_count=precision_settings["independent_count"],
-            order=precision_settings["order"],
-        )
-        symmetric_matrix(values=precision, name="PME precision", positive=True)
-        metadata["precision_expansion_diagnostics"] = diagnostics
-    prediction = prediction_for_run(compiled=compiled, config=config, path=path,
-                                    rows=rows, provider=provider)
-    two_point_path = None
-    if prediction.two_point_core is not None:
-        two_point_path = prediction.compiled.__file__
-    metadata["prediction_identity"] = prediction_identity(
-        config=config,
-        configuration_path=path,
-        project=PROJECT,
-        three_point_path=compiled.__file__,
-        two_point_path=two_point_path,
-    )
-    reference = dict(config["ia"])
-    reference.update(config["parameters"])
-    cached = ExactMeanCache(predict=prediction)
-    # Capture the actual fiducial response before the derivative loop leaves
-    # the provider at a displaced point. ExactMeanCache reuses this center.
-    cached(parameters=reference)
-    if provider._active_baseline is not None:
-        metadata["baseline_bispectrum"] = provider._active_baseline["metadata"]
-    if provider._active_feedback is not None:
-        metadata["feedback_reference"] = provider._active_feedback.record()
-    names, mean, derivative, refined = differentiate(
-        predict=cached, parameters=reference, steps=settings["steps"],
-        bounds=settings.get("bounds"),
-    )
-    covariance_argument = fixed
-    if precision is not None:
-        covariance_argument = None
-    information = fisher_matrix(
-        derivatives=derivative, names=names, covariance=covariance_argument,
-        precision=precision, priors=settings["priors"],
-    )
-    refined_information = fisher_matrix(
-        derivatives=refined, names=names, covariance=covariance_argument,
-        precision=precision, priors=settings["priors"],
-    )
-    arrays = {
-        "mean": mean,
-        "parameter_names": np.asarray(names),
-        "derivatives_h": derivative,
-        "derivatives_h2": refined,
-        "fisher_h": information,
-        "fisher_h2": refined_information,
-        "fiducial_covariance": fixed,
-    }
-    # Retain the five vectors used by the fourth-difference noise estimate.
-    # The center is shared by every column. All displaced coordinates have
-    # already been evaluated by differentiate, so these exact-key reads do
-    # not request additional physical calculations. Saving both spacings
-    # permits a smooth-curvature check when estimating derivative noise.
-    for label, divisor in (("h", 1.0), ("h2", 2.0)):
-        samples = np.empty((len(names), 5, mean.size), dtype=np.float64)
-        for column, name in enumerate(names):
-            step = float(settings["steps"][name]) / divisor
-            for node, offset in enumerate((-2.0, -1.0, 0.0, 1.0, 2.0)):
-                point = dict(reference)
-                if offset != 0.0:
-                    point[name] = float(reference[name]) + offset * step
-                samples[column, node] = cached(parameters=point)
-        arrays[f"stencil_values_{label}"] = samples
-    metadata["stencil_offsets"] = [-2.0, -1.0, 0.0, 1.0, 2.0]
-    step_changes = np.zeros(len(names), dtype=np.float64)
-    for index in range(len(names)):
-        scale = np.max(np.abs(refined[:, index]))
-        difference = np.max(np.abs(derivative[:, index] - refined[:, index]))
-        if scale > 0:
-            step_changes[index] = difference / scale
-        elif difference > 0:
-            step_changes[index] = np.inf
-    arrays["derivative_relative_change"] = step_changes
-    if precision is not None:
-        arrays["precision_pme"] = precision
-        arrays["joint_sample_covariance"] = sample
-    if np.any(rows.kind == "map3") and np.any(rows.kind != "map3"):
-        comparison = compare_information(
-            derivatives=refined, names=names, kind=rows.kind,
-            covariance=covariance_argument, precision=precision,
-            priors=settings["priors"],
-        )
-        arrays.update(comparison)
-        errors, statuses = marginalized_errors(comparison=comparison, names=names)
-        arrays.update(errors)
-        metadata["comparison_rank_status"] = statuses
-        metadata["comparison_covariance"] = "supplied_fiducial_covariance"
-        if precision is not None:
-            metadata["comparison_covariance"] = "inverse_of_pme_precision"
-    # Unresolved parameter combinations must not erase the derivatives
-    # that diagnose them. Save the information and report the failed rank
-    # check, without a pseudoinverse or a fabricated marginalized FoM.
-    try:
-        arrays["parameter_covariance_h2"] = parameter_covariance(
-            fisher=refined_information, names=names,
-        )
-        merits = {}
-        for pair in settings.get("fom_pairs", []):
-            label = ":".join(pair)
-            merits[label] = float(figure_of_merit(
-                fisher=refined_information, names=names, pair=pair,
-            ))
-        metadata["figures_of_merit_h2"] = merits
-        metadata["parameter_rank_status"] = "resolved"
-    except ValueError as error:
-        metadata["parameter_rank_status"] = str(error)
-    metadata["covariance_is_fixed"] = True
-    metadata["compression"] = "none"
-    metadata["cached_mean_count"] = len(cached.values)
-    # Another process may replace a source table or binary during this
-    # long derivative calculation. Re-read file identities immediately
-    # before saving; a changed run must not inherit its initial label.
-    # This cannot inspect the native code already loaded in memory.
-    completed_identity = prediction_identity(
-        config=config,
-        configuration_path=path,
-        project=PROJECT,
-        three_point_path=compiled.__file__,
-        two_point_path=two_point_path,
-    )
-    verify_prediction_identity(
-        recorded=metadata["prediction_identity"],
-        current=completed_identity,
-        description="Fisher calculation during evaluation",
-    )
-    save_result(path=destination, arrays=arrays, metadata=metadata,
-                rows=rows, overwrite=overwrite)
-    return destination
 
 
 def main(argv=None):
     """Run one command, returning a shell status with a named failure."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("prepare", "evaluate",
-                                            "covariance", "fisher"))
+                                            "covariance"))
     parser.add_argument("config", type=Path)
     parser.add_argument("--validate-config", action="store_true",
                         help="Check schema and missing inputs; do no physics.")
@@ -1276,7 +1067,6 @@ def main(argv=None):
             commands = {
                 "evaluate": evaluate,
                 "covariance": covariance,
-                "fisher": fisher,
             }
             destination = commands[arguments.command](
                 compiled=compiled, config=config, path=path, metadata=metadata,

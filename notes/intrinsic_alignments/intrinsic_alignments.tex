@@ -1,0 +1,341 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{amsmath,amssymb,graphicx,xcolor,needspace}
+\usepackage[hidelinks]{hyperref}
+\newcommand{\Cov}{\mathsf C}
+\newcommand{\T}{^{\mathsf T}}
+\newcommand{\us}{\_\allowbreak}
+\emergencystretch=3em
+\begin{document}
+\begin{center}
+{\LARGE Intrinsic alignments in a joint shear forecast\par}
+\vspace{.4em}
+{\large From opposite-sign predictions to marginalized errors\par}
+\vspace{.6em}
+{\large November 2026\par}
+\end{center}
+
+\section{The scientific question and its executable calculation}
+\paragraph{Why galaxy shapes need two contributions.}
+A distant galaxy can appear elliptical because of its own shape and because
+matter along the line of sight stretches its image. The gravitational part
+is the shear. The intrinsic part need not be random: galaxies formed in the
+same tidal environment can have correlated orientations. A change in this
+alignment can imitate a change in the strength of matter fluctuations.
+Our question is whether adding three-point information distinguishes those
+changes after we account for their correlated measurement errors.
+
+\paragraph{What the two papers establish.}
+Gomes and collaborators' methods paper~\cite{methods} studies joint shear
+inference with simulated DES Y3 observations, including covariance and
+compression. Its reported 83\% improvement in the matter-density--amplitude
+figure of merit belongs to that analysis. The TATT paper~\cite{tatt} studies
+intrinsic-alignment contributions to three-point shear and aperture
+skewness, using DES Y3 parameter choices. It finds examples where quadratic
+alignment affects two- and three-point signals differently. It is a modeling
+paper, not a DES Y6 posterior analysis. Our local Fisher calculations ask
+related questions; reproducing their published posterior requires matching
+their estimator, cuts, parameter space, priors and likelihood.
+
+\paragraph{Where the student runs the calculation.}
+The companion
+\href{EXAMPLE_FISHER_IA.ipynb}{\texttt{EXAMPLE\us FISHER\us IA.ipynb}}
+lives beside this note. It reads the project's numbered evaluate YAMLs,
+builds their ordinary Cobaya models, and uses the shared CosmoLike Fisher
+functions. The notebook contains the calculation and plotting cells;
+there is no separate forecast driver. Open it from this directory or the
+DES project directory in an activated Cocoa environment. Its first cell
+finds the project and changes to the Cocoa directory so the YAML paths
+retain their usual meaning. Read the markdown before running the costly
+prediction and derivative cells. New physical forecasts have not been run
+following this refactor: empty notebook outputs are intentional.
+
+\section{The observables and the alignment parameters}
+\paragraph{A data vector is a list of measured numbers.}
+The two-point entries are shear correlations, denoted by $\xi_+$ and $\xi_-$,
+for different angular separations and pairs of source-redshift bins. The
+three-point entries are third moments of the aperture mass. An aperture
+mass first averages a shear field with a compensated angular filter; its
+third moment then measures a non-Gaussian property of that filtered field.
+The aperture radius is not the same quantity as a cut on triangle sides.
+The present numbered examples supply 400 two-point entries and 80 aperture
+entries. They retain the supplied cross-covariance, and their exact
+finite-triangle estimator agreement is still unvalidated.
+
+\paragraph{What NLA and TATT vary.}
+The nonlinear alignment model, NLA, gives the linear tidal response an
+amplitude $A_1$ and a redshift exponent $\eta_1$. TATT adds a quadratic tidal
+response with amplitude $A_2$, its exponent $\eta_2$, and a density-weighting
+coefficient $b_{\rm TA}$. A density-weighted contribution allows the
+alignment to depend on where galaxies sample the matter field. The native
+CosmoLike amplitude normalization and pivot are used throughout. Thus the
+same parameter means the same physical input in two- and three-point
+predictions. A change of convention belongs in a comparison to another
+code, not in the middle of a forecast.
+
+\paragraph{The redshift law.}
+For illustration, the amplitude parameter's redshift factor is
+\begin{equation}
+ A_1(z)=A_1\left(\frac{1+z}{1+z_0}\right)^{\eta_1}.
+\end{equation}
+Here $z_0=0.62$ is the pivot. At the pivot the ratio inside parentheses is
+one, so the factor equals $A_1$. The complete physical alignment coefficient
+also contains the native matter-density, growth and normalization factors.
+Changing $A_1$ reverses the linear contribution's sign; it does not reverse
+every term of the complete TATT prediction. Products with even numbers of
+alignment factors can retain their sign.
+
+\paragraph{First make a finite comparison.}
+The notebook evaluates a no-alignment mean, two NLA means, and two TATT
+means with opposing amplitude choices. For TATT these choices are
+\begin{equation}
+ (A_1,A_2)=(-0.2,0.4),\qquad (A_1,A_2)=(0.2,-0.4).
+\end{equation}
+Cosmology, source distributions, source shifts and numerical settings stay
+fixed. In the NLA cases both $A_2$ and $b_{\rm TA}$ vanish. This experiment
+asks how two specified predictions differ; it does not optimize any other
+parameter. Later derivatives ask a different, local question around each
+numbered example's fiducial point.
+
+\section{Why the cross-covariance changes the answer}
+\paragraph{Write the matrix before using it.}
+Partition the joint vector into its two- and three-point pieces:
+\begin{equation}
+ d=\begin{pmatrix}d_2\\d_3\end{pmatrix}.
+\end{equation}
+Its covariance has the corresponding blocks
+\begin{equation}
+ \Cov=\begin{pmatrix}C_{22}&C_{23}\\C_{32}&C_{33}\end{pmatrix},
+ \qquad C_{32}=C_{23}\T.
+\end{equation}
+For example, $C_{23}$ has one row for each two-point observable and one
+column for each three-point observable. It records their correlated
+fluctuations. It is not a new physical signal added to the mean.
+
+\paragraph{Subtract the part already predicted by two-point fluctuations.}
+Let $\Delta_2$ and $\Delta_3$ be the differences between two chosen means.
+The linear prediction of the second difference from the first is
+\begin{equation}
+ \Delta_{3,\mathrm{pred}}=C_{32}C_{22}^{-1}\Delta_2.
+\end{equation}
+Subtract it to obtain the remaining difference:
+\begin{equation}
+ r=\Delta_3-C_{32}C_{22}^{-1}\Delta_2.
+\end{equation}
+The corresponding covariance is obtained by applying the same subtraction
+to random fluctuations. Expanding that covariance gives
+\begin{equation}
+\begin{split}
+ \operatorname{Cov}(d_3-C_{32}C_{22}^{-1}d_2)
+ ={}& C_{33}-C_{32}C_{22}^{-1}C_{23}
+      -C_{32}C_{22}^{-1}C_{23}\\
+    &+C_{32}C_{22}^{-1}C_{22}C_{22}^{-1}C_{23}.
+\end{split}
+\end{equation}
+The last term cancels one of the two subtractions. The remaining matrix is
+\begin{equation}
+ S=C_{33}-C_{32}C_{22}^{-1}C_{23}.
+\end{equation}
+It is the conditional covariance of the three-point information after
+conditioning on the two-point measurements in a Gaussian model.
+
+\paragraph{A numerical example with only two observations.}
+Take the dimensionless covariance and mean difference
+\begin{equation}
+ \Cov=\begin{pmatrix}4&2\\2&5\end{pmatrix},
+ \qquad \Delta=\begin{pmatrix}2\\3\end{pmatrix}.
+\end{equation}
+The predicted second difference is $(2/4)2=1$. Therefore the residual is
+$3-1=2$. Its variance is
+\begin{equation}
+ S=5-\frac{2\times2}{4}=4.
+\end{equation}
+The first measurement contributes $2^2/4=1$ to the squared distance; the
+remaining second measurement contributes $2^2/4=1$. Thus
+\begin{equation}
+ \Delta\chi^2_{\rm joint}=1+1=2.
+\end{equation}
+For comparison, treating the measurements as independent would give
+$2^2/4+3^2/5=2.8$, a different answer. The original joint inverse confirms
+our subtraction:
+\begin{equation}
+ \Cov^{-1}=\frac1{16}\begin{pmatrix}5&-2\\-2&4\end{pmatrix}.
+\end{equation}
+Multiplying this matrix by $\Delta$ gives $(1/4,1/2)^T$. Taking its scalar
+product with $\Delta$ gives $2/4+3/2=2$.
+
+\paragraph{The identity tested in the notebook.}
+For the complete vector, the same operations give
+\begin{equation}
+ \Delta\chi^2_{\rm joint}
+ =\Delta_2\T C_{22}^{-1}\Delta_2+r\T S^{-1}r.
+\end{equation}
+The native data covariance stays fixed throughout this comparison. These
+squared distances describe fixed means. They are neither marginalized
+parameter errors nor detection significances after a fit.
+
+\section{From derivatives to a Fisher forecast}
+\paragraph{What one column means.}
+Near a fiducial parameter vector $p_0$, approximate the prediction by
+\begin{equation}
+ \mu(p_0+\delta p)\simeq\mu(p_0)+D\delta p.
+\end{equation}
+Column $\alpha$ of $D$ is the change of every data entry per unit change of
+parameter $p_\alpha$. The notebook evaluates each column with a centered
+five-point derivative, using absolute displacements $h_\alpha$:
+\begin{equation}
+ D_\alpha\simeq
+ \frac{\mu(p_0-2h_\alpha e_\alpha)-8\mu(p_0-h_\alpha e_\alpha)
+ +8\mu(p_0+h_\alpha e_\alpha)-\mu(p_0+2h_\alpha e_\alpha)}{12h_\alpha}.
+\end{equation}
+The vector $e_\alpha$ has one in position $\alpha$ and zero elsewhere.
+Repeating at half the displacement tests the local differentiation. All
+coordinates, including negative $A_1$ and zero $w_a$, retain these absolute
+step units in the shared \texttt{differentiate} routine.
+
+\paragraph{Build information before reading errors.}
+The likelihood Fisher matrix is
+\begin{equation}
+ F_{\rm like}=D\T\Cov^{-1}D.
+\end{equation}
+A Gaussian prior with standard deviation $s_\alpha$ contributes
+$1/s_\alpha^2$ to the corresponding diagonal. Hence
+\begin{equation}
+ F=F_{\rm like}+F_{\rm prior}.
+\end{equation}
+Both the two-point and joint forecasts receive the same prior once. A flat
+prior boundary supplies no local Gaussian curvature. Its possible effect
+on a posterior near a boundary is absent from this local calculation.
+
+\paragraph{The new three-point derivative.}
+Apply the previous residual subtraction to every derivative column:
+\begin{equation}
+ E=D_3-C_{32}C_{22}^{-1}D_2.
+\end{equation}
+The likelihood information then decomposes as
+\begin{equation}
+ F_{\rm joint,like}=D_2\T C_{22}^{-1}D_2+E\T S^{-1}E.
+\end{equation}
+The second term is positive semidefinite when $S$ is positive definite.
+Thus adding these data cannot reduce exact Fisher information for a fixed
+parameter space and covariance. The angle between two derivative columns
+can nevertheless become smaller: information growth and a particular
+pair's geometric angle are different statements.
+
+\paragraph{How the derivative plots keep their physical meaning.}
+The notebook shows a chosen parameter displacement times its derivative,
+divided by a row's standard deviation:
+\begin{equation}
+ t_{i\alpha}=\frac{\Delta p_\alpha D_{i\alpha}}{\sqrt{C_{ii}}}.
+\end{equation}
+A value of one means one marginal row error. The display displacement is
+neither a numerical derivative step nor a prior. Rows are still correlated.
+To fit response $b$ to response $a$, minimize
+\begin{equation}
+ Q(c)=(a-cb)\T\Cov^{-1}(a-cb).
+\end{equation}
+Differentiating with respect to $c$ gives
+\begin{equation}
+ \frac{dQ}{dc}=-2b\T\Cov^{-1}a+2c\,b\T\Cov^{-1}b.
+\end{equation}
+Setting this derivative to zero yields
+\begin{equation}
+ c=\frac{b\T\Cov^{-1}a}{b\T\Cov^{-1}b}.
+\end{equation}
+The residual $a-cb$ shows what this one competitor cannot reproduce.
+A negative fitted coefficient can indicate an equally strong degeneracy:
+opposite-sign responses can be exchanged by opposite parameter changes.
+This two-column exercise holds all other parameters fixed.
+
+\section{Marginalization, fixed dark energy and the amplitude combination}
+\paragraph{Invert the requested experiment.}
+For a resolved Fisher matrix, the parameter covariance is
+\begin{equation}
+ P=F^{-1}.
+\end{equation}
+The marginalized error of parameter $\alpha$ is $\sqrt{P_{\alpha\alpha}}$.
+The quantity $1/\sqrt{F_{\alpha\alpha}}$ instead fixes every other
+parameter. To hold only $w_0,w_a$ fixed, remove their rows and columns from
+$F$ before inversion. Deleting them from $P$ would preserve their
+marginalization. The notebook reports an unresolved full case but still
+checks the fixed-dark-energy experiment; an unconstrained retained
+parameter is not silently removed and no pseudoinverse error is reported.
+
+\paragraph{Differentiate the derived amplitude explicitly.}
+The commonly used amplitude combination is
+\begin{equation}
+ S_8=\sigma_8\sqrt{\frac{\Omega_m}{0.3}}.
+\end{equation}
+Differentiate its square-root factor while holding $\sigma_8$ fixed:
+\begin{equation}
+ \frac{\partial S_8}{\partial\Omega_m}=\frac{S_8}{2\Omega_m}.
+\end{equation}
+Next hold $\Omega_m$ fixed and differentiate the linear amplitude factor:
+\begin{equation}
+ \frac{\partial S_8}{\partial\sigma_8}=\sqrt{\frac{\Omega_m}{0.3}}.
+\end{equation}
+Writing them as $g_\Omega$ and $g_\sigma$, propagate the covariance:
+\begin{equation}
+ \operatorname{Var}(S_8)=g_\Omega^2P_{\Omega\Omega}
+ +2g_\Omega g_\sigma P_{\Omega\sigma}+g_\sigma^2P_{\sigma\sigma}.
+\end{equation}
+For a teaching example take $\Omega_m=0.3$, $\sigma_8=0.8$, and
+\begin{equation}
+ P_{\Omega,\sigma}=\begin{pmatrix}.0009&-.0024\\-.0024&.01\end{pmatrix}.
+\end{equation}
+Then $g_\Omega=4/3$ and $g_\sigma=1$. Substituting each term gives
+\begin{equation}
+ \operatorname{Var}(S_8)=.0016-.0064+.01=.0052.
+\end{equation}
+Dropping the covariance would give $.0116$, more than twice the variance.
+These numbers are an algebra test, not a DES result.
+
+\paragraph{Read a figure of merit only after marginalizing.}
+Transform the full parameter covariance to the chosen two-coordinate
+covariance $P_{\rm pair}$. Its figure of merit is
+\begin{equation}
+ \mathrm{FoM}=\frac1{\sqrt{\det P_{\rm pair}}}.
+\end{equation}
+Compare the same pair, parameter space, fiducial, priors and cuts between
+experiments. The notebook's NLA and TATT forecasts vary different IA
+spaces; their cosmological comparison includes that change in
+marginalization. Source-calibration prior widths are listed explicitly in
+the notebook, and there are no added Gaussian priors on $w_0,w_a$.
+
+\section{What must be checked before interpreting a result}
+\paragraph{Derivatives need more than a stable mean.}
+A small error in two nearby predictions can become large after division by
+a small displacement. Compare both the half-step derivatives and complete
+Fisher matrices at finer numerical sampling. The associated accuracy
+notebook also uses the shared fourth-difference noise screen. Its
+independent-noise assumptions do not detect every coherent derivative
+error. A stable mean, a local noise estimate and a converged marginalized
+FoM answer different numerical questions.
+
+\paragraph{Keep the published-analysis differences visible.}
+The numbered examples currently use a fixed Gaussian interpretation of a
+simulation covariance and their declared source preparation. These Fisher
+experiments neither reproduce a finite-simulation posterior correction nor
+automatically reproduce the paper's compression and scale selection.
+Changing the data mask requires selecting the covariance and row metadata
+in the same order. No forecast number is supplied here until the companion
+notebook has been run and its convergence comparisons inspected.
+
+\paragraph{Acknowledgements.}
+\textbf{We thank Sunao Sugiyama and Rafael Gomes for their codes and scientific
+work, which made these comparisons possible.} The source projects are
+\href{https://github.com/git-sunao/fastnc}{fastnc},
+\href{https://github.com/rchgomes/3pcf_integrator}{3pcf\us integrator} and
+\href{https://github.com/rchgomes/desy6-3pcf}{desy6-3pcf}.
+CosmoLike supplies the projection and Fisher machinery; the companion
+notebook follows Cocoa's ordinary Cobaya likelihood path.
+
+\begin{thebibliography}{9}
+\bibitem{methods} R. C. H. Gomes et al., \emph{Cosmology with second and third-order
+shear statistics for the Dark Energy Survey: Methods and simulated analysis},
+\href{https://arxiv.org/abs/2503.03964}{arXiv:2503.03964}.
+\bibitem{tatt} R. C. H. Gomes et al., \emph{Tidal alignment and tidal torquing modeling
+for the cosmic shear three-point correlation function and mass aperture skewness},
+\href{https://arxiv.org/abs/2601.09133}{arXiv:2601.09133}.
+\end{thebibliography}
+\end{document}

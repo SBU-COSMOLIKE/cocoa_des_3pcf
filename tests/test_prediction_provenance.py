@@ -18,8 +18,6 @@ sys.path.insert(0, str(PROJECT / "scripts"))
 sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 from des3pcf.provenance import prediction_identity, verify_prediction_identity
-from des3pcf.fisher_accuracy import accuracy_cases_for_request
-from des3pcf.fisher_accuracy import load_retained_noise_case
 
 
 def artificial_prediction(tmp_path):
@@ -130,59 +128,3 @@ def test_covariance_construction_hashes_inputs_without_reading_output(tmp_path):
             current=completed,
             description="Covariance construction",
         )
-
-
-def save_noise_case(path, identity, addition):
-    """Write one small completed archive with its actual expected identity."""
-    np.savez(
-        file=path,
-        a=np.asarray([addition]),
-        sigma=np.asarray([0.1]),
-        stencil_values=np.arange(10.0).reshape(1, 5, 2),
-        evaluation_count=np.asarray(5),
-        identity_json=np.asarray(json.dumps(identity, sort_keys=True)),
-    )
-
-
-def test_partial_request_retains_and_validates_completed_cases(tmp_path):
-    """Requesting a third case keeps earlier archives but never trusts a summary.
-
-    These helpers are the actual runner's selection and archive-read path.
-    No summary file is needed to recover the two completed cases, and a
-    changed runtime identity prevents an unrequested case from being reused.
-    """
-    identities = {}
-    for name in ("first", "second", "third"):
-        identities[name] = {
-            "baseline_result_sha256": "fixed baseline bytes",
-            "configuration_sha256": name + " settings",
-            "dependency_sha256": {"binary": "same native bytes"},
-        }
-    for name, addition in (("first", 0.2), ("second", 0.3)):
-        save_noise_case(
-            path=tmp_path / f"{name}_noise.npz",
-            identity=identities[name],
-            addition=addition,
-        )
-    candidates = [
-        {"name": "first"},
-        {"name": "second"},
-        {"name": "third"},
-        {"name": "unrequested_missing"},
-    ]
-    visited = accuracy_cases_for_request(
-        candidates=candidates, only=["third"], output=tmp_path,
-    )
-    assert [item["name"] for item in visited] == ["first", "second", "third"]
-    retained = []
-    for name in ("first", "second"):
-        saved = load_retained_noise_case(
-            path=tmp_path / f"{name}_noise.npz", identity=identities[name],
-        )
-        retained.append(float(saved["a"][0]))
-        assert saved["evaluation_count"] == 5
-    assert retained == [0.2, 0.3]
-    changed = dict(identities["first"])
-    changed["dependency_sha256"] = {"binary": "changed native bytes"}
-    with pytest.raises(ValueError, match="different inputs"):
-        load_retained_noise_case(path=tmp_path / "first_noise.npz", identity=changed)

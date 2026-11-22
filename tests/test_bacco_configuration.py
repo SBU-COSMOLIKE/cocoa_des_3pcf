@@ -20,7 +20,7 @@ import run_3pcf as driver
 from theory.bacco_bispectrum.response import BaccoSettings
 
 
-@pytest.mark.parametrize("command", ["prepare", "evaluate", "fisher"])
+@pytest.mark.parametrize("command", ["prepare", "evaluate"])
 def test_bacco_schema_retains_every_resolved_setting(command):
     """A saved target records all continuation choices and separate sampling axes."""
     config, _, _ = driver.load_configuration(
@@ -29,23 +29,18 @@ def test_bacco_schema_retains_every_resolved_setting(command):
     assert config["feedback"]["settings"]["neutrino_model"] == "coherent_linear_neutrinos"
     assert config["feedback"]["settings"]["logk_min"] == -15.
     assert config["ia"]["feedback_amplitude"] == 1.
-    assert len(config["fisher"]["steps"]) == 25
     assert config["accuracy"]["feedback_v_boost"] == 1.
 
 
-@pytest.mark.parametrize("sample_amplitude", [False, True])
-def test_fisher_cannot_change_converted_response_amplitude(tmp_path, sample_amplitude):
+def test_prediction_cannot_change_converted_response_amplitude(tmp_path):
     """The cold-response conversion cannot be replaced by a total-response power."""
     path = PROJECT / "configs/des_y3_bacco_fisher.yaml"
     config = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if sample_amplitude:
-        config["fisher"]["steps"]["feedback_amplitude"] = .1
-    else:
-        config["ia"]["feedback_amplitude"] = .5
+    config["ia"]["feedback_amplitude"] = .5
     changed = tmp_path / "invalid.yaml"
     changed.write_text(yaml.safe_dump(config), encoding="utf-8")
     with pytest.raises(ValueError, match="feedback_amplitude"):
-        driver.load_configuration(path=changed, command="fisher")
+        driver.load_configuration(path=changed, command="evaluate")
 
 
 @pytest.mark.parametrize("settings", [

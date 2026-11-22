@@ -143,7 +143,7 @@ def test_pchip_requires_declared_source_count_and_padding(toy_configuration, pad
         config["physics"]["source_padding"] = padding
         config["accuracy"] = {"source_boost": 2.0}
     path.write_text(json.dumps(config), encoding="utf-8")
-    result = run_driver(command="fisher", config=path, validate=True)
+    result = run_driver(command="evaluate", config=path, validate=True)
     if padding is not None:
         assert result.returncode == 0, result.stderr
         assert yaml.safe_load(result.stdout)["schema_valid"] is True
@@ -154,9 +154,9 @@ def test_pchip_requires_declared_source_count_and_padding(toy_configuration, pad
 
 @pytest.mark.parametrize("bispectrum_source", ["default", "supplied"])
 @pytest.mark.parametrize("variance_source", ["local", "shared"])
-def test_evaluate_and_fixed_covariance_fisher(toy_configuration, bispectrum_source,
-                                            variance_source):
-    """Keep all rows and check calibration derivatives against their algebra."""
+def test_evaluate_and_native_calibration(toy_configuration, bispectrum_source,
+                                         variance_source):
+    """Check the actual mean calibration while Fisher uses the notebook route."""
     path, config, rows = toy_configuration
     config["physics"]["variance_source"] = variance_source
     if bispectrum_source == "supplied":
@@ -165,48 +165,27 @@ def test_evaluate_and_fixed_covariance_fisher(toy_configuration, bispectrum_sour
     path.write_text(json.dumps(config), encoding="utf-8")
     result = run_driver(command="evaluate", config=path)
     assert result.returncode == 0, result.stderr
-    result = run_driver(command="fisher", config=path)
+    with np.load(path.parent / "mean.npz", allow_pickle=False) as archive:
+        mean = archive["mean"].copy()
+        metadata = json.loads(str(archive["metadata_json"].item()))
+        np.testing.assert_array_equal(archive["row_labels"], rows.labels)
+    recorded = metadata["baseline_bispectrum"]
+    assert recorded["native_input_sha256"]
+    assert recorded["input_sha256"]
+    assert recorded["controls"]["fit_nz"] == 33
+    # Each source occurrence supplies one (1+m_i). This finite displacement
+    # tests the native physical response, independently of a derivative rule.
+    config["parameters"]["m1"] = 0.01
+    config["parameters"]["m2"] = -0.02
+    config["outputs"]["evaluate"] = "calibrated_mean.npz"
+    path.write_text(json.dumps(config), encoding="utf-8")
+    result = run_driver(command="evaluate", config=path)
     assert result.returncode == 0, result.stderr
-    with np.load(path.parent / "mean.npz", allow_pickle=False) as mean_file:
-        mean = mean_file["mean"]
-        mean_metadata = json.loads(str(mean_file["metadata_json"].item()))
-        np.testing.assert_array_equal(mean_file["row_labels"], rows.labels)
-    with np.load(path.parent / "fisher.npz", allow_pickle=False) as result_file:
-        metadata = json.loads(str(result_file["metadata_json"].item()))
-        assert metadata["compression"] == "none"
-        assert metadata["covariance_is_fixed"] is True
-        assert metadata["parameter_rank_status"] == "resolved"
-        recorded = metadata["baseline_bispectrum"]
-        assert recorded == mean_metadata["baseline_bispectrum"]
-        assert recorded["native_input_sha256"]
-        assert recorded["input_sha256"]
-        assert recorded["controls"]["fit_nz"] == 33
-        np.testing.assert_array_equal(result_file["mean"], mean)
-        assert result_file["derivatives_h2"].shape == (8, 2)
-        assert metadata["stencil_offsets"] == [-2.0, -1.0, 0.0, 1.0, 2.0]
-        for label in ("h", "h2"):
-            samples = result_file[f"stencil_values_{label}"]
-            assert samples.shape == (2, 5, 8)
-            np.testing.assert_array_equal(samples[:, 2], np.tile(mean, (2, 1)))
-        for source in range(2):
-            # Each occurrence of source i contributes (1+m_i), hence
-            # dMap3/dm_i at m=0 is occurrence_count * Map3.
-            count = np.sum(rows.bins == source, axis=1)
-            expected = mean * count
-            step = 0.5 * config["fisher"]["steps"][f"m{source + 1}"]
-            for node, offset in enumerate((-2.0, -1.0, 0.0, 1.0, 2.0)):
-                calibrated = mean * (1.0 + offset * step)**count
-                np.testing.assert_allclose(
-                    actual=result_file["stencil_values_h2"][source, node],
-                    desired=calibrated, rtol=3.0e-15, atol=0.0,
-                )
-            # A zero physical derivative still subtracts nearly equal
-            # floating-point means. Its absolute error scales as eps/h.
-            cancellation = 4 * np.finfo(float).eps * np.max(np.abs(mean))
-            cancellation /= step
-            np.testing.assert_allclose(result_file["derivatives_h2"][:, source],
-                                       expected, rtol=2.0e-11,
-                                       atol=cancellation)
+    expected = mean.copy()
+    for source, shift in enumerate((0.01, -0.02)):
+        expected *= (1.0 + shift)**np.sum(rows.bins == source, axis=1)
+    with np.load(path.parent / "calibrated_mean.npz", allow_pickle=False) as archive:
+        np.testing.assert_allclose(archive["mean"], expected, rtol=1.0e-12)
     again = run_driver(command="evaluate", config=path)
     assert again.returncode == 2
     assert "--overwrite" in again.stderr
@@ -228,42 +207,22 @@ def supplied_grid():
     }
 
 
-def test_pme_keeps_joint_labels_and_saves_precision(toy_configuration):
-    """The optional statistical route uses the whole supplied sample matrix."""
-    path, config, rows = toy_configuration
-    config["fisher"]["precision"] = {
-        "mode": "pme",
-        "sample_covariance": {"path": "sample.npz", "key": "covariance"},
-        "independent_count": 100,
-        "order": 2,
-        "sample_assumption": "independent_gaussian_vectors",
-    }
-    path.write_text(json.dumps(config), encoding="utf-8")
-    result = run_driver(command="fisher", config=path)
-    assert result.returncode == 0, result.stderr
-    with np.load(path.parent / "fisher.npz", allow_pickle=False) as archive:
-        assert archive["precision_pme"].shape == (8, 8)
-        np.testing.assert_array_equal(archive["row_labels"], rows.labels)
-        metadata = json.loads(str(archive["metadata_json"].item()))
-        diagnostics = metadata["precision_expansion_diagnostics"]
-        assert diagnostics["independent_count"] == 100
 
 
 def test_estimator_mismatch_and_unmatched_covariance_refused(toy_configuration):
-    """Equal matrix size does not justify an estimator or row permutation."""
+    """Equal matrix size does not justify another estimator or row order."""
     path, config, rows = toy_configuration
     config["covariance"]["estimator"] = "finite_sas"
     path.write_text(json.dumps(config), encoding="utf-8")
-    result = run_driver(command="fisher", config=path, validate=True)
+    result = run_driver(command="covariance", config=path, validate=True)
     assert result.returncode == 2
     assert "same aperture estimator" in result.stderr
     config["covariance"]["estimator"] = "full_filter"
-    path.write_text(json.dumps(config), encoding="utf-8")
     np.savez(file=path.parent / "covariance.npz",
              covariance=np.eye(8), row_labels=rows.labels[::-1])
-    result = run_driver(command="fisher", config=path)
-    assert result.returncode == 2
-    assert "row labels" in result.stderr
+    driver = runpy.run_path(str(DRIVER))
+    with pytest.raises(ValueError, match="row labels"):
+        driver["read_matrix"](settings=config["covariance"], path=path, rows=rows, positive=True)
 
 
 def test_unknown_config_field_is_not_ignored(toy_configuration):
@@ -326,6 +285,9 @@ def test_covariance_command_preserves_each_term(
     toy_configuration, save_components, bispectrum_source, variance_source,
 ):
     """The saved diagnostic choice leaves the same final physical covariance."""
+    import cosmolike_des_3pcf_interface as ci
+    if not ci.has_covariance:
+        pytest.skip("The local extension was built without optional covariance kernels.")
     path, config, rows = toy_configuration
     config["physics"]["variance_source"] = variance_source
     if bispectrum_source == "supplied":
@@ -413,8 +375,8 @@ def test_yaml_and_json_resolve_the_same_scientific_configuration(toy_configurati
     yaml_path = path.with_suffix(".yaml")
     yaml_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
     load = runpy.run_path(str(DRIVER))["load_configuration"]
-    from_json, _, json_digest = load(path=path, command="fisher")
-    from_yaml, _, yaml_digest = load(path=yaml_path, command="fisher")
+    from_json, _, json_digest = load(path=path, command="evaluate")
+    from_yaml, _, yaml_digest = load(path=yaml_path, command="evaluate")
     assert from_json == from_yaml
     assert json_digest != yaml_digest
     result = run_driver(command="evaluate", config=yaml_path)
@@ -436,50 +398,6 @@ def test_core_controls_are_checked_by_native_initialization():
     assert "integration_accuracy" in result.stdout + result.stderr
 
 
-def test_joint_cli_saves_conditional_information_and_checks_result_identity(
-    toy_configuration,
-):
-    """Exercise the actual small joint path, retaining a nonzero cross block."""
-    import cosmolike_des_3pcf_fisher_wrappers as notebook
-
-    path, config, _ = toy_configuration
-    config["rows"]["xi_edges_arcmin"] = [10.0, 20.0, 40.0]
-    config["mean"]["xi_settings"] = {
-        "ell": {"lower": 20.0, "upper": 3000.0,
-                "count": 16, "logarithmic": True},
-        "theta_count": 4,
-        "pair_weight": "uniform_area",
-    }
-    config["fisher"]["priors"] = {"m1": 0.04}
-    rows = forecast_rows(
-        nbin=2, aperture_radii=np.array([7, 14]) * ARCMIN_TO_RADIAN,
-        xi_edges=np.array([10, 20, 40]) * ARCMIN_TO_RADIAN,
-    )
-    scales = np.where(rows.kind == "map3", 1.0e-7, 1.0e-4)
-    matrix = np.eye(rows.values.size) + 0.05
-    matrix *= scales[:, None] * scales[None, :]
-    np.savez(file=path.parent / "covariance.npz",
-             covariance=matrix, row_labels=rows.labels)
-    path.write_text(json.dumps(config), encoding="utf-8")
-    execution = run_driver(command="fisher", config=path)
-    assert execution.returncode == 0, execution.stderr
-    workflow = notebook.FisherWorkflow(configuration=path)
-    result, metadata = workflow.load_result()
-    assert result["mean"].shape == (20,)
-    assert metadata["comparison_rank_status"] == {
-        "two_point": "resolved", "joint": "resolved",
-    }
-    np.testing.assert_allclose(result["fisher_h2"], result["fisher_joint"])
-    np.testing.assert_allclose(
-        result["fisher_two_point_likelihood"]
-        + result["fisher_conditional_three_point"],
-        result["fisher_joint_likelihood"],
-    )
-    np.testing.assert_allclose(result["fisher_prior"], [[625.0, 0.0], [0.0, 0.0]])
-    config["description"] = "A changed experiment must not relabel the old file."
-    path.write_text(json.dumps(config), encoding="utf-8")
-    with pytest.raises(ValueError, match="different configuration"):
-        workflow.load_result()
 
 
 def test_internal_bispectrum_selector_is_retired(toy_configuration):
@@ -492,12 +410,11 @@ def test_internal_bispectrum_selector_is_retired(toy_configuration):
     assert "bispectrum_source must be supplied" in result.stderr
 
 
-def test_joint_tatt_cli_uses_one_extension_for_mean_and_fisher(toy_configuration):
+def test_joint_tatt_cli_uses_one_extension_for_mean(toy_configuration):
     """Exercise the real CLI's TATT xi/Map3 paths and shared-library record.
 
     Two smooth bins and small quadratures isolate the interface wiring.
-    The Gaussian covariance and calibration-only Fisher are controlled
-    test inputs; their errors are not survey forecasts.
+    The small quadratures are controlled test inputs, not a survey forecast.
     """
     path, config, _ = toy_configuration
     table_path = path.parent / "physics.npz"
@@ -533,7 +450,7 @@ def test_joint_tatt_cli_uses_one_extension_for_mean_and_fisher(toy_configuration
         "pair_weight": "uniform_area",
     }
     path.write_text(json.dumps(config), encoding="utf-8")
-    for command in ("evaluate", "fisher"):
+    for command in ("evaluate",):
         result = run_driver(command=command, config=path)
         assert result.returncode == 0, result.stdout + result.stderr
         with np.load(path.parent / config["outputs"][command]) as saved:
@@ -542,3 +459,11 @@ def test_joint_tatt_cli_uses_one_extension_for_mean_and_fisher(toy_configuration
             assert identity["two_point_extension"] == identity["three_point_extension"]
             np.testing.assert_array_equal(saved["row_labels"], rows.labels)
             assert np.all(np.isfinite(saved["mean"]))
+
+
+def test_fisher_is_not_an_alternate_pipeline_command(toy_configuration):
+    """Forecasts must use the numbered Cobaya model in the notebook."""
+    path, unused_config, unused_rows = toy_configuration
+    result = run_driver(command="fisher", config=path, validate=True)
+    assert result.returncode != 0
+    assert "invalid choice" in result.stderr

@@ -1,5 +1,6 @@
 """Check covariance-weighted degeneracy without a physical model call."""
 
+import ast
 import importlib
 
 import matplotlib
@@ -8,7 +9,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pytest
 
-import cosmolike_des_3pcf_template_wrappers as notebook
+from test_fisher_cobaya_notebooks import notebook_cells
 
 
 shared = importlib.import_module("cosmolike_notebook_utils.3pcf.derivative_templates")
@@ -104,11 +105,23 @@ def test_named_columns_scales_and_display_are_preserved():
         "row_labels": np.array(["first", "second", "third"]),
         "fiducial_covariance": np.eye(3),
     }
-    report = notebook.derivative_comparison(
-        result=result, target="a1", mimic="a2", target_scale=0.1, mimic_scale=0.2,
-    )
-    np.testing.assert_allclose(report["templates"][0], [0.1, 0.2, 0.3])
-    np.testing.assert_allclose(report["templates"][1], [0.4, 0.8, 1.0])
+    # Use the notebook's actual named-column selection. Its A1 display
+    # interval is one; the mimic interval is an explicit physical displacement.
+    source = next(cell for cell in notebook_cells("notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb")
+                  if "shapes = response_plots.compare_templates" in cell)
+    assignment = next(node for node in ast.walk(ast.parse(source))
+                      if isinstance(node, ast.Assign) and
+                      any(isinstance(t, ast.Name) and t.id == "shapes"
+                          for t in node.targets))
+    namespace = dict(response_plots=shared, derivatives=result["derivatives_h2"],
+                     names=list(result["parameter_names"]), mimic="a2", mimic_scale=.2,
+                     forecast={"covariance": result["fiducial_covariance"],
+                               "row_kind": result["row_kind"]})
+    exec(compile(ast.Module(body=[assignment], type_ignores=[]), "notebook", "exec"),
+         namespace)
+    report = namespace["shapes"]
+    np.testing.assert_allclose(report["templates"][0], [1., 2., 3.])
+    np.testing.assert_allclose(report["templates"][1], [.4, .8, 1.])
     panel = {
         "coordinate": np.array([1.0, 2.0, 3.0]),
         "templates": report["templates"],

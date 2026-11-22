@@ -349,13 +349,13 @@ The xi rows contribute most of the original step discrepancy, so
 increasing only three-point grids cannot settle every remaining
 derivative question.
 
-The executable is [full_smaller_step_study.py](full_smaller_step_study.py).
-Eighteen independent array tests check its analytic derivative behavior,
-coordinates, reused nodes and provenance refusals. The complete results
-are `results/nla_full_h4/full_h4.npz` and
-`results/tatt_full_h4/full_h4.npz`, with matching JSON summaries
-and receipts. Their completed preflights require zero additional physical
-means, and the commands below inspect or execute this follow-up.
+The quarter-step calculation is now written directly in
+[EXAMPLE_FISHER_ACCURACY.ipynb](../../EXAMPLE_FISHER_ACCURACY.ipynb).
+Its full-refinement cell retains the existing stencil vectors. The
+quarter-step loop reuses their center and inner samples and evaluates
+only the missing pair for each parameter. Polynomial tests execute those
+notebook cells to check the derivative formula, coordinates and exact
+reuse without a physical calculation.
 
 ## Remaining comparisons <a name="remaining"></a>
 
@@ -375,125 +375,29 @@ cannot supply a complete joint feedback forecast. The notebook records
 numerical evidence for its stated demonstration rather than adopting
 published improvements as targets the calculation must reach.
 
-## Reproduce the saved-array and step studies <a name="reproduce"></a>
+## Reproduce the comparisons <a name="reproduce"></a>
 
-Start in `Cocoa/projects/des_3pcf` with Cocoa active.
+Open [EXAMPLE_FISHER_ACCURACY.ipynb](../../EXAMPLE_FISHER_ACCURACY.ipynb)
+in activated Cocoa. Select the numbered NLA or TATT example near the top;
+its covariance, fiducial parameters and priors remain explicit. The
+notebook sets BLAS to one thread and limits OpenMP before imports.
 
-**Step :one:**: Set thread ownership for the current platform.
+First compute the complete default derivatives and noise weights. The
+selected-column screen identifies promising settings cheaply. Then choose
+a setting and compute its complete derivatives at both spacings; a screen
+alone is not a convergence result. Full and selected-column comparisons
+use the joint covariance, including its cross block, and add each prior
+once. They also report constraints with dark energy varied and fixed.
 
-Linux:
+The quarter-step section reuses the retained full-refinement stencil and
+adds only the missing near-center pair per column. The wider-step section
+adds the missing outer pair for matter density and Hubble h. Its selected
+column substitutions diagnose those parameters without claiming that all
+columns have converged at the wider spacing.
 
-```bash
-export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4 \
-  OMP_PROC_BIND=close OMP_PLACES=cores OMP_DYNAMIC=false \
-  OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
-  BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
-```
-
-macOS:
-
-```bash
-export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4 \
-  OMP_PROC_BIND=disabled OMP_PLACES=cores OMP_DYNAMIC=false \
-  OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
-  VECLIB_MAXIMUM_THREADS=1 BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
-```
-
-**Step :two:**: Inspect nuisance projection with independent matrix
-algebra.
-
-The saved-array reports use serial BLAS, write under
-`chains/fisher_array_diagnostics`, and evaluate no physical model.
-
-```bash
-python tests/studies/analyze_des3pcf_fisher_amplification.py
-```
-
-**Step :three:**: Separate xi and aperture contributions to step
-sensitivity.
-
-```bash
-python tests/studies/analyze_des3pcf_fisher_step_blocks.py
-```
-
-**Step :four:**: Check that both full triangle archives are available.
-
-```bash
-python tests/studies/full_triangle_report.py
-```
-
-**Step :five:**: Compare their full derivatives and parameter
-constraints.
-
-```bash
-python tests/studies/full_triangle_report.py --execute
-```
-
-Here `--execute` requests array analysis only. The report verifies the
-screening and full stencils, contrasts partial and full substitutions,
-and compares IA errors and the matter-density and amplitude information
-gain with dark energy fixed or varied. Missing full archives are
-reported, never calculated by this command.
-
-**Step :six:**: List the missing points for a parameter-step follow-up.
-
-The command checks the original baseline and lists the eight new physical
-points without evaluating them. Use a new output directory if an earlier
-executed study already occupies the chosen path.
-
-```bash
-python tests/studies/cosmology_step_study.py \
-  configs/des_y3_nla_demo_fisher.yaml \
-  --output chains/nla_step_followup --larger-step
-```
-
-**Step :seven:**: Calculate the eight additional physical means.
-
-For this separate script, `--execute` requests predictions with the
-YAML's four-worker OpenMP setting. Run one physical study at a time.
-
-```bash
-python tests/studies/cosmology_step_study.py \
-  configs/des_y3_nla_demo_fisher.yaml \
-  --output chains/nla_step_followup --larger-step --execute
-```
-
-The script verifies the saved baseline, row order, covariance and
-physical dependencies before work and again before saving. Its metadata
-hashes the baseline archive, configuration, study script and shared
-diagnostic, refuses an occupied output directory and keeps every
-assembled stencil.
-
-**Step :eight:**: Inspect the full smaller-step follow-up.
-
-The commands below assume the matching completed triangle-refined
-two-column studies described above. If those studies are unavailable,
-omit `--reuse-step-study` and choose a different new output directory;
-then all 34 or 40 quarter-step means are calculated. A default-grid
-two-column study cannot supply points for a triangle-refined calculation.
-
-```bash
-python tests/studies/full_smaller_step_study.py \
-  chains/nla_accuracy/triangle_1p5.json --output chains/nla_full_h4 \
-  --reuse-step-study chains/nla_triangle_step_study
-```
-
-**Step :nine:**: Calculate or verify the full NLA smaller-step result.
-
-```bash
-python tests/studies/full_smaller_step_study.py \
-  chains/nla_accuracy/triangle_1p5.json --output chains/nla_full_h4 \
-  --reuse-step-study chains/nla_triangle_step_study --execute
-```
-
-**Step :one::zero:**: Run the corresponding TATT calculation separately.
-
-```bash
-python tests/studies/full_smaller_step_study.py \
-  chains/tatt_accuracy/triangle_1p5.json --output chains/tatt_full_h4 \
-  --reuse-step-study chains/tatt_triangle_step_study --execute
-```
-
-Each completed point has an immutable receipt. A matching completed study
-needs no new physical means, while missing or mismatched receipts are
-refused, and interrupted incomplete files are not silently overwritten.
+The following array-only sections expose nuisance QR projection, independent
+SVD and inverse checks of the dark-energy ellipse, weak parameter
+directions, and separate two-point/aperture row substitutions. They require
+no new physical means. The final angular-order loop does require new
+fiducial predictions and records its settings separately from the derivative
+step tests. Numerical output belongs under `chains/fisher_accuracy/`.

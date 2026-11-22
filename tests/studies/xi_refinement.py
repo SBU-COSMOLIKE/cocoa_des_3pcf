@@ -48,7 +48,7 @@ def run(configuration, output):
       Runs C serially across cases, with at most four workers per case.
     """
     config, path, digest = driver.load_configuration(
-        path=configuration, command="fisher",
+        path=configuration, command="evaluate",
     )
     output = Path(output)
     destination = output / "vectors.npz"

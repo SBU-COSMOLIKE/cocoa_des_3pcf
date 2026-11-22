@@ -1,371 +1,394 @@
-"""Check the full h/4 study using declared polynomial vectors, without native calls.
+"""Test the quarter-step cells of the ordinary Fisher accuracy notebook.
 
-Dyadic coordinates make the node identities exact. Cubic and quartic
-observables test the fourth-order stencil, while a fifth-degree observable
-retains a calculable finite-step error. File checks test whether reused
-means retain their source identity; no physical engine is constructed.
+Polynomial means supply exact derivatives without a physical solver. The tests
+execute the notebook's actual array operations, including retention of already
+computed stencil nodes and the two new predictions per parameter. No study
+launcher, configuration adapter, native calculation or notebook run is needed.
 """
 
-import importlib.util
+import ast
 import json
 from pathlib import Path
-import sys
 
 import numpy as np
 import pytest
 
-from cosmolike_notebook_utils.fisher import differentiate
-from des3pcf.provenance import file_digest
+from cosmolike_notebook_utils import fisher as cnu
 
 
-HERE = Path(__file__).resolve().parent
-STUDIES = HERE / "studies"
-sys.path.insert(0, str(STUDIES))
-SCRIPT = STUDIES / "full_smaller_step_study.py"
-SPEC = importlib.util.spec_from_file_location(
-    name="full_smaller_step_study", location=SCRIPT,
-)
-study = importlib.util.module_from_spec(spec=SPEC)
-SPEC.loader.exec_module(module=study)
+# The teaching notebook owns these calculations; tests read its code directly.
+NOTEBOOK = Path(__file__).resolve().parents[1] / "EXAMPLE_FISHER_ACCURACY.ipynb"
+
+
+def notebook_cell(identifier):
+    """Return the named code cell without executing other notebook sections.
+
+    Arguments:
+      identifier = stable notebook cell ID identifying the operation under test.
+    Returns:
+      Python source of that cell.
+    Raises:
+      AssertionError if the cell is absent or is not Python code.
+    """
+    notebook = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+    for cell in notebook["cells"]:
+        if cell["id"] == identifier:
+            assert cell["cell_type"] == "code"
+            return "".join(cell["source"])
+    raise AssertionError("The accuracy notebook lacks cell " + identifier)
 
 
 def polynomial_mean(parameters):
-    """Return cubic, quartic and quintic toy observables at the supplied point."""
-    matter = parameters["omega_m"]
-    hubble = parameters["h"]
-    offset = parameters["offset"]
-    return np.asarray(a=[
-        matter**3 + 2.0 * hubble + offset,
-        matter**4 + hubble**3 + 3.0 * offset,
-        matter**5 + hubble + offset**3,
-    ], dtype=np.float64)
+    """Return three observables with known cubic through quintic derivatives.
+
+    Arguments:
+      parameters = physical coordinate dictionary, including a negative and zero value.
+    Returns:
+      Three-element vector, with no files or physical model state changed.
+    """
+    x = parameters["omega_m"]
+    y = parameters["h"]
+    z = parameters["offset"]
+    return np.array([
+        x**3 + 2.0 * y + z,
+        x**4 + y**3 + 3.0 * z,
+        x**5 + y + z**3,
+    ])
 
 
-def reference_inputs():
-    """Use positive, negative and zero fiducials with absolute dyadic steps."""
-    reference = {
-        "omega_m": 0.25,
-        "h": -0.75,
-        "offset": -0.0,
-    }
-    steps = {
-        "omega_m": 0.125,
-        "h": 0.0625,
-        "offset": 0.125,
-    }
-    bounds = {
-        "omega_m": (-1.0, 1.5),
-        "h": (-1.5, 0.0),
-        "offset": (-1.0, 1.0),
-    }
-    return (
-        reference,
-        steps,
-        bounds,
+def retained_inputs():
+    """Build the same cached half-step samples that the notebook retains.
+
+    Binary-exact steps make reuse comparisons independent of decimal rounding.
+    The returned cache has already evaluated every half-stencil coordinate.
+
+    Returns:
+      Namespace containing fiducial, steps, derivatives, center and mean cache.
+    """
+    fiducial = {"omega_m": 0.25, "h": -0.75, "offset": -0.0}
+    steps = {"omega_m": 0.125, "h": 0.0625, "offset": 0.125}
+    predict = cnu.ExactMeanCache(predict=polynomial_mean)
+    names, center, first, second = cnu.differentiate(
+        predict=predict,
+        parameters=fiducial,
+        steps=steps,
     )
-
-
-def direct_stencil(reference, name, step):
-    """Evaluate five explicit toy points, preserving the signed-zero center."""
-    values = []
-    for multiplier in (
-        -2.0,
-        -1.0,
-        0.0,
-        1.0,
-        2.0,
-    ):
-        point = dict(reference)
-        if multiplier != 0.0:
-            point[name] = float(reference[name]) + multiplier * step
-        values.append(polynomial_mean(parameters=point))
-    return np.asarray(a=values, dtype=np.float64)
-
-
-def baseline_arrays():
-    """Produce ordinary h/h2 derivative arrays and retained toy stencil samples."""
-    reference, steps, bounds = reference_inputs()
-    names, mean, derivative, derivative_half = differentiate(
-        predict=polynomial_mean, parameters=reference, steps=steps, bounds=bounds,
-    )
-    stencils = []
-    half_stencils = []
-    for name in names:
-        stencils.append(direct_stencil(reference=reference, name=name, step=steps[name]))
-        half_stencils.append(direct_stencil(
-            reference=reference, name=name, step=steps[name] / 2.0,
-        ))
-    return {
-        "parameter_names": np.asarray(a=names),
-        "mean": mean,
-        "derivatives_h": derivative,
-        "derivatives_h2": derivative_half,
-        "stencil_values_h": np.asarray(a=stencils),
-        "stencil_values_h2": np.asarray(a=half_stencils),
-        "row_labels": np.asarray(a=[
-            "toy_cubic",
-            "toy_quartic",
-            "toy_quintic",
-        ]),
+    namespace = {
+        "np": np,
+        "fiducial": fiducial,
+        "steps": steps,
+        "names": names,
+        "predict": predict,
+        "refined_center": center,
+        "refined_h": first,
+        "refined_h2": second,
     }
+    # Execute only the retention assignments and loop from the full-refinement
+    # cell. The surrounding Cobaya creation and physical derivatives stay paused.
+    notebook = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+    retention = []
+    for cell in notebook["cells"]:
+        source = "".join(cell["source"])
+        if cell["cell_type"] != "code" or "refined_stencils_h2 =" not in source:
+            continue
+        tree = ast.parse(source=source)
+        for node in tree.body:
+            if not isinstance(node, ast.Try):
+                continue
+            recording = False
+            for statement in node.body:
+                if isinstance(statement, ast.Assign):
+                    name = ast.unparse(statement.targets[0])
+                    if name == "refined_stencils_h2":
+                        recording = True
+                    if name == "projection_settings":
+                        recording = False
+                if recording:
+                    retention.append(statement)
+    assert retention  # Both original and half-step nodes are retained.
+    before = len(predict.values)
+    module = ast.Module(body=retention, type_ignores=[])
+    exec(compile(module, filename=str(NOTEBOOK), mode="exec"), namespace)
+    assert len(predict.values) == before
+    return namespace
 
 
-def complete_bank(arrays):
-    """Add only the six new toy means to the already checked archived bank."""
-    reference, steps, bounds = reference_inputs()
-    bank = study.baseline_bank(arrays=arrays, reference=reference, steps=steps)
-    plan = study.quarter_point_plan(reference=reference, steps=steps, bounds=bounds)
-    for record in plan:
-        values = polynomial_mean(parameters=record["parameters"])
-        study.recorded_vector(
-            bank=bank, parameters=record["parameters"], values=values, nrow=3,
-        )
-    return bank
+class Model:
+    """Record closing of the model without opening any theory component."""
+
+    def __init__(self):
+        """Start with an open marker and no resources or native state."""
+        self.closed = False
+
+    def close(self):
+        """Mark the test model closed after successful or failed stencil work."""
+        self.closed = True
 
 
-def test_half_control_and_quarter_stencil_match_independent_toy():
-    """Reconstruction preserves old bits and yields the expected smaller-step error."""
-    arrays = baseline_arrays()
-    reference, steps, bounds = reference_inputs()
-    bank = complete_bank(arrays=arrays)
-    half, quarter, stencils, coordinates = study.reconstruct_derivatives(
-        bank=bank, reference=reference, steps=steps, bounds=bounds, arrays=arrays,
+def test_quarter_step_uses_only_two_new_means_per_parameter():
+    """Check exact reuse, signed coordinates and the known quintic stencil error.
+
+    Returns:
+      Nothing; all assertions use the notebook's actual quarter-step code.
+    """
+    namespace = retained_inputs()
+    old_stencils = namespace["refined_stencils_h2"].copy()
+    old_coordinates = namespace["refined_coordinates_h2"].copy()
+    calls = []
+
+    def get_dv(parameters):
+        """Record only the new inner coordinates requested by the notebook.
+
+        Arguments:
+          parameters = one physical displacement about the fixed fiducial.
+        Returns:
+          Polynomial data vector at that point.
+        """
+        calls.append(dict(parameters))
+        return polynomial_mean(parameters=parameters)
+
+    namespace["get_dv"] = get_dv
+    namespace["model"] = Model()
+    exec(notebook_cell(identifier="fisher-quarter-compute"), namespace)
+    assert namespace["model"].closed
+    assert namespace["new_predictions"] == 2 * len(namespace["names"])
+    assert len(calls) == namespace["new_predictions"]
+    np.testing.assert_array_equal(x=namespace["refined_stencils_h2"], y=old_stencils)
+    np.testing.assert_array_equal(x=namespace["refined_coordinates_h2"], y=old_coordinates)
+    np.testing.assert_array_equal(
+        x=namespace["quarter_stencils"][:, 0],
+        y=old_stencils[:, 1],
     )
     np.testing.assert_array_equal(
-        x=half.view(np.uint64), y=arrays["derivatives_h2"].view(np.uint64),
+        x=namespace["quarter_stencils"][:, 4],
+        y=old_stencils[:, 3],
     )
-    for column, name in enumerate(steps):
-        expected = direct_stencil(reference=reference, name=name, step=steps[name] / 4)
-        np.testing.assert_array_equal(x=stencils[column], y=expected)
-        assert coordinates[column, 2].hex() == float(reference[name]).hex()
-    exact_first_two = np.asarray(a=[3 * reference["omega_m"]**2,
-                                       4 * reference["omega_m"]**3])
-    np.testing.assert_array_equal(x=quarter[:2, 0], y=exact_first_two)
-    exact_quintic = 5 * reference["omega_m"]**4
-    old_error = half[2, 0] - exact_quintic
-    new_error = quarter[2, 0] - exact_quintic
-    assert old_error / new_error == 16.0
+    point = namespace["fiducial"]
+    expected = np.array([
+        [3.0 * point["omega_m"]**2, 2.0, 1.0],
+        [4.0 * point["omega_m"]**3, 3.0 * point["h"]**2, 3.0],
+        [5.0 * point["omega_m"]**4, 1.0, 0.0],
+    ])
+    # The five-point stencil for x**5 has error -4*s**4 at spacing s.
+    expected[2, 0] -= 4.0 * (namespace["steps"]["omega_m"] / 4.0)**4
+    np.testing.assert_array_equal(x=namespace["quarter_derivatives"], y=expected)
+    assert np.signbit(namespace["fiducial"]["offset"])
+    for column, name in enumerate(namespace["names"]):
+        step = namespace["steps"][name] / 4.0
+        assert calls[2 * column][name] == point[name] - step
+        assert calls[2 * column + 1][name] == point[name] + step
 
 
-def test_plan_preserves_absolute_steps_and_signed_zero():
-    """Negative and zero fiducials use the same absolute-step convention."""
-    reference, steps, bounds = reference_inputs()
-    plan = study.quarter_point_plan(reference=reference, steps=steps, bounds=bounds)
-    assert len(plan) == 2 * len(steps)
-    for record in plan:
-        name = record["parameter"]
-        unit = record["quarter_step_unit"]
-        expected = reference[name] + unit * (steps[name] / 4)
-        assert record["parameters"][name].hex() == expected.hex()
-        for fixed in reference:
-            if fixed != name:
-                assert record["parameters"][fixed].hex() == reference[fixed].hex()
-        assert record["parameter_key"] != study.point_key(parameters=reference)
+@pytest.mark.parametrize("failure", ["coordinates", "derivative", "center", "collapsed"])
+def test_quarter_step_refuses_inconsistent_retained_values(failure):
+    """A mismatch in the first parameter stops before either new prediction.
 
-
-@pytest.mark.parametrize("failure", [
-    "collapsed",
-    "bounds",
-    "underflow",
-])
-def test_coordinate_refusal_before_any_predictor(failure):
-    """A valid half-step does not authorize a collapsed or out-of-bounds quarter-step."""
-    reference, steps, bounds = reference_inputs()
-    # NumPy ufunc inputs are positional-only: value, then target direction.
-    if failure == "collapsed":
-        reference["omega_m"] = 1.0
-        steps["omega_m"] = 2 * np.spacing(1.0)
-    elif failure == "bounds":
-        bounds["omega_m"] = (0.2, 0.3)
+    Arguments:
+      failure = retained quantity or too-small displacement deliberately changed.
+    Returns:
+      Nothing; checks refusal and model cleanup without a native calculation.
+    """
+    namespace = retained_inputs()
+    if failure == "coordinates":
+        namespace["refined_coordinates_h2"][0, 0] += 0.001
+    elif failure == "derivative":
+        namespace["refined_h2"][0, 0] += 0.001
+    elif failure == "center":
+        namespace["refined_stencils_h2"][0, 2, 0] += 0.001
     else:
-        steps["omega_m"] = np.nextafter(0.0, 1.0)
-    with pytest.raises(ValueError):
-        study.quarter_point_plan(reference=reference, steps=steps, bounds=bounds)
+        namespace["steps"]["omega_m"] = 1.0e-20
+    calls = []
+
+    def get_dv(parameters):
+        """Record an unwanted evaluation if an invalid stencil reaches it.
+
+        Arguments:
+          parameters = coordinates that must not be requested in this test.
+        Returns:
+          Polynomial vector so an unexpected call is independently countable.
+        """
+        calls.append(dict(parameters))
+        return polynomial_mean(parameters=parameters)
+
+    namespace["get_dv"] = get_dv
+    namespace["model"] = Model()
+    with pytest.raises((AssertionError, ValueError)):
+        exec(notebook_cell(identifier="fisher-quarter-compute"), namespace)
+    assert calls == []
+    assert namespace["model"].closed
 
 
-@pytest.mark.parametrize("failure", [
-    "shared_node",
-    "missing_point",
-    "derivative",
-])
-def test_changed_or_incomplete_archived_values_are_refused(failure):
-    """The control derivative catches bad assembly without a physical fallback."""
-    arrays = baseline_arrays()
-    reference, steps, bounds = reference_inputs()
-    if failure == "shared_node":
-        value = arrays["stencil_values_h2"][0, 0, 0]
-        arrays["stencil_values_h2"][0, 0, 0] = np.nextafter(value, np.inf)
-        with pytest.raises(ValueError, match="differs bitwise"):
-            study.baseline_bank(arrays=arrays, reference=reference, steps=steps)
-        return
-    bank = complete_bank(arrays=arrays)
-    if failure == "missing_point":
-        plan = study.quarter_point_plan(reference=reference, steps=steps, bounds=bounds)
-        del bank[plan[0]["parameter_key"]]
-    else:
-        value = arrays["derivatives_h2"][0, 0]
-        arrays["derivatives_h2"][0, 0] = np.nextafter(value, np.inf)
-    with pytest.raises(ValueError):
-        study.reconstruct_derivatives(
-            bank=bank, reference=reference, steps=steps, bounds=bounds, arrays=arrays,
+def test_full_comparison_reconstructs_cross_information_and_single_prior():
+    """The array-only notebook comparison agrees with an independent contraction.
+
+    Nonzero cross covariance makes the conditional information necessary. The
+    two-parameter example names dark energy so the same FoM display also runs.
+
+    Returns:
+      Nothing; checks each matrix case and preserves the input derivative arrays.
+    """
+    covariance = np.array([[2.0, 0.1, 0.6], [0.1, 1.0, -0.2], [0.6, -0.2, 1.5]])
+    derivatives = np.array([[1.0, 0.0], [0.2, 1.0], [0.5, 1.2]])
+    namespace = {
+        "np": np,
+        "cnu": cnu,
+        "names": ["w0", "wa"],
+        "row_kind": np.array(["xip", "xim", "map3"]),
+        "covariance": covariance,
+        "priors": {"wa": 0.2},
+        "dh2": derivatives.copy(),
+        "refined_h": 1.1 * derivatives,
+        "refined_h2": 1.2 * derivatives,
+        "selected": [0],
+    }
+    exec(notebook_cell(identifier="fisher-full-array-comparison"), namespace)
+    for label, matrix in namespace["derivative_cases"].items():
+        expected = matrix.T @ np.linalg.solve(covariance, matrix)
+        result = namespace["full_comparisons"][label]
+        np.testing.assert_allclose(
+            actual=result["fisher_joint"],
+            desired=expected + np.diag([0.0, 25.0]),
+        )
+    np.testing.assert_array_equal(x=namespace["dh2"], y=derivatives)
+    np.testing.assert_array_equal(x=namespace["partial"][:, 1], y=derivatives[:, 1])
+
+
+def test_wider_step_reuses_original_outer_nodes():
+    """The two selected wider stencils need only their new outer pair.
+
+    The quintic term has a known fourth-order error. Its larger-step result
+    distinguishes correct spacing 2h from accidentally reusing the h divisor.
+    """
+    namespace = retained_inputs()
+    calls = []
+
+    def get_dv(parameters):
+        """Evaluate the polynomial and count only the new physical coordinates."""
+        calls.append(parameters.copy())
+        return polynomial_mean(parameters=parameters)
+
+    namespace["get_dv"] = get_dv
+    namespace["model"] = Model()
+    exec(notebook_cell(identifier="fisher-wide-compute"), namespace)
+    assert len(calls) == 4
+    assert namespace["wide_predictions"] == 4
+    assert namespace["model"].closed
+    x = namespace["fiducial"]["omega_m"]
+    y = namespace["fiducial"]["h"]
+    wider_step = 2 * namespace["steps"]["omega_m"]
+    expected = np.array([
+        [3 * x**2, 2.0],
+        [4 * x**3, 3 * y**2],
+        [5 * x**4 - 4 * wider_step**4, 1.0],
+    ])
+    np.testing.assert_allclose(namespace["wide_derivatives"][:, :2], expected)
+    # The unselected column stays at the fine reference spacing.
+    np.testing.assert_array_equal(
+        namespace["wide_derivatives"][:, 2],
+        namespace["refined_h2"][:, 2],
+    )
+    for name in ("omega_m", "h"):
+        column = namespace["names"].index(name)
+        np.testing.assert_array_equal(
+            namespace["wide_stencils"][name][[1, 2, 3]],
+            namespace["refined_stencils_h"][column][[0, 2, 4]],
         )
 
 
-def write_step_fixture(directory, failure=None):
-    """Write a small declared toy counterpart of the existing two-column archive."""
-    from cosmology_step_study import new_point_plan
+def test_projection_and_block_cells_keep_the_full_covariance():
+    """Independent inverses verify QR, SVD, weak directions and row substitutions.
 
-    arrays = baseline_arrays()
-    reference, steps, bounds = reference_inputs()
-    producer = STUDIES / "cosmology_step_study.py"
-    identity = {
-        "baseline_sha256": "controlled-baseline",
-        "configuration_sha256": "controlled-configuration",
-        "prediction_identity": {"physical_inputs": "controlled-toy"},
-        "helper_sha256": {str(producer): file_digest(path=producer)},
+    This small matrix includes cross covariance and two nuisance parameters.
+    The same full covariance is used even when just one observable block's
+    derivative entries change; treating those blocks as independent would fail.
+    """
+    from scipy.linalg import solve_triangular
+
+    random = np.random.default_rng(seed=2026)
+    root = random.normal(size=(8, 8))
+    covariance = root @ root.T + np.eye(8)
+    derivatives = random.normal(size=(8, 4))
+    namespace = {
+        "np": np,
+        "cnu": cnu,
+        "solve_triangular": solve_triangular,
+        "covariance": covariance,
+        "names": ["w0", "wa", "omega_m", "h"],
+        "priors": {"omega_m": 0.3},
+        "row_kind": np.array(["xip", "xim"] * 2 + ["map3"] * 4),
+        "dh2": derivatives.copy(),
+        "refined_h2": derivatives + 0.03 * random.normal(size=(8, 4)),
+        "refined_h": derivatives + 0.05 * random.normal(size=(8, 4)),
     }
-    recorded_identity = dict(identity)
-    recorded_identity["study_sha256"] = identity["helper_sha256"][str(producer)]
-    labels = [
-        "h4",
-        "h2",
-        "h",
-    ]
-    factors = {
-        "h4": 0.25,
-        "h2": 0.5,
-        "h": 1.0,
-    }
-    cases = []
-    saved = {
-        "parameter_names": arrays["parameter_names"],
-        "row_labels": arrays["row_labels"],
-        "selected_columns": np.asarray(a=[0, 1]),
-        "absolute_base_steps": np.asarray(a=[steps["omega_m"], steps["h"]]),
-    }
-    for label in labels:
-        cases.append({"step_label": label})
-        values = []
-        for name in ("omega_m", "h"):
-            values.append(direct_stencil(
-                reference=reference, name=name, step=steps[name] * factors[label],
-            ))
-        saved["stencil_values_" + label] = np.asarray(a=values)
-        # The reader checks these diagnostic arrays' finite shape only. The
-        # means above, independently evaluated from the toy, are reused.
-        saved["selected_derivatives_" + label] = arrays["derivatives_h2"][:, :2]
-    summary = {
-        "format": "des3pcf-cosmology-step-study-v1",
-        "executed": True,
-        "identity": recorded_identity,
-        "selected_parameters": ["omega_m", "h"],
-        "cases": cases,
-        "new_point_plan": new_point_plan(
-            parameters=reference, steps=steps, bounds=bounds, larger_step=False,
-        ),
-    }
-    if failure == "missing_h4":
-        summary["cases"] = [{"step_label": "h"}, {"step_label": "h2"}]
-    elif failure == "producer":
-        recorded_identity["study_sha256"] = "different-producer"
-    elif failure == "baseline":
-        recorded_identity["baseline_sha256"] = "different-baseline"
-    elif failure == "coordinate":
-        summary["new_point_plan"][0]["point"]["omega_m"] += 0.001
-    elif failure == "shared_node":
-        saved["stencil_values_h4"][0, 0, 0] += 0.001
-    metadata = study.json_text(record=summary)
-    (directory / "summary.json").write_text(data=metadata, encoding="utf-8")
-    saved["metadata_json"] = np.asarray(a=metadata)
-    np.savez_compressed(file=directory / "stencils.npz", **saved)
-    config = {"parameters": reference, "ia": {}}
-    return (
-        identity,
-        arrays,
-        config,
-        reference,
-        steps,
+    exec(notebook_cell(identifier="fisher-projection-metrics"), namespace)
+    for label, response in namespace["augmented"].items():
+        full_inverse = np.linalg.inv(response.T @ response)
+        expected = np.linalg.inv(full_inverse[:2, :2])
+        np.testing.assert_allclose(
+            namespace["effective_information"][label], expected,
+            rtol=1e-12, atol=1e-12,
+        )
+        metrics = namespace["projection_metrics"][label]
+        np.testing.assert_allclose(metrics["fom_qr"], metrics["fom_inverse"])
+        np.testing.assert_allclose(metrics["fom_svd"], metrics["fom_inverse"])
+    exec(notebook_cell(identifier="fisher-weak-direction"), namespace)
+    old = namespace["effective_information"]["default_half"]
+    new = namespace["effective_information"]["refined_half"]
+    np.testing.assert_allclose(
+        new @ namespace["directions"],
+        old @ namespace["directions"] * namespace["ratios"][None, :],
+    )
+    # The fitted nuisance shifts must leave a response orthogonal to their span.
+    np.testing.assert_allclose(
+        namespace["current"][:, 2:].T @ namespace["response"],
+        np.zeros(2), atol=1e-14,
+    )
+    exec(notebook_cell(identifier="fisher-block-substitutions"), namespace)
+    fine = namespace["refined_h2"]
+    changed = fine.copy()
+    changed[:4, 2] = namespace["refined_h"][:4, 2]
+    prior = np.diag([0.0, 0.0, 1 / 0.3**2, 0.0])
+    baseline = fine.T @ np.linalg.solve(covariance, fine) + prior
+    replacement = changed.T @ np.linalg.solve(covariance, changed) + prior
+    ratio = np.sqrt(
+        np.linalg.det(np.linalg.inv(baseline)[:2, :2])
+        / np.linalg.det(np.linalg.inv(replacement)[:2, :2])
+    )
+    np.testing.assert_allclose(
+        namespace["block_substitutions"]["step:omega_m:xi"], ratio,
     )
 
 
-def test_valid_two_column_reuse_leaves_only_other_parameter_points(tmp_path):
-    """Four source-verified means remove four evaluations from the six-point toy."""
-    identity, arrays, config, reference, steps = write_step_fixture(directory=tmp_path)
-    reused, _ = study.load_step_reuse(
-        directory=tmp_path, identity=identity, arrays=arrays, config=config,
-        reference=reference, steps=steps,
-    )
-    _, _, bounds = reference_inputs()
-    plan = study.quarter_point_plan(reference=reference, steps=steps, bounds=bounds)
-    missing = 0
-    for record in plan:
-        if record["parameter_key"] not in reused:
-            missing += 1
-    assert len(reused) == 4
-    assert missing == 2
+def test_study_cells_bind_to_shared_public_apis():
+    """Bind every shared Fisher and Cobaya call without evaluating its arguments.
 
+    This detects an obsolete keyword in a newly added expensive cell while
+    keeping physical predictions and complete notebook execution paused.
+    """
+    import inspect
+    from cobaya.model import get_model
 
-@pytest.mark.parametrize("failure", [
-    "missing_h4",
-    "producer",
-    "baseline",
-    "coordinate",
-    "shared_node",
-])
-def test_two_column_reuse_refuses_inconsistent_provenance_or_nodes(tmp_path, failure):
-    """A matching filename never substitutes for the expected coordinates and producer."""
-    identity, arrays, config, reference, steps = write_step_fixture(
-        directory=tmp_path, failure=failure,
-    )
-    with pytest.raises(ValueError):
-        study.load_step_reuse(
-            directory=tmp_path, identity=identity, arrays=arrays, config=config,
-            reference=reference, steps=steps,
+    notebook = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+    for cell in notebook["cells"]:
+        if cell["cell_type"] != "code":
+            continue
+        source = "\n".join(
+            line for line in "".join(cell["source"]).splitlines()
+            if not line.startswith("%")
         )
-
-
-@pytest.mark.parametrize("failure", [
-    None,
-    "known_mean",
-    "receipt",
-    "absent_receipt",
-])
-def test_existing_point_requires_receipt_and_source_bits(tmp_path, failure):
-    """A valid self-consistent receipt cannot overrule a known reused mean."""
-    reference, steps, bounds = reference_inputs()
-    record = study.quarter_point_plan(reference=reference, steps=steps, bounds=bounds)[0]
-    record["origin"] = "two_column_step_study"
-    expected = {"manifest_sha256": "controlled-manifest", "point": record}
-    mean = polynomial_mean(parameters=record["parameters"])
-    reused = {record["parameter_key"]: mean.copy()}
-    if failure == "known_mean":
-        mean[0] = np.nextafter(mean[0], np.inf)
-    path = tmp_path / "point.npz"
-    receipt_path = tmp_path / "point.json"
-    np.savez_compressed(
-        file=path, mean=mean, metadata_json=study.json_text(record=expected),
-    )
-    receipt = {"point": record, "archive_sha256": file_digest(path=path)}
-    if failure == "receipt":
-        receipt["archive_sha256"] = "changed-hash"
-    if failure != "absent_receipt":
-        study.checked_text(
-            path=receipt_path, content=study.json_text(record=receipt), write=True,
-        )
-    if failure is None:
-        actual = study.verified_point(
-            path=path, receipt_path=receipt_path, expected=expected,
-            nrow=3, reused=reused,
-        )
-        np.testing.assert_array_equal(x=actual.view(np.uint64), y=mean.view(np.uint64))
-    else:
-        exceptions = (
-            ValueError,
-            FileExistsError,
-            FileNotFoundError,
-        )
-        with pytest.raises(exceptions):
-            study.verified_point(
-                path=path, receipt_path=receipt_path, expected=expected,
-                nrow=3, reused=reused,
-            )
+        for node in ast.walk(ast.parse(source)):
+            if not isinstance(node, ast.Call):
+                continue
+            function = None
+            if isinstance(node.func, ast.Name) and node.func.id == "get_model":
+                function = get_model
+            if (isinstance(node.func, ast.Attribute)
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == "cnu"):
+                function = getattr(cnu, node.func.attr)
+            if function is not None:
+                assert all(keyword.arg is not None for keyword in node.keywords)
+                inspect.signature(function).bind(
+                    *[None for _ in node.args],
+                    **{keyword.arg: None for keyword in node.keywords},
+                )

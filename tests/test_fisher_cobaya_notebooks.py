@@ -20,9 +20,9 @@ from cosmolike_notebook_utils import fisher as cnu
 PROJECT = Path(__file__).resolve().parents[1]
 # These notebooks teach different physics with the same ordinary prediction call.
 NOTEBOOKS = (
-    "EXAMPLE_FISHER_IA.ipynb",
+    "notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb",
     "EXAMPLE_FISHER_ACCURACY.ipynb",
-    "EXAMPLE_FISHER_BACCO.ipynb",
+    "notes/baryonic_feedback/EXAMPLE_FISHER_BACCO.ipynb",
 )
 
 

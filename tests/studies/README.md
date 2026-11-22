@@ -68,14 +68,12 @@ checks the geometric coupling at every $`L`$ through 50 and $`M`$
 through 100. The five cases, the measurements and their limits are in
 [the angular-order study](angular_order_results.md).
 
-Run one model at a time; the driver reads that model's local
-`triangle_1p5` Fisher archive, and without that archive no case can be
-launched:
-
-```bash
-python tests/studies/angular_order_study.py \
-  chains/nla_accuracy/triangle_1p5.json --output chains/nla_angular_orders --execute
-```
+Open [EXAMPLE_FISHER_ACCURACY.ipynb](../../EXAMPLE_FISHER_ACCURACY.ipynb)
+and choose the numbered NLA or TATT example. Its final angular-order
+section changes the truncations, quadrature and coupling interpolation
+explicitly, evaluates the fiducial prediction through Cobaya, and checks
+that the two-point rows remain unchanged. Configurations and numerical
+arrays are written below `chains/fisher_accuracy/`.
 
 Saved records:
 [results/nla_angular_orders/summary.json](results/nla_angular_orders/summary.json),
@@ -95,17 +93,11 @@ nonmonotonic behavior and the remaining open comparisons are in
 presentation is
 [EXAMPLE_FISHER_ACCURACY.ipynb](../../EXAMPLE_FISHER_ACCURACY.ipynb).
 
-The array report needs no physical model:
-
-```bash
-python tests/studies/full_triangle_report.py --execute
-```
-
-The step follow-ups
-([cosmology_step_study.py](cosmology_step_study.py) and
-[full_smaller_step_study.py](full_smaller_step_study.py)) calculate new
-physical means; their commands and refusal rules are the execution steps
-of [the accuracy record](fisher_accuracy_validation.md).
+The notebook contains the full-derivative comparison, nuisance projection,
+row-block substitutions, and smaller- and wider-step studies as ordinary
+cells. Array-only cells reuse derivatives already in memory. Quarter-step
+and wider-step cells identify their additional physical evaluations before
+the loops. There is no separate Fisher study launcher.
 
 Saved records: the array diagnostics in
 [results/fisher_array_diagnostics/](results/fisher_array_diagnostics)

@@ -4,7 +4,7 @@
 2. [Which example to use](#examples)
 3. [Physical preparation keys](#physics)
 4. [Mean estimator keys](#estimators)
-5. [Fisher and precision keys](#fisher)
+5. [Fisher calculations](#fisher)
 
 ## Schema and worked flows <a name="schema"></a>
 
@@ -28,7 +28,7 @@ prepare/evaluate flow, the thread settings, the `--validate-config` and
 | File | Observable definition and available inputs |
 |---|---|
 | `des_y3_nla_demo_fisher.yaml` | Worked 480-row NLA demonstration with its recorded source processing and measured-edge PCHIP reconstruction. |
-| `des_y3_tatt_demo_fisher.yaml` | The corresponding TATT demonstration, with its larger IA parameter space and separate Fisher base. |
+| `des_y3_tatt_demo_fisher.yaml` | The corresponding TATT demonstration, with its larger IA parameter space. |
 | `des_y3_supplied_bihalofit.yaml` | The NLA demonstration with an explicit Python-produced baseline bispectrum and CAMB matter-density background. It writes separate physical tables and results. |
 | `y3_full_filter_example.yaml` | A joint forecast definition with 400 xi± entries and 80 full-filter aperture moments. Preparation reads the pinned public Y3 midpoint curves. Area and per-bin shape-noise properties are unset. |
 | `y3_finite_sas_example.yaml` | All 400 xi± and 80 aperture rows in the pinned public simulated Y3 FITS files, with their 480-by-480 covariance. Apertures integrate a finite side-angle-side shear grid. |
@@ -62,7 +62,7 @@ labeled alternative; the driver never inserts it silently.
 
 `source.path` names an input in `data/`. `physics.tables` names a generated
 file in `chains/`; create it with `run_3pcf.py prepare` before evaluating that
-configuration. Output means, covariances and Fisher matrices also go in
+configuration. Generated means, covariance arrays and notebook Fisher matrices go in
 `chains/`. The [data guide](../data/README.md) lists the preparation commands
 and distinguishes generated results from the frozen comparisons in `tests/`.
 
@@ -180,35 +180,27 @@ than importing the source loader stub when that binary is absent. The
 adapter owns that ordinary core's mutable state during the run; mean
 calls are serial at the Python level and C owns the OpenMP workers.
 
-## Fisher and precision keys <a name="fisher"></a>
+## Fisher calculations <a name="fisher"></a>
 
-The [Fisher guide](../../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher) defines the derivative keys
-(`fisher.steps`, `fisher.priors`, `fisher.bounds`, `fisher.fom_pairs`),
-the saved arrays and the rank diagnostic. `fisher` reads one fiducial
-covariance and holds it fixed throughout every parameter displacement.
+Current forecasts use the numbered Cobaya YAMLs directly in
+[EXAMPLE_FISHER_ACCURACY.ipynb](../EXAMPLE_FISHER_ACCURACY.ipynb),
+the [IA notebook](../notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb),
+and the [feedback notebook](../notes/baryonic_feedback/EXAMPLE_FISHER_BACCO.ipynb).
+The [compression notebook](../EXAMPLE_COMPRESSION.ipynb) computes its own
+training derivatives through the same numbered TATT likelihood. Each
+notebook displays its fiducial, absolute parameter steps and Gaussian priors,
+then calls the shared CosmoLike Fisher functions. There is no separate
+`run_3pcf.py fisher` command.
 
-PME is optional under `fisher.precision`:
+The files here whose names include `fisher` remain mean/covariance fixtures
+for the existing preparation and evaluation comparisons. Their retained
+Fisher keys describe earlier study inputs; they do not launch current
+forecasts. Do not infer an executed Fisher calculation from a fixture's
+filename.
 
-```json
-{
-  "mode": "pme",
-  "sample_covariance": {
-    "path": "../data/joint_sample_covariance.npz",
-    "key": "covariance"
-  },
-  "independent_count": 300,
-  "order": 2,
-  "sample_assumption": "independent_gaussian_vectors"
-}
-```
-
-The count above illustrates the schema; it is not a DES realization
-count. An NPZ matrix file needs an exact `row_labels` array beside
-`covariance`, and it may be rank deficient. The
-[Fisher guide](../../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher) states the required row agreement,
-the independence assumption and the refusal of an indefinite precision.
-
-Output NPZ files contain numerical and string arrays plus a JSON metadata
-string; loading them never requires a Python pickle. Lossless ZIP storage
-does not reduce the statistical vector: every xi± row, aperture row and
-cross block remains present.
+The [shared Fisher guide](../../../external_modules/code/cosmolike_core/cosmolike_notebook_utils/README.md#fisher)
+explains the numerical derivatives and precision-matrix inputs. A fixed
+covariance is held throughout parameter displacements. Using a PME precision
+requires the separately stated simulation assumptions and a positive-definite
+result; it is not an automatic replacement for the sample covariance in a
+finite-simulation likelihood.

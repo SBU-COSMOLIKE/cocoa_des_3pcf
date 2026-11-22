@@ -177,25 +177,23 @@ catalogue weighting and mask and pixel conventions.
 
 ## What the saved IA demonstration supports <a name="notebook"></a>
 
-The notebook calls its full-480-row, fixed-covariance calculation a
-demonstration. Its execute-or-reuse method checks configuration, rows,
-covariance and the saved physical input and implementation identities,
-and an explicit historical loader can inspect an older archive without
-presenting it as the current code.
-[Result loading](../../interface/cosmolike_des_3pcf_fisher_wrappers.py)
+The [IA companion notebook](../../notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb)
+evaluates the numbered Cobaya model directly. Its mean comparisons hold
+cosmology, sources, row selection and covariance fixed while changing the
+IA parameters. The accompanying [teaching note](../../notes/intrinsic_alignments/intrinsic_alignments.pdf)
+explains normalized responses and conditional information. The notebook
+has no workflow or historical-result loader; rerun its visible cells to
+obtain predictions from the current implementation.
 
-The `ia_figure9_workflows` helper prepares a common no-IA prediction, two
-NLA counterparts and two TATT sign choices. Its grouped plots use the
-no-IA case as their reference, as in Figure 9, and normalize the
-displayed residual by the maximum absolute reference within each bin.
-The complete IA settings return with the workflows; matching amplitude
-choices alone does not reproduce the paper's source and estimator
-assumptions.
-[TATT paper, Figure 9 and Section III.2](https://arxiv.org/html/2601.09133v1#S3.SS2),
-[current sign cases](../../interface/cosmolike_des_3pcf_fisher_wrappers.py)
+A common no-IA prediction, two NLA counterparts and two TATT sign choices
+show the response to the signs discussed in
+[the TATT paper, Figure 9 and Section III.2](https://arxiv.org/html/2601.09133v1#S3.SS2).
+Current plots divide changes by each row's measurement error. That differs
+from normalizing a curve by its maximum amplitude; matching IA signs alone
+also does not reproduce the paper's source and estimator assumptions.
 
-The saved vectors support one further calculation without new physical
-evaluations: the finite conditional separation of the two sign cases.
+Once those means have been evaluated, they support another calculation
+without further physical evaluations: the finite conditional separation of the two sign cases.
 With $`\Delta\mu`$ the difference between the two cases,
 
 ```math

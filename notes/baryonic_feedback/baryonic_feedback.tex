@@ -1,0 +1,365 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{amsmath,amssymb,graphicx,xcolor,needspace}
+\usepackage[hidelinks]{hyperref}
+\newcommand{\Cov}{\mathsf C}
+\newcommand{\T}{^{\mathsf T}}
+\newcommand{\us}{\_\allowbreak}
+\emergencystretch=3em
+\begin{document}
+\begin{center}
+{\LARGE Baryonic feedback in a joint shear forecast\par}
+\vspace{.4em}
+{\large Power, bispectrum, neutrinos and the information added by Map3\par}
+\vspace{.6em}
+{\large November 2026\par}
+\end{center}
+
+\section{The question and the companion notebook}
+\paragraph{Moving matter changes lensing.}
+Gas can cool into galaxies or be driven out of halos by energetic stellar
+and black-hole activity. These processes redistribute matter. A lensing
+prediction based on collisionless gravitational evolution alone may then
+misestimate small-scale correlations. Both the power spectrum and the
+bispectrum respond, but their responses need not be related by a single
+amplitude. A joint shear analysis can therefore test feedback parameters
+through two different patterns in the data.
+
+\paragraph{What this study attempts.}
+The methods paper by Gomes and collaborators~\cite{methods} tested scale
+cuts against a specified baryonic contamination. Our notebook asks a
+related but different question: if a paired response model is included
+explicitly, does the aperture statistic improve local constraints on its
+feedback coordinates? Burger and collaborators~\cite{burger} provide the
+paired emulation used here. This is not a claim that a five-parameter
+Fisher calculation reproduces either paper's posterior or establishes the
+accuracy of the emulator outside its training region.
+
+\paragraph{One notebook contains the analysis.}
+Open
+\href{EXAMPLE_FISHER_BACCO.ipynb}{\texttt{EXAMPLE\us FISHER\us BACCO.ipynb}}
+beside this note in the activated Cocoa environment. It reads the numbered
+TATT example, enables the additional BACCO theory block, and calls Cobaya
+for every prediction. It then uses the shared Fisher functions and plots
+the means, derivative responses and parameter errors. The original
+absolute-bispectrum provider remains in the YAML. Expensive cells run real
+models; their outputs are empty following the source refactor. No new
+physical forecast is reported in this note. Generated results belong in
+\texttt{chains/fisher\us bacco/}, not among the scientific input files.
+
+\section{Why the joint calculation needs two response functions}
+\paragraph{Separate an absolute spectrum from its response.}
+Let superscript $D$ denote the gravity-only reference and $H$ the prediction
+including the chosen gas physics. The power response is defined as
+\begin{equation}
+ R_P(k,z)=\frac{P^H(k,z)}{P^D(k,z)}.
+\end{equation}
+It is dimensionless. Once an absolute reference spectrum is supplied,
+recover the modified spectrum by multiplication:
+\begin{equation}
+ P^H(k,z)=R_P(k,z)P^D(k,z).
+\end{equation}
+A response alone does not specify the absolute spectrum. Different
+reference cosmologies can have the same response and different powers.
+
+\paragraph{The bispectrum needs triangle information.}
+A bispectrum depends on three Fourier wavevectors whose sum is zero.
+Their lengths form a triangle. Its response is
+\begin{equation}
+ R_B(k_1,k_2,k_3,z)=\frac{B^H(k_1,k_2,k_3,z)}{B^D(k_1,k_2,k_3,z)}.
+\end{equation}
+The corresponding absolute prediction is
+\begin{equation}
+ B^H(k_1,k_2,k_3,z)=R_B(k_1,k_2,k_3,z)B^D(k_1,k_2,k_3,z).
+\end{equation}
+The two-point shear projection uses the power spectrum, while three-point
+shear uses the bispectrum. Supplying only $R_B$ would leave the feedback
+model inconsistent between the two observables. Equally, assuming
+$R_B=R_P^{3/2}$ would impose a relation that an independently emulated
+bispectrum can test rather than assume.
+
+\paragraph{The theory blocks have different jobs.}
+CAMB supplies the cosmology and spectra requested by the model. The
+absolute-bispectrum block supplies $B^D$. The separate
+\texttt{bacco\us bispectrum} block supplies the paired responses. The
+likelihood requests those products and projects the resulting model.
+BiHalofit is the supplied absolute-bispectrum example, not a mandatory
+identity of the three-point likelihood: another provider can satisfy the
+same physical input requirement. Enabling BACCO does not justify applying
+its power ratio a second time in an independent feedback block.
+
+\paragraph{What a feedback coordinate means.}
+The notebook varies logarithmic mass and gas-ejection coordinates:
+\begin{equation}
+ p_M=\log_{10}\left[\frac{M_c}{h^{-1}M_\odot}\right].
+\end{equation}
+The mass scale $M_c$ controls gas retention in the model. The other varied
+coordinate is
+\begin{equation}
+ p_\eta=\log_{10}\eta.
+\end{equation}
+The dimensionless parameter $\eta$ describes gas ejection. A change of
+$0.1$ in a base-ten logarithm multiplies the original quantity by
+$10^{0.1}\simeq1.26$; it does not add $0.1$ to that quantity. The other
+feedback coordinates remain fixed at their declared values in this
+five-parameter experiment.
+
+\section{Cold matter and total matter are not interchangeable}
+\paragraph{Start with the density fields.}
+Here ``cold'' includes cold dark matter and baryons. Massive neutrinos
+contribute to the total matter seen by lensing as well. Define the mass
+fractions
+\begin{equation}
+ f_\nu=\frac{\Omega_\nu}{\Omega_m}.
+\end{equation}
+The remaining fraction is
+\begin{equation}
+ f_c=1-f_\nu.
+\end{equation}
+The total density contrast is the weighted sum
+\begin{equation}
+ \delta_m=f_c\delta_c+f_\nu\delta_\nu.
+\end{equation}
+These weights are background mass fractions. They are not the fractions
+of a particular Fourier mode's fluctuation amplitude.
+
+\paragraph{Expand the power before choosing an approximation.}
+Multiplying two copies of this field produces four terms. The two mixed
+terms have the same power, so they combine to give
+\begin{equation}
+ P_m^D=f_c^2P_c^D+2f_cf_\nu P_{c\nu}^D+f_\nu^2P_{\nu\nu}^D.
+\end{equation}
+The default implementation uses CAMB's linear massive-neutrino power and
+approximates the cross-spectrum by aligned fluctuation phases:
+\begin{equation}
+ P_{c\nu}^D\simeq\sqrt{P_c^D P_{\nu\nu,L}}.
+\end{equation}
+Substituting this expression turns the three terms into a square:
+\begin{equation}
+ P_m^D\simeq
+ \left(f_c\sqrt{P_c^D}+f_\nu\sqrt{P_{\nu\nu,L}}\right)^2.
+\end{equation}
+This is an approximation to the cross-correlation, not an identity obeyed
+by arbitrary nonlinear cold and neutrino fields.
+
+\paragraph{Preserve the supplied gravity-only spectrum.}
+The code starts from the existing total nonlinear power rather than
+replacing it by a second background calculation. Define its amplitude
+\begin{equation}
+ U=\sqrt{P_m^D}.
+\end{equation}
+Define the mass-weighted neutrino amplitude from the explicit massive-neutrino
+spectrum:
+\begin{equation}
+ N=f_\nu\sqrt{P_{\nu\nu,L}}.
+\end{equation}
+The inferred cold amplitude is then
+\begin{equation}
+ U_c=U-N.
+\end{equation}
+All three amplitudes have units of the square root of a power spectrum.
+The construction requires $0\leq N\leq U$. Silently replacing a negative
+inferred cold amplitude by zero would change this model. In the absence
+of massive neutrinos we set $N=0$ directly.
+
+\paragraph{Apply the cold response at the amplitude level.}
+BACCO supplies the cold power ratio. Its amplitude ratio is
+\begin{equation}
+ q=\sqrt{R_{P,c}}.
+\end{equation}
+Holding the neutrino auto-spectrum fixed gives the total hydro amplitude
+$qU_c+N$. Therefore
+\begin{equation}
+ R_{P,m}=\frac{(qU_c+N)^2}{U^2}.
+\end{equation}
+To see the relative weights more clearly, define
+\begin{equation}
+ a=U_c/U.
+\end{equation}
+The neutrino fluctuation fraction is
+\begin{equation}
+ n=N/U=1-a.
+\end{equation}
+These quantities depend on wavenumber and redshift; $a$ here is not the
+cosmic scale factor. Substituting gives
+\begin{equation}
+ R_{P,m}=(aq+n)^2.
+\end{equation}
+
+\paragraph{Work one example through.}
+Choose $a=0.99$ and $R_{P,c}=0.81$ solely to illustrate the arithmetic.
+Then $q=0.9$ and $n=0.01$. The total amplitude ratio is
+\begin{equation}
+ aq+n=0.99\times0.9+0.01=0.901.
+\end{equation}
+Squaring it gives
+\begin{equation}
+ R_{P,m}=0.901^2=0.811801.
+\end{equation}
+The unmodified neutrino contribution slightly dilutes the cold suppression.
+The alternative \texttt{cold\us on\us total} prescription instead sets
+$R_{P,m}=R_{P,c}$. The notebook compares these two assumptions with the same
+reference cosmology. The numerical values in this paragraph are not an
+emulator evaluation.
+
+\section{Why the bispectrum conversion is an additional assumption}
+\paragraph{There are eight ordered field contributions.}
+Each of three density factors can be cold or neutrino. Expanding their
+product gives
+\begin{equation}
+\begin{split}
+ B_m={}&f_c^3B_{ccc}
+ +f_c^2f_\nu(B_{cc\nu}+B_{c\nu c}+B_{\nu cc})\\
+ &+f_cf_\nu^2(B_{c\nu\nu}+B_{\nu c\nu}+B_{\nu\nu c})
+ +f_\nu^3B_{\nu\nu\nu}.
+\end{split}
+\end{equation}
+The position of each subscript identifies its Fourier leg. Thus
+$B_{c\nu c}$ places the neutrino field on the second side. For unequal
+sides, its value need not equal the term with the neutrino on the first
+side. BACCO's cold response alone does not determine all these terms.
+
+\paragraph{The implemented assignment.}
+For each leg compute its own $a_i,n_i,q_i$ from the power prescription.
+If every cold leg simply acquired its power-amplitude response, the
+three-leg response would be
+\begin{equation}
+ Q=\prod_{i=1}^3(a_iq_i+n_i).
+\end{equation}
+This product contains eight terms. Its pure-cold term is
+$a_1a_2a_3q_1q_2q_3$. Remove that term and replace it by the independently
+emulated cold bispectrum ratio. The result is
+\begin{equation}
+ R_{B,m}=Q-a_1a_2a_3q_1q_2q_3+a_1a_2a_3R_{B,c}.
+\end{equation}
+Combining the last two terms gives the expression used for checking:
+\begin{equation}
+ R_{B,m}=\prod_{i=1}^3(a_iq_i+n_i)
+ +\left(\prod_{i=1}^3a_i\right)
+  \left(R_{B,c}-\prod_{i=1}^3q_i\right).
+\end{equation}
+
+\paragraph{Checks of the formula are not a physical calibration.}
+If every response equals one, each first-product factor is $a_i+n_i=1$
+and the second term vanishes. Thus $R_{B,m}=1$ and the supplied baseline is
+restored. If neutrinos are absent, all $a_i=1$ and all $n_i=0$. The power
+products cancel and the answer is exactly $R_{B,c}$. These checks verify
+limiting cases. They do not determine the actual mixed cold-neutrino
+bispectra. In particular, assigning a term proportional to
+$n_1n_2n_3B_m^D$ is not the bispectrum of a strictly Gaussian linear
+neutrino field, whose bispectrum would vanish. ``Linear neutrinos'' in
+this implementation names the power input, not a derivation of every
+three-point contribution.
+
+\paragraph{Which fluctuation amplitude enters the emulator.}
+The forecast's $\sigma_8$ is the total linear-density RMS in spheres of
+radius $8\,h^{-1}\mathrm{Mpc}$. BACCO's cold coordinate instead uses the
+cold linear spectrum. CAMB must supply that coordinate at each displaced
+cosmology. Holding the cold coordinate fixed while varying total $\sigma_8$
+would miss part of the feedback response. The current emulator also has
+no independent coordinate for every cosmological parameter. A changed
+CAMB prediction does not by itself establish that the feedback model's
+cosmology dependence is complete.
+
+\section{Continuing beyond training and testing numerical sampling}
+\paragraph{Triangle shape must be specified during continuation.}
+Sort the side lengths from shortest to longest. One shape coordinate is
+\begin{equation}
+ u=k_{\rm short}/k_{\rm middle}.
+\end{equation}
+A second coordinate is
+\begin{equation}
+ v=(k_{\rm long}-k_{\rm middle})/k_{\rm short}.
+\end{equation}
+It is a side-ratio coordinate, not an opening angle. Scaling all sides by
+the same positive factor preserves both $u$ and $v$. Clamping each side
+separately to a boundary generally changes them. For example, the triangle
+$(2,6,7)$ scaled to longest side five becomes $(10/7,30/7,5)$; independently
+clamping its long sides at five gives $(2,5,5)$. They are different shapes.
+
+\paragraph{What the notebook compares.}
+The physical comparisons change the neutrino prescription, the high-$k$
+continuation, its anchor, the low-$k$ anchor, or the high-redshift
+continuation. These choices assign predictions outside measured training
+support. A denser numerical table cannot establish which continuation is
+physically correct. The numerical comparisons instead refine the redshift,
+wavenumber and two shape grids, or the dense interpolation factor, while
+holding the selected continuation fixed. The notebook labels which cases
+compute derivatives and which compare only means; it does not infer
+full derivative convergence from a small mean difference.
+
+\paragraph{Measure a difference with the survey covariance.}
+For a changed mean define
+\begin{equation}
+ \Delta=\mu_{\rm changed}-\mu_{\rm reference}.
+\end{equation}
+The full squared distance is
+\begin{equation}
+ \Delta\chi^2=\Delta\T C^{-1}\Delta.
+\end{equation}
+Here $C$ is the fixed joint covariance. Retain its cross block. The
+companion intrinsic-alignment note derives how this distance separates
+into a two-point contribution and the additional conditional three-point
+contribution. A large distance identifies model sensitivity, not a
+parameter bias after fitting. Estimating a fitted bias would require
+projecting the difference onto the allowed parameter responses.
+
+\section{What the five-parameter forecast means}
+\paragraph{State the restricted parameter space first.}
+The varied coordinates are total $\sigma_8$, $p_M$, $p_\eta$, $A_1$ and
+$A_2$. The remaining cosmological, alignment, source and gas parameters
+are fixed. There are no added Gaussian priors on these five coordinates.
+The full five-by-five Fisher inverse marginalizes over the other four
+varied coordinates when one error is read; it remains conditional on all
+coordinates held fixed outside this list. Comparing such errors with a
+forecast that releases every nuisance would compare different experiments.
+
+\paragraph{Derivatives and displayed responses have different steps.}
+The five-point derivatives use small absolute parameter displacements.
+The display uses larger chosen changes, such as $0.2$ in $p_M$ and $0.1$
+in $p_\eta$, to show derivative patterns in row-error units. Multiplying
+a derivative by a display displacement is a tangent prediction. It is
+not a separately evaluated finite-offset model. The best-fit response
+coefficient uses the entire covariance even when a figure shows only one
+source-bin combination.
+
+\paragraph{Parameter errors can reach an emulator boundary.}
+The Fisher approximation replaces the local likelihood by a quadratic.
+Its Gaussian tails can extend beyond a permitted emulator coordinate
+range. The notebook compares the inferred interval with the declared
+coordinate bounds. Those bounds define this example's parameter box;
+checking them does not independently validate every emulator training
+coordinate. A crossing means the local error is not a valid
+posterior interval inside the declared domain. It does not justify
+clipping a Gaussian contour and calling it a new Fisher result. A bounded
+inference calculation must use the same physical continuation and priors.
+
+\paragraph{Checks needed before a scientific conclusion.}
+Compare full derivatives at both step sizes and at refined response
+sampling, with the covariance and physical choices held fixed. Then
+compare the physical continuation alternatives. The mean uses the
+numbered example's TATT choices, while the supplied covariance keeps its
+own simulation assumptions. Quadratic IA currently retains the declared
+gravity-only prescription. These are model assumptions to report, not
+errors that vanish when the interpolation grid becomes denser. The
+refactored notebook has no newly computed results; its eventual output
+must state these conditions alongside any gain attributed to Map3.
+
+\paragraph{Acknowledgements.}
+\textbf{We thank Sunao Sugiyama and Rafael Gomes for their three-point codes
+and analyses. We thank the BACCO authors and Pierre Burger and collaborators
+for the feedback models and emulator work.} Source and model references are
+\href{https://github.com/git-sunao/fastnc}{fastnc},
+\href{https://github.com/rchgomes/3pcf_integrator}{3pcf\us integrator},
+\href{https://github.com/rchgomes/desy6-3pcf}{desy6-3pcf}, and
+\href{https://baccoemu.readthedocs.io/}{BACCO's documentation}.
+
+\begin{thebibliography}{9}
+\bibitem{methods} R. C. H. Gomes et al., \emph{Cosmology with second and third-order
+shear statistics for the Dark Energy Survey: Methods and simulated analysis},
+\href{https://arxiv.org/abs/2503.03964}{arXiv:2503.03964}.
+\bibitem{burger} P. A. Burger et al., \emph{Euclid: An emulator for baryonic
+effects on the matter bispectrum},
+\href{https://arxiv.org/abs/2506.18974}{arXiv:2506.18974}.
+\end{thebibliography}
+\end{document}

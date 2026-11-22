@@ -7,7 +7,33 @@ provide known distances before the observational covariance is constructed.
 import numpy as np
 import pytest
 
-from cosmolike_des_3pcf_fisher_wrappers import finite_sign_pair_separation
+from cosmolike_notebook_utils import fisher as cnu
+from test_fisher_cobaya_notebooks import notebook_cells
+
+
+def finite_sign_pair_separation(first, second, covariance):
+    """Run the visible finite-contrast cell on two known predictions.
+
+    Row identity is supplied once by the same notebook model. These tests
+    vary row ordering and units coherently across means and covariance.
+    """
+    source = next(cell for cell in notebook_cells("notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb")
+                  if 'names=["sign_contrast"]' in cell)
+    means = {}
+    for model in ("nla", "tatt"):
+        means[model + "_positive"] = first["mean"]
+        means[model + "_negative"] = second["mean"]
+    namespace = dict(np=np, cnu=cnu, sign_means=means,
+                     row_kind=first["row_kind"], covariance=covariance)
+    exec(source, namespace)
+    result = namespace["distance"]
+    two = result["fisher_two_point_likelihood"][0, 0]
+    third = result["fisher_conditional_three_point"][0, 0]
+    joint = result["fisher_joint_likelihood"][0, 0]
+    return {"chi2_joint": joint, "chi2_two_point": two,
+            "chi2_conditional_three_point": third,
+            "conditional_residual": result["conditional_derivatives"][:, 0],
+            "identity_relative_error": abs(joint-two-third)/max(abs(joint), 1.)}
 
 
 def gaussian_sign_cases(latent_change, aperture_unit=1.0, interleaved=False):
@@ -220,38 +246,3 @@ def test_map3_sign_change_requires_the_matching_cross_covariance_change():
         desired=15.0,
         rtol=2.0e-14,
     )
-
-
-@pytest.mark.parametrize(
-    "key",
-    [
-        "row_labels",
-        "row_kind",
-        "row_bins",
-        "row_angles_radians",
-    ],
-)
-def test_matching_vector_size_does_not_replace_matching_row_identity(key):
-    """A changed row definition must not receive the old covariance weights."""
-    first, second, covariance = gaussian_sign_cases(
-        latent_change=[
-            1.0,
-            -2.0,
-            3.0,
-            -1.0,
-        ],
-    )
-    if key == "row_labels":
-        second[key][0] = "changed"
-    elif key == "row_kind":
-        second[key][0] = "map3"
-    elif key == "row_bins":
-        second[key][0, 0] = 1
-    else:
-        second[key][0, 2] *= 2.0
-    with pytest.raises(ValueError, match=key):
-        finite_sign_pair_separation(
-            first=first,
-            second=second,
-            covariance=covariance,
-        )

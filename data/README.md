@@ -67,8 +67,8 @@ describes its emulator inputs and physical assumptions.
 | Generated file | How to create it |
 |---|---|
 | `chains/paired_feedback_demo.npz` | Run the response-construction cell in [EXAMPLE_JOINT_FEEDBACK.ipynb](../EXAMPLE_JOINT_FEEDBACK.ipynb) |
-| `chains/y3_tatt_measured_edge_demo_fisher.npz` | Run `run_3pcf.py fisher` with `configs/des_y3_tatt_demo_fisher.yaml` after preparation |
-| `chains/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) after generating its TATT Fisher input |
+| `chains/compression/training.npz` | Run the numbered Cobaya model and derivative cells in [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) |
+| `chains/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) including its direct TATT derivative calculation |
 
 The artificial feedback response illustrates the calculation; it is not a
 hydrodynamic calibration. The compression matrix is trained from the chosen

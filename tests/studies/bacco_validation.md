@@ -1,6 +1,6 @@
 # BACCO neutrinos, continuation and joint Fisher checks
 
-The executed [BACCO notebook](../../EXAMPLE_FISHER_BACCO.ipynb) compares
+The executed [BACCO notebook](../../notes/baryonic_feedback/EXAMPLE_FISHER_BACCO.ipynb) compares
 two-point shear with two-point shear plus Map3, using independently emulated
 power and bispectrum feedback responses. In this five-parameter calculation,
 adding Map3 reduces the marginalized errors on two gas parameters by about
@@ -320,7 +320,7 @@ The committed records on this page describe the calculation and numerical
 choices stated above. Reading their arrays and figures requires no new forecast.
 They are historical evidence, not output from the current notebook source.
 
-For a new calculation, open `EXAMPLE_FISHER_BACCO.ipynb`. It reads the numbered
+For a new calculation, open `notes/baryonic_feedback/EXAMPLE_FISHER_BACCO.ipynb`. It reads the numbered
 TATT YAML, enables the separate BACCO theory block and calls Cobaya directly.
 Its cells contain the parameter steps, continuation comparisons and shared
 Fisher operations. Running those cells performs real calculations and saves

@@ -456,7 +456,7 @@ units; ratios near zero do not give a stable convergence criterion.
 
 | Entry | Scientific role |
 |---|---|
-| `EXAMPLE_FISHER_IA.ipynb` | IA sign responses, finite model distances and two-point/joint local information with varied or fixed dark energy |
+| `notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb` | IA sign responses, finite model distances and two-point/joint local information with varied or fixed dark energy |
 | `EXAMPLE_FISHER_ACCURACY.ipynb` | Numerical-refinement and Fisher interpretation through the shared prediction |
 | `EXAMPLE_NAUTILUS1.yaml` | NLA sampling of a noiseless mean-generated synthetic data vector |
 | `EXAMPLE_NAUTILUS2.yaml` | TATT sampling of a noiseless mean-generated synthetic data vector |

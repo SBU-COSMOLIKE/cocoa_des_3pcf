@@ -278,81 +278,18 @@ The independent parameter-step investigation continues on the
 triangle-refined configuration, because it asks a different question on
 an explicitly identified grid.
 
-## Saved records and reproduction <a name="records"></a>
+## Reproduction <a name="records"></a>
 
-The driver is [angular_order_study.py](angular_order_study.py). It
-records the full configurations, input and implementation identities,
-every 480-row vector and a receipt for each completed case. The committed
-summaries are `results/nla_angular_orders/summary.json` and
-`results/tatt_angular_orders/summary.json`; a run writes its working
-copies, including the vectors, under the local `chains/` directory, which
-Git ignores. A
-resumed invocation accepts only a verified prefix of earlier results and
-refuses conflicting files, and no numerical result is relabeled with a
-different physical implementation identity.
+Use [EXAMPLE_FISHER_ACCURACY.ipynb](../../EXAMPLE_FISHER_ACCURACY.ipynb).
+Select the numbered NLA or TATT Cobaya example and run the full-refinement
+section before the angular-order section. The angular loop changes one
+explicit configuration per case, records its YAML and mean vector under
+`chains/fisher_accuracy/`, and checks that the two-point entries agree
+with the selected baseline. It uses the same covariance metric throughout.
 
-The shared `prediction_identity` records exact input-file and
-implementation hashes, not angular orders, so matching it to the baseline
-establishes that the physical files and implementation stayed the same.
-The driver separately checks each candidate configuration's SHA256, the
-rows, measurement values and fixed joint covariance against the baseline,
-verifies that the xi rows are bitwise unchanged, and checks dependencies
-before and after execution. The generated `summary.json` reports mean
-differences in the full joint covariance metric; the combined
-sampling/coupling guard keeps its name in any display, even where its
-difference is small.
-
-The commands below run from the project directory with Cocoa active. The
-executed study ran one model process at a time with serial BLAS and four
-OpenMP workers, and measured no runtime.
-
-**Step :one:**: Set thread ownership for the current platform.
-
-Linux:
-
-```bash
-export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4
-export OMP_PROC_BIND=close OMP_PLACES=cores OMP_DYNAMIC=false
-export OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-export BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
-```
-
-macOS:
-
-```bash
-export OMP_NUM_THREADS=4 OMP_THREAD_LIMIT=4
-export OMP_PROC_BIND=disabled OMP_PLACES=cores OMP_DYNAMIC=false
-export OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-export VECLIB_MAXIMUM_THREADS=1 BLIS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
-```
-
-**Step :two:**: Inspect the NLA inputs and proposed changes without
-launching predictions.
-
-```bash
-python tests/studies/angular_order_study.py \
-  chains/nla_accuracy/triangle_1p5.json --output chains/nla_angular_orders
-```
-
-**Step :three:**: Execute or verify the five sequential NLA mean
-predictions.
-
-```bash
-python tests/studies/angular_order_study.py \
-  chains/nla_accuracy/triangle_1p5.json --output chains/nla_angular_orders --execute
-```
-
-**Step :four:**: Execute or verify TATT separately, after the NLA
-calculation finishes.
-
-```bash
-python tests/studies/angular_order_study.py \
-  chains/tatt_accuracy/triangle_1p5.json --output chains/tatt_angular_orders --execute
-```
-
-The baseline argument names the completed `triangle_1p5` Fisher
-configuration, whose `outputs.fisher` points to its saved full Fisher
-archive; its original fiducial mean is reused without recalculation. The
-baseline declares an integer `threads` value from one through four, and
-the driver calls the ordinary `run_3pcf.py evaluate` command separately
-for each candidate.
+The notebook preserves the distinct checks on Legendre degree, Fourier
+order, angular quadrature and exact coupling. A fiducial-mean comparison
+does not establish derivative or Fisher convergence; the earlier full
+Fisher cells perform those separate tests. The numerical tables above
+record the completed study, while new notebook calculations write their
+own arrays without replacing those tables.

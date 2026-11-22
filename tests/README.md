@@ -115,16 +115,17 @@ degeneracy and finite model distances on analytic examples.
 `test_compression.py`, `test_inference.py`, `test_precision_components.py`
 and `test_precision_notebook.py` cover local Fisher preservation under
 compression, statistical selection and the known-component precision
-examples. `test_fisher_demo_wrappers.py`, `test_fisher_notebook.py` and
-`test_fisher_accuracy.py` check the notebook wrappers and the limits
-of the shared accuracy diagnostic.
+examples. `test_fisher_derived_quantities.py`, `test_fisher_notebook.py`,
+`test_fisher_cobaya_notebooks.py` and `test_fisher_accuracy.py` check actual
+notebook cells and shared numerical functions, using small analytic inputs
+without running physical forecasts.
 
-**Study readers and reuse.** `test_accuracy.py`,
-`test_accuracy_full_identity.py`, `test_accuracy_step_plot.py`,
-`test_cosmology_step_study.py`, `test_full_smaller_step_study.py` and
-`test_fisher_result_identity.py` check the saved-study readers: exact
-stencil reuse, refusal of changed files around saved means, and
-historical-record arithmetic without relabeling physical provenance.
+**Study arithmetic and reuse.** `test_accuracy.py` and
+`test_full_smaller_step_study.py` check the shared accuracy estimator,
+exact half/quarter/double-step stencil reuse, QR/SVD nuisance projection,
+weak directions and joint observable-block substitutions. The scientific
+calculations are visible in `EXAMPLE_FISHER_ACCURACY.ipynb`; the retired
+Fisher workflow/archive wrappers have no replacement layer.
 `test_coupling_high_orders.py` compares the geometric coupling with
 independent quadrature at the larger study orders, and
 `test_code_comparison.py` checks source identity and isolated execution
