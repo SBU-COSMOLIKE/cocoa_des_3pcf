@@ -43,6 +43,9 @@ endif
 
 CFLAGS += -std=gnu99 $(COMMON)
 CXXFLAGS += -std=c++23 $(COMMON) $(PYBIND_FLAGS)
+# Binding classes contain pybind11 objects with hidden visibility. Keep
+# their C++ symbols local too; PYBIND11_MODULE exports the Python entry point.
+CXXFLAGS += -fvisibility=hidden
 LDFLAGS += -L$(ROOTDIR)/.local/lib -L$(CONDA_PREFIX)/lib
 LDFLAGS += -Wl,-rpath,$(ROOTDIR)/.local/lib
 LDFLAGS += -Wl,-rpath,$(CONDA_PREFIX)/lib
@@ -186,6 +189,10 @@ $(BUILD)/baryons.o: $(CORE)/cosmolike/baryons.c | $(BUILD)
 
 $(TARGET): $(OBJECTS) FORCE
 	$(CXX) $(COMMON) $(SOFLAGS) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $@
+
+# Recompile after flag changes, including the inactive covariance build
+# when it is next selected. Make does not track command-line changes itself.
+$(OBJECTS): MakefileCosmolike
 
 # Only artifacts owned by this target are removed.
 clean:
