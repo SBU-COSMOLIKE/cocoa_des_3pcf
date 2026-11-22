@@ -20,6 +20,10 @@ sys.path.insert(0, str(project / 'scripts'))
 from generate_maps import setup
 from verify_ensemble import verify_ensemble
 
+# Imported production support must not overwrite the explicit one-thread
+# allocation set above. This also covers the nested aperture-module import.
+assert os.environ["OMP_NUM_THREADS"] == "1"
+
 parents = np.array([0, 1, 20, 101], dtype=np.int64)
 children, geometry, ell, factor, nodes, weights = setup(
     lmax=3,

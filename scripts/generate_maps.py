@@ -23,7 +23,8 @@ import time
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 os.environ['VECLIB_MAXIMUM_THREADS'] = '1'
 os.environ['MKL_NUM_THREADS'] = '1'
-os.environ['OMP_NUM_THREADS'] = '4'
+# Preserve an explicit MPI/Slurm allocation when this module is imported.
+os.environ.setdefault('OMP_NUM_THREADS', '4')
 
 import ducc0
 import numpy as np

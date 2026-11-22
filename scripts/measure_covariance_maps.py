@@ -32,9 +32,9 @@ from pathlib import Path
 import re
 import time
 
-# The user permits four OpenMP workers. BLAS never takes that worker budget.
+# Preserve the caller's OpenMP allocation; use four only when none is set.
 # This driver streams maps serially; sparse multiplication needs no thread pool.
-os.environ["OMP_NUM_THREADS"] = "4"
+os.environ.setdefault("OMP_NUM_THREADS", "4")
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
