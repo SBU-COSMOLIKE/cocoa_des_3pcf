@@ -492,7 +492,7 @@ do not each start their own four-worker computation concurrently.
 \paragraph{Fit the initial model.}
 From the activated Cocoa directory, run one command:
 \begin{lstlisting}
-python projects/des_3pcf/notes/gptg_simulations/generate_maps.py fit --runs 32 --workers 4
+python projects/des_3pcf/scripts/generate_maps.py fit --runs 32 --workers 4
 \end{lstlisting}
 This reads the listed original maps and writes fitted parameters and
 small measurement records under \texttt{chains/gptg\_method/}. The originals
@@ -502,7 +502,7 @@ noise amplitudes, point parameters and positivity-repair sizes.
 \paragraph{Draw and save the new maps.}
 The next command uses that saved fit:
 \begin{lstlisting}
-python projects/des_3pcf/notes/gptg_simulations/generate_maps.py generate --count 64 --workers 4
+python projects/des_3pcf/scripts/generate_maps.py generate --count 64 --workers 4
 \end{lstlisting}
 The historical pilot used float64; recreating that precision reference
 requires the explicit \texttt{--float64-reference} option in a fresh
@@ -520,13 +520,13 @@ centers, Gaussian shear filters at 30 and 60 arcminutes, and four source
 bins. For each realization it averages squared and cubed aperture values,
 producing sixteen raw moments. Thus the comparison includes third-order
 measurements, but these coarse moments are not the published finite-triangle
-three-point estimator. Run the forward comparison and tomographic noise subtraction as separate
-commands:
+three-point estimator. In the companion notebook, inspect the forward comparison and
+tomographic noise-subtraction functions, then call them explicitly:
 \begin{lstlisting}
-python projects/des_3pcf/notes/gptg_simulations/compare_maps.py
+compare_maps()
 \end{lstlisting}
 \begin{lstlisting}
-python projects/des_3pcf/notes/gptg_simulations/measure_apertures.py
+measure_apertures()
 \end{lstlisting}
 The companion notebook shows the definitions,
 normalizations and saved vectors before constructing their covariances.
@@ -841,11 +841,11 @@ compact frozen measurements from the repository. Its explicit optional
 switches run calibration, map generation or precision resampling. To run
 the deterministic numerical checks directly, use
 \begin{lstlisting}
-python projects/des_3pcf/notes/gptg_simulations/check_numerics.py
+check_numerics()
 \end{lstlisting}
 To repeat the measured-list precision experiment, use
 \begin{lstlisting}
-python projects/des_3pcf/notes/gptg_simulations/map_precision_tests.py
+map_precision_tests()
 \end{lstlisting}
 The \texttt{tests/gptg\_pilot/} records retain the actual parameters, row
 labels, measurements, timing and numerical checks. The raw generated maps
@@ -1000,7 +1000,7 @@ after every completed map. A temporary file is renamed only after a map
 save completes; full-sky intermediates stay in memory. Restarting the same
 command resumes completed records instead of regenerating them:
 \begin{lstlisting}
-python projects/des_3pcf/notes/gptg_simulations/generate_ensemble.py --workers 4
+python projects/des_3pcf/scripts/generate_ensemble.py --workers 4
 \end{lstlisting}
 The serial command above is available for small runs. The current large
 run instead uses MPI with three CPU workers and one GPU scalar-transform

@@ -427,3 +427,12 @@ HPC measurement submission follows LSST Y1: use one standalone
 Cocoa activation, exported MPI environment and direct mpirun command.
 Do not split it into a Slurm file plus a shell launcher. Keep the 40000-map
 selection, existing journal IDs and arrival-aware resume behavior intact.
+
+
+GPTG note layout follows LSST Y1 x DESI's Fisher machinery note: one
+companion notebook beside TeX/PDF, with commented scientific analysis and
+figure cells. MPI programs, TreeCorr measurements and production dependencies
+belong in scripts/. Do not accumulate small analysis .py files under notes/.
+Retire one-off hardware probes instead of exposing internal exploration as
+a public workflow. Notebook code needs explanations of inputs, array shapes,
+normalization, each mathematical step and what each result establishes.

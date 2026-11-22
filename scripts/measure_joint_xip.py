@@ -22,7 +22,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--count', type=int, default=1500)
     args = parser.parse_args()
-    folder = Path(__file__).resolve().parents[2] / 'chains/gptg_ensemble_15000'
+    folder = Path(__file__).resolve().parents[1] / 'chains/gptg_ensemble_15000'
     output = folder / 'joint_xip_measurements.txt'
     completed = set()
     if output.exists():

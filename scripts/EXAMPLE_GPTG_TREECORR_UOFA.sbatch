@@ -75,6 +75,6 @@ fi
   --mca mpi_yield_when_idle 1 --bind-to core --report-bindings \
   --map-by slot:PE=1 \
   "${ROOTDIR}/.local/bin/python" -u \
-  notes/gptg_simulations/measure_full_joint_mpi.py --count 40000 \
+  scripts/measure_full_joint_mpi.py --count 40000 \
   ${GPTG_READY_OPTION} \
   --maps-dir "${GPTG_MAP_DIR:-${ROOTDIR}/projects/des_3pcf/chains/gptg_ensemble_15000}"

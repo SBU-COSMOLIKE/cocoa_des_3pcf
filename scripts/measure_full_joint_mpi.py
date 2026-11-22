@@ -26,7 +26,7 @@ from astropy.io import fits
 from mpi4py import MPI
 import treecorr
 
-PROJECT = Path(__file__).resolve().parents[2]
+PROJECT = Path(__file__).resolve().parents[1]
 
 
 def main():

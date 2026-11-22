@@ -399,20 +399,20 @@ These simulation inputs are not distributed through Git.
 Fit the transformation and correlated spectra using 32 primary runs:
 
 ```bash
-python notes/gptg_simulations/generate_maps.py fit --runs 32 --lmax 1024 --workers 4
+python scripts/generate_maps.py fit --runs 32 --lmax 1024 --workers 4
 ```
 
 This writes `calibration.yaml` and `calibration.npz` under
 `chains/gptg_method/`. To inspect a small generated sample first:
 
 ```bash
-python notes/gptg_simulations/generate_maps.py generate --count 64 --workers 4
+python scripts/generate_maps.py generate --count 64 --workers 4
 ```
 
 Generate the full 10,000 comparison plus 5,000 validation ensemble:
 
 ```bash
-python notes/gptg_simulations/generate_ensemble.py --workers 4
+python scripts/generate_ensemble.py --workers 4
 ```
 
 The ensemble copies and freezes the calibration on its first launch. Repeating
@@ -425,33 +425,11 @@ Their shape is `(4 source bins, 2 shear components, 369190 footprint pixels)`;
 Maps, measured aperture moments and progress records stay in the ignored
 `chains/gptg_ensemble_15000/` directory.
 
-After all maps finish, compute the fixed-reference precision comparisons and
-independent validation scores:
-
-```bash
-python notes/gptg_simulations/analyze_ensemble.py
-```
-
-For an early look, the following process can run alongside generation. It
-freezes estimates from the first 1,000 maps and waits for the next 500 to
-validate them. Those 500 are independent of the preliminary estimates; they
-later belong to the full 10,000 comparison sample, not its final holdout.
-
-```bash
-python notes/gptg_simulations/analyze_first_1500.py
-```
-
-Once the first 1,000 estimates are written, plot covariance differences and
-split-triangle correlations:
-
-```bash
-python notes/gptg_simulations/plot_first_1000.py
-```
-
-The preliminary tables and PNG/PDF figures go to
-`chains/gptg_ensemble_15000/preliminary_1000_500/`. These tests concern 16 raw
-aperture moments within the initial fitted model, not the published DES
-measurement vector. The direct sample covariance is an estimated comparator.
+Use the [companion notebook](notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb)
+for analysis and plots. Its small aperture examples explain the algebra;
+the full scientific comparison uses the 480-entry TreeCorr vector. Earlier
+16-entry timing and preliminary-validation runners are kept only in the
+local, ignored development archive. They are not steps in this workflow.
 
 ## Appendix: feedback and BACCO <a name="feedback"></a>
 
@@ -578,16 +556,11 @@ and save all analytical components:
 python projects/des_y3/covariance/compute_covariance.py projects/des_y3/EXAMPLE_EVALUATE_COVARIANCE.yaml --output projects/des_3pcf/chains/gptg_ensemble_15000/des_y3_full_covariance.npz
 ```
 
-The small staged test remains available from **projects/des_3pcf/**:
-
-```bash
-python notes/gptg_simulations/run_full_joint_mpi.py
-```
-
-It allocates nine MPI ranks: eight single-CPU measurement workers and a
-coordinator. It measures 1,000 maps, analyzes them, then measures 500 further
-maps for independent validation. Both stages resume saved partial vectors.
-Do not run it alongside the current twelve-core generation job.
+Submit the full measurement using the single Slurm file below. After the
+saved vectors are complete, use `analyze_full_joint()` in the companion
+notebook. Its default 1,000-map calculation is explicitly labeled; measuring
+40,000 maps does not silently change the chosen analysis ensemble. The
+notebook separates measurement, estimation and independent validation.
 
 ### MPI generation and TreeCorr measurements on HPC
 
@@ -764,7 +737,7 @@ validation seeds at 441104759, so the enlarged ranges remain disjoint.
 From the project directory, with the tested MLX and map dependencies available:
 
 ```bash
-OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=3 mpiexec -n 5 --mca mpi_yield_when_idle 1 python -u notes/gptg_simulations/generate_ensemble_mpi.py --threads 3 --precision float32 --gpu-workers 1 --gpu-pipeline --comparison-count 30000 --validation-count 10000
+OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=3 mpiexec -n 5 --mca mpi_yield_when_idle 1 python -u scripts/generate_ensemble_mpi.py --threads 3 --precision float32 --gpu-workers 1 --gpu-pipeline --comparison-count 30000 --validation-count 10000
 ```
 
 Repeat this exact command to resume the extended target. The final audit
@@ -984,7 +957,7 @@ python -m pip install mlx==0.29.3
 From `projects/des_3pcf/`, a four-rank hybrid launch is:
 
 ```bash
-mpiexec -n 4 --mca mpi_yield_when_idle 1 python -u notes/gptg_simulations/generate_ensemble_mpi.py --threads 4 --precision float32 --point-device metal
+mpiexec -n 4 --mca mpi_yield_when_idle 1 python -u scripts/generate_ensemble_mpi.py --threads 4 --precision float32 --point-device metal
 ```
 
 This uses three CPU workers with four transform threads each and one
@@ -1018,24 +991,24 @@ are not a guarantee under a different concurrent laptop workload.
 Reproduce the noiseless arithmetic test:
 
 ```bash
-python notes/gptg_simulations/compute_precision_tests.py --count 4 --threads 1 --metal
+# Companion notebook: compute_precision_tests()
 ```
 
 Reproduce MPI timings when those CPUs are free; use a fresh output directory
 so saved maps cannot turn a timing into a cache-hit measurement:
 
 ```bash
-python notes/gptg_simulations/benchmark_compute_precision.py --count 24 --reverse --output chains/compute_precision_mpi_new
+# Companion notebook: benchmark_compute_precision()
 ```
 
 Check the masked spectra, common seeds and the unchanged float64 reference:
 
 ```bash
-python notes/gptg_simulations/check_compute_precision_outputs.py --mpi-output chains/compute_precision_mpi_new
+# Companion notebook: check_compute_precision_outputs()
 ```
 
 The GPU spherical-transform probe is also committed as
-`notes/gptg_simulations/probe_gpu_sht.py`. With Torch 2.6.0 on this machine's
+the archived exploratory GPU probe. With Torch 2.6.0 on this machine's
 macOS 13.7.5, GPU FFT requires macOS 14 or later. This is Cocoa's installed
 Torch version. [Torch 2.2](https://github.com/pytorch/pytorch/blob/v2.2.0/aten/src/ATen/native/native_functions.yaml#L2952)
 has no MPS FFT dispatch; [Torch 2.3](https://github.com/pytorch/pytorch/blob/v2.3.0/aten/src/ATen/native/mps/operations/FastFourierTransform.mm#L90)
@@ -1048,7 +1021,7 @@ use an isolated environment for its optional dependencies.
 
 ### Optional Metal scalar transforms and mixed CPU/GPU generation
 
-The later implementation in `notes/gptg_simulations/gpu_scalar_sht.py`
+The later implementation in `scripts/gpu_scalar_sht.py`
 moves scalar spherical synthesis, its adjoint and the iterative harmonic
 solve to Metal through MLX. The final spin-two shear transform still uses
 ducc0 on the CPU. This route does not use Torch or JAX. The earlier
@@ -1064,7 +1037,7 @@ available to the Python interpreter used by every MPI rank.
 From this project directory, the tested twelve-CPU-thread allocation is:
 
 ```bash
-OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=3 mpiexec -n 5 --mca mpi_yield_when_idle 1 python -u notes/gptg_simulations/generate_ensemble_mpi.py --threads 3 --precision float32 --gpu-workers 1 --gpu-pipeline
+OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OMP_NUM_THREADS=3 mpiexec -n 5 --mca mpi_yield_when_idle 1 python -u scripts/generate_ensemble_mpi.py --threads 3 --precision float32 --gpu-workers 1 --gpu-pipeline
 ```
 
 This launches a coordinator, three CPU workers and one GPU worker. The GPU
@@ -1091,13 +1064,13 @@ production command above retains one GPU worker. The scheduling comparison
 requires fresh output directories:
 
 ```bash
-python notes/gptg_simulations/benchmark_gpu_sht_mpi.py --compare-pipeline --count 48 --output chains/pipeline_timing_new
+# Companion notebook: benchmark_gpu_sht_mpi()
 ```
 
 Compare the generated maps with the saved original CPU ensemble:
 
 ```bash
-python notes/gptg_simulations/check_gpu_worker_comparison.py chains/pipeline_timing_new --pipeline
+# Companion notebook: check_gpu_worker_comparison()
 ```
 
 For the alternative two-GPU experiment use `--compare-gpu-workers` in the
@@ -1110,20 +1083,20 @@ allocation before timing. Compact records live under
 Recheck the scalar transform at production resolution:
 
 ```bash
-python notes/gptg_simulations/test_gpu_scalar_sht.py --nside 512 --threads 3
+# Companion notebook: test_gpu_scalar_sht()
 ```
 
 Check two paired noiseless four-bin maps:
 
 ```bash
-python notes/gptg_simulations/test_gpu_map_generation.py --count 2 --threads 3
+# Companion notebook: test_gpu_map_generation()
 ```
 
 The map test writes under `chains/gpu_sht_maps/`. For timing, use a fresh
 output directory and free the required CPUs first:
 
 ```bash
-python notes/gptg_simulations/benchmark_gpu_sht_mpi.py --count 32 --output chains/gpu_sht_timing_new
+# Companion notebook: benchmark_gpu_sht_mpi()
 ```
 
 When generation reaches 15,000 maps, its coordinator checks exact file IDs,
@@ -1133,7 +1106,7 @@ reading all 177 GB of pixels again. It does not start TreeCorr. The same audit
 can be run separately:
 
 ```bash
-python notes/gptg_simulations/verify_ensemble.py chains/gptg_ensemble_15000
+python scripts/verify_ensemble.py chains/gptg_ensemble_15000
 ```
 
 The declared side cut keeps lower edges at least 8 arcmin from the original
@@ -1158,11 +1131,11 @@ triangle grids are saved. At this revision, full-map results are pending.
 The reproducible algebra checks are:
 
 ```bash
-python notes/gptg_simulations/check_fixed_block.py
+# Companion notebook: check_fixed_block()
 ```
 
 ```bash
-python notes/gptg_simulations/check_full_joint.py
+# Companion notebook: check_full_joint()
 ```
 
 **Later TODO — correct only the cross block.** Keep analytical A fixed,
@@ -1203,3 +1176,28 @@ To keep covariance enabled across Cocoa sessions, comment out its export in
 `stop_cocoa` unsets the key through the shared cleanup file. Covariance and
 non-covariance objects use separate directories to avoid stale compilation
 flags when changing modes; restart Python after rebuilding its extension.
+
+### Map programs and the companion notebook
+
+The map note has one companion notebook:
+[EXAMPLE_GPTG_SIMULATIONS.ipynb](notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb).
+It contains the small worked examples, figure generation from frozen text
+records, covariance calculations and analyses of completed measurements.
+Read each section's assumptions before calling its analysis function. The
+480-row analysis requires completed TreeCorr measurements from the HPC;
+opening or running the teaching cells does not start those measurements.
+
+Production programs live in `scripts/`: `generate_maps.py` prepares the
+calibration, `generate_ensemble_mpi.py` generates maps, and
+`measure_full_joint_mpi.py` measures the full vector with TreeCorr.
+The serial generator, GPU transform implementation and completion verifier
+are support code for those programs. `measure_joint_xip.py` retains the
+bounded TreeCorr measurement used in the early comparison. Submit the full
+measurement with `EXAMPLE_GPTG_TREECORR_UOFA.sbatch` as explained above.
+All simulation data and measurement journals keep their existing paths.
+
+One-off hardware probes and thread/scheduling benchmarks are retired;
+their local source is kept in the git-ignored
+`notes/gptg_simulations/development_archive/` and remains in Git history and their recorded numerical evidence
+remains in `tests/gptg_pilot/`. They are not prerequisites for using the maps
+or reproducing the note's scientific figures.

@@ -24,4 +24,4 @@ cd "${ROOTDIR}/projects/des_3pcf"
   --mca mpi_yield_when_idle 1 --bind-to core --report-bindings \
   --map-by slot:PE=${OMP_NUM_THREADS} \
   "${ROOTDIR}/.local/bin/python" -u \
-  notes/gptg_simulations/generate_ensemble_mpi.py --limit "${2:-15000}" --threads "${OMP_NUM_THREADS}"
+  scripts/generate_ensemble_mpi.py --limit "${2:-15000}" --threads "${OMP_NUM_THREADS}"

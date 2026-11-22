@@ -31,7 +31,7 @@ from scipy.optimize import least_squares
 from scipy.special import roots_hermitenorm, roots_legendre, ndtri, expit
 import yaml
 
-PROJECT = Path(__file__).resolve().parents[2]
+PROJECT = Path(__file__).resolve().parents[1]
 OUTPUT = PROJECT / 'chains' / 'gptg_method'
 # Reuse the identical aperture estimator already applied to Rafael's maps.
 sys.path.insert(0, str(PROJECT / 'scripts'))

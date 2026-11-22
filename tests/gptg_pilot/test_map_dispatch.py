@@ -12,7 +12,7 @@ from types import SimpleNamespace
 import numpy as np
 
 project = Path(__file__).resolve().parents[2]
-source = project / 'notes/gptg_simulations/measure_full_joint_mpi.py'
+source = project / 'scripts/measure_full_joint_mpi.py'
 tree = ast.parse(source.read_text())
 branch = next(n for n in ast.walk(tree) if isinstance(n, ast.If)
               and any(isinstance(a, ast.Assign) and
