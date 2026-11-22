@@ -50,7 +50,9 @@ ulimit -u 2000000
 # Keep the launch and its Slurm allocation in this one file, as in LSST Y1.
 # Forward Cocoa paths and thread settings to every node. Use Cocoa's ob1
 # transport: shared memory within a node and TCP between nodes, bypassing UCX.
-# Keep one MPI launcher; do not add a second srun.
+# Keep one MPI launcher; do not add a second srun. Adapt the TCP exclusion
+# list below to the cluster; remove ib0 from it if using routable IP over IB.
+# Each worker is single-threaded, so use Cocoa's slot mapping.
 export PYTHONPATH="${PYTHONPATH:-}"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
 cd "${ROOTDIR}/projects/des_3pcf" || exit 1
@@ -68,14 +70,16 @@ fi
 # resubmission; only unfinished tasks are dispatched to workers.
 # Keep the same maps folder when resubmitting after the wall-time limit,
 # and never run two jobs writing to that folder at the same time.
-"${CONDA_PREFIX}/bin/mpirun" -n "${SLURM_NTASKS}" \
+"${CONDA_PREFIX}/bin/mpirun" -n "${SLURM_NTASKS}" --oversubscribe \
   --mca pml ob1 --mca btl vader,tcp,self \
   -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \
   -x OMP_NUM_THREADS -x OMP_PROC_BIND -x OMP_PLACES -x OMP_DYNAMIC \
   -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS -x VECLIB_MAXIMUM_THREADS \
   -x BLIS_NUM_THREADS -x NUMEXPR_NUM_THREADS \
-  --mca mpi_yield_when_idle 1 --bind-to core --report-bindings \
-  --map-by slot:PE=1 \
+  --mca mpi_yield_when_idle 1 \
+  --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0 \
+  --bind-to core:overload-allowed --report-bindings \
+  --rank-by slot --map-by slot \
   "${ROOTDIR}/.local/bin/python" -u \
   scripts/measure_full_joint_mpi.py --count 40000 \
   ${GPTG_READY_OPTION} \

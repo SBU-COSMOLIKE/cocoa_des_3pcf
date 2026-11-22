@@ -691,17 +691,36 @@ cluster throughput. Check peak memory before filling every core on a node.
 The script launches measurements only; it does not generate maps or run the
 covariance analysis automatically.
 
-The Slurm script follows Cocoa's Linux MPI examples with
-`--mca pml ob1 --mca btl vader,tcp,self`: shared memory within a node, TCP
-between nodes, and loopback for messages to the same process. This bypasses
-UCX, whose worker initialization failed on the initial HPC launch. Open MPI
-5 accepts `vader` as an alias for `sm`; see its
-[shared-memory documentation](https://docs.open-mpi.org/en/v5.0.x/tuning-apps/networking/shared-memory.html).
-The script forwards Cocoa's paths plus OpenMP/BLAS keys explicitly. Consult
-Cocoa's main MPI README for site-specific network choices. The launcher must be
-compatible with the MPI library used to build mpi4py. These are Open MPI
-launchers; a site requiring `srun` must use its supported PMI/PMIx settings.
-Actual multi-node execution still requires testing on that cluster.
+The Slurm command uses Cocoa's single-thread Linux MPI pattern:
+`--oversubscribe`, `ob1`, `vader,tcp,self`, explicit environment forwarding,
+`mpi_yield_when_idle`, the TCP interface exclusion list,
+`--bind-to core:overload-allowed --report-bindings`, and
+`--rank-by slot --map-by slot`. TreeCorr uses one thread per worker here;
+the general hybrid OpenMP guidance below applies when allocating multiple
+threads per rank. The MPI library used by mpi4py must match the launcher.
+Actual multi-node execution still requires testing on the cluster.
+
+> [!NOTE]
+> **Running on more than one node.**
+>
+> 1. **Network interface.** TCP must use an interface routable between compute
+>    nodes. A common exclusion list is
+>    `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0`; adapt it to the cluster.
+>    Keep `ib0` if routable IP-over-InfiniBand is the intended network. These
+>    examples exchange parameter vectors and scalar scores, so communication
+>    volume is small; actual scaling still depends on the machine.
+> 2. **Environment.** Remote ranks need the same Cocoa paths and libraries:
+>    `ROOTDIR`, `PATH`, `LD_LIBRARY_PATH`, `PYTHONPATH`, `CONDA_PREFIX`, OpenMP
+>    and BLAS settings, and `CLIK_PATH`/`CLIK_DATA`/`CLIK_PLUGIN` when used.
+>    Slurm normally exports the submitting environment (`--export=ALL`).
+>    Explicit `-x` options also forward these variables with SSH launchers.
+>    Activate Cocoa before launching; build/download flags do not replace
+>    runtime paths. All nodes must see the same files at the same paths.
+> 3. **Slurm geometry.** Keep `ntasks-per-node × cpus-per-task` within the
+>    allocated physical cores per node. Set `OMP_NUM_THREADS` to
+>    `SLURM_CPUS_PER_TASK` and use `--map-by numa:pe=${OMP_NUM_THREADS}`.
+>    The minimization, profile and Nautilus pool reserves one MPI rank as
+>    coordinator; the remaining ranks evaluate the model.
 
 ### Extending the ensemble
 
