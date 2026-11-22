@@ -812,7 +812,92 @@ are not required. The project checkout must include `data/upstream_y3/`.
 Wait until generation finishes and transfers are complete before launching
 the full measurement job; do not expose partially copied `.npy` files.
 
-From activated Cocoa on the HPC, select the renamed directory:
+#### Transferring the maps to UofA
+
+Vivian transfers the comparison maps from a terminal on the laptop, with
+its working directory set to the local `comparison/` folder:
+
+```bash
+ls *.npy | xargs -n 1 -P 20 -I {} rsync -avP {} vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/comparison/
+```
+
+The destination directory must already exist. This command copies files;
+it does not delete the local maps or start a measurement job.
+
+- `*.npy` selects NumPy map filenames in the current directory. The shell
+  expands this pattern before running `ls`.
+- `ls` lists those names. The pipe `|` sends that list to `xargs`.
+- `xargs` constructs and runs an `rsync` command for each filename.
+- `-n 1` requests one input item per invocation. It is redundant here:
+  `-I {}` already processes one input line per invocation. Some versions
+  warn when these options are combined; omitting `-n 1` is equivalent for
+  these map filenames.
+- `-P 20` on **xargs** allows up to twenty simultaneous transfer processes,
+  each with its own SSH connection. It does not create twenty threads in
+  one transfer. Reduce this number if the transfer service limits concurrent
+  connections or throughput worsens.
+- `-I {}` substitutes the current filename wherever `{}` appears in the
+  command that follows.
+- `rsync -a` uses archive mode, including preservation of modification times
+  and permissions where allowed. `-v` prints additional information.
+- `-P` on **rsync** means `--partial --progress`: retain an interrupted
+  partial transfer and show progress. This is a different option from
+  xargs's concurrency setting. Progress output from twenty processes can
+  be interleaved.
+- `vivianmiranda@filexfer.hpc.arizona.edu:` identifies the remote user and
+  UofA transfer host. The following absolute path selects the destination.
+  The trailing slash makes the intended destination directory explicit.
+
+Our generated names have the form `GPTG_DES_000000.npy`, without spaces or
+newlines, so this line-based filename handling is suitable for this map
+bank. Do not treat `ls | xargs` as a general recipe for arbitrary filenames.
+The command can be repeated after an interruption: rsync normally skips
+files whose size and modification time already match and updates incomplete
+ones. That default comparison is not a full content-checksum audit.
+
+Run the following from the local **validation/** folder to transfer the
+independent validation group to its separate destination:
+
+```bash
+ls *.npy | xargs -P 20 -I {} rsync -avP {} vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/validation/
+```
+
+From the local parent `chains/gptg_ensemble_15000/` directory, copy the pixel
+indices and provenance files to the remote parent directory:
+
+```bash
+rsync -avP indices_512.npy ensemble.yaml calibration.yaml calibration.npz comparison_measurements.txt validation_measurements.txt vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/
+```
+
+To retain existing TreeCorr measurements, also copy `full_joint_480/` from
+that local parent directory, before any HPC measurement job starts:
+
+```bash
+rsync -avP full_joint_480/ vivianmiranda@filexfer.hpc.arizona.edu:/xdisk/timeifler/vivianmiranda/gptg/full_joint_480/
+```
+
+Do not repeat this last copy over newer HPC measurements: choose one
+authoritative output folder. Maps already fully saved locally can be copied
+while generation continues, but each invocation lists only the files present
+at that time. Repeat the map transfers and refresh the parent journals after
+generation finishes. Never start TreeCorr on files still being transferred;
+partial remote `.npy` files are not valid completed maps.
+
+For this exact `/xdisk` destination, set the input directory on the HPC
+before submitting the Slurm job:
+
+```bash
+export GPTG_MAP_DIR="/xdisk/timeifler/vivianmiranda/gptg"
+```
+
+With this setting, measurements are written to
+`/xdisk/timeifler/vivianmiranda/gptg/full_joint_480/`. This explicitly selected
+external storage replaces the default project `chains/` location; a second
+copy of the maps inside the project is unnecessary. Keep this same setting
+on resubmission.
+
+Alternatively, if you copied into the project's `chains/gptg/` directory,
+select that location from activated Cocoa on the HPC:
 
 ```bash
 export GPTG_MAP_DIR="${ROOTDIR}/projects/des_3pcf/chains/gptg"
