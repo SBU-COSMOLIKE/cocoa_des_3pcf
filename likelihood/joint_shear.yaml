@@ -3,6 +3,8 @@ path: null
 data_file: des_y3_joint1.dataset
 # False: gravity-only P and B. True: request paired R_P/R_B from a theory block.
 external_baryon_response: false
+# True: apply the power-only bfmt R_P to the xi rows; every Map3 row must be masked.
+external_baryon_suppression: false
 omp_threads: 1
 accuracyboost: 1.0
 integration_accuracy: 0

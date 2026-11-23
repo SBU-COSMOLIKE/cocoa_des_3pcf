@@ -1,0 +1,14 @@
+# The des_y3_joint1.dataset inputs with every Map3 row cut by the mask: only the 400 xi rows enter the chi2.
+# Use it with external_baryon_suppression, whose power-only feedback models supply no bispectrum response for the Map3 rows.
+# The fixed Gaussian covariance is the xi block of the joint covariance; the synthetic data vector is the joint1 one.
+
+two_point_file = upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits
+aperture_file = upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits
+cov_file = upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits
+nz_source_file = demonstration/y3_demo_sources.fits
+source_ntomo = 4
+data_file = demonstration/y3_nla_synthetic.txt
+mask_file = demonstration/y3_xi_rows_mask.txt
+compression_file =
+mock_count = 0
+parameter_count = 0

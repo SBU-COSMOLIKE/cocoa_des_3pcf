@@ -133,6 +133,13 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                          the paired baryonic responses R_P and R_B (the
                          ratios feedback/gravity-only of the power spectrum
                          and bispectrum) from a theory block
+      external_baryon_suppression = False: gravity-only P; True: request the
+                         power-only response R_P = P_feedback/P_DMO from the
+                         bfmt theory block and apply it to the nonlinear
+                         power of the xi rows. A power-only model supplies
+                         no bispectrum response R_B, so the dataset mask
+                         must cut every Map3 row; the two feedback keys
+                         cannot be on together
     """
 
     def initialize(self, probe):
@@ -215,6 +222,36 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                     raise ValueError(
                         "Compression input labels differ from selected rows.")
                 compression = saved["matrix"]
+
+        # ------------------------------------------------------------------
+        # Feedback options, checked before any native state changes. The
+        # two keys describe different physics: external_baryon_response
+        # applies a paired power/bispectrum response (R_P and R_B from one
+        # model), external_baryon_suppression a power-only response R_P.
+        # Applying both would multiply the power by two feedback models.
+        # A power-only model says nothing about the bispectrum, and taking
+        # R_B = 1 would silently drop feedback from the Map3 rows while
+        # keeping it in the xi rows. With external_baryon_suppression no
+        # Map3 row may therefore enter the chi2: the dataset mask must cut
+        # all of them, and internal_get_datavector never computes them.
+        # ------------------------------------------------------------------
+        if self.external_baryon_response and self.external_baryon_suppression:
+            raise ValueError(
+                "external_baryon_response and external_baryon_suppression are "
+                "both True. Choose one feedback model: the paired BACCO "
+                "response (R_P and R_B) or the power-only bfmt response (R_P)."
+            )
+        if self.external_baryon_suppression:
+            kept_map3 = int(np.count_nonzero(self.rows.kind[indices] == "map3"))
+            if kept_map3 > 0:
+                raise ValueError(
+                    "external_baryon_suppression supplies only the power "
+                    "response R_P; it has no bispectrum response R_B for the "
+                    f"Map3 rows, and {kept_map3} Map3 rows of {self.data_file} "
+                    "enter the chi2. Cut every Map3 row with the dataset "
+                    "mask_file, or use external_baryon_response with the "
+                    "bacco_bispectrum theory block."
+                )
 
         # ------------------------------------------------------------------
         # Native configuration. Some imported libraries reset the
@@ -310,7 +347,6 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                 num=self.los_nz,
             ),
         )
-
         # ------------------------------------------------------------------
         # Measured source distributions. The call returns a four-value
         # tuple, in this order: the measured redshift grid, the n(z) curve
@@ -407,8 +443,10 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         nonlinear P(k, z) for both the total matter and the cold
         (baryon + CDM, "delta_nonu") fields; matter_bispectrum, the custom
         block's bispectrum table (set_cosmo_related documents its axes);
-        and, when external_baryon_response is on, the paired baryonic
-        responses R_P and R_B.
+        when external_baryon_response is on, the paired baryonic
+        responses R_P and R_B; and, when external_baryon_suppression is
+        on, the bfmt block's baryon_suppression R_P on fixed z and k
+        (1/Mpc) nodes.
 
         Returns:
           dictionary {product name: options or None}, in Cobaya's
@@ -432,6 +470,17 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         }
         if self.external_baryon_response:
             requirements["baryon_response"] = None
+
+        # The bfmt block evaluates R_P at fixed wavenumbers in 1/Mpc, while
+        # this likelihood's tables use h/Mpc and h changes from point to
+        # point. The request therefore reuses the numbers of the table grid
+        # read as 1/Mpc, a fixed grid over the same eight decades;
+        # baryon_suppression_table moves R_P onto the h/Mpc nodes.
+        if self.external_baryon_suppression:
+            requirements["baryon_suppression"] = {
+                "z": self.z_interp_2D,
+                "k": 10.0**self.log10k_interp_2D,
+            }
         return requirements
 
     def set_cosmo_related(self):
@@ -447,11 +496,14 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         Side effects: sets cosmolike's global cosmology (distances, growth
         and the ln P tables) and the attributes h, p_linear, p_nonlinear,
         chi, dz_dchi, sigma8, growth, omega_m_z, baseline and feedback that
-        set_source_related reads at the same point.
+        set_source_related reads at the same point. With
+        external_baryon_suppression the native nonlinear power is
+        P_DMO * R_P, while the attribute p_nonlinear stays P_DMO.
 
         Raises:
-          ValueError when the bispectrum product lacks its native table or
-          the baryon response does not cover the redshift range.
+          ValueError when the bispectrum product lacks its native table,
+          the baryon response does not cover the redshift range, or the
+          bfmt R_P fails the checks of baryon_suppression_table.
         """
         ci.set_omp_threads(n=self.omp_threads)
 
@@ -558,6 +610,16 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             )
 
         # ------------------------------------------------------------------
+        # Optional power-only feedback (external_baryon_suppression): the
+        # xi rows receive P_DMO * R_P, with R_P from the bfmt block. The
+        # attribute p_nonlinear keeps the gravity-only array; without the
+        # option the native power is that same array object, unchanged.
+        # ------------------------------------------------------------------
+        p_nonlinear_xi = self.p_nonlinear
+        if self.external_baryon_suppression:
+            p_nonlinear_xi = self.p_nonlinear * self.baryon_suppression_table()
+
+        # ------------------------------------------------------------------
         # Native cosmology. The tables here are [z, k]; the C side stores
         # [k, z], and flatten(order="F") (Fortran order: the first index,
         # z, runs fastest) produces exactly that memory order. G is the
@@ -569,7 +631,7 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             log10k_2D=self.log10k_interp_2D,
             z_2D=self.z_interp_2D,
             lnP_linear=np.log(self.p_linear).flatten(order="F"),
-            lnP_nonlinear=np.log(self.p_nonlinear).flatten(order="F"),
+            lnP_nonlinear=np.log(p_nonlinear_xi).flatten(order="F"),
             G=self.growth * (1.0 + self.z_interp_2D),
             z_1D=self.z_interp_2D,
             chi=self.chi,
@@ -578,6 +640,96 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             omegan2=float(omega_nu[0]) * self.h**2,
             lnP_linear_cb=np.log(p_linear_cb).flatten(order="F"),
         )
+
+    def baryon_suppression_table(self):
+        """Return the bfmt power response R_P on the table grid [z, k in h/Mpc].
+
+        Hot path: runs at every sampled point when external_baryon_suppression
+        is on. The bfmt block returns a dictionary {z: R_P array}, with
+        R_P = P_feedback/P_DMO evaluated at the fixed wavenumbers requested
+        in get_requirements: the numbers 10^log10k_interp_2D read as k in
+        1/Mpc. The table nodes are k_h in h/Mpc, i.e. the physical
+        wavenumbers h * k_h, so R_P must be read at log10(k_h) + log10(h).
+
+        Both grids are the same uniform log10 k grid with spacing d, so the
+        read is a constant shift of log10(h)/d grid cells: every table node
+        sits between two neighbouring request nodes at the same fraction w,
+        and linear interpolation in log10 k of ln R_P needs only index
+        arithmetic, with one weight w for the whole table. Table
+        nodes below the first request node (h * k_h < 10^log10k_min per
+        Mpc, the largest scales, where every model has R_P = 1) hold the
+        response of that first node.
+
+        Accuracy: for the seven example models this read differs from
+        bfmt evaluated directly at h * k by at most about 2e-3 between
+        0.05 and 8 h/Mpc. A 4 to 16 times denser request grid leaves that
+        difference unchanged, so it is not this read: bfmt evaluates each
+        model on its own coarse nz x nk grid placed over the requested
+        range and splines the result, and its options nz and nk set that
+        accuracy (tests/test_bfmt_suppression.py).
+
+        Returns:
+          float64 array [power_nz, power_nk], R_P on z_interp_2D and the
+          h/Mpc nodes 10^log10k_interp_2D.
+
+        Raises:
+          ValueError when the bfmt result lacks a requested redshift,
+          returns an array of the wrong length or a non-positive or
+          non-finite ratio, or when h > 1 (the shifted nodes would then
+          leave the requested range at its high-k end).
+        """
+        # ------------------------------------------------------------------
+        # Validation of the provider result and of h. The dictionary keys
+        # are the requested z_interp_2D floats themselves, so an exact
+        # lookup is the right test.
+        # ------------------------------------------------------------------
+        rows = self.provider.get_result("baryon_suppression")
+        nz = self.z_interp_2D.size
+        nk = self.log10k_interp_2D.size
+        if self.h > 1.0:
+            raise ValueError(
+                f"external_baryon_suppression requires h <= 1; observed "
+                f"h = {self.h}. The shifted table nodes h * k would exceed the "
+                "largest wavenumber requested from bfmt."
+            )
+        log_response = np.empty((nz, nk))
+        for index in range(nz):
+            redshift = self.z_interp_2D[index]
+            if redshift not in rows:
+                raise ValueError(
+                    f"The bfmt baryon_suppression result lacks z = {redshift}; "
+                    "it must return every requested redshift."
+                )
+            values = np.asarray(rows[redshift], dtype=np.float64)
+            if values.shape != (nk,):
+                raise ValueError(
+                    f"The bfmt R_P at z = {redshift} must have {nk} values; "
+                    f"observed shape {values.shape}."
+                )
+            if not np.all(np.isfinite(values)) or np.any(values <= 0.0):
+                raise ValueError(
+                    f"The bfmt R_P at z = {redshift} must be positive and "
+                    f"finite; observed minimum {np.min(values)}."
+                )
+            log_response[index] = np.log(values)
+
+        # ------------------------------------------------------------------
+        # Shift by log10(h). cells = log10(h)/d is negative for h < 1;
+        # table node j lies between request nodes lower[j] and
+        # lower[j] + 1, at fraction weight. np.clip sends indices below 0
+        # to 0, which turns the interpolation there into a hold of the
+        # first request node (both neighbours become node 0).
+        # ------------------------------------------------------------------
+        spacing = self.log10k_interp_2D[1] - self.log10k_interp_2D[0]
+        cells = np.log10(self.h) / spacing
+        offset = int(np.floor(cells))
+        weight = cells - offset
+        nodes = np.arange(nk) + offset
+        lower = np.clip(nodes, 0, nk - 1)
+        upper = np.clip(nodes + 1, 0, nk - 1)
+        shifted = ((1.0 - weight) * log_response[:, lower]
+                   + weight * log_response[:, upper])
+        return np.exp(shifted)
 
     def set_source_related(self, **params):
         """Send the shifted source n(z) and nuisance parameters to cosmolike.
@@ -687,6 +839,15 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             "fb": 0.0,
             "feedback_amplitude": float(self.external_baryon_response),
         }
+
+        # ------------------------------------------------------------------
+        # With power-only feedback no Map3 row is computed (initialize
+        # refused every kept Map3 row), so the Map3 physics model, which
+        # would otherwise carry a gravity-only bispectrum, is not built.
+        # ------------------------------------------------------------------
+        if self.external_baryon_suppression:
+            self.model = None
+            return
 
         # ------------------------------------------------------------------
         # The Map3 physics model. normalization rescales the linear power
@@ -821,7 +982,9 @@ class _cosmolike_prototype_base(DataSetLikelihood):
           **params = the sampled nuisance values by name.
 
         Returns:
-          float array [ndata] in the measured row order.
+          float array [ndata] in the measured row order; with
+          external_baryon_suppression the Map3 entries are NaN (refused,
+          never computed).
         """
         # ------------------------------------------------------------------
         # Current point: cosmology, sources and nuisance parameters into
@@ -857,8 +1020,14 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         # ------------------------------------------------------------------
         # The Map3 block: the aperture engine projects the physics model
         # and the IA record into one value per bin triple and filter scale,
-        # with three calibration factors per row.
+        # with three calibration factors per row. Under power-only feedback
+        # the Map3 rows are refused: they hold NaN (not a number), which
+        # marks them as never computed; initialize guaranteed that the
+        # mask keeps none of them, and the native chi2 reads kept rows only.
         # ------------------------------------------------------------------
+        if self.external_baryon_suppression:
+            result[self.map_indices] = np.nan
+            return result
         result[self.map_indices] = self.map_engine.aperture_vector(
             model=self.model,
             ia=self.ia,
