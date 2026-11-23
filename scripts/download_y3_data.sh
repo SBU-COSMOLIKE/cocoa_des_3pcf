@@ -32,7 +32,9 @@ COMMIT="d6098d326dcb03bc750adcc9627119f52d928944"
 DESTINATION="${1:-data}"
 
 # Every file: local folder, path inside the upstream repository, and the git
-# blob hash (git hash-object) the manifest records for it.
+# blob hash the manifest records for it. --no-filters below hashes the raw
+# bytes: this project stores *.fits with Git LFS, and without it git would
+# hash the small LFS pointer instead of the file.
 FILES=(
   "upstream_y3 data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits 574553f15e301a6665e1d658ac326c8a5224e9cc"
   "upstream_y3 data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits 5e26a7bafd42fdcbe837b2eb0639f18c3845ae5a"
@@ -78,7 +80,7 @@ for ENTRY in "${FILES[@]}"; do
   # An existing file is kept if it is the recorded one, and stops the run
   # if it is not.
   if [ -f "${TARGET}" ]; then
-    if [ "$(git hash-object "${TARGET}")" == "${HASH}" ]; then
+    if [ "$(git hash-object --no-filters "${TARGET}")" == "${HASH}" ]; then
       echo "present  ${FOLDER}/${UPSTREAM}"
       continue
     fi
@@ -89,7 +91,7 @@ for ENTRY in "${FILES[@]}"; do
   DOWNLOAD="${TEMPORARY:?}/file"
   curl -fsSL "${REPOSITORY}/${COMMIT}/${UPSTREAM}" -o "${DOWNLOAD}" \
     || fail "download failed: ${REPOSITORY}/${COMMIT}/${UPSTREAM}"
-  if [ "$(git hash-object "${DOWNLOAD}")" != "${HASH}" ]; then
+  if [ "$(git hash-object --no-filters "${DOWNLOAD}")" != "${HASH}" ]; then
     fail "${UPSTREAM} does not match its recorded git hash ${HASH}."
   fi
   mkdir -p "$(dirname "${TARGET}")" || fail "cannot create $(dirname "${TARGET}")."
