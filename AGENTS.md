@@ -1,7 +1,10 @@
 # DES 3PCF development
 
 Read [.claude/skills/des-3pcf/SKILL.md](.claude/skills/des-3pcf/SKILL.md)
-before editing this project. Consistency with LSST Y1 and DES Y3 is a
+before editing this project, and the section "Required Cocoa project
+layout" of Cocoa's cocoa-maintenance skill
+(../../../.claude/skills/cocoa-maintenance/SKILL.md), which applies to
+every project. Consistency with LSST Y1 and DES Y3 is a
 requirement: use their likelihood, example, notebook and directory patterns.
 
 Persistent project instruction from the user (19 November 2026): follow the

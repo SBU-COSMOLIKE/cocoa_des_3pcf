@@ -92,7 +92,16 @@ are insufficient.
 - `likelihood/` contains the survey's Cobaya likelihood and YAML defaults.
   Cocoa's normal project-link setup exposes it as `des_3pcf.joint_shear`.
   Users must be able to name it in an ordinary evaluate or sampler YAML.
-- `interface/` contains the project bindings and notebook wrappers.
+- `interface/` holds exactly two Python files, as in LSST Y1:
+  `cosmolike_des_3pcf_interface.py` (the loader stub of the compiled
+  library) and `cosmolike_des_3pcf_notebook_wrappers.py` (general
+  observables at any parameter point, project fiducial as keyword
+  defaults). Notebook-specific procedures live in their notebook. See
+  the cocoa-maintenance skill, "Required Cocoa project layout".
+- The 3pcf code is a port of fastnc and of the Y3 aperture integrator.
+  The project never imports or runs either (notebooks, tests and
+  generator scripts included); it compares with saved JSON fixtures
+  that record the source commit.
 - `scripts/` contains expensive production programs and support they actually
   use. Lightweight preparation, comparisons and plotting belong in the
   associated notebook. Do not create a top-level `python/` package.
