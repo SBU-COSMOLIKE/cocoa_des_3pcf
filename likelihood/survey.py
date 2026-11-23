@@ -10,6 +10,15 @@ DES Y3 and Y6 use separate files and selections. File names are not used
 to infer a release, likelihood prescription or nuisance prior. Measured
 values can be used for comparisons, while Fisher calculations use the
 same row definitions to evaluate model derivatives.
+
+The files themselves are the released DES Y3 products bundled under
+data/upstream_y3/ (simulated vectors) and data/upstream_y3_observed/
+(observed measurements): the xi and Map3 measurement tables, the joint
+covariance and the nz_source table; data/README.md records their origin
+and hashes. The likelihood's initialize reads them once, through
+read_survey, read_joint_covariance and read_source_distributions, and a
+notebook that needs the raw rows calls the same functions on the same
+dataset entries.
 """
 
 from pathlib import Path
@@ -61,6 +70,14 @@ class SurveyRows:
           ValueError for noninteger, repeated or out-of-range indices.
         """
         selected = np.asarray(indices)
+        # One predicate per failure mode: the selection must be
+        # one-dimensional; integer-typed (dtype.kind "i"/"u" are numpy's
+        # signed and unsigned integer classes), because a float index
+        # would be truncated silently; nonnegative, because a negative
+        # index would wrap around to the end of the arrays; within the
+        # row count; and free of repeats, because a repeated row would
+        # silently double its weight in anything matched against these
+        # rows.
         if (selected.ndim != 1 or selected.dtype.kind not in "iu"
                 or np.any(selected < 0) or np.any(selected >= self.values.size)
                 or np.unique(selected).size != selected.size):
@@ -141,6 +158,10 @@ def _bin_column(table, name, nbin):
 def read_survey(two_point_path, aperture_path, nbin, assumed_angle_unit="arcmin"):
     """Read the full xi± and aperture measurement rows in joint order.
 
+    The likelihood's initialize calls this once with the dataset's
+    two_point_file and aperture_file: the released DES Y3 FITS
+    measurement tables bundled under data/ (module docstring). A
+    notebook that needs the raw measured rows calls it the same way.
     Either input can be None for a single-probe calculation. Angular bin
     edges are required for xi: evaluating a Bessel function at the center
     is not the same as averaging the estimator over its angular bin.
@@ -175,6 +196,11 @@ def read_survey(two_point_path, aperture_path, nbin, assumed_angle_unit="arcmin"
             for name in extensions:
                 hdu = hdus[name]
                 table = hdu.data
+
+                # Required columns per row kind: every table carries two
+                # source bins and a value; a Map3 table adds the third
+                # source bin and its three filter radii, a xi table its
+                # angular bin edges and quoted centre.
                 required = ["BIN1", "BIN2", "VALUE"]
                 if name == "map3":
                     required.extend(["BIN3", "THETA1", "THETA2", "THETA3"])
@@ -183,16 +209,30 @@ def read_survey(two_point_path, aperture_path, nbin, assumed_angle_unit="arcmin"
                     required.extend(["ANGLEMIN", "ANGLEMAX", "ANG"])
                     angle_names = ("ANGLEMIN", "ANGLEMAX", "ANG")
                 _columns(table=table, names=required, extension=name)
+
+                # Source bins: the FITS labels are one-based, and
+                # _bin_column checks and converts them to the zero-based
+                # convention of the compiled code. The third column
+                # stays -1 for xi rows, which have only a source pair.
                 bins = np.full((len(table), 3), fill_value=-1, dtype=np.int32)
                 bins[:, 0] = _bin_column(table=table, name="BIN1", nbin=nbin)
                 bins[:, 1] = _bin_column(table=table, name="BIN2", nbin=nbin)
                 if name == "map3":
                     bins[:, 2] = _bin_column(table=table, name="BIN3", nbin=nbin)
+
+                # Angles: every column is converted to radians, the unit
+                # of every compiled angular calculation; _angle_column
+                # reads the declared FITS unit first.
                 angles = np.empty((len(table), 3), dtype=np.float64)
                 for column, angle_name in enumerate(angle_names):
                     angles[:, column] = _angle_column(
                         hdu=hdu, name=angle_name, assumed_unit=assumed_angle_unit,
                     )
+
+                # A valid xi angular bin has lower < upper and its
+                # quoted centre inside the bin; a centre outside its own
+                # bin means the edge and centre columns were paired
+                # wrongly in the file.
                 if name != "map3" and (
                     np.any(angles[:, 0] >= angles[:, 1])
                     or np.any(angles[:, 2] < angles[:, 0])
@@ -204,6 +244,13 @@ def read_survey(two_point_path, aperture_path, nbin, assumed_angle_unit="arcmin"
                 values = np.asarray(table["VALUE"], dtype=np.float64)
                 if not np.all(np.isfinite(values)):
                     raise ValueError(f"{name}.VALUE must be finite.")
+
+                # Row labels: the kind, the source bins and the exact
+                # bits of each angle. float.hex() writes the full binary
+                # value, so a regenerated or reordered file that changes
+                # an angle even in its last digit produces a different
+                # label and is caught; a rounded decimal string would
+                # let such a change pass.
                 for row in range(len(table)):
                     parts = [name]
                     for bin_value in bins[row]:
@@ -215,6 +262,9 @@ def read_survey(two_point_path, aperture_path, nbin, assumed_angle_unit="arcmin"
                 bin_blocks.append(bins)
                 angle_blocks.append(angles)
                 value_blocks.append(values.copy())
+
+    # Two equal labels would mean the same observable row appears twice,
+    # making any match against a covariance ambiguous.
     if len(set(labels)) != len(labels):
         raise ValueError("Measurement file contains duplicate observable rows.")
     return SurveyRows(
@@ -242,6 +292,9 @@ def read_joint_covariance(path, rows):
     Raises:
       ValueError for missing/mismatched block metadata or matrix dimensions.
     """
+    # Compress rows.kind into contiguous runs: one (block name, starting
+    # row) pair per run of equal kinds, which is exactly what the FITS
+    # convention stores in the COVMAT header as NAME_i / STRT_i.
     expected = []
     previous = None
     for index, kind in enumerate(rows.kind):
@@ -257,6 +310,8 @@ def read_joint_covariance(path, rows):
                 raise ValueError(
                     f"Covariance block {index} must be {name} starting at {start}."
                 )
+        # A header block beyond the expected ones would mean the matrix
+        # covers observables this measurement does not contain.
         if f"NAME_{len(expected)}" in image.header:
             raise ValueError(
                 "Covariance contains extra blocks absent from the supplied rows."
@@ -272,7 +327,10 @@ def read_joint_covariance(path, rows):
 def read_source_distributions(path, nbin, extension="nz_source", with_edges=False):
     """Read source n(z) midpoint values from a two-point FITS file.
 
-    This function preserves the supplied midpoint-curve convention.
+    The likelihood's initialize reads the dataset's nz_source_file
+    through this once; the returned curves are the native inputs that
+    reconstructed_sources shifts at every sampled point. This function
+    preserves the supplied midpoint-curve convention.
     Histogram reconstruction is a different numerical choice and must
     be made explicitly before passing densities to the C model.
 
@@ -316,6 +374,13 @@ def read_source_distributions(path, nbin, extension="nz_source", with_edges=Fals
 
 def forecast_rows(nbin, aperture_radii, xi_edges=None):
     """Define a synthetic forecast vector without requiring measured values.
+
+    The synthetic rows drive the accuracy, quadrature and geometry tests
+    (tests/test_accuracy.py, tests/test_quadrature.py,
+    tests/test_estimator_geometry.py), which need row definitions at
+    chosen angles without any measurement file. No production
+    calculation reads them, so there is no forecast pipeline to look
+    for behind this function.
 
     Equal-radius aperture moments are ordered by source triplet, then
     radius. Optional xi± rows include every source pair and angular bin.
@@ -383,6 +448,13 @@ def _source_edge_arrays(native_z, native_low, native_high):
     """
     low = np.asarray(native_low, dtype=np.float64)
     high = np.asarray(native_high, dtype=np.float64)
+    # One predicate per failure mode: the edge arrays must match the
+    # midpoint grid in shape and be finite; both must strictly increase
+    # (the cells come in redshift order); every cell must be nonempty
+    # (low < high); and every midpoint must sit inside its own cell.
+    # Neighboring cells may overlap: the DES zero-valued observer row
+    # legitimately overlaps the next cell, so overlap is deliberately
+    # not refused here.
     if (low.shape != native_z.shape or high.shape != native_z.shape
             or not np.all(np.isfinite(low)) or not np.all(np.isfinite(high))
             or np.any(np.diff(low) <= 0.0) or np.any(np.diff(high) <= 0.0)
@@ -394,6 +466,15 @@ def _source_edge_arrays(native_z, native_low, native_high):
 
 def shifted_sources(z, sources, shifts):
     """Apply n_i(z-delta_z_i) and normalize each shifted distribution.
+
+    The shifts delta_z_i are the photo-z calibration parameters of the
+    DES source bins (dz1..dz4 in the example yamls): each sampled point
+    moves bin i's redshift distribution rigidly by delta_z_i before the
+    lensing kernels are built. This function applies the shift on the
+    caller's own grid and serves the forecast tests
+    (tests/test_forecast.py); the likelihood shifts through
+    reconstructed_sources below, which also lands the curves on the
+    fixed uniform grid the compiled model indexes.
 
     Positive delta_z moves galaxies toward larger redshift. Values beyond
     the supplied support are zero. Normalizing after the shift makes the
@@ -446,6 +527,13 @@ def reconstructed_sources(
 ):
     """Shift the original source curve onto a fixed independent uniform grid.
 
+    The likelihood's set_source_related calls this at every sampled
+    point: the measured midpoint curves that initialize read are
+    shifted by the sampled photo-z parameters dz_i and interpolated
+    onto the fixed uniform source_z grid of the compiled model. The
+    second return value records the choices made, so a caller can
+    store them with its outputs.
+
     PCHIP is a declared positive, shape-preserving cubic reconstruction of
     the midpoint samples, not an accuracy boost or a new calibration. Its
     padding choice adds zero-valued endpoint samples and is recorded
@@ -490,6 +578,12 @@ def reconstructed_sources(
     if (nodes.ndim != 1 or nodes.size < 4 or nodes[0] != 0.0
             or not np.all(np.isfinite(nodes)) or np.any(np.diff(nodes) <= 0.0)):
         raise ValueError("Independent source grid needs >=4 increasing nodes from zero.")
+    # The compiled model locates source samples by index arithmetic on
+    # a uniform grid instead of searching, so the prepared grid must be
+    # exactly uniform ("ordinary-core bridge" in the message names that
+    # hand-over to the ordinary cosmolike core). The tolerance 32 eps
+    # of the endpoint accepts the rounding of a linspace computed
+    # elsewhere while rejecting any real non-uniformity.
     expected = np.linspace(start=0.0, stop=nodes[-1], num=nodes.size)
     if not np.allclose(nodes, expected, rtol=0.0,
                        atol=32.0 * np.finfo(float).eps * nodes[-1]):
@@ -532,6 +626,10 @@ def reconstructed_sources(
             raise ValueError(
                 "PCHIP needs at least two native samples inside the background."
             )
+
+        # Pad a zero sample at the lower support edge unless a native
+        # sample already sits there; an existing nonzero sample at the
+        # edge must never be overwritten by padding.
         if knots[0] > support[0]:
             knots = np.concatenate((np.asarray([support[0]]), knots))
             values = np.column_stack((np.zeros(native.shape[0]), values))
@@ -539,6 +637,9 @@ def reconstructed_sources(
             raise ValueError(
                 "PCHIP lower padding cannot replace a nonzero native sample."
             )
+
+        # The same at the upper support edge: pad a zero sample there,
+        # and refuse to overwrite a nonzero native one.
         if knots[-1] < support[1]:
             knots = np.concatenate((knots, np.asarray([support[1]])))
             values = np.column_stack((values, np.zeros(native.shape[0])))
@@ -547,13 +648,20 @@ def reconstructed_sources(
                 "A nonzero native sample occupies the selected upper support edge; "
                 "choose a different explicit support policy rather than overwrite it."
             )
-        # The extra zero segment makes the derivative at the measured upper
-        # edge zero in PCHIP. It adds no sources beyond the declared support.
-        # A physical observer edge at zero need not have a zero derivative:
-        # low-z truncation and renormalization still need their own h tests.
+        # Extend the knots down to z = 0 with a zero segment, so the
+        # curve is defined (and zero) between the observer and the
+        # measured lower edge. A physical observer edge at zero need
+        # not have a zero derivative: low-z truncation and
+        # renormalization still need their own finite-difference step
+        # (h) convergence tests.
         if support[0] > 0.0:
             knots = np.concatenate((np.zeros(1), knots))
             values = np.column_stack((np.zeros(native.shape[0]), values))
+
+        # Extend a zero plateau from the measured upper edge to the
+        # background edge. Together with the zero sample at that edge,
+        # the plateau makes the PCHIP derivative zero there, so the
+        # cubic adds no sources beyond the declared support.
         if support[1] < nodes[-1]:
             knots = np.concatenate((knots, nodes[-1:]))
             values = np.column_stack((values, np.zeros(native.shape[0])))
@@ -569,8 +677,17 @@ def reconstructed_sources(
                 x=coordinates, xp=native_z, fp=native[index], left=0.0, right=0.0,
             )
         else:
+            # Strict inequalities: the support endpoints themselves keep
+            # the padded zero value already present in output.
             inside = (coordinates > support[0]) & (coordinates < support[1])
+            # The PCHIP object interpolates all bins at once (axis=1 at
+            # construction), so curve(...) returns every bin's values
+            # at these coordinates and [index] selects this bin's row.
+            # Cold path: clarity over building one interpolator per bin.
             output[index, inside] = curve(coordinates[inside])[index]
+        # The observer sample is pinned to zero even when a negative
+        # shift carries density there: a source density is defined only
+        # at positive distance (the convention the docstring states).
         output[index, 0] = 0.0
         if not np.all(np.isfinite(output[index])) or np.any(output[index] < 0.0):
             raise ValueError(
