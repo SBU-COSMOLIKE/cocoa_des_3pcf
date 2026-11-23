@@ -71,8 +71,8 @@ def configuration(neutrino_model="massless"):
     that records this mapping records exactly what ran. The mapping holds
     only plain numbers, strings, lists and dictionaries, which keeps it
     readable as JSON. The survey numbers are those of DES Y3; the
-    physical and grid settings repeat the covariance block of
-    configs/y3_full_filter_example.yaml.
+    physical and grid settings are those of the retired command-line
+    example (y3_full_filter_example.yaml), kept unchanged here.
 
     Arguments:
         neutrino_model = "massless" (refuses a positive neutrino mass) or

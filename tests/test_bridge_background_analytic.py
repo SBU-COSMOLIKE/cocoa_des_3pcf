@@ -573,28 +573,26 @@ def test_ia_projection_refines_with_the_background(compiled, background_observer
         assert errors[-1] < 5.0e-6, (name, errors)
 
 
-@pytest.mark.parametrize("configuration", [
-    "des_y3_tatt_fisher.yaml",
-    "des_y3_bacco_fisher.yaml",
-])
 def test_production_like_background_sampling(compiled, background_observer,
-                                             tmp_path, configuration):
-    """Quantify each example's background sampling on the same analytic toy.
+                                             tmp_path):
+    """Quantify the likelihood's background sampling on the analytic toy.
 
-    The count and endpoint come from the example YAML. Source, LOS and kernel
-    counts remain fixed while background intervals are doubled twice. The
+    The counts and endpoint come from likelihood/joint_shear.yaml: power_nz
+    background nodes up to zmax, source_nz, kernel_nz and los_nz. Source,
+    LOS and kernel counts remain fixed while background intervals are
+    doubled twice. The
     toy source is not the survey n(z), and no DES accuracy claim follows.
     """
-    settings = yaml.safe_load(stream=(PROJECT / "configs" / configuration).read_text())
-    physics = settings["physics"]
-    initial = physics["z"]["count"]
-    source_count = physics.get("source_nz", initial)
+    configuration = "likelihood/joint_shear.yaml"
+    settings = yaml.safe_load(stream=(PROJECT / configuration).read_text())
+    initial = settings["power_nz"]
+    source_count = settings["source_nz"]
     measurements = []
     for factor in (1, 2, 4):
         count = factor * (initial - 1) + 1
         inputs = analytic_inputs(
-            count=count, maximum=physics["z"]["upper"], source_count=source_count,
-            kernel_count=physics["kernel_nz"], los_count=physics["los_z"]["count"],
+            count=count, maximum=settings["zmax"], source_count=source_count,
+            kernel_count=settings["kernel_nz"], los_count=settings["los_nz"],
         )
         inputs, query, pinned = freeze_case(
             path=tmp_path / f"production_inputs_{count}.npz", inputs=inputs,
@@ -603,10 +601,10 @@ def test_production_like_background_sampling(compiled, background_observer,
             "inputs": pinned,
             "configuration": configuration,
             "background_count": count,
-            "background_upper": physics["z"]["upper"],
+            "background_upper": settings["zmax"],
             "source_count": source_count,
-            "kernel_count": physics["kernel_nz"],
-            "los_count": physics["los_z"]["count"],
+            "kernel_count": settings["kernel_nz"],
+            "los_count": settings["los_nz"],
             "observables": compare_ia(compiled=compiled, inputs=inputs, query=query),
         })
     save_record(path=tmp_path / "production_sampling.json",
@@ -614,9 +612,9 @@ def test_production_like_background_sampling(compiled, background_observer,
     for name in ("ii", "ggi", "iii", "quadratic_tatt"):
         coarse = measurements[0]["observables"][name]["relative_error"]
         fine = measurements[-1]["observables"][name]["relative_error"]
-        # Initial measured maxima were 3.932e-5 and 2.128e-6 across these
-        # configurations. The absolute limits retain roughly three times
-        # those values. Two halvings of the spacing predict a factor 1/16
+        # Initial measured maxima were 3.932e-5 and 2.128e-6 across two
+        # example configurations, one with these likelihood counts. The
+        # absolute limits retain roughly three times those values. Two halvings of the spacing predict a factor 1/16
         # asymptotically; 0.12 allows finite-grid departures from that rate.
         assert coarse < 1.2e-4, (name, measurements)
         assert fine < 0.12 * coarse, (name, measurements)
