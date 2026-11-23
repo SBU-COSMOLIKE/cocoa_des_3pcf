@@ -4,7 +4,8 @@ The production likelihood reads Cobaya products; these fixtures install
 small explicit arrays to isolate cache invalidation and interpolation.
 """
 import numpy as np
-from des3pcf.physical_provider import validate_tables
+
+from theory_inputs import owned_tables
 
 
 def init_two_point(
@@ -49,7 +50,7 @@ def two_point_spectra(
     are calculated in Python.
     """
 
-    checked = validate_tables(tables=tables)
+    checked = owned_tables(tables=tables)
     amplitude = ia.get("feedback_amplitude", 0.0)
     if metadata.get("paired_feedback_amplitude", 0.0) != amplitude:
         raise ValueError(

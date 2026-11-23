@@ -853,3 +853,18 @@ def test_production_multipole_interpolation_refines_off_nodes(physical_model):
         discrepancies.append(error)
     assert np.all(discrepancies[1] < discrepancies[0] / 3.0), discrepancies
     assert np.all(discrepancies[1] < 0.005), discrepancies
+
+
+@pytest.mark.parametrize("adapter", ["production", "notebook"])
+def test_boosted_model_factory_resolves_both_bindings(compiled, adapter):
+    """The notebook constructor receives the same resolved physical arrays."""
+    from theory_inputs import prepared_physics_model
+    from toy_inputs import toy_tables
+
+    tables, _ = toy_tables()
+    controls = dict(chi_boost=2.0, kernel_boost=2.0)
+    model = prepared_physics_model(compiled=compiled, tables=tables, kernel_nz=9,
+                                   table_boost=2, fit_nz=9, accuracy=controls,
+                                   adapter=adapter)
+    np.testing.assert_array_equal(model.radial()["z"][::2], tables["los_z"])
+    assert model.radial()["z"].size == 7

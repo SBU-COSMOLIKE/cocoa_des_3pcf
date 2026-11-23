@@ -17,16 +17,12 @@ import yaml
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT / "scripts"))
-sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
-sys.path.insert(0, str(PROJECT / "scripts"))
 sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 from likelihood_example import prior_distributions
 from likelihood_example import check_likelihood
 from likelihood_example import make_likelihood
 from cobaya.likelihoods.des_3pcf.survey import SurveyRows
-import run_3pcf as driver
 
 
 def rows():

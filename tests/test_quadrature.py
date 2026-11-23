@@ -4,6 +4,7 @@ import numpy as np
 from numpy.polynomial.legendre import leggauss
 import pytest
 
+from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 from cosmolike_des_3pcf_interface import quadrature
 
 
@@ -38,3 +39,32 @@ def test_logarithmic_rule_includes_one_jacobian():
                                rtol=2e-13)
     np.testing.assert_allclose(weights @ (1.0 / nodes), np.log(100.0 / 0.01),
                                rtol=2e-13)
+
+
+def test_xi_quadrature_changes_and_restores_without_retained_state(compiled):
+    """The native integral consumes each supplied grid, including A/B/A edits."""
+    rows = forecast_rows(nbin=2, aperture_radii=[], xi_edges=[0.001, 0.002])
+    ell = np.array([30.0, 100.0, 500.0])
+    weights = np.array([20.0, 80.0, 300.0])
+    theta, theta_weight = compiled.xi_bin_weights(
+        kind=rows.kind.tolist(),
+        angles=np.ascontiguousarray(rows.angles),
+        count=3,
+        pair_weight="uniform_area",
+    )
+    spectra = np.ones((rows.values.size, ell.size)) * 1.0e-8
+    arguments = dict(
+        ell=ell,
+        dell=weights,
+        theta=theta,
+        theta_weight=theta_weight,
+        sign=np.where(rows.kind == "xim", -1, 1).astype(np.int32),
+        spectra_e=spectra,
+        spectra_b=np.zeros_like(spectra),
+    )
+    baseline = compiled.production.xi_from_power(**arguments)
+    changed = compiled.production.xi_from_power(**dict(arguments, ell=2.0*ell))
+    assert not np.array_equal(changed, baseline)
+    np.testing.assert_array_equal(
+        compiled.production.xi_from_power(**arguments), baseline,
+    )

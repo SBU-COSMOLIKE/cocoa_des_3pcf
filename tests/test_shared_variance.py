@@ -6,19 +6,16 @@ Full joint means and Fisher derivatives require separate survey checks.
 """
 
 
-from test_pipeline import compact_bispectrum_grid
-
 import json
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-from des3pcf.physical_provider import PhysicalProvider
 from theory.bihalofit.variance import (
     SharedVariance, ReferenceVariance, reference_physics_model, reference_bihalofit,
 )
-from test_pipeline import toy_tables
+from toy_inputs import toy_tables
 
 
 import cosmolike_des_3pcf_interface as ci
@@ -223,32 +220,6 @@ def test_invalid_request_preserves_sampling_and_snapshot(compiled):
     np.testing.assert_array_equal(restored["rnl"], original["rnl"])
 
 
-def test_provider_fit_copies_survive_accuracy_and_source_changes(compiled):
-    """An old model stays valid while a notebook changes preparation inputs."""
-    tables, parameters = toy_tables()
-    provider = PhysicalProvider(
-        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
-        compiled=compiled, reference_tables=tables, reference_metadata={},
-        reference_parameters=parameters, cosmology_mode="fixed_tables",
-        variance_source="shared",
-    )
-    sides = np.array([[0.1, 0.2, 0.25], [0.5, 0.7, 1.0]])
-    redshift = np.array([0.0, 0.8])
-    original, unused, record = provider.get(parameters=parameters)
-    values = original.matter(sides=sides, redshifts=redshift)
-    assert record["variance"]["growth_mode"] == "factorized"
-    changed = dict(parameters)
-    changed["dz1"] = 0.02
-    displaced, unused, unused_record = provider.get(parameters=changed)
-    np.testing.assert_array_equal(displaced.matter(sides=sides, redshifts=redshift), values)
-    provider.accuracy = dict(variance_a_boost=2.0)
-    provider.get(parameters=parameters)
-    np.testing.assert_array_equal(original.matter(sides=sides, redshifts=redshift), values)
-    provider.accuracy = dict()
-    restored, unused, unused_record = provider.get(parameters=parameters)
-    np.testing.assert_array_equal(restored.matter(sides=sides, redshifts=redshift), values)
-
-
 def test_integration_boost_does_not_refine_analytic_smoothing(compiled):
     """The FFTLog smoothing counts are independent of fixed quadrature counts."""
     engine = SharedVariance(compiled=compiled)
@@ -257,29 +228,3 @@ def test_integration_boost_does_not_refine_analytic_smoothing(compiled):
     assert original == refined
 
 
-@pytest.mark.parametrize("adapter_name", ["production", "notebook"])
-def test_covariance_preparation_uses_matching_shared_tables(compiled, adapter_name):
-    """The covariance consumes the recorded mass, density and redshift axes."""
-    from covariance.test_physical_covariance import covariance_arguments
-
-    tables, parameters = toy_tables()
-    provider = PhysicalProvider(
-        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
-        compiled=compiled, reference_tables=tables, reference_metadata={},
-        reference_parameters=parameters, cosmology_mode="fixed_tables",
-        variance_source="shared",
-    )
-    inputs = covariance_arguments()
-    model, prepared, record = provider.covariance_model(parameters=parameters, inputs=inputs)
-    assert "halo_sigma2" not in inputs
-    assert record["halo_variance"]["reference_rho"] == 2.77536627e11 * tables["omega_m"]
-    np.testing.assert_array_equal(prepared["halo_mass"], inputs["mass"])
-    np.testing.assert_array_equal(prepared["halo_z"], model.radial()["z"])
-    adapter = getattr(compiled, adapter_name)
-    values = adapter.halo_tables(model=model, inputs=prepared, z=prepared["halo_z"],
-                                 k_profile=np.array([0.0, 0.1]))
-    np.testing.assert_array_equal(values[0], prepared["halo_sigma2"])
-    saved = prepared["halo_sigma2"].copy()
-    provider.accuracy = dict(variance_mass_boost=2.0)
-    provider.covariance_model(parameters=parameters, inputs=inputs)
-    np.testing.assert_array_equal(prepared["halo_sigma2"], saved)

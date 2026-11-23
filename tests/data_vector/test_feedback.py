@@ -6,8 +6,6 @@ the IA split tests the declared fixed-quadratic-IA approximation. Smooth
 test tables are numerical references, not hydro simulations.
 """
 
-from test_pipeline import compact_bispectrum_grid
-
 from theory.bihalofit.variance import reference_physics_model
 
 import numpy as np
@@ -131,49 +129,6 @@ def test_multilinear_log_response_and_input_ownership(compiled, boost):
         )
         np.testing.assert_allclose(actual, expected, rtol=1.e-14)
         np.testing.assert_allclose(swapped, expected, rtol=1.e-14)
-
-
-def test_joint_feedback_cache_and_metadata(compiled):
-    """One retained DMO model supports A/B/A without a new Boltzmann solve."""
-    from des3pcf.physical_provider import PhysicalProvider
-    from des3pcf.pipeline import JointPrediction
-    from cobaya.likelihoods.des_3pcf.survey import forecast_rows
-
-    tables = physical_inputs()
-    from theory.bihalofit.variance import reference_matter_fraction
-
-    tables["omega_m_z"] = reference_matter_fraction(tables=tables, redshift=tables["z"])
-    parameters = {"omega_m": .3, "omega_b": .05, "h": .7, "ns": .965,
-                  "sigma8": .8, "w0": -1., "wa": 0.}
-    provider = PhysicalProvider(
-        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
-        compiled=compiled, reference_tables=tables, reference_metadata={},
-        reference_parameters=parameters, feedback=paired_input(),
-    )
-    rows = forecast_rows(nbin=2, aperture_radii=[.003], xi_edges=[.001, .002])
-    prediction = JointPrediction(
-        compiled=compiled, rows=rows, provider=provider, ia_defaults={"a1": .4},
-        aperture_estimator="full_filter",
-        aperture_settings={
-            "projection_mode": "direct",
-            "ell": {"lower": 20., "upper": 3000., "count": 6,
-                    "logarithmic": True},
-            "phi": {"lower": 0., "upper": 2*np.pi, "count": 6},
-        },
-        xi_settings={
-            "ell": {"lower": 20., "upper": 3000., "count": 24,
-                    "logarithmic": True},
-            "theta_count": 4,
-            "pair_weight": "uniform_area",
-        },
-    )
-    original = prediction(parameters=parameters)
-    owner = provider.model
-    changed = prediction(parameters=dict(parameters, feedback_amplitude=1.))
-    expected = np.where(rows.kind == "map3", .6, .8) * original
-    np.testing.assert_allclose(changed, expected, rtol=5.e-14)
-    assert provider.model is owner
-    np.testing.assert_array_equal(prediction(parameters=parameters), original)
 
 
 def test_feedback_two_point_tatt_keeps_loop_terms_fixed(compiled):

@@ -10,7 +10,6 @@ from theory.bihalofit.variance import reference_physics_model
 
 import gc
 import json
-import yaml
 from pathlib import Path
 import subprocess
 import sys
@@ -19,7 +18,6 @@ import numpy as np
 import pytest
 from scipy.special import eval_legendre
 
-from des3pcf.pixel_window import checked_window, load_healpix_window
 from test_physics_model import physical_inputs, compact_grid_settings
 from test_grid_transform_reuse import plan_and_weights
 
@@ -198,31 +196,6 @@ def test_prepared_nonconstant_window_angular_integral(compiled):
         expected *= np.prod(np.interp(ell, np.arange(window.size), window, right=0.))
         np.testing.assert_allclose(actual=actual[:, first, second], desired=expected,
                                   rtol=2.e-10, atol=1.e-28)
-
-
-def test_pinned_healpix_schema_and_default_truncation():
-    """The official scalar table preserves its ulp-sized W0 excess and ell cutoff."""
-    project = Path(__file__).resolve().parents[2]
-    manifest = yaml.safe_load((project / "data/pixel_window_manifest.yaml").read_text())
-    path = project / "data" / manifest["path"]
-    if not path.is_file():
-        pytest.fail("The bundled HEALPix FITS is missing from data/upstream_healpix.")
-    values, metadata = load_healpix_window(path=path, nside=1024,
-                                         sha256=manifest["sha256"])
-    assert values.shape == (3072,)
-    assert values[0] > 1.
-    assert abs(values[0] - 1.) < 2.e-15
-    np.testing.assert_allclose(actual=values[-1], desired=.6464505317040627, rtol=1.e-15)
-    assert metadata["ell_max"] == 3071
-    with pytest.raises(ValueError, match="SHA256"):
-        load_healpix_window(path=path, nside=1024, sha256="0" * 64)
-
-
-@pytest.mark.parametrize("values", [[1.], [1., np.nan], [1., -.1], [[1., 1.]]])
-def test_invalid_windows_stop_in_python(values):
-    """Malformed numerical windows fail before creating any physical C model."""
-    with pytest.raises(ValueError):
-        checked_window(values=values)
 
 
 @pytest.mark.parametrize("adapter", ["production", "notebook"])

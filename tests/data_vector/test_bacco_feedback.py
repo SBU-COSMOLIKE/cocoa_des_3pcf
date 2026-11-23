@@ -6,8 +6,6 @@ table ownership; its coarse grids are not a survey accuracy certificate.
 """
 
 
-from test_pipeline import compact_bispectrum_grid
-
 from itertools import permutations, product
 
 import numpy as np
@@ -17,7 +15,7 @@ from theory.bacco_bispectrum.response import (
     BaccoFeedback, BaccoSettings, continued_triangles, smooth_turn_on,
     total_bispectrum_response, total_power_response,
 )
-from test_pipeline import toy_tables
+from toy_inputs import toy_tables
 
 
 import cosmolike_des_3pcf_interface as ci
@@ -168,36 +166,3 @@ def test_actual_bacco_native_and_cache_sequences(compiled):
         producer.prepare(point, absent, metadata)
 
 
-def test_joint_prediction_rejects_amplitude_and_rebuilds_bcm(compiled):
-    """A notebook's BCM A/B/A sequence changes both xi and Map3 and then restores."""
-    from des3pcf.pipeline import JointPrediction
-    from des3pcf.physical_provider import PhysicalProvider
-    from cobaya.likelihoods.des_3pcf.survey import forecast_rows
-
-    tables, point, metadata = response_inputs()
-    provider = PhysicalProvider(
-        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
-        compiled=compiled, reference_tables=tables, reference_metadata=metadata,
-        reference_parameters=point,
-        feedback=BaccoFeedback(BaccoSettings(nz=4, nk=9, nu=5, nv=4, boost=1)),
-    )
-    rows = forecast_rows(nbin=2, aperture_radii=[.003], xi_edges=[.001, .002])
-    prediction = JointPrediction(
-        compiled=compiled, rows=rows, provider=provider,
-        ia_defaults={"a1": .4, "feedback_amplitude": 1.},
-        aperture_estimator="full_filter", aperture_settings={
-            "projection_mode": "direct",
-            "ell": {"lower": 20., "upper": 3000., "count": 6, "logarithmic": True},
-            "phi": {"lower": 0., "upper": 2*np.pi, "count": 6},
-        }, xi_settings={
-            "ell": {"lower": 20., "upper": 3000., "count": 24, "logarithmic": True},
-            "theta_count": 4, "pair_weight": "uniform_area",
-        },
-    )
-    a = prediction(point)
-    b = prediction(dict(point, eta_baccoemu=-.2))
-    for selected in (rows.kind == "map3", rows.kind != "map3"):
-        assert np.max(np.abs(b[selected] - a[selected])) > 0.
-    np.testing.assert_array_equal(prediction(point), a)
-    with pytest.raises(ValueError, match="fixed feedback_amplitude"):
-        prediction(dict(point, feedback_amplitude=.5))

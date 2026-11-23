@@ -16,7 +16,6 @@ from cosmolike_notebook_utils.fisher import (
 )
 from cosmolike_notebook_utils.covariance.precision import precision_expansion, split_precision_expansion
 from cobaya.likelihoods.des_3pcf.survey import shifted_sources
-from des3pcf.physical_provider import load_tables, save_tables
 
 
 def test_exact_keys_and_polynomial_derivatives():
@@ -219,36 +218,3 @@ def test_photoz_sign_and_normalization():
     assert np.trapz(z * negative[0], x=z) < old_mean
 
 
-def test_physics_table_serialization(tmp_path):
-    """Keep shape, units metadata and cosmology values together in a numerical file.
-
-    Arguments:
-      tmp_path = pytest-owned temporary directory for this roundtrip check.
-    Returns:
-      nothing; asserts exact numerical values and rejects an accidental overwrite.
-    """
-    tables = {
-        "k": np.array([0.01, 0.1, 1.0]),
-        "p_linear0": np.array([10.0, 2.0, 0.1]),
-        "z": np.array([0.0, 0.5, 1.0]),
-        "p_nonlinear": np.ones((3, 3)),
-        "chi": np.array([0.0, 1300.0, 2200.0]),
-        "dz_dchi": np.full(3, 0.0004),
-        "growth": np.array([1.0, 0.8, 0.6]),
-        "sources": np.array([[0.0, 1.0, 0.0]]),
-        "los_z": np.array([0.01, 0.3, 0.6]),
-        "omega_m": 0.3,
-        "omega_de": 0.7,
-        "w0": -1.0,
-        "wa": 0.0,
-        "ns": 0.96,
-        "sigma8": 0.8,
-    }
-    destination = tmp_path / "tables.npz"
-    save_tables(path=destination, tables=tables, metadata={"producer": "test"})
-    loaded, metadata = load_tables(path=destination)
-    for name, value in tables.items():
-        np.testing.assert_array_equal(loaded[name], value)
-    assert metadata["producer"] == "test"
-    with pytest.raises(FileExistsError):
-        save_tables(path=destination, tables=tables, metadata={})

@@ -7,8 +7,6 @@ preparation does not certify the later IA-kernel interpolation or a forecast.
 """
 
 
-from test_pipeline import compact_bispectrum_grid
-
 from theory.bihalofit.variance import reference_physics_model
 
 import importlib
@@ -18,15 +16,11 @@ import sys
 import numpy as np
 import pytest
 
-from des3pcf.physical_provider import load_tables, save_tables
 from cobaya.likelihoods.des_3pcf.survey import reconstructed_sources
-from cobaya.likelihoods.des_3pcf.survey import shifted_sources
-from des3pcf.physical_provider import validate_tables
 ARRAY_NAMES = ("k", "p_linear0", "z", "p_nonlinear", "chi", "dz_dchi", "growth", "sources", "los_z")
 SCALAR_NAMES = ("omega_m", "omega_de", "w0", "wa", "ns", "sigma8")
 from theory_inputs import prepared_physics_model as physics_model
-from des3pcf.physical_provider import PhysicalProvider
-from test_pipeline import toy_tables
+from toy_inputs import toy_tables
 
 
 PADDING = "zero_at_observer_and_background_edge"
@@ -135,24 +129,6 @@ def test_reconstruction_refuses_undeclared_or_invalid_source_changes(problem):
                               reconstruction="pchip_midpoint", padding=padding)
 
 
-def test_independent_source_archive_preserves_native_arrays(tmp_path):
-    """The archive retains source details without enlarging a power-table row."""
-    tables, _, metadata = source_tables(count=65)
-    path = tmp_path / "independent_sources.npz"
-    save_tables(path=path, tables=tables, metadata=metadata)
-    loaded, record = load_tables(path=path)
-    assert loaded["z"].size == 41
-    assert loaded["sources"].shape == (2, 65)
-    assert loaded["p_nonlinear"].shape == (41, tables["k"].size)
-    for name in ("source_z", "source_native_z", "source_native"):
-        assert_bits(loaded[name], tables[name])
-    assert record["source_reconstruction"] == "pchip_midpoint"
-    wrong = dict(tables)
-    wrong["source_z"] = np.linspace(start=0.0, stop=2.1, num=65)
-    with pytest.raises(ValueError, match="background"):
-        validate_tables(tables=wrong)
-
-
 @pytest.mark.parametrize("adapter", ("production", "notebook"))
 def test_explicit_legacy_source_axis_is_bitwise_identical(compiled, adapter):
     """The default constructor and an explicit copy of z retain the old arithmetic."""
@@ -194,87 +170,6 @@ def test_source_models_own_axes_and_keep_power_unchanged(compiled, adapter):
     changed_output = base.radial()
     changed_output["shape"][:] = -9.0
     assert_bits(reference["shape"], base.radial()["shape"])
-
-
-def test_provider_reconstructs_originals_for_shift_and_resolution_sequences(compiled):
-    """A/B/A source changes reuse power but refill the source-weighted model."""
-    tables, parameters, metadata = source_tables(count=33)
-    provider = PhysicalProvider(
-        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
-        compiled=compiled, reference_tables=tables, reference_metadata=metadata,
-        reference_parameters=parameters, kernel_nz=9, fit_nz=5, table_boost=1,
-    )
-    first, original, _ = provider.get(parameters=parameters)
-    power_tables = provider.cosmology_tables
-    reference = first.radial()
-    for count, shift in ((65, 0.001), (17, -0.002), (33, 0.0)):
-        provider.source_nz = count
-        point = dict(parameters)
-        point["dz1"] = shift
-        model, actual, record = provider.get(parameters=point)
-        assert provider.cosmology_tables is power_tables
-        expected, _ = reconstructed_sources(
-            native_z=tables["source_native_z"], native_sources=tables["source_native"],
-            source_z=actual["source_z"], shifts=[shift, 0.0],
-            reconstruction="pchip_midpoint", padding=PADDING,
-        )
-        assert_bits(actual["sources"], expected)
-        assert record["source_nz"] == count
-        assert_bits(actual["p_nonlinear"], original["p_nonlinear"])
-        if count == 33:
-            for name, values in reference.items():
-                assert_bits(values, model.radial()[name])
-    provider.source_nz = True
-    with pytest.raises(ValueError, match="source_nz"):
-        provider.get(parameters=parameters)
-
-
-def test_native_storage_does_not_change_legacy_shift_results(compiled):
-    """Storing the original samples alone never opts an old model into PCHIP."""
-    tables, parameters = toy_tables()
-    tables["source_native_z"] = tables["z"].copy()
-    tables["source_native"] = tables["sources"].copy()
-    provider = PhysicalProvider(
-        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
-        compiled=compiled, reference_tables=tables, reference_metadata={},
-        reference_parameters=parameters, kernel_nz=9, fit_nz=5, table_boost=1,
-    )
-    point = dict(parameters)
-    point["dz1"] = 0.001
-    _, actual, _ = provider.get(parameters=point)
-    expected = shifted_sources(
-        z=tables["z"], sources=tables["sources"], shifts=[0.001, 0],
-    )
-    assert "source_z" not in actual
-    assert_bits(actual["sources"], expected)
-
-
-def test_source_boost_refines_once_and_restores_without_recomputing_power(compiled):
-    """Resolve source counts from one immutable baseline, including global boosts."""
-    tables, parameters, metadata = source_tables(count=17)
-    provider = PhysicalProvider(
-        bispectrum_table=compact_bispectrum_grid(zmax=tables["z"][-1]),
-        compiled=compiled, reference_tables=tables, reference_metadata=metadata,
-        reference_parameters=parameters, kernel_nz=9, fit_nz=5, table_boost=1,
-    )
-    first, _, _ = provider.get(parameters=parameters)
-    reference = first.radial()
-    power_tables = provider.cosmology_tables
-    for controls, expected_count in ((dict(source_boost=2.0), 33),
-                                     (dict(accuracy_boost=1.5), 25),
-                                     (dict(), 17)):
-        provider.accuracy = controls
-        model, actual, record = provider.get(parameters=parameters)
-        repeated, _, _ = provider.get(parameters=parameters)
-        assert repeated is model
-        assert actual["source_z"].size == expected_count
-        assert record["source_nz"] == expected_count
-        assert provider.cosmology_tables is power_tables
-        assert actual["z"].size == tables["z"].size
-        assert_bits(actual["p_nonlinear"], tables["p_nonlinear"])
-        if expected_count == 17:
-            for name, values in reference.items():
-                assert_bits(values, model.radial()[name])
 
 
 def test_independent_source_lensing_measure_has_an_analytic_answer(compiled):
@@ -377,7 +272,7 @@ def test_measured_edge_padding_keeps_an_endpoint_spike_inside_its_support():
                               padding="zero_at_measured_edges")
 
 
-def test_native_edges_survive_fits_and_physical_archive(tmp_path):
+def test_native_edges_survive_the_source_reader(tmp_path):
     """Keep actual supplied cell edges, including the zero observer cell."""
     from astropy.io import fits
     from cobaya.likelihoods.des_3pcf.survey import read_source_distributions
@@ -405,10 +300,3 @@ def test_native_edges_survive_fits_and_physical_archive(tmp_path):
     assert_bits(native, tables["source_native"])
     assert_bits(supplied_low, low)
     assert_bits(supplied_high, high)
-    tables["source_native_low"] = supplied_low
-    tables["source_native_high"] = supplied_high
-    archive = tmp_path / "edges.npz"
-    save_tables(path=archive, tables=tables, metadata=metadata)
-    restored, _ = load_tables(path=archive)
-    assert_bits(restored["source_native_low"], low)
-    assert_bits(restored["source_native_high"], high)

@@ -7,11 +7,36 @@ upstream results. This helper never replaces a compiled function.
 
 
 from theory.bihalofit.model import bispectrum_axes, prepare_reference_bispectrum
-from des3pcf.physical_provider import validate_tables
 from theory.bihalofit.variance import reference_matter_fraction
 
+import numpy as np
 
 import cosmolike_des_3pcf_interface as ci
+
+
+def owned_tables(tables):
+    """Copy a theory-table dictionary before handing it to C.
+
+    Arrays become C-contiguous float64 copies and numbers become floats,
+    so a test that edits its own tables afterwards cannot reach the
+    arrays a model received. Shapes and domains are not checked here:
+    the C++ constructor checks them.
+
+    Arguments:
+      tables = dictionary of power, background and source arrays.
+    Returns:
+      a new dictionary with the same keys.
+    """
+    result = {}
+    for name, value in tables.items():
+        if isinstance(value, np.ndarray):
+            result[name] = np.array(value, dtype=np.float64, order="C",
+                                    copy=True)
+        elif isinstance(value, (int, float, np.integer, np.floating)):
+            result[name] = float(value)
+        else:
+            result[name] = value
+    return result
 
 
 def prepared_physics_model(compiled, tables, **settings):
@@ -22,7 +47,7 @@ def prepared_physics_model(compiled, tables, **settings):
         table_boost=settings.get("table_boost", 8),
         fit_nz=settings.get("fit_nz", 33),
     )
-    tables = validate_tables(tables=tables)
+    tables = owned_tables(tables=tables)
     if "omega_m_z" not in tables:
         tables["omega_m_z"] = reference_matter_fraction(
             tables=tables, redshift=tables["z"],
@@ -61,7 +86,7 @@ def physics_model(
       baseline = required dictionary of bispectrum arrays and interpolation settings.
           It also needs tables['omega_m_z'] from the same background provider.
           This factory does not regenerate B when C sampling changes; use the
-          physical provider to refine theory and projection together.
+          theory producer to refine theory and projection together.
       variance = retained compatibility keyword; smoothing inputs belong to
           the theory producer and are not passed into the projection model.
     Returns:
@@ -69,7 +94,7 @@ def physics_model(
     Raises:
       ValueError for invalid physical table shapes or domains.
     """
-    checked = dict(tables)
+    checked = owned_tables(tables=tables)
     if checked["k"].size < 4 or checked["z"].size < 4:
         raise ValueError(
             "Physical-model spline preparation requires at least four k/z nodes."
@@ -104,9 +129,8 @@ def physics_model(
             stage="feedback_table_boost",
         )
     if pixel_window is not None:
-        from des3pcf.pixel_window import checked_window
-
-        pixel_window = checked_window(values=pixel_window)
+        pixel_window = np.array(pixel_window, dtype=np.float64, order="C",
+                                copy=True)
     binding = getattr(compiled, adapter)
     return binding.PhysicsModelWithBispectrum(
         k=checked["k"],
