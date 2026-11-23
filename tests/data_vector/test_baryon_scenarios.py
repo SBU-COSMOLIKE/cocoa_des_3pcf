@@ -1,204 +1,185 @@
-"""Check physical feedback preparation and the installed paired BACCO API.
+"""Check the Cobaya feedback-scenario route and the installed paired BACCO API.
 
-No survey projection is run here. The checks concentrate on mistakes that
-can produce plausible curves: changed primordial normalization, a cold/total
-amplitude substitution, silently lost triangles and changed input order.
+The scenario route builds Cobaya models of EXAMPLE_EVALUATE1.yaml on the
+xi-only dataset with the bfmt block and the likelihood key
+external_baryon_suppression (see interface/cosmolike_des_3pcf_feedback_wrappers.py).
+The checks concentrate on mistakes that can produce plausible curves: a
+bfmt fallback to unity hidden by its logger, feedback state surviving into
+the gravity-only prediction, a changed FLAMINGO continuation leaking below
+its pivot, silently lost triangles and changed input order.
 """
 
-from contextlib import nullcontext
 import importlib
 import logging
-from types import SimpleNamespace
+from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
 
-from des3pcf.baryon_scenarios import (
-    _checked_grid, bfmt_model_input, bfmt_power_response,
-)
 from theory.bacco_bispectrum.emulator import (
     BaccoColdResponses, checked_bacco_triangles, installed_bacco_weights,
 )
 
 
-def model_input(tmp_path):
-    """Supply one cosmology and its saved CAMB normalization without running it."""
-    source = tmp_path / "external_modules/code/baryon_suppression/bfmt.py"
-    source.parent.mkdir(parents=True)
-    source.write_text("# Only the file-presence check is used by these unit tests.\n")
-    parameters = {
-        "omega_m": .289, "omega_b": .0463, "h": .722, "ns": .959,
-        "sigma8": .787, "w0": -1., "wa": 0., "mnu": .06,
-        "num_massive_neutrinos": 3, "nnu": 3.046,
-    }
-    return {
-        "cocoa_root": tmp_path, "parameters": parameters,
-        "metadata": {"As": 1.85e-9, "omega_nu_h2": .000645,
-                     "parameters": dict(parameters)},
-        "options": {"baryon_model": 1, "spk_fb_model": 1},
-        "point": {"fb_a_spk": .4, "fb_pow_spk": .3},
-    }
+PROJECT = Path(__file__).resolve().parents[2]
+COCOA = PROJECT.parents[1]
 
 
-def test_background_uses_saved_exact_neutrino_density(tmp_path):
-    """The same saved density reconstructs total Omega_m without double counting."""
-    supplied = model_input(tmp_path=tmp_path)
-    result = bfmt_model_input(**supplied)
-    fixed = result["params"]
-    total = (fixed["ombh2"] + fixed["omch2"] + .000645) / .722**2
-    np.testing.assert_allclose(total, .289, rtol=2.e-16)
-    assert result["theory"]["camb"]["extra_args"]["num_massive_neutrinos"] == 3
+def example_information():
+    """Load EXAMPLE_EVALUATE1.yaml as the notebook does, with an absolute CAMB path.
+
+    Returns:
+      (information, point): the Cobaya input without sampler and output,
+      and the evaluate point of the yaml's override block.
+    """
+    from cobaya.yaml import yaml_load_file
+
+    information = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE1.yaml"))
+    point = dict(information["sampler"]["evaluate"]["override"])
+    information.pop("sampler")
+    information.pop("output")
+    information["theory"]["camb"]["path"] = str(COCOA / "external_modules/code/CAMB")
+    return information, point
 
 
-@pytest.mark.parametrize("name", ["sigma8", "h", "mnu", "omega_b", "wa"])
-def test_changed_cosmology_refuses_stale_amplitude(tmp_path, name):
-    """A newly supplied cosmology cannot inherit an old CAMB amplitude silently."""
-    supplied = model_input(tmp_path=tmp_path)
-    supplied["parameters"][name] += .001
-    with pytest.raises(ValueError, match="Regenerate CAMB metadata"):
-        bfmt_model_input(**supplied)
+def catalog_entry(name):
+    """Return one scenario and the shared bfmt options of the project catalog."""
+    catalog = yaml.safe_load((PROJECT / "configs/feedback_scenarios.yaml").read_text())
+    for scenario in catalog["scenarios"]:
+        if scenario["name"] == name:
+            return scenario, catalog["theory_options"]
+    raise KeyError(name)
 
 
-def test_power_grid_validation_owns_its_arrays():
-    """Preparation cannot retain a caller's mutable grid or accept reversed k."""
-    z = np.linspace(0., 3., 4)
-    k = np.geomspace(.01, 10., 5)
-    copied_z, copied_k = _checked_grid(z=z, k=k)
-    z[1] = 99.
-    k[1] = 99.
-    assert copied_z[1] == 1.
-    assert copied_k[1] < 1.
-    with pytest.raises(ValueError, match="increasing"):
-        _checked_grid(z=copied_z, k=copied_k[::-1])
+def test_theory_messages_catch_a_silenced_logger():
+    """A logger set to CRITICAL cannot hide bfmt's error-to-unity message.
 
+    _evaluate switches the bfmt logger to WARNING and attaches the
+    collecting handler for one evaluation; this repeats those steps on a
+    differently named logger, the way a colored Cobaya logger behaves.
+    """
+    import cosmolike_des_3pcf_feedback_wrappers as wrapper
 
-def test_actual_component_logger_detects_unity_fallback(tmp_path, monkeypatch):
-    """A colored/differently named logger cannot hide bfmt's error-to-unity path."""
-    import cobaya.model
-
-    supplied = model_input(tmp_path=tmp_path)
     logger = logging.getLogger("colored-bfmt-regression")
     logger.setLevel(logging.CRITICAL)
     before = list(logger.handlers)
-    request = {}
-
-    def add_requirements(requirements):
-        """Record the physical request so the unit conversion is tested too."""
-        request.update(requirements["baryon_suppression"])
-
-    def logposterior(params_values):
-        """Imitate an upstream failure that nevertheless returns finite likelihood."""
+    messages = wrapper._TheoryMessages()
+    previous_level = logger.level
+    logger.setLevel(logging.WARNING)
+    logger.addHandler(messages)
+    try:
         logger.error("emulator failed; using unity suppression")
-        return SimpleNamespace(logpost=0.)
-
-    model = SimpleNamespace(
-        theory={"bfmt": SimpleNamespace(log=logger)},
-        add_requirements=add_requirements, logposterior=logposterior,
-        provider=SimpleNamespace(get_baryon_suppression=lambda: {
-            z: np.ones(4) for z in request["z"]
-        }),
-    )
-    monkeypatch.setattr(cobaya.model, "get_model",
-                        lambda info_or_yaml_or_file: nullcontext(model))
-    original_policy = np.geterr()
-    with pytest.raises(RuntimeError, match="using unity"):
-        bfmt_power_response(**supplied, z=np.arange(4.), k=np.arange(1., 5.))
-    np.testing.assert_array_equal(request["k"], .722 * np.arange(1., 5.))
+    finally:
+        logger.removeHandler(messages)
+        logger.setLevel(previous_level)
+    assert messages.messages == ["emulator failed; using unity suppression"]
     assert logger.level == logging.CRITICAL
     assert logger.handlers == before
-    assert np.geterr() == original_policy
 
 
-def test_wrapper_restores_dmo_when_later_scenario_fails(tmp_path, monkeypatch):
-    """An interrupted scenario sweep cannot leave its previous power installed."""
+def test_scenario_information_switches_power_only_feedback():
+    """A scenario input adds bfmt and the key on the xi-only dataset, copying."""
     import cosmolike_des_3pcf_feedback_wrappers as wrapper
 
-    catalog = tmp_path / "scenarios.yaml"
-    catalog.write_text('''format: des3pcf-bfmt-scenarios-v1
-theory_options: {}
-scenarios:
-  - {name: first, options: {}, parameters: {}, paper: test}
-  - {name: failed, options: {}, parameters: {}, paper: test}
-''')
-    table = {"k": np.arange(1., 5.), "z": np.arange(4.),
-             "p_nonlinear": np.ones((4, 4))}
-    rows = SimpleNamespace(kind=np.array(["xip"]), select=lambda indices: rows)
-    provider = SimpleNamespace(get=lambda parameters: (None, table, {}))
-    config = {"ia": {}, "parameters": {}}
-    monkeypatch.setattr(wrapper.driver, "load_configuration",
-                        lambda path, command: (config, path, "example hash"))
-    monkeypatch.setattr(wrapper.driver, "compiled_extension", lambda config: None)
-    monkeypatch.setattr(wrapper.driver, "rows_for_run", lambda config, path: rows)
-    monkeypatch.setattr(wrapper.driver, "provider_for_run",
-                        lambda **kwargs: (provider, {}))
-    monkeypatch.setattr(wrapper.driver, "prediction_for_run", lambda **kwargs: None)
-    installed = []
+    information, point = example_information()
+    scenario, options = catalog_entry(name="FLAMINGO")
+    reference = wrapper._scenario_information(
+        information=information, scenario=None, theory_options=options,
+    )
+    changed = wrapper._scenario_information(
+        information=information, scenario=scenario, theory_options=options,
+    )
+    likelihood = changed["likelihood"][wrapper.LIKELIHOOD]
+    assert likelihood["data_file"] == "des_y3_xi1.dataset"
+    assert likelihood["external_baryon_suppression"] is True
+    assert changed["theory"]["bfmt"]["baryon_model"] == 3
+    assert changed["params"]["jet_frac_flamingo"] == 0.0
+    assert "bfmt" not in reference["theory"]
+    assert "external_baryon_suppression" not in reference["likelihood"][wrapper.LIKELIHOOD]
+    assert "bfmt" not in information["theory"]
 
-    def record_mean(prediction, tables, metadata, parameters, ia):
-        """Represent installation of the supplied nonlinear power in the core."""
-        installed.append(tables["p_nonlinear"].copy())
-        return tables["p_nonlinear"].sum(axis=0)
-
-    def first_succeeds_then_fails(**kwargs):
-        """One model modifies power before the following model rejects its point."""
-        if len(installed) > 1:
-            raise RuntimeError("rejected next scenario")
-        return np.full((4, 4), .8), {}
-
-    monkeypatch.setattr(wrapper, "_two_point_mean", record_mean)
-    monkeypatch.setattr(wrapper, "bfmt_power_response", first_succeeds_then_fails)
-    with pytest.raises(RuntimeError, match="rejected next scenario"):
-        wrapper.run_scenarios(configuration=tmp_path / "config.yaml",
-                              catalog_path=catalog)
-    np.testing.assert_array_equal(installed[1], .8 * table["p_nonlinear"])
-    np.testing.assert_array_equal(installed[-1], table["p_nonlinear"])
+    # A feedback parameter already in the example would be overwritten.
+    information["params"]["jet_frac_flamingo"] = 0.5
+    with pytest.raises(ValueError, match="already a parameter"):
+        wrapper._scenario_information(
+            information=information, scenario=scenario, theory_options=options,
+        )
 
 
-def test_wrapper_passes_nonzero_shear_calibration(compiled):
-    """The actual native xi calculation applies one calibration per leg."""
+def test_failed_scenario_leaves_the_gravity_only_rows_exact():
+    """A rejected bfmt point raises, and the DMO model then reproduces its bits.
+
+    Every Cobaya model shares cosmolike's native globals, so a scenario
+    model that sets P_DMO * R_P, or fails halfway, must not change the
+    gravity-only xi rows evaluated afterward with Cobaya's cache off.
+    """
     import cosmolike_des_3pcf_feedback_wrappers as wrapper
-    from native_inputs import init_two_point
-    from test_pipeline import toy_tables
-    from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 
-    tables, parameters = toy_tables()
-    tables["p_linear"] = tables["p_nonlinear"].copy()
-    init_two_point(core=compiled, nbin=2)
-    rows = forecast_rows(nbin=2, aperture_radii=[], xi_edges=[.001, .002])
-    ell, dell = compiled.quadrature(
-        lower=30.0, upper=2000.0, count=24, logarithmic=True,
+    information, point = example_information()
+    scenario, options = catalog_entry(name="BACCO")
+    reference_info = wrapper._scenario_information(
+        information=information, scenario=None, theory_options=options,
     )
-    theta, theta_weight = compiled.xi_bin_weights(
-        kind=rows.kind.tolist(), angles=rows.angles,
-        count=3, pair_weight="uniform_area",
+    reference = wrapper._evaluate(info=reference_info, point=point)
+    first = reference["xi"].copy()
+
+    # A working scenario changes the shared native power...
+    working = wrapper._evaluate(
+        info=wrapper._scenario_information(
+            information=information, scenario=scenario, theory_options=options,
+        ),
+        point=point,
     )
-    prediction = SimpleNamespace(
-        compiled=compiled,
-        provider=SimpleNamespace(nbin=2),
-        two_point_core={"threads": 1},
-        xi_ell=ell,
-        xi_dell=dell,
-        xi_theta=theta,
-        xi_weight=theta_weight,
-        xi_rows=rows,
-        xi_sign=np.where(rows.kind == "xim", -1, 1).astype(np.int32),
-    )
-    baseline = wrapper._two_point_mean(
-        prediction=prediction, tables=tables, metadata={},
-        parameters=parameters, ia={"a1": .2},
-    )
-    changed = wrapper._two_point_mean(
-        prediction=prediction, tables=tables, metadata={},
-        parameters=dict(parameters, m1=.02, m2=-.01), ia={"a1": .2},
-    )
-    calibration = np.array([1.02, .99])
-    factors = calibration[rows.bins[:, 0]] * calibration[rows.bins[:, 1]]
-    np.testing.assert_allclose(changed, baseline*factors, rtol=3.e-15)
-    restored = wrapper._two_point_mean(
-        prediction=prediction, tables=tables, metadata={},
-        parameters=parameters, ia={"a1": .2},
-    )
-    np.testing.assert_array_equal(restored, baseline)
+    assert np.max(np.abs(working["xi"] / first - 1.0)) > 0.01
+    working["model"].close()
+
+    # ...and a point outside the BACCO training box is rejected by bfmt.
+    rejected = dict(scenario, parameters=dict(scenario["parameters"]))
+    rejected["parameters"]["M_c_baccoemu"] = 17.0
+    with pytest.raises(RuntimeError):
+        wrapper._evaluate(
+            info=wrapper._scenario_information(
+                information=information, scenario=rejected, theory_options=options,
+            ),
+            point=point,
+        )
+
+    reference["model"].logposterior(params_values=point, cached=False)
+    likelihood = reference["likelihood"]
+    restored = likelihood.last_datavector[likelihood.xi_indices]
+    np.testing.assert_array_equal(restored, first)
+    reference["model"].close()
+
+
+def test_flamingo_tail_hold_changes_only_small_scales():
+    """The held-tail bfmt keeps R_P below the pivot and holds it above."""
+    import cosmolike_des_3pcf_feedback_wrappers as wrapper
+
+    information, point = example_information()
+    scenario, options = catalog_entry(name="FLAMINGO")
+    responses = []
+    for tail in (False, True):
+        run = wrapper._evaluate(
+            info=wrapper._scenario_information(
+                information=information, scenario=scenario,
+                theory_options=options, tail=tail,
+            ),
+            point=point,
+        )
+        responses.append(run["response"])
+        k = 10.0**run["likelihood"].log10k_interp_2D
+        run["model"].close()
+
+    # Table nodes within one request cell (7.5 percent) of the pivot mix the
+    # two sides after the h shift; away from them the responses are identical
+    # below the pivot and constant above it.
+    below = k < 0.9 * wrapper.TAIL_PIVOT
+    above = k > 1.1 * wrapper.TAIL_PIVOT
+    np.testing.assert_array_equal(responses[1][:, below], responses[0][:, below])
+    held = responses[1][:, above]
+    np.testing.assert_allclose(held, held[:, :1] * np.ones_like(held), rtol=1.0e-14)
+    assert not np.allclose(responses[1][:, above], responses[0][:, above])
 
 
 @pytest.mark.parametrize("sides", [

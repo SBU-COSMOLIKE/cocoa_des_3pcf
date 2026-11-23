@@ -1,7 +1,9 @@
-"""Run the physical feedback examples through Cocoa's existing theory block.
+"""Run the bfmt feedback scenarios of EXAMPLE_FEEDBACK_SCENARIOS through Cobaya.
 
-The notebook compares the change in all 400 Y3 two-point rows at the same
-cosmology when baryonic feedback modifies the nonlinear matter power.
+The notebook compares the change in all 400 DES Y3 two-point rows at one
+cosmology when baryonic feedback modifies the nonlinear matter power. Every
+prediction comes from the project's Cobaya likelihood des_3pcf.joint_shear,
+built with cobaya.model.get_model from a numbered EXAMPLE yaml.
 
 Terms used in this file:
   bfmt = Cocoa's baryonic-feedback Cobaya theory block (the repository
@@ -11,332 +13,466 @@ Terms used in this file:
   DMO = dark-matter-only: the power spectrum without baryonic feedback,
       the reference every response ratio divides by.
   R_P = that power-spectrum response ratio, tabulated over [z, k].
+  external_baryon_suppression = the likelihood yaml key that requests R_P
+      from bfmt and multiplies the nonlinear power of the xi rows by it.
+      A power-only model supplies no bispectrum response, so the
+      likelihood then refuses every Map3 row; the scenarios therefore use
+      data/des_y3_xi1.dataset, whose mask cuts all Map3 rows.
+  scenario catalog = configs/feedback_scenarios.yaml: one entry per bfmt
+      model with its selector options, fixed feedback parameters and paper.
   FLAMINGO = a hydrodynamical simulation suite (one of the bfmt feedback
       models); BACCO = an emulator calibrated on simulations, whose paired
       diagnostic below evaluates its power and bispectrum responses
       together, from its calibrated cold-matter models.
 
 Each scenario changes only the nonlinear matter power, as the LSST Y1
-feedback example does. The CFASTPT quadratic intrinsic-alignment loops
-retain their linear DMO input, and no three-point response is inferred
-from these power-only scenarios.
+feedback example does. Intrinsic-alignment loops keep their linear DMO
+input, and no three-point response is inferred from these power-only
+scenarios.
 """
 
+import copy
 import hashlib
+import importlib.util
 import json
+import logging
 from pathlib import Path
-import sys
 
 import numpy as np
 import yaml
 
 
-PROJECT = Path(__file__).resolve().parents[1]  # Owns notebook/configs/runs.
-sys.path.insert(0, str(PROJECT / "scripts"))
-sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
+PROJECT = Path(__file__).resolve().parents[1]  # projects/des_3pcf
+COCOA = PROJECT.parents[1]
 
-import run_3pcf as driver
-from theory.bacco_bispectrum.emulator import BaccoColdResponses
-from des3pcf.baryon_scenarios import bfmt_power_response
+# Cobaya's name of the joint xi/Map3 likelihood in the example yamls, and
+# the dataset whose mask keeps the 400 xi rows and cuts all 80 Map3 rows.
+LIKELIHOOD = "des_3pcf.joint_shear"
+XI_DATASET = "des_y3_xi1.dataset"
+
+# The catalog format tag guards against reading an unrelated YAML.
+CATALOG_FORMAT = "des3pcf-bfmt-scenarios-v1"
+
+# The FLAMINGO tail test holds R_P constant above this wavenumber [h/Mpc].
+TAIL_PIVOT = 10.0
 
 
-def _two_point_mean(prediction, tables, metadata, parameters, ia):
-    """Install the supplied power arrays and compute all selected xi rows.
+class _TheoryMessages(logging.Handler):
+    """Collect bfmt warnings so a failed emulator cannot pass as no feedback.
 
-    The ordinary two-point core keeps its state in C global variables, so
-    this function reinstalls the full cosmology, samples and nuisance
-    parameters from the supplied tables on every call; calling it again
-    with the original tables restores the original state exactly.
+    Some bfmt error paths log a message and return R_P = 1 instead of
+    raising an exception. run_scenarios attaches this handler to the bfmt
+    logger for each evaluation and refuses the scenario when it collected
+    any warning or error. The declared high-redshift continuation of bfmt
+    (above_zmax) produces no warning and is accepted.
+    """
+
+    def __init__(self):
+        """Start with an empty message list; the process logging is unchanged."""
+        super().__init__(level=logging.WARNING)
+        self.messages = []
+
+    def emit(self, record):
+        """Keep the fully formatted message produced by the theory block."""
+        self.messages.append(record.getMessage())
+
+
+def _require_installed_theory_data(model_number):
+    """Refuse missing emulator weights before a bfmt dependency can download.
+
+    Several emulator packages fetch absent weight files from the internet
+    when they are first constructed. A notebook must not do that silently,
+    so the files those constructors read are checked first.
 
     Arguments:
-      prediction = joint calculation restricted to two-point rows.
-      tables, metadata = physical arrays and their preparation record.
-      parameters, ia = the shared cosmology/nuisance and alignment choices.
+      model_number = bfmt selector baryon_model, 1 through 5.
     Returns:
-      xi+[theta,bin-pair] and xi- values in the supplied row order.
+      nothing when every needed file is present.
     Raises:
-      ValueError when massive-neutrino inputs are incomplete or the
-      source redshift grid is not uniform.
-    Side effects:
-      Overwrites the compiled two-point core's cosmology, source/lens
-      samples and nuisance parameters with the supplied values.
+      FileNotFoundError naming the first missing file; Cocoa's installation
+      keys (external_modules/code/baryon_suppression/README.md) supply it.
     """
+    from theory.bacco_bispectrum.emulator import installed_bacco_weights
+
+    paths = []
+    if model_number in (2, 5):
+        spec = importlib.util.find_spec(name="BCemu")
+        if spec is None:
+            raise FileNotFoundError("Install BCemu with Cocoa's installation keys.")
+        base = Path(spec.origin).parent / "input_data"
+        if model_number == 2:
+            for redshift in ("0", "0p5", "1", "1p5", "2"):
+                paths.append(base / f"kpls_emulator_z{redshift}_nComp3.pkl")
+        else:
+            paths.append(base / "BCemu2025_meta.json")
+    if model_number == 4:
+        installed_bacco_weights()
+        spec = importlib.util.find_spec(name="baccoemu")
+        base = Path(spec.origin).parent
+        # bfmt also loads the ordinary BACCO power constructor, whose
+        # directories trigger downloads when absent.
+        for name in ("sigma8_emu_2.0.2", "cold_matter_linear_emu_1.0.2",
+                     "total_matter_linear_emu_1.0.2", "no_wiggles_emu_1.0.2",
+                     "nonlinear_emu_1.0.3"):
+            paths.append(base / name)
+    for path in paths:
+        if not path.exists():
+            raise FileNotFoundError(f"Cocoa setup must supply {path} before evaluation.")
+
+
+def _held_tail_theory():
+    """Return a bfmt subclass that holds R_P constant above TAIL_PIVOT h/Mpc.
+
+    The FLAMINGO tail test replaces the model's continuation on the
+    smallest scales by its value at the pivot. Inside Cobaya the response
+    reaches the likelihood only through the bfmt product, so the test uses
+    this subclass in place of bfmt: it runs the ordinary bfmt calculation,
+    then, at every redshift, sets R_P at every requested wavenumber above
+    the pivot to its value there. bfmt requests are in 1/Mpc, so the pivot
+    is TAIL_PIVOT * h in those units. This is an alternative modeling
+    assumption for one diagnostic, not a repair of the model.
+
+    Returns:
+      the class, for the "external" entry of a Cobaya theory block.
+    """
+    from cobaya.theories.bfmt.bfmt import bfmt
+
+    class held_tail_bfmt(bfmt):
+        """bfmt with R_P held at its TAIL_PIVOT h/Mpc value on smaller scales."""
+
+        def calculate(self, state, want_derived=True, **params_values_dict):
+            """Run bfmt, then hold each R_P row above the pivot wavenumber.
+
+            Returns:
+              False when bfmt rejected the point (Cobaya then assigns zero
+              probability), otherwise None.
+            Side effects:
+              replaces state["baryon_suppression"] rows in place.
+            """
+            accepted = super().calculate(state, want_derived, **params_values_dict)
+            if accepted is False:
+                return False
+            h = self.provider.get_param("H0") / 100.0
+            pivot = TAIL_PIVOT * h
+            log_k = np.log(self.requested_k)
+            above = self.requested_k > pivot
+            for redshift, row in state["baryon_suppression"].items():
+                value = np.exp(np.interp(np.log(pivot), log_k, np.log(row)))
+                held = row.copy()
+                held[above] = value
+                state["baryon_suppression"][redshift] = held
+            return None
+
+    return held_tail_bfmt
+
+
+def _scenario_information(information, scenario, theory_options, tail=False):
+    """Return the Cobaya input of one bfmt scenario on the xi-only dataset.
+
+    Arguments:
+      information = the example yaml as loaded by yaml_load_file, without
+        its sampler and output blocks; it is copied, never modified.
+      scenario = one catalog entry (name, options, parameters, paper), or
+        None for the gravity-only (DMO) reference.
+      theory_options = the catalog's shared bfmt options (nz, nk, above_zmax).
+      tail = True replaces bfmt by the held-tail subclass (FLAMINGO test).
+    Returns:
+      a new Cobaya input dictionary.
+    Raises:
+      ValueError when a feedback parameter already appears in the example.
+    """
+    info = copy.deepcopy(information)
+    likelihood = info["likelihood"][LIKELIHOOD]
+    likelihood["data_file"] = XI_DATASET
+    if scenario is None:
+        return info
+
+    # The fixed feedback parameters enter as constant Cobaya parameters;
+    # one already present would be silently overwritten, so refuse it.
+    for name in scenario["parameters"]:
+        if name in info["params"]:
+            raise ValueError(
+                f"The feedback parameter {name} of scenario {scenario['name']} "
+                "is already a parameter of the example yaml."
+            )
+    likelihood["external_baryon_suppression"] = True
+    options = dict(theory_options)
+    options.update(scenario["options"])
+    if tail:
+        options["external"] = _held_tail_theory()
+    info["theory"]["bfmt"] = options
+    info["params"].update(scenario["parameters"])
+    return info
+
+
+def _evaluate(info, point):
+    """Evaluate one Cobaya model and return its xi rows and response grid.
+
+    bfmt's BACCO branch reads the primordial amplitude A_s from the
+    provider without declaring it as a requirement. The example yaml
+    samples sigma8, so A_s exists only as a CAMB derived parameter; the
+    explicit add_requirements call makes CAMB provide it to every model.
+
+    Arguments:
+      info = Cobaya input from _scenario_information.
+      point = the example's evaluate point (sampler.evaluate.override).
+    Returns:
+      dictionary with xi (the xi rows), response (R_P[z,k] in h/Mpc, or None
+      for the DMO model), h, As, the likelihood (for its grids) and, for
+      bfmt BACCO, the cold-matter coordinates of the paired diagnostic.
+    Raises:
+      RuntimeError when the posterior is not finite or bfmt logged any
+      warning or error (including its fallback to R_P = 1).
+    Side effects:
+      Runs CAMB, BiHalofit, bfmt and the native xi projection once; the
+      native cosmolike state is overwritten, as at every likelihood call.
+    """
+    from cobaya.model import get_model
+
     # ----------------------------------------------------------------------
-    # Validation. checked is the same object as tables, renamed to mark
-    # the point past which its entries have been checked. A run with
-    # massive neutrinos needs both the recorded omega_nu_h2 and the linear
-    # cold (baryon + CDM) power P_cb.
+    # Model and message capture. bfmt's logger is switched to WARNING only
+    # for this evaluation; the finally block restores it even on errors.
     # ----------------------------------------------------------------------
-    core = prediction.compiled
-    checked = tables
-    nbin = prediction.provider.nbin
-    threads = prediction.two_point_core["threads"]
-    h = float(parameters["h"])
-    omega_b = float(parameters["omega_b"])
-    omega_nu = float(metadata.get("omega_nu_h2", 0.0))
-    if parameters.get("mnu", 0.0) > 0.0 and "omega_nu_h2" not in metadata:
-        raise ValueError("Massive-neutrino tables require recorded omega_nu_h2.")
-    if omega_nu > 0.0 and "p_linear_cb" not in checked:
-        raise ValueError(
-            "Massive-neutrino core preparation requires linear P_cb[z,k]."
+    model = get_model(info_or_yaml_or_file=info)
+    model.add_requirements(requirements={"As": None})
+    messages = _TheoryMessages()
+    logger = None
+    previous_level = None
+    if "bfmt" in model.theory:
+        logger = model.theory["bfmt"].log
+        previous_level = logger.level
+        logger.setLevel(logging.WARNING)
+        logger.addHandler(messages)
+
+    # ----------------------------------------------------------------------
+    # One evaluation. BCEmu's import changes NumPy's global error policy;
+    # np.errstate restores the caller's policy when the block ends.
+    # ----------------------------------------------------------------------
+    try:
+        with np.errstate():
+            posterior = model.logposterior(params_values=point)
+    finally:
+        if logger is not None:
+            logger.removeHandler(messages)
+            logger.setLevel(previous_level)
+    if messages.messages:
+        raise RuntimeError("bfmt reported: " + "; ".join(messages.messages))
+    if not np.isfinite(posterior.logpost):
+        raise RuntimeError(
+            f"The Cobaya posterior is {posterior.logpost}; bfmt or CAMB "
+            "rejected the declared feedback/cosmology point."
         )
 
     # ----------------------------------------------------------------------
-    # Intrinsic-alignment slot arrays, in the ordinary core convention and
-    # without any amplitude or pivot conversion: under the power-law
-    # redshift evolution the core reads slot 0 as the amplitude and slot 1
-    # as the redshift exponent (first = tidal alignment, second = tidal
-    # torquing, density = the density-weighting amplitude alone).
+    # Results: the xi rows of the scored vector and, with feedback on, the
+    # response the likelihood applied (baryon_suppression_table reads R_P
+    # at h * k for the h/Mpc table nodes).
     # ----------------------------------------------------------------------
-    first = np.zeros(nbin, dtype=np.float64)
-    second = np.zeros(nbin, dtype=np.float64)
-    density = np.zeros(nbin, dtype=np.float64)
-    first[:2] = [ia.get("a1", 0.0), ia.get("eta1", 0.0)]
-    second[:2] = [ia.get("a2", 0.0), ia.get("eta2", 0.0)]
-    density[0] = ia.get("bta", 0.0)
-
-    # ----------------------------------------------------------------------
-    # Source grid check. The ordinary midpoint reader reconstructs uniform
-    # coordinates from the endpoint spacing, so an irregular independent
-    # axis would be silently moved; refuse it instead.
-    # ----------------------------------------------------------------------
-    source_z = checked.get("source_z", checked["z"])
-    uniform = np.linspace(start=source_z[0], stop=source_z[-1],
-                          num=source_z.size)
-    tolerance = 32.0 * np.finfo(float).eps * source_z[-1]
-    if not np.allclose(source_z, uniform, rtol=0.0, atol=tolerance):
-        raise ValueError("The two-point bridge requires a uniform source_z grid.")
-
-    # ----------------------------------------------------------------------
-    # Samples and cosmology into the core. The sample table is one column
-    # of redshifts followed by one n(z) column per bin; the one-bin lens
-    # sample only fills the core's mandatory lens slot. The old core
-    # stores P as [k,z], whereas the new tables store [z,k]; Fortran
-    # flattening of the latter gives exactly the former order.
-    # ----------------------------------------------------------------------
-    source_table = np.column_stack((source_z, checked["sources"].T))
-    lens_table = source_table[:, :2].copy()
-    core.set_source_sample(nofz=source_table)
-    core.set_lens_sample(nofz=lens_table)
-    core.init_ntomo_powerspectra()
-    cold = []
-    if "p_linear_cb" in checked:
-        cold = np.log(checked["p_linear_cb"]).flatten(order="F")
-    core.set_cosmology(
-        omegam=checked["omega_m"],
-        H0=100.0 * h,
-        log10k_2D=np.log10(checked["k"]),
-        z_2D=checked["z"],
-        lnP_linear=np.log(checked["p_linear"]).flatten(order="F"),
-        lnP_nonlinear=np.log(checked["p_nonlinear"]).flatten(order="F"),
-        G=checked["growth"] * (1.0 + checked["z"]),
-        z_1D=checked["z"],
-        chi=checked["chi"],
-        omegab=omega_b,
-        z_G=checked["z"],
-        omegan2=omega_nu,
-        lnP_linear_cb=cold,
-    )
-
-    # ----------------------------------------------------------------------
-    # Nuisance parameters: zero photo-z shifts and native calibrations
-    # (the calibration is applied in Python below), then the alignment
-    # amplitudes.
-    # ----------------------------------------------------------------------
-    core.set_nuisance_shear_photoz(bias=np.zeros(nbin))
-    core.set_nuisance_shear_calib(M=np.zeros(nbin))
-    core.set_nuisance_ia(
-        A1=first,
-        A2=second,
-        B_TA=density,
-    )
-
-    # ----------------------------------------------------------------------
-    # Projection: native E- and B-mode spectra per bin pair, then the
-    # fixed quadrature turns them into the binned xi rows. The list
-    # comprehension collects the per-bin calibration m1..m<nbin> from the
-    # parameters (0 where a name is absent) into one array.
-    # ----------------------------------------------------------------------
-    core.set_omp_threads(n=threads)
-    even, odd = core.shear_power_rows(
-        ell=prediction.xi_ell,
-        bins=np.ascontiguousarray(prediction.xi_rows.bins[:, :2], dtype=np.int32),
-    )
-    calibration = np.asarray([
-        parameters.get(f"m{index + 1}", 0.0)
-        for index in range(nbin)
-    ])
-    return core.production.xi_from_power(
-        ell=prediction.xi_ell,
-        dell=prediction.xi_dell,
-        theta=prediction.xi_theta,
-        theta_weight=prediction.xi_weight,
-        sign=prediction.xi_sign,
-        spectra_e=even,
-        spectra_b=odd,
-        bins=np.ascontiguousarray(prediction.xi_rows.bins[:, :2], dtype=np.int32),
-        calibration=calibration,
-    )
+    likelihood = model.likelihood[LIKELIHOOD]
+    datavector = np.array(likelihood.last_datavector, copy=True)
+    result = {
+        "xi": datavector[likelihood.xi_indices],
+        "response": None,
+        "h": float(likelihood.h),
+        "As": float(model.provider.get_param("As")),
+        "likelihood": likelihood,
+        "model": model,
+    }
+    if likelihood.external_baryon_suppression:
+        result["response"] = likelihood.baryon_suppression_table()
+    if "bfmt" in model.theory and model.theory["bfmt"].baryon_model == 4:
+        result["bacco_coordinates"] = _bacco_coordinates(model=model, point=point)
+    return result
 
 
-def run_scenarios(configuration, catalog_path):
-    """Compute every declared bfmt example and its two-point response.
+def _bacco_coordinates(model, point):
+    """Return the cold-matter BACCO coordinates of the bfmt evaluation.
+
+    The paired diagnostic must use the same coordinates as the bfmt power
+    response: cold-matter density omega_cold = Omega_m - Omega_nu (bfmt's
+    own massive-neutrino convention, Omega_nu h^2 = m_nu/94.13 eV), the
+    baryon density, and sigma8 of the cold field from the BACCO amplitude
+    emulator that bfmt carries (sigma8 of total matter is not sigma8_cold).
 
     Arguments:
-      configuration = existing joint-demo YAML; its paired-feedback entry
-        is removed for this power-only comparison, and amplitude is zero.
+      model = evaluated Cobaya model whose bfmt block runs BACCO.
+      point = the evaluated parameter point (the five BACCO coordinates
+        come from the model's constant parameters).
+    Returns:
+      JSON-compatible dictionary of the eight BaccoColdResponses coordinates.
+    """
+    provider = model.provider
+    h = provider.get_param("H0") / 100.0
+    neutrino_mass = provider.get_param("mnu")
+    omega_cold = provider.get_param("omegam") - neutrino_mass / 94.13 / h**2
+    omega_baryon = provider.get_param("omegab")
+    sigma = model.theory["bfmt"].baccoemulator.get_sigma8(
+        cold=True,
+        omega_cold=omega_cold,
+        omega_baryon=omega_baryon,
+        A_s=provider.get_param("As"),
+        hubble=h,
+        ns=provider.get_param("ns"),
+        neutrino_mass=neutrino_mass,
+        w0=provider.get_param("w"),
+        wa=provider.get_param("wa"),
+    )
+    coordinates = {
+        "omega_cold": float(omega_cold),
+        "omega_baryon": float(omega_baryon),
+        "sigma8_cold": float(np.asarray(sigma).item()),
+    }
+    constants = model.parameterization.constant_params()
+    for name in ("M_c", "eta", "beta", "M1_z0_cen", "theta_inn"):
+        coordinates[name] = float(constants[name + "_baccoemu"])
+    return coordinates
+
+
+def run_scenarios(information, point, catalog_path):
+    """Compute every catalog bfmt scenario and its two-point response.
+
+    For the gravity-only reference and then for each catalog entry, a
+    Cobaya model is built from the example yaml on the xi-only dataset;
+    the entries add the bfmt block and switch external_baryon_suppression
+    on. The Map3 rows are refused by the likelihood (they are NaN in its
+    data vector) and are not returned. Afterwards the reference model is
+    evaluated again, with Cobaya's cache off, and its xi rows must equal
+    the first ones bit for bit: no feedback state may survive in the
+    native cosmolike globals that every model shares.
+
+    Arguments:
+      information = the example yaml (for example EXAMPLE_EVALUATE1.yaml)
+        loaded with cobaya.yaml.yaml_load_file, sampler and output removed.
+      point = its evaluate point (sampler.evaluate.override).
       catalog_path = YAML listing bfmt selectors, feedback points and papers.
     Returns:
-      dictionary with rows, DMO/feedback means, R_P[z,k], grids and records.
-      A second FLAMINGO prediction holds R_P constant above 10 h/Mpc to
-      illustrate the consequence of extending the tabulated response.
+      dictionary with rows (the 400 xi rows), reference (DMO xi), means
+      [scenario, row], responses R_P[scenario, z, k], k [h/Mpc], z, names,
+      records (one per scenario), tail_test (FLAMINGO xi with R_P held
+      above TAIL_PIVOT h/Mpc, or None) and record (run provenance).
     Raises:
-      ValueError for unsupported catalog format or changed DMO restoration;
-      physical model errors are propagated, never replaced by dummy curves.
+      ValueError for an unknown catalog format, a changed DMO restoration
+      or a feedback parameter already in the example; RuntimeError when
+      bfmt rejects a point or reports a warning. Physical model errors are
+      propagated, never replaced by unity responses.
     Side effects:
-      Runs the existing bfmt block once per scenario and the ordinary core
-      serially. No input files change and no sampler or Fisher run starts.
+      Builds 2 + len(scenarios) Cobaya models (plus one for the tail
+      test), each running CAMB, BiHalofit and the xi projection once. No
+      input file changes and no sampler or Fisher run starts.
     """
     # ----------------------------------------------------------------------
-    # Configuration. The catalog format tag guards against reading an
-    # unrelated YAML; the joint-demo configuration is reduced to a
-    # power-only comparison (no paired feedback, zero feedback amplitude).
+    # Catalog. Every bfmt model's weight files are checked before the
+    # first model is built.
     # ----------------------------------------------------------------------
-    path = Path(configuration).resolve()
     catalog_path = Path(catalog_path).resolve()
     catalog = yaml.safe_load(catalog_path.read_text())
-    if catalog["format"] != "des3pcf-bfmt-scenarios-v1":
-        raise ValueError("Unknown bfmt scenario catalog format.")
-    # load_configuration returns a three-value tuple, in this order: the
-    # validated configuration dictionary, the resolved path and the
-    # SHA-256 digest of the file (recorded in the result below).
-    config, path, digest = driver.load_configuration(path=path, command="evaluate")
-    config.pop("feedback", None)
-    config["ia"]["feedback_amplitude"] = 0.0
-    config["threads"] = 1  # Notebook comparisons are light serial checks.
+    if catalog.get("format") != CATALOG_FORMAT:
+        raise ValueError(
+            f"{catalog_path} has format {catalog.get('format')!r}; "
+            f"run_scenarios reads {CATALOG_FORMAT!r} catalogs."
+        )
+    for scenario in catalog["scenarios"]:
+        _require_installed_theory_data(model_number=scenario["options"]["baryon_model"])
 
     # ----------------------------------------------------------------------
-    # The shared calculation: compiled core, the two-point rows (Map3 rows
-    # are dropped), the physical provider and the DMO reference mean.
+    # Gravity-only reference on the xi-only dataset (feedback key off).
     # ----------------------------------------------------------------------
-    compiled = driver.compiled_extension(config=config)
-    all_rows = driver.rows_for_run(config=config, path=path)
-    rows = all_rows.select(indices=np.flatnonzero(all_rows.kind != "map3"))
-    provider, metadata = driver.provider_for_run(
-        compiled=compiled, config=config, path=path,
+    reference_info = _scenario_information(
+        information=information, scenario=None,
+        theory_options=catalog["theory_options"],
     )
-    prediction = driver.prediction_for_run(
-        compiled=compiled, config=config, path=path, rows=rows, provider=provider,
-    )
-    model, tables, metadata = provider.get(parameters=config["parameters"])
-    reference = _two_point_mean(
-        prediction=prediction, tables=tables, metadata=metadata,
-        parameters=config["parameters"], ia=config["ia"],
-    )
+    reference_run = _evaluate(info=reference_info, point=point)
+    reference_likelihood = reference_run["likelihood"]
+    rows = reference_likelihood.xi_rows
+    reference = reference_run["xi"]
 
     # ----------------------------------------------------------------------
-    # Scenario loop: for each catalog entry, ask bfmt for R_P on the
-    # shared [z, k] grids, multiply the nonlinear power by it and
-    # recompute the xi rows. The try/finally pair guarantees the shared
-    # core is restored afterwards, whatever happens inside the loop:
-    # `failure = error; raise` keeps a reference to the original exception
-    # while re-raising it, so the finally block can attach restoration
-    # problems to it instead of hiding it.
+    # Scenario loop: one model per catalog entry. FLAMINGO also runs the
+    # tail test, in which only the continuation above the pivot changes.
     # ----------------------------------------------------------------------
+    source = COCOA / "external_modules/code/baryon_suppression/bfmt.py"
+    source_sha256 = hashlib.sha256(source.read_bytes()).hexdigest()
+    names = []
     means = []
     responses = []
     records = []
-    names = []
     tail_test = None
-    failure = None
-    try:
-        for scenario in catalog["scenarios"]:
-            options = dict(catalog["theory_options"], **scenario["options"])
-            response, record = bfmt_power_response(
-                cocoa_root=PROJECT.parents[1], parameters=config["parameters"],
-                metadata=metadata, options=options, point=scenario["parameters"],
-                z=tables["z"], k=tables["k"],
-            )
-            changed = dict(tables)
-            changed["p_nonlinear"] = tables["p_nonlinear"] * response
-            mean = _two_point_mean(
-                prediction=prediction, tables=changed, metadata=metadata,
-                parameters=config["parameters"], ia=config["ia"],
-            )
-            names.append(scenario["name"])
-            means.append(mean)
-            responses.append(response)
-            records.append(dict(record, name=scenario["name"], paper=scenario["paper"]))
+    for scenario in catalog["scenarios"]:
+        info = _scenario_information(
+            information=information, scenario=scenario,
+            theory_options=catalog["theory_options"],
+        )
+        run = _evaluate(info=info, point=point)
+        names.append(scenario["name"])
+        means.append(run["xi"])
+        responses.append(run["response"])
+        record = {
+            "name": scenario["name"],
+            "paper": scenario["paper"],
+            "producer": "Cocoa bfmt baryon_suppression through des_3pcf.joint_shear",
+            "supplied_spectra": ["P"],
+            "source_sha256": source_sha256,
+            "options": dict(catalog["theory_options"], **scenario["options"]),
+            "feedback_parameters": dict(scenario["parameters"]),
+            "h": run["h"],
+            "As": run["As"],
+            "bfmt_request_k_units": "1/Mpc, the table numbers 10^log10k",
+            "likelihood_k_units": "h/Mpc; R_P read at h*k",
+        }
+        if "bacco_coordinates" in run:
+            record["bacco_coordinates"] = run["bacco_coordinates"]
+            record["bacco_sigma8_source"] = "bfmt Burger2025 sigma8_cold emulator"
+            record["matter_field"] = "cold; applying to total P is an approximation"
+        records.append(record)
+        run["model"].close()
 
-            # The FLAMINGO tail test changes only the continuation above
-            # the stated pivot: hold R_P at its 10 h/Mpc value for every
-            # larger k. It is an alternative modeling assumption, not a
-            # repair or a proof of convergence; all original bfmt curves
-            # remain available.
-            if scenario["name"] == "FLAMINGO":
-                held = response.copy()
-                for index in range(held.shape[0]):
-                    value = np.interp(np.log(10.0), np.log(tables["k"]),
-                                      np.log(response[index]))
-                    held[index, tables["k"] > 10.0] = np.exp(value)
-                changed["p_nonlinear"] = tables["p_nonlinear"] * held
-                tail_test = _two_point_mean(
-                    prediction=prediction, tables=changed, metadata=metadata,
-                    parameters=config["parameters"], ia=config["ia"],
-                )
-            print(scenario["name"], "completed; all two-point rows:", mean.size)
-    except Exception as error:
-        failure = error
-        raise
-    finally:
-        # A failed later scenario must not leave the shared ordinary core
-        # with an earlier scenario's modified power in a live notebook, so
-        # the DMO tables are reinstalled and the result compared with the
-        # reference. When the loop itself already raised, a restoration
-        # problem is attached to that exception with add_note (which
-        # appends one extra text line to an exception's report; it exists
-        # from Python 3.11 on) instead of replacing it; a raise inside a
-        # finally block would otherwise swallow the original error.
-        try:
-            restored = _two_point_mean(
-                prediction=prediction, tables=tables, metadata=metadata,
-                parameters=config["parameters"], ia=config["ia"],
+        if scenario["name"] == "FLAMINGO":
+            tail_info = _scenario_information(
+                information=information, scenario=scenario,
+                theory_options=catalog["theory_options"], tail=True,
             )
-            if not np.array_equal(restored, reference):
-                raise ValueError("The core did not restore the exact DMO prediction.")
-        except Exception as restore_error:
-            if failure is None:
-                raise
-            failure.add_note(f"DMO restoration also failed: {restore_error}")
+            tail_run = _evaluate(info=tail_info, point=point)
+            tail_test = tail_run["xi"]
+            tail_run["model"].close()
+        print(scenario["name"], "completed; all two-point rows:", run["xi"].size)
 
     # ----------------------------------------------------------------------
-    # Result: the curves plus a record naming every override and input
-    # digest, so the saved npz is traceable to its exact inputs.
+    # DMO restoration: the reference model again, without Cobaya's cache,
+    # after every scenario model has changed the shared native state.
     # ----------------------------------------------------------------------
-    input_path = driver.resolve_path(path, config["physics"]["tables"])
+    reference_run["model"].logposterior(params_values=point, cached=False)
+    restored = reference_likelihood.last_datavector[reference_likelihood.xi_indices]
+    if not np.array_equal(restored, reference):
+        raise ValueError(
+            "The gravity-only xi rows changed after the scenarios; maximum "
+            f"relative change {np.max(np.abs(restored / reference - 1.0))}."
+        )
+    reference_run["model"].close()
+
+    # ----------------------------------------------------------------------
+    # Result: the curves plus a record naming the inputs, so the saved npz
+    # is traceable to its exact example yaml, catalog and dataset.
+    # ----------------------------------------------------------------------
     return {
         "rows": rows,
         "reference": reference,
         "means": np.asarray(means),
         "responses": np.asarray(responses),
-        "k": tables["k"],
-        "z": tables["z"],
+        "k": 10.0**reference_likelihood.log10k_interp_2D,
+        "z": reference_likelihood.z_interp_2D.copy(),
         "names": names,
         "records": records,
         "tail_test": tail_test,
         "record": {
-            "configuration_sha256": digest,
-            "effective_overrides": {
-                "feedback": "removed for power-only comparison",
-                "ia.feedback_amplitude": 0.0,
-                "threads": 1,
-            },
+            "likelihood": LIKELIHOOD,
+            "dataset": XI_DATASET,
+            "dataset_sha256": hashlib.sha256(
+                (PROJECT / "data" / XI_DATASET).read_bytes()).hexdigest(),
+            "point": dict(point),
             "catalog_sha256": hashlib.sha256(catalog_path.read_bytes()).hexdigest(),
-            "physical_tables_sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
-            "threads": 1,
             "restoration_exact": True,
             "scope": "power-only scenario; no inferred bispectrum or feedback constraint",
-            "flamingo_tail_test": "hold R_P constant above 10 h/Mpc",
+            "flamingo_tail_test": f"hold R_P constant above {TAIL_PIVOT} h/Mpc",
         },
     }
 
@@ -345,7 +481,7 @@ def bacco_diagnostic(records):
     """Evaluate the installed paired models on two supported triangle families.
 
     Arguments:
-      records = bfmt records from run_scenarios, including BACCO coordinates.
+      records = records from run_scenarios, including BACCO coordinates.
     Returns:
       k[80], power[2,80], bispectrum[2,2,80], and JSON-compatible provenance.
       Axis meanings are redshift [0,1], triangle [equilateral,scalene], k.
@@ -355,6 +491,8 @@ def bacco_diagnostic(records):
     Side effects:
       Loads two already-installed small emulators. No physical projection.
     """
+    from theory.bacco_bispectrum.emulator import BaccoColdResponses
+
     # next(...) takes the first record whose name is BACCO from the
     # generator expression; with no such record the generator is exhausted
     # and next raises StopIteration.
