@@ -1,11 +1,33 @@
 """Teach covariance corrections with controlled joint Gaussian measurements.
 
-These arrays are not DES simulations. Two-point-like and three-point-like
-rows have different units and correlated fluctuations, but their covariance
-is prescribed here so the exact precision and truncation error are known.
-The same precision.py functions used by the forecast are called directly.
-No compiled model, CAMB calculation, downloads or files are needed to build
-the example. Loading external simulation vectors is a separate explicit call.
+The example is self-contained: the vectors are synthetic Gaussian draws
+with a covariance prescribed in this file, so the exact precision matrix
+and the exact truncation error of every estimator are known in closed
+form. Two-point-like and three-point-like rows get different units and
+correlated fluctuations on purpose, to exercise the same mixed-unit
+bookkeeping as the survey vector. The same precision.py functions used by
+the forecast are called directly; no compiled model, CAMB calculation,
+download or file is needed. Loading external simulation vectors is the
+separate explicit call at the end of the module.
+
+Terms used in this file:
+  precision matrix = the inverse covariance, the matrix that weights the
+      chi2 and the parameter fit.
+  PME = the precision-matrix expansion of Friedrich and Eifler (2018,
+      arXiv:1703.07786): instead of inverting a noisy sample covariance,
+      expand the precision around the inverse of an analytic model
+      covariance M; only M is ever inverted.
+  Wishart correction = the sample covariance of N independent Gaussian
+      draws follows a Wishart distribution, so products of sample
+      covariances are biased; the second-order PME term subtracts exactly
+      that bias (precision.py holds the formula).
+  whitening = the change of coordinates d -> L^-1 d with C = L L^T, after
+      which the covariance is the identity (each covariance eigenvector
+      rescaled by one over the square root of its eigenvalue); errors and
+      ranks measured there are dimensionless and unit-free.
+  coverage = the fraction of repeated experiments whose quoted error
+      interval actually contains the truth; a quoted sigma without
+      coverage can be too optimistic.
 """
 
 import importlib
@@ -21,21 +43,25 @@ sys.path.insert(0, str(PROJECT / "scripts"))
 sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 from cosmolike_notebook_utils.covariance.precision import component_precision_expansion
-from cosmolike_notebook_utils.covariance.precision import precision_expansion, split_precision_expansion
+from cosmolike_notebook_utils.covariance.precision import (
+    precision_expansion,
+    split_precision_expansion,
+)
 from cosmolike_notebook_utils.covariance.precision import whiten_covariance
 
 
 def controlled_joint_covariance(ndata=24):
     """Specify C=A+B and an imperfect independent model M=A+Bm.
 
-    A is a diagonal known random contribution. B has correlations both within
-    and between two-point-like and three-point-like rows. Independent draws
-    of the A and B random vectors make this covariance sum physical in the
-    controlled experiment. It is not a claim that DES noise can be switched
-    off to isolate every corresponding connected covariance term.
+    A is a diagonal known random contribution and B a dense contribution
+    with correlations both within and between the two-point-like and
+    three-point-like row groups. The controlled experiment draws the A and
+    B random vectors independently, so the total covariance really is the
+    sum of the two prescribed pieces and every estimator can be compared
+    with the exact answer.
 
     Arguments:
-      ndata = even integer at least8, split equally into the two row groups.
+      ndata = even integer at least 8, split equally into the two row groups.
     Returns:
       Dictionary with true/analytic/component covariances, row labels and a
       three-column illustrative derivative matrix. The row scales 1e-4 and
@@ -43,34 +69,64 @@ def controlled_joint_covariance(ndata=24):
     Raises:
       ValueError for an invalid dimension.
     """
+    # isinstance(ndata, bool) is checked separately because Python booleans
+    # are integers (True == 1) and would otherwise slip through.
     if (isinstance(ndata, bool) or int(ndata) != ndata
             or ndata < 8 or ndata % 2):
-        raise ValueError("ndata must be an even integer at least8.")
+        raise ValueError("ndata must be an even integer at least 8.")
     ndata = int(ndata)
+
+    # ----------------------------------------------------------------------
+    # Dimensionless shapes. B = 0.12 * exp(-|i-j|/3) + 0.025: a short
+    # correlation length of 3 rows at amplitude 0.12, plus a small 0.025
+    # offset correlating every pair of rows (including the two groups).
+    # A is diagonal with variances 0.8 + 0.1 cos(i/4): order one, slowly
+    # varying, never close to zero. The model Bm = 0.8 B + 0.01 I is
+    # deliberately imperfect: 20 percent low, with a small spurious
+    # diagonal.
+    # ----------------------------------------------------------------------
     coordinate = np.arange(ndata, dtype=np.float64)
     separation = np.abs(coordinate[:, None] - coordinate[None, :])
     component = 0.12 * np.exp(-separation / 3.0)
     component += 0.025 * np.ones((ndata, ndata))
     known = np.diag(0.8 + 0.1 * np.cos(coordinate / 4.0))
     component_model = 0.8 * component + 0.01 * np.eye(ndata)
+
+    # ----------------------------------------------------------------------
+    # Units. The first half of the rows plays the two-point group at scale
+    # 1e-4 and the second half the three-point group at scale 1e-8, four
+    # orders of magnitude apart, so any estimator that mishandles mixed
+    # units fails visibly.
+    # ----------------------------------------------------------------------
     scales = np.full(ndata, 1.0e-4)
     scales[ndata // 2:] = 1.0e-8
     units = scales[:, None] * scales[None, :]
     component *= units
     known *= units
     component_model *= units
+
+    # ----------------------------------------------------------------------
+    # Three prescribed summary responses, not derivatives of a shear
+    # model: a constant offset, two smooth oscillations, and an extra
+    # response of the three-point group alone in the last column, so the
+    # parameters couple the two groups differently.
+    # ----------------------------------------------------------------------
     derivative = np.empty((ndata, 3))
     derivative[:, 0] = scales
     derivative[:, 1] = scales * np.cos(coordinate / 4.0)
     derivative[:, 2] = scales * np.sin(coordinate / 3.0)
-    # The last parameter changes the three-point group differently. These
-    # are prescribed summary responses, not derivatives of a shear model.
     derivative[ndata // 2:, 2] += scales[ndata // 2:]
+
+    # ----------------------------------------------------------------------
+    # Row labels in the survey convention: kind "xip" for the two-point
+    # half, "map3" for the three-point half.
+    # ----------------------------------------------------------------------
     kinds = np.full(ndata, "map3", dtype="U4")
     kinds[:ndata // 2] = "xip"
     labels = []
     for index, kind in enumerate(kinds):
         labels.append(f"controlled_{kind}_{index:03d}")
+
     return {
         "known": known,
         "component": component,
@@ -88,12 +144,18 @@ def controlled_joint_covariance(ndata=24):
 def draw_vectors(covariance, count, generator):
     """Generate independent zero-mean vectors with an explicit covariance.
 
+    With C = L L^T (Cholesky) and n a standard normal vector, L n has
+    covariance C exactly; multiplying by L preserves the intentionally
+    different observable units without an SVD rank threshold.
+
     Arguments:
       covariance = positive definite [ndata,ndata] matrix.
       count = number of realizations; generator = supplied NumPy Generator.
     Returns:
-      Float64 vectors[count,ndata]. Cholesky multiplication preserves the
-      intentionally different observable units without an SVD rank threshold.
+      Float64 vectors[count,ndata].
+    Raises:
+      numpy.linalg.LinAlgError (from the Cholesky factorization) when the
+      covariance is not positive definite.
     """
     factor = np.linalg.cholesky(covariance)
     normal = generator.standard_normal(size=(count, covariance.shape[0]))
@@ -122,6 +184,11 @@ def covariance_of_vectors(vectors):
 def precision_diagnostics(precision, truth, derivative, validation):
     """Compare a supplied precision with known truth and held-out vectors.
 
+    All comparisons happen in true-whitened coordinates (module
+    docstring): with the true covariance factored as C = Lc Lc^T, a
+    perfect precision estimate turns Lc^T Psi Lc into the identity, so
+    the eigenvalues of Lc^T Psi Lc - I are dimensionless errors.
+
     Arguments:
       precision = symmetric candidate [ndata,ndata], possibly indefinite.
       truth = known true covariance; derivative = [ndata,nparameter].
@@ -131,6 +198,11 @@ def precision_diagnostics(precision, truth, derivative, validation):
       Positive candidates also yield parameter-error and validation statistics.
       Indefinite candidates are retained as failures, without eigenvalue repair.
     """
+    # ----------------------------------------------------------------------
+    # Whitened error: symmetrize against rounding, then read off the
+    # eigenvalues. A smallest eigenvalue at or below zero means the
+    # candidate is not a valid precision matrix.
+    # ----------------------------------------------------------------------
     factor = np.linalg.cholesky(truth)
     normalized = factor.T @ precision @ factor
     normalized = 0.5 * (normalized + normalized.T)
@@ -147,15 +219,27 @@ def precision_diagnostics(precision, truth, derivative, validation):
     if not result["positive"]:
         result["inference_status"] = "refused_nonpositive_precision"
         return result
+
+    # ----------------------------------------------------------------------
+    # Linear parameter fit weighted by the candidate precision: the
+    # information matrix D^T Psi D, its inverse as the quoted parameter
+    # covariance, and the explicit least-squares estimator matrix.
+    # ----------------------------------------------------------------------
     information = derivative.T @ precision @ derivative
     parameter_covariance = np.linalg.solve(
         information, np.eye(information.shape[0]),
     )
     estimator = parameter_covariance @ derivative.T @ precision
+
+    # ----------------------------------------------------------------------
+    # Validation: fit every held-out draw and compare the scatter of the
+    # fitted parameters with the quoted covariance. The exact frequentist
+    # covariance of the linear estimator depends on the true C, not on the
+    # covariance whose inverse was used to weight the fit, hence the
+    # sandwich product below.
+    # ----------------------------------------------------------------------
     fitted = validation @ estimator.T
     empirical = covariance_of_vectors(vectors=fitted)
-    # The exact frequentist covariance of the linear estimator depends on C,
-    # not on the covariance whose inverse was used to weight the fit.
     sandwich = estimator @ truth @ estimator.T
     result.update({
         "inference_status": "positive_precision",
@@ -169,6 +253,10 @@ def precision_diagnostics(precision, truth, derivative, validation):
         "exact_variance_over_quoted": (
             np.diag(sandwich) / np.diag(parameter_covariance)
         ),
+        # The einsum operands read: for each validation vector n, the
+        # quadratic form sum_ij validation[n,i] precision[i,j]
+        # validation[n,j] — one chi2-like number per vector. Its mean per
+        # row is 1 for a perfect precision.
         "validation_mean_quadratic_per_row": float(
             np.mean(np.einsum("ni,ij,nj->n", validation, precision, validation))
             / truth.shape[0]
@@ -189,7 +277,7 @@ def controlled_precision_study(ndata=24, training_count=18,
 
     Arguments:
       ndata = even vector length; training_count = even N>=6 and N<=ndata.
-      validation_count = integer number of held-out draws at least100.
+      validation_count = integer number of held-out draws at least 100.
       seed = integer entropy for separate training/validation generators.
     Returns:
       Known matrices, samples, component/full/split estimates, positivity,
@@ -197,19 +285,36 @@ def controlled_precision_study(ndata=24, training_count=18,
     Raises:
       ValueError for invalid counts; no repeated draw selects a nicer result.
     """
+    # ----------------------------------------------------------------------
+    # Validation. The bool checks keep True/False out (Python booleans are
+    # integers); the lower limits keep every sample covariance meaningful.
+    # ----------------------------------------------------------------------
     if (isinstance(training_count, bool)
             or int(training_count) != training_count
             or training_count < 6 or training_count % 2
             or training_count > ndata):
-        raise ValueError("Use even training_count from6 through ndata.")
+        raise ValueError("Use even training_count from 6 through ndata.")
     if (isinstance(validation_count, bool)
             or int(validation_count) != validation_count
             or validation_count < 100):
-        raise ValueError("validation_count must be an integer at least100.")
+        raise ValueError("validation_count must be an integer at least 100.")
+
+    # ----------------------------------------------------------------------
+    # Random streams. The seed is an arbitrary fixed integer so the
+    # notebook is reproducible; SeedSequence.spawn gives two independent
+    # child streams, one for training draws and one for validation draws,
+    # so changing one count never shifts the other stream.
+    # ----------------------------------------------------------------------
     system = controlled_joint_covariance(ndata=ndata)
     streams = np.random.SeedSequence(entropy=seed).spawn(2)
     training_rng = np.random.default_rng(seed=streams[0])
     validation_rng = np.random.default_rng(seed=streams[1])
+
+    # ----------------------------------------------------------------------
+    # Draws: N component (B) vectors and N known (A) vectors; their sums
+    # are the joint training vectors. The validation draws come from the
+    # full true covariance on the separate stream.
+    # ----------------------------------------------------------------------
     component_vectors = draw_vectors(
         covariance=system["component"], count=int(training_count),
         generator=training_rng,
@@ -223,11 +328,25 @@ def controlled_precision_study(ndata=24, training_count=18,
         covariance=system["truth"], count=int(validation_count),
         generator=validation_rng,
     )
+
+    # ----------------------------------------------------------------------
+    # Sample covariances: the full joint sample, the B-only sample, and
+    # the two disjoint half-samples feeding the split-group estimator.
+    # ----------------------------------------------------------------------
     sample_component = covariance_of_vectors(vectors=component_vectors)
     sample_joint = covariance_of_vectors(vectors=joint_vectors)
     half = int(training_count) // 2
     sample_first = covariance_of_vectors(vectors=component_vectors[:half])
     sample_second = covariance_of_vectors(vectors=component_vectors[half:])
+
+    # ----------------------------------------------------------------------
+    # Exact references in model-whitened coordinates. The residual is the
+    # whitened truth minus the identity; its spectral radius (the largest
+    # absolute eigenvalue) controls how fast the PME converges. The
+    # second-order polynomial I - R + R^2, evaluated with the exact
+    # residual, gives the best answer any second-order estimator could
+    # reach; the exact truth precision is the overall reference.
+    # ----------------------------------------------------------------------
     model = system["analytic"]
     factor = np.linalg.cholesky(model)
     normalized_truth = whiten_covariance(
@@ -245,6 +364,13 @@ def controlled_precision_study(ndata=24, training_count=18,
         "analytic": analytic_precision,
         "exact_second_order": truncated,
     }
+
+    # ----------------------------------------------------------------------
+    # The three estimators under study: the component PME (known A plus a
+    # Wishart-corrected B sample), the full-covariance PME (one
+    # Wishart-corrected joint sample), and the split-group polynomial
+    # (two independent half-samples instead of a Wishart correction).
+    # ----------------------------------------------------------------------
     estimator_diagnostics = {}
     estimates["component_wishart"], estimator_diagnostics["component"] = (
         component_precision_expansion(
@@ -263,6 +389,11 @@ def controlled_precision_study(ndata=24, training_count=18,
         analytic=model, sample_first=system["known"] + sample_first,
         sample_second=system["known"] + sample_second,
     )
+
+    # ----------------------------------------------------------------------
+    # Diagnostics for every estimate against the known truth and the
+    # held-out validation draws.
+    # ----------------------------------------------------------------------
     diagnostics = {}
     for name, precision in estimates.items():
         diagnostics[name] = precision_diagnostics(
@@ -272,6 +403,7 @@ def controlled_precision_study(ndata=24, training_count=18,
     normalized_sample = whiten_covariance(
         covariance=sample_joint, factor=factor,
     )
+
     return {
         "system": system,
         "sample_joint": sample_joint,
@@ -303,6 +435,9 @@ def plot_precision_errors(report):
       Shared figure/axes. Each line sorts the eigenvalues of Lc.T Psi Lc-I;
       sorted positions are not identifications of shared physical eigenvectors.
     """
+    # The plotting module is named cosmolike_notebook_utils.3pcf: a module
+    # name starting with a digit cannot appear in an import statement, so
+    # importlib.import_module loads it from its name as text.
     plots = importlib.import_module(name="cosmolike_notebook_utils.3pcf")
     names = (
         "analytic",
@@ -333,12 +468,17 @@ def plot_precision_errors(report):
 def plot_precision_parameter_errors(report):
     """Plot quoted parameter errors only for positive precision estimates.
 
+    A positive precision alone does not establish coverage (module
+    docstring); the validation variance ratios of the report are the
+    separate check of the quoted errors.
+
     Arguments:
       report = controlled_precision_study result with known true precision.
     Returns:
-      Shared figure/axis showing sigma/sigma_true. Positive precision alone
-      does not establish coverage; validation variance ratios are separate.
+      Shared figure/axis showing sigma/sigma_true.
     """
+    # importlib.import_module loads the digit-led module name (see
+    # plot_precision_errors).
     plots = importlib.import_module(name="cosmolike_notebook_utils.3pcf")
     errors = []
     labels = []
@@ -367,27 +507,35 @@ def load_joint_simulations(path, expected_labels, expected_kind,
     """Read explicitly labeled independent joint vectors without reordering.
 
     The NPZ must contain vectors[N,p], row_labels[p], row_kind[p],
-    parent_ids[N], and scalar estimator. One parent ID per independent sky
-    must occur exactly once. Multiple patches sharing a parent are refused;
-    averaging them here would change the estimator and its covariance.
+    parent_ids[N], and scalar estimator. A parent ID names the independent
+    sky realization a vector came from; each must occur exactly once.
+    Multiple patches sharing a parent are refused, because averaging them
+    here would change the estimator and its covariance. Unique IDs alone
+    do not prove independence — that is a scientific input declaration,
+    and the caller must establish how the survey realizations were built.
 
     Arguments:
       path = an explicit NPZ file, read with allow_pickle=False.
       expected_labels, expected_kind = exact ordered row identities of the
           analytic covariance; each group must contain xi and Map3 rows.
-      expected_estimator = declared estimator string, e.g. finite_sas.
-          A family name does not verify triangle cuts, weights, masks or
-          source calibration; compare their input/measurement manifests
-          separately before interpreting a survey correction.
+      expected_estimator = declared estimator string, e.g. finite_sas (the
+          aperture estimator built from finite shear aperture statistics;
+          the pipeline's other choice is full_filter). A family name does
+          not verify triangle cuts, weights, masks or source calibration;
+          compare their input/measurement manifests separately before
+          interpreting a survey correction.
       excluded_parent_ids = parents used for analytic tuning or validation;
           any overlap is refused before a sample covariance is formed.
     Returns:
       Owned vectors, labels, kinds, parent IDs and independent count.
     Raises:
-      ValueError for shape, finite-value, row-order, estimator or parent errors.
-      Independence is a scientific input declaration; unique IDs alone do not
-      prove it. The caller must establish the survey realization construction.
+      ValueError for shape, finite-value, row-order, estimator or parent
+      errors.
     """
+    # ----------------------------------------------------------------------
+    # Read the required arrays; a missing name fails before anything is
+    # interpreted. The copies detach the results from the open archive.
+    # ----------------------------------------------------------------------
     filename = Path(path)
     required = (
         "vectors",
@@ -402,6 +550,12 @@ def load_joint_simulations(path, expected_labels, expected_kind,
             if name not in archive.files:
                 raise ValueError(f"Simulation archive lacks {name}.")
             arrays[name] = archive[name].copy()
+
+    # ----------------------------------------------------------------------
+    # Vector and row checks: finite numeric vectors, row labels and kinds
+    # matching the analytic covariance exactly, and both row groups
+    # present.
+    # ----------------------------------------------------------------------
     vectors = arrays["vectors"]
     if (vectors.dtype.kind not in "fiu" or vectors.ndim != 2
             or vectors.shape[0] < 3
@@ -422,6 +576,12 @@ def load_joint_simulations(path, expected_labels, expected_kind,
             or not np.any(kinds == "map3")
             or not np.any(kinds != "map3")):
         raise ValueError("Require unique labeled joint xi and Map3 rows.")
+
+    # ----------------------------------------------------------------------
+    # Estimator and parent checks: one declared estimator string matching
+    # the analytic side, and parent IDs that are nonempty, unique and
+    # disjoint from the tuning/validation parents.
+    # ----------------------------------------------------------------------
     if arrays["estimator"].shape != ():
         raise ValueError("Simulation estimator must be one declared string.")
     if str(arrays["estimator"].item()) != expected_estimator:
@@ -436,6 +596,7 @@ def load_joint_simulations(path, expected_labels, expected_kind,
         )
     if np.intersect1d(parents, np.asarray(excluded_parent_ids)).size:
         raise ValueError("Training parents overlap tuning or validation.")
+
     return {
         "vectors": vectors.copy(),
         "row_labels": labels.copy(),

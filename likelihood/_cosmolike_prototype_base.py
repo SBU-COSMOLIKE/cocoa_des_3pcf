@@ -1,9 +1,51 @@
-"""Joint DES shear likelihood, using the same call sequence as LSST Y1.
+"""Defines the Cobaya likelihood base class of the joint DES shear statistics.
 
-The YAML theory blocks supply distances, growth, power and the matter
-bispectrum. This class passes those arrays to CosmoLike, sets the source
-nuisance parameters, computes xi+/xi-/Map3 and calls the native likelihood.
-It neither starts CAMB nor selects a matter-bispectrum fitting formula.
+Cobaya, the sampler framework, builds one likelihood object for each entry of
+the likelihood block of a yaml file (here des_3pcf.joint_shear) and calls its
+logp method at every sampled point. The subclass only names the probe; this
+base class does all the work. The physics runs in the compiled cosmolike
+library, imported below as ci (cosmolike_des_3pcf_interface, built from
+interface/interface.cpp), plus its Python production layer ci.production for
+the third-order aperture statistic.
+
+Terms used in this file:
+  data vector  = the 1D array of every measured statistic, in the measured row
+                 order: the shear two-point correlation functions xi_+ and
+                 xi_- (one entry per source-source bin pair and angular bin)
+                 and the third-order aperture-mass moment Map3 (one entry per
+                 source bin triple and aperture filter scale).
+  rows         = the labeled row table of the data vector (one label, row
+                 kind "xip"/"xim"/"map3", bin indices and angle per entry),
+                 read by read_survey from the measurement files.
+  mask         = one 0/1 flag per data-vector entry; entries flagged 0 (scale
+                 cuts) are excluded from the chi2.
+  .dataset     = small text file with one "key = value" line per setting: the
+                 measurement, covariance, mask and n(z) file names and the
+                 source bin count.
+  compression  = an optional fixed matrix T that multiplies data and theory
+                 (and the covariance by T on the left and T transpose on the
+                 right) so the chi2 runs over a few linear modes instead of
+                 every row; likelihood/compression.py trains and saves it.
+  nuisance parameters = survey systematics sampled together with cosmology,
+                 read from Cobaya by bare name: photo-z shifts dz1..dz4,
+                 shear calibrations m1..m4, and the intrinsic-alignment
+                 amplitudes a1, eta1 (tidal alignment and its redshift
+                 exponent), a2, eta2 (tidal torquing) and bta (density
+                 weighting).
+
+What happens at one sampled point (logp):
+  get_datavector
+    -> set_cosmo_related : P(k, z), growth, distances and the matter
+                           bispectrum table from the provider to cosmolike
+    -> set_source_related: source n(z) and nuisance parameters to cosmolike,
+                           plus the Python-side Map3 physics model
+    -> ci.shear_power_rows + ci.production.xi_from_power: the xi rows
+    -> map_engine.aperture_vector: the Map3 rows
+  compute_logp: the native joint Gaussian log-density of the full vector
+
+The yaml theory blocks supply distances, growth, power and the matter
+bispectrum. This class neither starts CAMB nor selects a matter-bispectrum
+fitting formula.
 """
 
 from pathlib import Path
@@ -13,12 +55,21 @@ import numpy as np
 from cobaya.likelihoods.base_classes import DataSetLikelihood
 from getdist import IniFile
 
+# PROJECT = projects/des_3pcf; CORE = the cosmolike core checkout. The three
+# sys.path entries make the compiled interface (interface/), the project
+# helpers (scripts/des3pcf) and cosmolike_notebook_utils importable without
+# an installation step.
 PROJECT = Path(__file__).resolve().parents[1]
 CORE = PROJECT.parents[1] / "external_modules/code/cosmolike_core"
 sys.path.insert(0, str(PROJECT / "interface"))
 sys.path.insert(0, str(PROJECT / "scripts"))
 sys.path.insert(0, str(CORE))
 
+# ci = the compiled cosmolike library of this project
+# (interface/cosmolike_des_3pcf_interface.so, built with pybind11); every
+# ci.<name> call runs C/C++ code and changes or reads cosmolike's global
+# state. ci.production is its Python production layer (the Map3 transform
+# plan and physics model built on the same compiled kernels).
 import cosmolike_des_3pcf_interface as ci
 from des3pcf.survey import (
     read_survey,
@@ -29,10 +80,90 @@ from des3pcf.survey import (
 
 
 class _cosmolike_prototype_base(DataSetLikelihood):
-    """Set native state once; evaluate the provider's current cosmology."""
+    """Evaluates the joint DES shear likelihood of one probe choice.
+
+    The subclass names the probe and passes it to initialize. Cobaya then
+    calls, once, get_requirements (the theory quantities to compute at every
+    point) and, at every sampled point, logp(**params) with the
+    nuisance-parameter values.
+
+    Options come from the likelihood yaml (likelihood/joint_shear.yaml,
+    overridden by the likelihood block of an example yaml); Cobaya stores
+    each key as an attribute of self before initialize runs:
+      path, data_file  = directory (default: the project's data/) and name
+                         of the .dataset file
+      omp_threads      = OpenMP thread count of cosmolike's parallel loops
+      accuracyboost    = multiplies cosmolike's internal sampling (1 = default)
+      integration_accuracy = cosmolike's integration accuracy level (0 = default)
+      fpt_internal_boost = sampling boost of the FAST-PT intrinsic-alignment
+                         tables
+      ell_internal     = internal multipole table size of the two-point core
+      interpolation_type = n(z) interpolation convention of the photo-z code
+      threepcf_accuracy = named accuracy preset of the three-point stages
+                         (null = the default preset); init_3pcf_accuracy
+                         resolves it into the stage boosts used below
+      zmax             = largest redshift of every grid built here
+      power_nz, power_nk = z and k node counts of the P(k, z) tables
+      log10k_min, log10k_max = log10 k range [h/Mpc] of those tables
+      kmax_boltzmann   = k_max [1/Mpc] requested from CAMB's interpolator
+      source_nz        = node count of the common source n(z) grid
+      kernel_nz        = node count of the Map3 lensing-kernel tables
+      los_zmin, los_nz = range start and node count of the line-of-sight
+                         integration grid of the Map3 projection
+      table_boost, fit_nz = Map3 physics-table refinement and the node count
+                         of its fitted n(z) representation
+      source_interpolation, source_padding = n(z) reconstruction method and
+                         its behavior outside the measured redshift range
+      theta_min_arcmin, theta_max_arcmin, ntheta = the log-spaced angular
+                         bins shared by xi and the aperture filters
+      phi_bins         = azimuthal node count of the aperture transform
+      map_ell_min, map_ell_max = multipole range of the aperture transform
+      minimum_fft_size = smallest FFT length the transform plan may choose
+      map_lmax, map_mmax, map_nmu = multipole, azimuthal and angular node
+                         caps of the bispectrum projection
+      transform_options, projection_settings, projection_batch_size =
+                         dictionaries and batch size passed through to the
+                         aperture transform plan (meanings in the yaml)
+      xi_ell           = lower/upper/count/logarithmic of the multipole
+                         quadrature that turns C_ell into xi
+      xi_theta_count   = angular nodes per bin of the xi bin average
+      power_mode       = IA power-spectrum prescription selector of the
+                         Map3 model (meanings in the yaml)
+      external_baryon_response = False: gravity-only P and B; True: request
+                         the paired baryonic responses R_P and R_B (the
+                         ratios feedback/gravity-only of the power spectrum
+                         and bispectrum) from a theory block
+    """
 
     def initialize(self, probe):
-        """Read fixed inputs and prepare numerical grids, without a cosmology."""
+        """Read the fixed inputs and configure cosmolike, without a cosmology.
+
+        Cobaya calls initialize once, when it builds the likelihood. In
+        order: read the .dataset file and the measurement, covariance, mask
+        and compression inputs; configure cosmolike and load the joint data;
+        build the z and k grids of the tables sent to cosmolike at every
+        point; read the source n(z); prepare the Map3 aperture engine and
+        the xi quadrature. Cosmolike keeps its configuration in C global
+        variables shared by every likelihood object of the Python process,
+        so each option is set here explicitly, even at its default value.
+
+        Arguments:
+          probe = "xi_map3", the joint xi_+/xi_-/Map3 measurement
+
+        Raises:
+          ValueError when the mask or the compression labels do not match
+          the selected data rows; file readers raise on malformed inputs.
+
+        Side effects: changes cosmolike's global state (configuration, data,
+        covariance, mask, compression); sets the grid, row-index and
+        quadrature attributes used by every later method.
+        """
+        # ------------------------------------------------------------------
+        # Fixed inputs. ini = the .dataset file parsed by getdist's IniFile;
+        # relativeFileName returns the file named by a key, with a relative
+        # name resolved against the directory of the .dataset file. A null
+        # yaml path selects the project's own data/ directory.
+        # ------------------------------------------------------------------
         directory = PROJECT / "data" if self.path is None else Path(self.path)
         ini = IniFile(str(directory / self.data_file))
         self.probe = probe
@@ -46,19 +177,33 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             path=ini.relativeFileName("cov_file"),
             rows=self.rows,
         )
+
+        # The scored vector defaults to the measured rows themselves; an
+        # optional data_file key replaces it (for example with a synthetic
+        # vector) while keeping the measured covariance and row layout.
         data = self.rows.values
         if ini.string("data_file", ""):
             data = np.loadtxt(fname=ini.relativeFileName("data_file"))
+
+        # Without a mask_file key every row enters the chi2; with one, the
+        # rows flagged 1 are kept and the rows flagged 0 are cut.
         indices = np.arange(self.rows.values.size, dtype=np.int64)
         if ini.string("mask_file", ""):
             mask = np.loadtxt(fname=ini.relativeFileName("mask_file"))
             if mask.shape != data.shape or not np.all((mask == 0) | (mask == 1)):
                 raise ValueError("The mask must have one 0/1 value per data row.")
             indices = np.flatnonzero(mask)
+
+        # Optional fixed compression (the matrix T of the module docstring),
+        # trained and saved by likelihood/compression.py. Only the row
+        # labels are checked here, so a transform trained on different rows
+        # is refused before any native state changes; the numerical matrix
+        # checks and the application to data and covariance happen inside
+        # ci.init_joint_data. An empty matrix means no compression.
         compression = np.empty((0, 0), dtype=np.float64)
         if ini.string("compression_file", ""):
-            # Labels fix the input ordering. Numerical matrix checks and
-            # application to data/covariance belong to init_joint_data.
+            # The with-statement closes the npz archive when the block ends,
+            # even on an exception.
             with np.load(
                 file=ini.relativeFileName("compression_file"),
                 allow_pickle=False,
@@ -67,9 +212,17 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                     a1=saved["input_labels"],
                     a2=self.rows.labels[indices],
                 ):
-                    raise ValueError("Compression input labels differ from selected rows.")
+                    raise ValueError(
+                        "Compression input labels differ from selected rows.")
                 compression = saved["matrix"]
 
+        # ------------------------------------------------------------------
+        # Native configuration. Some imported libraries reset the
+        # process-wide OpenMP thread count without saying so, hence the
+        # explicit ci.set_omp_threads here and before every heavy native
+        # call. initial_setup resets cosmolike's global configuration to its
+        # defaults; every option below is then set from its yaml key.
+        # ------------------------------------------------------------------
         ci.initial_setup()
         ci.set_omp_threads(n=self.omp_threads)
         ci.init_accuracy_boost(
@@ -90,15 +243,26 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             zmid_convention=1,
         )
         ci.init_source_sample_size(Ntomo=self.source_ntomo)
-        # Pair bookkeeping expects a lens sample. No lens observable is
-        # evaluated; the first source curve supplies this unused sample.
+        # Cosmolike sizes its tomographic bin-pair tables assuming at least
+        # one lens bin exists. This likelihood evaluates no lens observable,
+        # so set_source_related later fills the mandatory slot with the
+        # first source n(z); the shear statistics never read it.
         ci.init_lens_sample_size(Ntomo=1)
+        # Intrinsic alignments: ia_model = 1 selects the TATT expansion
+        # (tidal alignment and tidal torquing), ia_redshift_evolution = 3
+        # the power-law A(z) = a * ((1 + z)/(1 + zpivot))^eta, and
+        # ia_code = 0 the C FAST-PT implementation.
         ci.init_IA(
             ia_model=1,
             ia_redshift_evolution=3,
             ia_code=0,
         )
         ci.reset_bary_struct()
+        # The native side owns the data, covariance, mask and compression
+        # from here on; it validates the matrices and computes the joint
+        # chi2. mock_count and parameter_count select the optional
+        # finite-simulation (simulation-estimated covariance) likelihood;
+        # both 0 keeps the plain Gaussian.
         ci.init_joint_data(
             data=data,
             covariance=covariance,
@@ -107,7 +271,17 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             mock_count=ini.int("mock_count", 0),
             parameter_count=ini.int("parameter_count", 0),
         )
+        # self.accuracy = the resolved three-point accuracy preset; the
+        # ci.accuracy_* helpers below turn it into node counts and
+        # quadrature settings for each numerical stage.
         self.accuracy = ci.init_3pcf_accuracy(value=self.threepcf_accuracy)
+
+        # ------------------------------------------------------------------
+        # Interpolation grids. z_interp_2D and log10k_interp_2D are the
+        # nodes of the P(k, z) tables sent to cosmolike at every point;
+        # source_z is the common grid of the reconstructed source n(z);
+        # los_z the line-of-sight grid of the Map3 projection.
+        # ------------------------------------------------------------------
         self.z_interp_2D = np.linspace(
             start=0.0,
             stop=self.zmax,
@@ -136,12 +310,27 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                 num=self.los_nz,
             ),
         )
+
+        # ------------------------------------------------------------------
+        # Measured source distributions. The call returns a four-value
+        # tuple, in this order: the measured redshift grid, the n(z) curve
+        # of every bin [nbin, nz], and the lower and upper edges of the
+        # measured redshift cells. set_source_related reconstructs shifted
+        # n(z) from these at every sampled point.
+        # ------------------------------------------------------------------
         (self.source_native_z, self.source_native,
          self.source_native_low, self.source_native_high) = read_source_distributions(
             path=ini.relativeFileName("nz_source_file"),
             nbin=self.source_ntomo,
             with_edges=True,
         )
+
+        # ------------------------------------------------------------------
+        # The Map3 aperture engine: the fixed transform plan that turns the
+        # physics model of set_source_related into the Map3 rows. Angles
+        # convert from arcminutes to radians (pi / (180 * 60)); the aperture
+        # filter scales are the log-spaced bin edges shared with xi.
+        # ------------------------------------------------------------------
         self.map_indices = np.flatnonzero(self.rows.kind == "map3")
         self.xi_indices = np.flatnonzero(self.rows.kind != "map3")
         theta_edges = np.exp(np.linspace(
@@ -173,6 +362,13 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             projection_batch_size=self.projection_batch_size,
             accuracy=self.accuracy,
         )
+
+        # ------------------------------------------------------------------
+        # The xi quadrature: fixed multipole nodes and weights that turn the
+        # shear power spectra C_ell into the binned xi_+ and xi_- rows, plus
+        # the angular nodes of the bin average. xi_sign is +1 for xi_+ rows
+        # and -1 for xi_- rows (they add and subtract the B-mode spectrum).
+        # ------------------------------------------------------------------
         ell_settings = ci.accuracy_quadrature_settings(
             accuracy=self.accuracy,
             baseline=self.xi_ell,
@@ -201,7 +397,23 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         self.xi_sign = np.where(self.xi_rows.kind == "xim", -1, 1).astype(np.int32)
 
     def get_requirements(self):
-        """Ask Cobaya for theory products on the declared sampling grids."""
+        """Return the theory products Cobaya must compute at every point.
+
+        Cobaya reads this dictionary once and routes each entry to the
+        theory block that can supply it (CAMB or a custom block). Each key
+        names a product; the value fixes the redshift grid and options:
+        Hubble, comoving_radial_distance, sigma8_z and the three Omega_X(z)
+        density fractions on z_interp_2D; Pk_interpolator, the linear and
+        nonlinear P(k, z) for both the total matter and the cold
+        (baryon + CDM, "delta_nonu") fields; matter_bispectrum, the custom
+        block's bispectrum table (set_cosmo_related documents its axes);
+        and, when external_baryon_response is on, the paired baryonic
+        responses R_P and R_B.
+
+        Returns:
+          dictionary {product name: options or None}, in Cobaya's
+          requirements format.
+        """
         requirements = {
             "matter_bispectrum": None,
             "Hubble": {"z": self.z_interp_2D},
@@ -225,12 +437,30 @@ class _cosmolike_prototype_base(DataSetLikelihood):
     def set_cosmo_related(self):
         """Pass the current provider arrays to the native cosmology setters.
 
-        Cobaya uses k in 1/Mpc and P in Mpc^3. CosmoLike uses h/Mpc and
-        (Mpc/h)^3, hence k_physical=h*k and P_h=h^3*P_physical. The requested
-        CAMB transfer limit stays at kmax_boltzmann; its interpolator extends
-        the supplied spectrum to the much larger projection-grid endpoint.
+        Hot path: Cobaya calls this at every sampled point, through
+        internal_get_datavector. Cobaya uses k in 1/Mpc and P in Mpc^3.
+        CosmoLike uses h/Mpc and (Mpc/h)^3, hence k_physical=h*k and
+        P_h=h^3*P_physical. The requested CAMB transfer limit stays at
+        kmax_boltzmann; its interpolator extends the supplied spectrum to
+        the much larger projection-grid endpoint.
+
+        Side effects: sets cosmolike's global cosmology (distances, growth
+        and the ln P tables) and the attributes h, p_linear, p_nonlinear,
+        chi, dz_dchi, sigma8, growth, omega_m_z, baseline and feedback that
+        set_source_related reads at the same point.
+
+        Raises:
+          ValueError when the bispectrum product lacks its native table or
+          the baryon response does not cover the redshift range.
         """
         ci.set_omp_threads(n=self.omp_threads)
+
+        # ------------------------------------------------------------------
+        # Provider reads: expansion and the three P(k, z) interpolators.
+        # h converts the units below; k is the table grid in 1/Mpc. The
+        # extrap_kmin/extrap_kmax bounds tell the interpolator how far it
+        # may extrapolate beyond CAMB's computed range.
+        # ------------------------------------------------------------------
         hubble = self.provider.get_Hubble(
             z=self.z_interp_2D,
             units="km/s/Mpc",
@@ -249,12 +479,20 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             extrap_kmin=float(k[0]),
             extrap_kmax=max(self.kmax_boltzmann, 1.01 * float(k[-1])),
         )
+        # cold = the linear power of the cold field (baryons + CDM, no
+        # massive neutrinos); cosmolike's massive-neutrino runs need it.
         cold = self.provider.get_Pk_interpolator(
             var_pair=("delta_nonu", "delta_nonu"),
             nonlinear=False,
             extrap_kmin=float(k[0]),
             extrap_kmax=max(self.kmax_boltzmann, 1.01 * float(k[-1])),
         )
+
+        # ------------------------------------------------------------------
+        # Power tables [z, k] in (Mpc/h)^3 (hence the h^3), distances in
+        # Mpc/h (hence the h), and the growth factor normalized to one
+        # today, from sigma8(z)/sigma8(0).
+        # ------------------------------------------------------------------
         self.p_linear = linear.P(
             z=self.z_interp_2D,
             k=k,
@@ -270,19 +508,43 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         self.chi = self.provider.get_comoving_radial_distance(
             z=self.z_interp_2D,
         ) * self.h
+        # dz/dchi = H(z)/c in h/Mpc (chi is in Mpc/h); 299792.458 km/s is
+        # the speed of light, matching the km/s/Mpc unit of hubble above.
         self.dz_dchi = hubble / (299792.458 * self.h)
         sigma = self.provider.get_sigma8_z(z=self.z_interp_2D)
         self.sigma8 = float(sigma[0])
         self.growth = sigma / self.sigma8
+
+        # ------------------------------------------------------------------
+        # Density fractions Omega_X(z) from the provider; the z-array form
+        # is what this fork's provider exposes, and the [0] entries below
+        # give today's values. omega_m_z enters the Map3 lensing kernels.
+        # ------------------------------------------------------------------
         omega_b = self.provider.get_Omega_b(z=self.z_interp_2D)
         omega_c = self.provider.get_Omega_cdm(z=self.z_interp_2D)
         omega_nu = self.provider.get_Omega_nu_massive(z=self.z_interp_2D)
         self.omega_m_z = omega_b + omega_c + omega_nu
+
+        # ------------------------------------------------------------------
+        # The matter bispectrum B(k1, k2, k3; z) from the custom theory
+        # block, as a table over four axes: redshift z, ln of the longest
+        # side k, ln of the short/longest and middle/longest side ratios,
+        # and the interpolation variable v of that parametrization; values
+        # are in (Mpc/h)^6. The native constructor of the physics model
+        # validates the axes and their sizes; here only the presence of the
+        # native table is checked.
+        # ------------------------------------------------------------------
         self.baseline = self.provider.get_result("matter_bispectrum")
-        # The native constructor validates the four axes and their sizes.
-        # A supplied B uses (Mpc/h)^6 on z, ln(k), ln(short/middle), v.
         if "native" not in self.baseline:
             raise ValueError("matter_bispectrum must supply its native B table.")
+
+        # ------------------------------------------------------------------
+        # Optional baryonic feedback: the paired responses
+        # R_P = P_feedback/P_gravity-only and R_B (the same ratio for the
+        # bispectrum) from the baryon_response theory block. The table must
+        # cover the full redshift range; its node boost follows the
+        # three-point accuracy preset.
+        # ------------------------------------------------------------------
         self.feedback = {}
         if self.external_baryon_response:
             response = self.provider.get_result("baryon_response")
@@ -294,6 +556,13 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                 baseline=self.feedback["boost"],
                 stage="feedback_table_boost",
             )
+
+        # ------------------------------------------------------------------
+        # Native cosmology. The tables here are [z, k]; the C side stores
+        # [k, z], and flatten(order="F") (Fortran order: the first index,
+        # z, runs fastest) produces exactly that memory order. G is the
+        # growth normalization cosmolike expects, growth times (1 + z).
+        # ------------------------------------------------------------------
         ci.set_cosmology(
             omegam=float(self.omega_m_z[0]),
             H0=100.0 * self.h,
@@ -311,12 +580,41 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         )
 
     def set_source_related(self, **params):
-        """Use CosmoLike IA amplitudes and the same shifted sources in both probes."""
+        """Send the shifted source n(z) and nuisance parameters to cosmolike.
+
+        Hot path: Cobaya calls this at every sampled point, after
+        set_cosmo_related. Both probes use the same reconstructed, shifted
+        sources and the same CosmoLike intrinsic-alignment amplitudes; this
+        method also builds the Python-side Map3 physics model from the
+        arrays set_cosmo_related stored.
+
+        Arguments:
+          **params = the sampled nuisance values by name: dz1..dz4 (photo-z
+            shifts), m1..m4 (shear calibrations), a1, eta1, a2, eta2, bta
+            (intrinsic alignment). A name the run does not sample reads as
+            0 (no shift, no calibration, no alignment).
+
+        Side effects: sets cosmolike's source and lens samples and nuisance
+        parameters; sets the attributes calibration, sources, ia and model
+        (and, with external feedback, the native nonlinear power) that
+        internal_get_datavector reads at the same point.
+        """
+        # ------------------------------------------------------------------
+        # Per-bin photo-z shifts and multiplicative shear calibrations from
+        # the sampled parameters (bin i reads dz<i> and m<i>).
+        # ------------------------------------------------------------------
         shifts = np.zeros(self.source_ntomo)
         self.calibration = np.zeros(self.source_ntomo)
         for index in range(self.source_ntomo):
             shifts[index] = params.get(f"dz{index + 1}", 0.0)
             self.calibration[index] = params.get(f"m{index + 1}", 0.0)
+
+        # ------------------------------------------------------------------
+        # Reconstruct the source n(z) on the common source_z grid, with the
+        # shifts applied, from the measured curves initialize read. The
+        # second returned value (diagnostics) is not needed here; "_" is
+        # the conventional name for a discarded value.
+        # ------------------------------------------------------------------
         self.sources, _ = reconstructed_sources(
             native_z=self.source_native_z,
             native_sources=self.source_native,
@@ -327,14 +625,36 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             native_low=self.source_native_low,
             native_high=self.source_native_high,
         )
+
+        # ------------------------------------------------------------------
+        # Native samples. The table is one column of redshifts followed by
+        # one n(z) column per bin. The one-bin lens sample only fills the
+        # mandatory slot of cosmolike's pair bookkeeping (see initialize);
+        # its first two columns are z and the first source curve.
+        # ------------------------------------------------------------------
         source_table = np.column_stack((self.source_z, self.sources.T))
         ci.set_source_sample(nofz=source_table)
         ci.set_lens_sample(nofz=source_table[:, :2].copy())
         ci.init_ntomo_powerspectra()
-        # These sources already contain the shift. Final xi and Map3
-        # operators apply calibration once per shear, after projection.
+
+        # These sources already contain the shift, and the multiplicative
+        # calibration (1 + m_i) is applied in Python after projection, once
+        # per shear leg of each statistic (two factors for xi, three for
+        # Map3). The native per-bin photo-z and calibration are therefore
+        # set to zero so neither correction is applied twice.
         ci.set_nuisance_shear_photoz(bias=np.zeros(self.source_ntomo))
         ci.set_nuisance_shear_calib(M=np.zeros(self.source_ntomo))
+
+        # ------------------------------------------------------------------
+        # Intrinsic-alignment amplitudes. init_IA selected the power-law
+        # redshift evolution, under which cosmolike reads the per-bin
+        # arrays as parameter slots, not as bins: slot 0 holds the
+        # amplitude and slot 1 the redshift exponent of
+        # A(z) = a * ((1 + z)/(1 + zpivot))^eta. The remaining slots must
+        # be zero. a1/eta1 is the tidal-alignment term, a2/eta2 the
+        # tidal-torquing term, and bta (amplitude only) the density
+        # weighting of the TATT expansion.
+        # ------------------------------------------------------------------
         a1 = np.zeros(self.source_ntomo)
         a2 = np.zeros(self.source_ntomo)
         bta = np.zeros(self.source_ntomo)
@@ -346,6 +666,14 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             A2=a2,
             B_TA=bta,
         )
+
+        # ------------------------------------------------------------------
+        # The IA record of the Map3 model: the same amplitudes plus the
+        # fixed CosmoLike normalization c1rho = 0.01389 and pivot
+        # zpivot = 0.62, the IA power prescription (power_mode), a zero
+        # velocity-shear amplitude (ct), and the feedback switch. fb = 0
+        # leaves the alignment power unsuppressed by feedback.
+        # ------------------------------------------------------------------
         self.ia = {
             "a1": a1[0],
             "eta1": a1[1],
@@ -359,9 +687,16 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             "fb": 0.0,
             "feedback_amplitude": float(self.external_baryon_response),
         }
-        # One supplied spectrum normalization belongs to the legacy
-        # bispectrum producer's IA convention. Other producers may omit
-        # it (one). It never rescales ordinary two-point CAMB power.
+
+        # ------------------------------------------------------------------
+        # The Map3 physics model. normalization rescales the linear power
+        # entering the model's IA terms when the bispectrum producer's
+        # metadata declares a linear_power_normalization; the chained .get
+        # calls read metadata -> linear_power_normalization and fall back
+        # to the default 1.0 (no rescaling) at either missing key. It never
+        # rescales the ordinary two-point CAMB power. The accuracy preset
+        # resolves the kernel, table and fitted-n(z) node counts.
+        # ------------------------------------------------------------------
         normalization = self.baseline.get("metadata", {}).get(
             "linear_power_normalization", 1.0,
         )
@@ -392,13 +727,18 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             source_readers=False,
             feedback=self.feedback,
         )
+
+        # ------------------------------------------------------------------
+        # Optional baryonic feedback of the two-point probe. The Map3 model
+        # keeps the gravity-only (DMO, dark-matter-only: power without
+        # baryonic feedback) power for its quadratic IA terms and applies
+        # R_B to the matter/NLA bispectrum; the ordinary two-point core
+        # instead receives P_DMO * R_P. Query the model's own response
+        # reader here, so both probes use its uniform cubic preparation and
+        # linear reads. Linear TATT power stays DMO. Each call starts from
+        # the provider's fresh DMO array.
+        # ------------------------------------------------------------------
         if self.external_baryon_response:
-            # The 3pcf model retains DMO power for its quadratic IA terms
-            # and applies R_B to the matter/NLA bispectrum. The ordinary
-            # two-point core instead receives P_DMO * R_P. Query the same
-            # native response reader here, so both probes use its uniform
-            # cubic preparation and linear reads. Linear TATT power stays
-            # DMO. Each call starts from the provider's fresh DMO array.
             wave, redshift = np.meshgrid(
                 10.0**self.log10k_interp_2D,
                 self.z_interp_2D,
@@ -415,32 +755,89 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             )
 
     def compute_logp(self, datavector):
-        """Evaluate the native joint density; Cobaya adds the parameter priors.
+        """Evaluate the native joint log-density of one theory vector.
 
-        The normalized Gaussian differs from -chi2/2 by a fixed constant.
-        Retaining it permits evidence comparisons with the optional
-        normalized finite-simulation likelihood chosen by the dataset.
+        Hot path: runs at every sampled point. ci.compute_joint_loglike
+        returns the normalized Gaussian log-density (or, when the dataset
+        selects the finite-simulation likelihood, that density), which
+        differs from -chi2/2 by a fixed constant. Retaining the constant
+        permits evidence comparisons between the two likelihood choices.
+        Cobaya adds the parameter priors itself.
+
+        Arguments:
+          datavector = theory vector [ndata] in the measured row order.
+
+        Returns:
+          float, the log-density of the data given this theory vector.
         """
         return ci.compute_joint_loglike(prediction=datavector)
 
     def logp(self, **params):
-        """Return the likelihood of the supplied nuisance-parameter point."""
-        # Retain the vector that was actually scored, as in LSST Y1 x DESI.
-        # Notebook Fisher derivatives can read it after model.loglike without
-        # repeating the entire native projection or bypassing Cobaya theory.
+        """Return the log-likelihood of one sampled point (Cobaya's entry).
+
+        Hot path: Cobaya calls this at every sampled point.
+
+        Arguments:
+          **params = the sampled nuisance values by name (the list is in
+            the set_source_related docstring).
+
+        Returns:
+          float, the joint log-likelihood.
+
+        Side effects: stores the scored theory vector in
+        self.last_datavector, so notebooks can build Fisher derivatives
+        after a model.loglike call without repeating the entire native
+        projection or bypassing the Cobaya theory route.
+        """
         self.last_datavector = self.get_datavector(**params)
         return self.compute_logp(datavector=self.last_datavector)
 
     def get_datavector(self, **params):
-        """Return every xi+/xi-/Map3 row in the input measurement order."""
+        """Return the theory data vector at one sampled point.
+
+        Hot path: runs at every sampled point. The float64 conversion
+        guards the native likelihood call, which requires a contiguous
+        double array.
+
+        Arguments:
+          **params = the sampled nuisance values by name.
+
+        Returns:
+          float64 array [ndata], every xi_+/xi_-/Map3 row in the input
+          measurement order.
+        """
         return np.asarray(self.internal_get_datavector(**params))
 
     def internal_get_datavector(self, **params):
-        """Set physical inputs, project both probes and assemble the full vector."""
+        """Set the physical inputs and project both probes into one vector.
+
+        Hot path: runs at every sampled point. First the two setters send
+        the current cosmology and nuisance parameters to cosmolike, then
+        the xi rows come from the native shear spectra and the fixed
+        quadrature, and the Map3 rows from the aperture engine; each block
+        lands at its own row indices of the measured order.
+
+        Arguments:
+          **params = the sampled nuisance values by name.
+
+        Returns:
+          float array [ndata] in the measured row order.
+        """
+        # ------------------------------------------------------------------
+        # Current point: cosmology, sources and nuisance parameters into
+        # cosmolike and the Map3 model.
+        # ------------------------------------------------------------------
         self.set_cosmo_related()
         self.set_source_related(**params)
         ci.set_omp_threads(n=self.omp_threads)
         result = np.empty(self.rows.values.size)
+
+        # ------------------------------------------------------------------
+        # The xi block: native E- and B-mode shear spectra per bin pair,
+        # then the fixed multipole quadrature and bin average of initialize
+        # turn them into the binned xi_+ (E + B) and xi_- (E - B) rows,
+        # with the (1 + m_i)(1 + m_j) calibration applied per row.
+        # ------------------------------------------------------------------
         even, odd = ci.shear_power_rows(
             ell=self.xi_ell,
             bins=self.xi_rows.bins[:, :2],
@@ -456,6 +853,12 @@ class _cosmolike_prototype_base(DataSetLikelihood):
             spectra_b=odd,
             calibration=self.calibration,
         )
+
+        # ------------------------------------------------------------------
+        # The Map3 block: the aperture engine projects the physics model
+        # and the IA record into one value per bin triple and filter scale,
+        # with three calibration factors per row.
+        # ------------------------------------------------------------------
         result[self.map_indices] = self.map_engine.aperture_vector(
             model=self.model,
             ia=self.ia,
