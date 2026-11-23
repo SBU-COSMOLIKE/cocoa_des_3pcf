@@ -76,7 +76,16 @@ def main(argv=None):
                         help="replace an existing output archive")
     parser.add_argument("--save-terms", action="store_true",
                         help="also store the six covariance terms")
+    parser.add_argument("--xi-only", action="store_true",
+                        help="compute only the xi rows (required for now)")
     args = parser.parse_args(args=argv)
+
+    # The Map3 rows are refused before any numerical work: the likelihood's
+    # Map3 mean uses the finite-SAS estimator, the C covariance codes only
+    # the full-filter one (des_3pcf_covariance.compute explains).
+    if not args.xi_only:
+        parser.error("the Map3 covariance is refused for now (finite-SAS mean, "
+                     "full-filter covariance); pass --xi-only")
     if not hasattr(ci, "shape_noise"):
         parser.error(f"{ci.__file__} is the covariance-off build; unset "
                      f"IGNORE_COSMOLIKE_DES_3PCF_COVARIANCE and recompile")
@@ -128,8 +137,10 @@ def main(argv=None):
     # The likelihood sets its own thread count at every evaluation; the
     # covariance takes the OpenMP team of the environment.
     ci.set_omp_threads(n=int(threads))
+    # --xi-only: the xi_+ and xi_- rows, every row whose kind is not map3.
+    xi_rows = np.flatnonzero(likelihood.rows.kind != "map3")
     result = survey.compute(interface=ci, likelihood=likelihood,
-                            settings=settings)
+                            settings=settings, indices=xi_rows)
     finished = time.perf_counter()
 
     # --- 4. THE ARCHIVE AND ITS INPUT FILES ---

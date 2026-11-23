@@ -382,6 +382,23 @@ def compute(interface, likelihood, settings, indices=None):
         rows = rows.select(indices=np.asarray(indices, dtype=np.int64))
 
     # ------------------------------------------------------------------
+    # Estimator check. The likelihood builds its Map3 mean with the
+    # finite-SAS estimator (measured side bins), while the C covariance
+    # codes only the full-filter estimator. The two estimators fluctuate
+    # differently, so a full-filter covariance does not describe the
+    # Map3 rows the likelihood scores; it is refused until that question
+    # is settled. The xi rows use the same estimator in both and remain
+    # available (compute_covariance.py --xi-only).
+    # ------------------------------------------------------------------
+    map3_count = int(np.count_nonzero(rows.kind == "map3"))
+    if 0 != map3_count:
+        raise ValueError(
+            f"{map3_count} Map3 rows requested; the likelihood's Map3 mean "
+            f"uses the finite-SAS estimator, but the C covariance codes only "
+            f"the full-filter estimator, so their covariance is refused. "
+            f"Select the xi rows (compute_covariance.py --xi-only).")
+
+    # ------------------------------------------------------------------
     # Shape noise: a diagonal [nbin, nbin] matrix of N_i (steradians).
     # ------------------------------------------------------------------
     density = np.asarray(settings["source_density_arcmin2"], dtype=np.float64)

@@ -81,15 +81,35 @@ def evaluated():
     }
 
 
+def xi_indices(likelihood):
+    """Return the indices of the xi_+ and xi_- rows (kind other than map3)."""
+    return np.flatnonzero(likelihood.rows.kind != "map3")
+
+
 @pytest.fixture(scope="module")
 def result(evaluated):
-    """Return the adapter's covariance of every likelihood row."""
+    """Return the adapter's covariance of the 400 xi rows.
+
+    The Map3 rows are refused for now: the likelihood's Map3 mean uses the
+    finite-SAS estimator, the C covariance codes only the full-filter one.
+    """
     ci.set_omp_threads(n=THREADS)
     return survey.compute(
         interface=ci,
         likelihood=evaluated["likelihood"],
         settings=evaluated["settings"],
+        indices=xi_indices(likelihood=evaluated["likelihood"]),
     )
+
+
+def test_map3_rows_are_refused(evaluated):
+    """A request that includes Map3 rows fails with the estimator reason."""
+    with pytest.raises(ValueError, match="finite-SAS"):
+        survey.compute(
+            interface=ci,
+            likelihood=evaluated["likelihood"],
+            settings=evaluated["settings"],
+        )
 
 
 def test_matrix_is_symmetric_finite_and_positive(result):
@@ -100,13 +120,13 @@ def test_matrix_is_symmetric_finite_and_positive(result):
     The smallest eigenvalue is checked too, so a failure names its value.
     """
     covariance = result["covariance"]
-    assert covariance.shape == (480, 480)
+    assert covariance.shape == (400, 400)
     assert np.all(np.isfinite(covariance))
     assert np.array_equal(covariance, covariance.T)
     np.linalg.cholesky(covariance)
     smallest = np.linalg.eigvalsh(covariance)[0]
     assert smallest > 0.0, f"minimum eigenvalue {smallest}"
-    assert result["terms"].shape == (6, 480, 480)
+    assert result["terms"].shape == (6, 400, 400)
     assert np.array_equal(np.sum(result["terms"], axis=0), covariance)
 
 
@@ -117,6 +137,7 @@ def test_two_calls_are_byte_identical(evaluated, result):
         interface=ci,
         likelihood=evaluated["likelihood"],
         settings=evaluated["settings"],
+        indices=xi_indices(likelihood=evaluated["likelihood"]),
     )
     for name in ("covariance", "terms", "mean"):
         assert again[name].tobytes() == result[name].tobytes(), name
@@ -199,7 +220,8 @@ def test_driver_refuses_an_existing_output(tmp_path, capsys):
     existing.write_bytes(b"keep")
     namespace = runpy.run_path(str(DRIVER))
     with pytest.raises(SystemExit) as stopped:
-        namespace["main"](argv=[str(YAML), "--output", str(existing)])
+        namespace["main"](argv=[str(YAML), "--xi-only",
+                                "--output", str(existing)])
     assert stopped.value.code == 2
     assert "exists" in capsys.readouterr().err
     with pytest.raises(FileExistsError):
