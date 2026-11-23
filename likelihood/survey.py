@@ -11,11 +11,14 @@ to infer a release, likelihood prescription or nuisance prior. Measured
 values can be used for comparisons, while Fisher calculations use the
 same row definitions to evaluate model derivatives.
 
-The files themselves are the released DES Y3 products bundled under
-data/upstream_y3/ (simulated vectors) and data/upstream_y3_observed/
-(observed measurements): the xi and Map3 measurement tables, the joint
-covariance and the nz_source table; data/README.md records their origin
-and hashes. The likelihood's initialize reads them once, through
+The files themselves come from Rafael Gomes' public repository
+github.com/rchgomes/3pcf_integrator at commit d6098d3, copied under
+data/upstream_y3/ (simulated vectors at the CosmoGrid cosmology) and
+data/upstream_y3_observed/ (the observed, unblinded measurements): the
+xi and Map3 measurement tables, the joint covariance and the nz_source
+table. scripts/download_y3_data.sh names every file and downloads it
+again from that commit, checking each against the git hash recorded in
+data/y3_reference_manifest.yaml and data/y3_observed_manifest.yaml. The likelihood's initialize reads them once, through
 read_survey, read_joint_covariance and read_source_distributions, and a
 notebook that needs the raw rows calls the same functions on the same
 dataset entries.
