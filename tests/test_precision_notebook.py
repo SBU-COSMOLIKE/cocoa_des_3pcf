@@ -3,7 +3,10 @@
 import numpy as np
 import pytest
 
-import cosmolike_des_3pcf_notebook_wrappers as notebook
+from notebook_functions import notebook_functions
+
+
+notebook = notebook_functions("EXAMPLE_COVARIANCE_PME.ipynb")
 
 
 def test_controlled_joint_sample_is_singular_without_requiring_its_inverse():

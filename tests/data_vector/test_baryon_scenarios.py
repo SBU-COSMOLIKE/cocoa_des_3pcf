@@ -2,7 +2,7 @@
 
 The scenario route builds Cobaya models of EXAMPLE_EVALUATE1.yaml on the
 xi-only dataset with the bfmt block and the likelihood key
-external_baryon_suppression (see interface/cosmolike_des_3pcf_notebook_wrappers.py).
+external_baryon_suppression (see EXAMPLE_FEEDBACK_SCENARIOS.ipynb).
 The checks concentrate on mistakes that can produce plausible curves: a
 bfmt fallback to unity hidden by its logger, feedback state surviving into
 the gravity-only prediction, a changed FLAMINGO continuation leaking below
@@ -16,6 +16,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
+
+from notebook_functions import notebook_functions
 
 from theory.bacco_bispectrum.emulator import (
     BaccoColdResponses, checked_bacco_triangles, installed_bacco_weights,
@@ -55,16 +57,16 @@ def catalog_entry(name):
 def test_theory_messages_catch_a_silenced_logger():
     """A logger set to CRITICAL cannot hide bfmt's error-to-unity message.
 
-    _evaluate switches the bfmt logger to WARNING and attaches the
+    evaluate_scenario switches the bfmt logger to WARNING and attaches the
     collecting handler for one evaluation; this repeats those steps on a
     differently named logger, the way a colored Cobaya logger behaves.
     """
-    import cosmolike_des_3pcf_notebook_wrappers as wrapper
+    wrapper = notebook_functions("EXAMPLE_FEEDBACK_SCENARIOS.ipynb")
 
     logger = logging.getLogger("colored-bfmt-regression")
     logger.setLevel(logging.CRITICAL)
     before = list(logger.handlers)
-    messages = wrapper._TheoryMessages()
+    messages = wrapper.TheoryMessages()
     previous_level = logger.level
     logger.setLevel(logging.WARNING)
     logger.addHandler(messages)
@@ -80,14 +82,14 @@ def test_theory_messages_catch_a_silenced_logger():
 
 def test_scenario_information_switches_power_only_feedback():
     """A scenario input adds bfmt and the key on the xi-only dataset, copying."""
-    import cosmolike_des_3pcf_notebook_wrappers as wrapper
+    wrapper = notebook_functions("EXAMPLE_FEEDBACK_SCENARIOS.ipynb")
 
     information, point = example_information()
     scenario, options = catalog_entry(name="FLAMINGO")
-    reference = wrapper._scenario_information(
+    reference = wrapper.scenario_information(
         information=information, scenario=None, theory_options=options,
     )
-    changed = wrapper._scenario_information(
+    changed = wrapper.scenario_information(
         information=information, scenario=scenario, theory_options=options,
     )
     likelihood = changed["likelihood"][wrapper.LIKELIHOOD]
@@ -102,7 +104,7 @@ def test_scenario_information_switches_power_only_feedback():
     # A feedback parameter already in the example would be overwritten.
     information["params"]["jet_frac_flamingo"] = 0.5
     with pytest.raises(ValueError, match="already a parameter"):
-        wrapper._scenario_information(
+        wrapper.scenario_information(
             information=information, scenario=scenario, theory_options=options,
         )
 
@@ -114,19 +116,19 @@ def test_failed_scenario_leaves_the_gravity_only_rows_exact():
     model that sets P_DMO * R_P, or fails halfway, must not change the
     gravity-only xi rows evaluated afterward with Cobaya's cache off.
     """
-    import cosmolike_des_3pcf_notebook_wrappers as wrapper
+    wrapper = notebook_functions("EXAMPLE_FEEDBACK_SCENARIOS.ipynb")
 
     information, point = example_information()
     scenario, options = catalog_entry(name="BACCO")
-    reference_info = wrapper._scenario_information(
+    reference_info = wrapper.scenario_information(
         information=information, scenario=None, theory_options=options,
     )
-    reference = wrapper._evaluate(info=reference_info, point=point)
+    reference = wrapper.evaluate_scenario(info=reference_info, point=point)
     first = reference["xi"].copy()
 
     # A working scenario changes the shared native power...
-    working = wrapper._evaluate(
-        info=wrapper._scenario_information(
+    working = wrapper.evaluate_scenario(
+        info=wrapper.scenario_information(
             information=information, scenario=scenario, theory_options=options,
         ),
         point=point,
@@ -138,8 +140,8 @@ def test_failed_scenario_leaves_the_gravity_only_rows_exact():
     rejected = dict(scenario, parameters=dict(scenario["parameters"]))
     rejected["parameters"]["M_c_baccoemu"] = 17.0
     with pytest.raises(RuntimeError):
-        wrapper._evaluate(
-            info=wrapper._scenario_information(
+        wrapper.evaluate_scenario(
+            info=wrapper.scenario_information(
                 information=information, scenario=rejected, theory_options=options,
             ),
             point=point,
@@ -154,14 +156,14 @@ def test_failed_scenario_leaves_the_gravity_only_rows_exact():
 
 def test_flamingo_tail_hold_changes_only_small_scales():
     """The held-tail bfmt keeps R_P below the pivot and holds it above."""
-    import cosmolike_des_3pcf_notebook_wrappers as wrapper
+    wrapper = notebook_functions("EXAMPLE_FEEDBACK_SCENARIOS.ipynb")
 
     information, point = example_information()
     scenario, options = catalog_entry(name="FLAMINGO")
     responses = []
     for tail in (False, True):
-        run = wrapper._evaluate(
-            info=wrapper._scenario_information(
+        run = wrapper.evaluate_scenario(
+            info=wrapper.scenario_information(
                 information=information, scenario=scenario,
                 theory_options=options, tail=tail,
             ),
