@@ -5,14 +5,9 @@ those correlations or compressing only the standalone xi response gives
 detectably different information. No cosmological integration is needed.
 """
 
-from pathlib import Path
-import sys
-
 import numpy as np
 import pytest
 from scipy.stats import multivariate_t
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from cobaya.likelihoods.des_3pcf.compression import LinearCompression, fit_compression, load_compression
 from likelihood_example import make_likelihood

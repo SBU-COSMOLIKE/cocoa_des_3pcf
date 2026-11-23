@@ -173,7 +173,8 @@ def summary(arguments):
     agreement = {}
     for threads, record in records.items():
         if np.any(1 != record["calls"]):
-            raise ValueError(f"{threads} threads: a component skipped a point.")
+            raise ValueError(f"{threads} threads: a component was not "
+                             "evaluated exactly once at every point.")
         vectors = record["datavector"]
         for index in range(1, vectors.shape[0]):
             if np.array_equal(vectors[index], vectors[index - 1]):

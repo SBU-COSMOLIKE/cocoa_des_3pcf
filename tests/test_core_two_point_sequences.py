@@ -132,7 +132,6 @@ def baryon_test_file(path):
 
 def child_calculation(case, destination):
     """Run one clean reference or a complete reused-process setting sequence."""
-    sys.path.insert(0, str(PROJECT / "scripts"))
     sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
     sys.path.insert(0, str(CORE_DIRECTORY))
     import cosmolike_des_y3_interface as core

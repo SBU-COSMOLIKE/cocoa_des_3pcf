@@ -37,7 +37,6 @@ def run(output, threads):
     os.environ["COBAYA_NOMPI"] = "1"
     project = Path(__file__).resolve().parents[2]
     cocoa = project.parents[1]
-    sys.path.insert(0, str(project / "scripts"))
     sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     import numpy as np
     from cobaya.model import get_model

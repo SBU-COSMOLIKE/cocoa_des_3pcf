@@ -71,7 +71,6 @@ def run(options):
     os.environ["OMP_THREAD_LIMIT"] = "6"
     os.environ["OMP_DYNAMIC"] = "FALSE"
     project = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(project / "scripts"))
     sys.path.insert(0, str(project.parents[1] / "external_modules/code/cosmolike_core"))
     sys.path.insert(0, str(project / "tests" / "data_vector"))
     sys.path.insert(0, str(project / "tests" / "covariance"))

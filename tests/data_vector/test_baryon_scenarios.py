@@ -2,7 +2,7 @@
 
 The scenario route builds Cobaya models of EXAMPLE_EVALUATE1.yaml on the
 xi-only dataset with the bfmt block and the likelihood key
-external_baryon_suppression (see interface/cosmolike_des_3pcf_feedback_wrappers.py).
+external_baryon_suppression (see interface/cosmolike_des_3pcf_notebook_wrappers.py).
 The checks concentrate on mistakes that can produce plausible curves: a
 bfmt fallback to unity hidden by its logger, feedback state surviving into
 the gravity-only prediction, a changed FLAMINGO continuation leaking below
@@ -59,7 +59,7 @@ def test_theory_messages_catch_a_silenced_logger():
     collecting handler for one evaluation; this repeats those steps on a
     differently named logger, the way a colored Cobaya logger behaves.
     """
-    import cosmolike_des_3pcf_feedback_wrappers as wrapper
+    import cosmolike_des_3pcf_notebook_wrappers as wrapper
 
     logger = logging.getLogger("colored-bfmt-regression")
     logger.setLevel(logging.CRITICAL)
@@ -80,7 +80,7 @@ def test_theory_messages_catch_a_silenced_logger():
 
 def test_scenario_information_switches_power_only_feedback():
     """A scenario input adds bfmt and the key on the xi-only dataset, copying."""
-    import cosmolike_des_3pcf_feedback_wrappers as wrapper
+    import cosmolike_des_3pcf_notebook_wrappers as wrapper
 
     information, point = example_information()
     scenario, options = catalog_entry(name="FLAMINGO")
@@ -114,7 +114,7 @@ def test_failed_scenario_leaves_the_gravity_only_rows_exact():
     model that sets P_DMO * R_P, or fails halfway, must not change the
     gravity-only xi rows evaluated afterward with Cobaya's cache off.
     """
-    import cosmolike_des_3pcf_feedback_wrappers as wrapper
+    import cosmolike_des_3pcf_notebook_wrappers as wrapper
 
     information, point = example_information()
     scenario, options = catalog_entry(name="BACCO")
@@ -154,7 +154,7 @@ def test_failed_scenario_leaves_the_gravity_only_rows_exact():
 
 def test_flamingo_tail_hold_changes_only_small_scales():
     """The held-tail bfmt keeps R_P below the pivot and holds it above."""
-    import cosmolike_des_3pcf_feedback_wrappers as wrapper
+    import cosmolike_des_3pcf_notebook_wrappers as wrapper
 
     information, point = example_information()
     scenario, options = catalog_entry(name="FLAMINGO")

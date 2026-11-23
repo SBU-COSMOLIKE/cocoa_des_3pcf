@@ -1,698 +1,1400 @@
-"""Run small, declared comparisons with unmodified original source files.
+"""Notebook wrappers for the des_3pcf CosmoLike interface.
 
-Live original-code runs use separate Python processes. Each process reads
-verified source files and its own configuration, so fastnc's class-level
-dictionaries cannot affect a later notebook calculation. No source module
-is patched, no missing package is installed, and no survey likelihood is
-implied by these finite-operator checks. All physical arrays use radians
-and the conventions named in each result.
+Every EXAMPLE notebook of this project imports its helpers from this one
+module, as the lsst_y1 notebooks import cosmolike_lsst_y1_notebook_wrappers:
 
-Notebooks import these calls from the same cosmolike_<project>_notebook_wrappers
-location the other Cocoa projects use. Importing the module prepares no
-cosmology and starts no calculation. The original code is fastnc, the
-external three-point natural-components package this project is validated
-against.
+    import cosmolike_des_3pcf_interface as ci
+    import cosmolike_des_3pcf_notebook_wrappers as nw
+
+Importing the module prepares no cosmology and starts no calculation. The
+sections below serve one notebook each:
+
+  1. IA operator decomposition (EXAMPLE_IA_COMPONENTS): splits the Map3
+     prediction of an evaluated Cobaya likelihood into its gravity-only
+     and intrinsic-alignment operators.
+  2. bfmt feedback scenarios (EXAMPLE_FEEDBACK_SCENARIOS): evaluates the
+     two-point rows of the Cobaya likelihood under each feedback model of
+     configs/feedback_scenarios.yaml.
+  3. Covariance teaching example (EXAMPLE_COVARIANCE_PME and
+     EXAMPLE_COVARIANCE_MAPS): precision-matrix corrections on controlled
+     Gaussian vectors, and the reader of external simulation vectors.
+
+Each section opens with its own description and the terms it uses.
 """
 
-import argparse
+import copy
 import hashlib
+import importlib
 import importlib.util
 import json
-import yaml
-import os
+import logging
 from pathlib import Path
-import subprocess
 import sys
-import tempfile
+
+import numpy as np
+from scipy.linalg import solve_triangular
+import yaml
 
 
-PROJECT = Path(__file__).resolve().parents[1]  # Owns interface/ and data/.
-CORE = PROJECT.parents[1] / "external_modules/code/cosmolike_core"
-# The shared cosmolike_core Python supplies the reference bihalofit theory.
+# PROJECT = projects/des_3pcf (owns interface/, data/ and configs/);
+# COCOA = the Cocoa root; CORE = the cosmolike core checkout, whose Python
+# supplies cosmolike_notebook_utils.
+PROJECT = Path(__file__).resolve().parents[1]
+COCOA = PROJECT.parents[1]
+CORE = COCOA / "external_modules/code/cosmolike_core"
 sys.path.insert(0, str(CORE))
 
-from theory.bihalofit.variance import reference_physics_model, reference_bihalofit
-
-MANIFEST = PROJECT / "data" / "code_comparison_manifest.yaml"
-FORMAT = "des3pcf-code-comparison-v1"
-BLAS_VARIABLES = (
-    "OPENBLAS_NUM_THREADS",
-    "MKL_NUM_THREADS",
-    "BLIS_NUM_THREADS",
-    "VECLIB_MAXIMUM_THREADS",
-    "NUMEXPR_NUM_THREADS",
-    "GOTO_NUM_THREADS",
+from cosmolike_notebook_utils.covariance.precision import component_precision_expansion
+from cosmolike_notebook_utils.covariance.precision import (
+    precision_expansion,
+    split_precision_expansion,
 )
+from cosmolike_notebook_utils.covariance.precision import whiten_covariance
+
+# ci = the compiled cosmolike library of this project; the notebook puts
+# interface/ on sys.path before importing this file, and the likelihood
+# imports the same module, so both share one extension and its state.
+import cosmolike_des_3pcf_interface as ci
 
 
-def validate_comparison_settings(settings):
-    """Check explicit notebook settings without reading a configuration file.
+# Cobaya's name of the joint xi/Map3 likelihood in the example yamls.
+LIKELIHOOD = "des_3pcf.joint_shear"
+
+
+# ==========================================================================
+# 1. IA operator decomposition (EXAMPLE_IA_COMPONENTS)
+# ==========================================================================
+#
+# Split the Map3 prediction of an evaluated Cobaya likelihood into IA operators.
+#
+# The operator decomposition splits one aperture-statistic prediction
+# (Map3, the third-order aperture-mass moment) into the separate physical
+# operators that add up to it: the gravity-only term and each
+# intrinsic-alignment (IA) term, further split by which of the three source
+# legs carry an intrinsic shape. EXAMPLE_IA_COMPONENTS.ipynb plots each
+# contribution alone.
+#
+# Every physical input comes from the Cobaya likelihood des_3pcf.joint_shear
+# after one evaluation: the Map3 physics model that set_source_related built
+# from the theory blocks (CAMB distances, growth and power, the BiHalofit
+# matter bispectrum, the shifted source n(z)), the IA record of the same
+# point, the shear calibrations and the likelihood's own aperture settings.
+# This file adds no physics; it selects rows and calls the compiled
+# decomposition.
+# ==========================================================================
+
+
+def aperture_components(cobaya_model, triplets, velocity_shear=0.0):
+    """Decompose the Map3 rows of selected source triples at the evaluated point.
+
+    The likelihood's aperture engine (likelihood.map_engine) is a transform
+    plan for all of its Map3 rows, and the compiled plan offers no way to
+    evaluate a subset of the rows it was built for. The decomposition
+    repeats the full aperture integral once per operator and placement
+    (40 times, one more for the total), so on the full plan it would
+    project every source triple of the survey 41 times. This function
+    therefore builds a second plan with the same constructor and the same
+    settings as the likelihood's initialize, restricted to the requested
+    rows. A plan projects each source triple on its own, so each selected
+    row gets the value it has in the full plan; the returned "prediction"
+    (the likelihood's own Map3 rows) lets the caller check that.
+
+    The IA dictionary is the likelihood's own record of this point
+    (amplitudes a1, eta1, a2, eta2, bta, normalization c1rho and pivot
+    zpivot, power_mode, fb and feedback_amplitude), with two keys
+    replaced in a copy: ct, the requested velocity-shear amplitude, and
+    ct_mode = 0, under which the physical amplitude is Ct = C1 * ct, with
+    C1 the linear tidal-alignment coefficient (the convention of fastnc,
+    the external three-point natural-components code this project
+    compares against). The likelihood itself always runs with ct = 0.
+    The shear calibrations (1 + m_i) of the evaluated point multiply every
+    component, three factors per row, as they do in the likelihood.
 
     Arguments:
-      settings = source locations, output location and small-grid controls.
-        Paths must be absolute; the notebook constructs them from its project
-        directory. None marks an unavailable original library.
+      cobaya_model = Cobaya model (from cobaya.model.get_model) of a
+        numbered example yaml that contains des_3pcf.joint_shear, already
+        evaluated once (for example with logposterior at the yaml's
+        sampler.evaluate.override point); a TATT example (EXAMPLE_EVALUATE2)
+        gives every operator a nonzero amplitude.
+      triplets = requested zero-based source triples, integer array of
+        shape [ntriplet, 3]; [0, 2, 3] is the triple labelled 134.
+      velocity_shear = the velocity-shear amplitude Ct in units of C1
+        (ct_mode = 0 above); zero gives TATT without the additional
+        velocity-shear operator.
+
     Returns:
-      an owned dictionary with normalized string paths for child processes.
+      dictionary with
+        components = the compiled result: "operators" (5 names),
+          "placements" (8 names, GGG ... III), "values" [5, 8, nrow],
+          "total" [nrow] (the complete calculation, evaluated separately)
+          and "closure" [nrow] (sum of values minus total);
+        rows = the selected SurveyRows (the labeled row table: one label,
+          row kind, bin indices and angle per data-vector entry), in the
+          likelihood's row order;
+        indices = positions of those rows in likelihood.last_datavector;
+        prediction = likelihood.last_datavector at those positions, the
+          Map3 rows the likelihood scored (computed with ct = 0);
+        ia = the IA dictionary passed to the decomposition.
+
     Raises:
-      ValueError for unknown fields, relative paths or invalid grid/thread counts.
-    """
-    required = {"format", "sources", "output", "threads", "nfft",
-                "lmax", "mmax", "phi_count", "frozen_physics"}
-    if not isinstance(settings, dict) or set(settings) != required:
-        raise ValueError(
-            f"Comparison settings must contain exactly {sorted(required)}."
-        )
-    settings = dict(settings)
-    if settings["format"] != FORMAT:
-        raise ValueError(f"Comparison format must be {FORMAT}.")
-    limits = {
-        "threads": (1, 4),
-        "nfft": (8, 64),
-        "lmax": (0, 6),
-        "mmax": (0, 8),
-        "phi_count": (3, 16),
-    }
-    for name, bounds in limits.items():
-        value = settings[name]
-        if (isinstance(value, bool) or not isinstance(value, int)
-                or not bounds[0] <= value <= bounds[1]):
-            raise ValueError(f"{name} must be an integer in {bounds}.")
-    if settings["nfft"] % 2:
-        raise ValueError("The comparison FFT length must be even.")
-    if not isinstance(settings["frozen_physics"], bool):
-        raise ValueError("frozen_physics must be true or false.")
-    if not isinstance(settings["sources"], dict):
-        raise ValueError(
-            "sources must name tatt, main and integrator checkouts."
-        )
-    if set(settings["sources"]) != {"tatt", "main", "integrator"}:
-        raise ValueError("sources must name exactly tatt, main and integrator.")
-    sources = {}
-    for name, value in settings["sources"].items():
-        if value is None:
-            sources[name] = None
-        elif isinstance(value, (str, Path)) and str(value).strip():
-            source = Path(value).expanduser()
-            if not source.is_absolute():
-                raise ValueError(f"Source {name} must be an absolute path.")
-            sources[name] = str(source.resolve())
-        else:
-            raise ValueError(f"Source {name} needs a path or null.")
-    if (not isinstance(settings["output"], (str, Path))
-            or not str(settings["output"]).strip()):
-        raise ValueError("output must name a writable result directory.")
-    output = Path(settings["output"]).expanduser()
-    if not output.is_absolute():
-        raise ValueError("output must be an absolute path.")
-    settings["sources"] = sources
-    settings["output"] = str(output.resolve())
-    return settings
+      ValueError when the model has no des_3pcf.joint_shear likelihood,
+      the likelihood has not been evaluated, the triples are not an
+      integer [ntriplet, 3] array, velocity_shear is not finite, or a
+      requested triple has no Map3 row.
 
-
-def comparison_status(settings):
-    """Check source hashes and dependency availability without scientific work.
-
-    An unavailable or modified checkout is reported explicitly. The runner
-    will skip it rather than compare against a different source silently.
-    A commit label is supplemented by hashes of every imported TATT Python
-    file and of the individual main/integrator files used here.
-    """
-    settings = validate_comparison_settings(settings=settings)
-    manifest = yaml.safe_load(MANIFEST.read_text())
-    report = {"format": FORMAT, "sources": {}, "dependencies": {}}
-    for package in ("numpy", "scipy", "astropy", "pandas", "mpi4py",
-                    "cosmosis", "treecorr"):
-        available = importlib.util.find_spec(package) is not None
-        report["dependencies"][package] = available
-    for name, specification in manifest.items():
-        directory = settings["sources"][name]
-        record = dict(specification)
-        record["path"] = directory
-        record["status"] = "verified"
-        record["problems"] = []
-        if directory is None:
-            record["status"] = "unavailable"
-            record["problems"].append("No source checkout was configured.")
-        else:
-            for relative, expected in specification["sha256"].items():
-                source_file = Path(directory) / relative
-                if not source_file.is_file():
-                    record["problems"].append(f"Missing {relative}")
-                else:
-                    source_bytes = source_file.read_bytes()
-                    actual = hashlib.sha256(source_bytes).hexdigest()
-                    if actual != expected:
-                        record["problems"].append(f"SHA256 differs: {relative}")
-            if record["problems"]:
-                record["status"] = "unavailable"
-        report["sources"][name] = record
-    report["scope"] = (
-        "Finite transform/aperture checks; no original CosmoSIS chain or "
-        "TreeCorr catalogue measurement is executed."
-    )
-    return report
-
-
-def _worker_environment(threads):
-    """Set thread limits before the child imports NumPy or the extension."""
-    environment = os.environ.copy()
-    for name in BLAS_VARIABLES:
-        environment[name] = "1"
-    environment["OMP_NUM_THREADS"] = str(threads)
-    environment["OMP_DYNAMIC"] = "FALSE"
-    environment["MKL_DYNAMIC"] = "FALSE"
-    environment["PYTHONDONTWRITEBYTECODE"] = "1"
-    environment["PYTHONPATH"] = os.pathsep.join([
-        str(PROJECT / "interface"),
-        str(CORE),
-    ])
-    if sys.platform == "darwin":
-        environment["OMP_PROC_BIND"] = "disabled"
-    else:
-        environment["OMP_PROC_BIND"] = "close"
-    return environment
-
-
-def run_code_comparison(settings):
-    """Run available comparisons serially and save arrays plus provenance.
-
-    Arguments:
-      settings = explicit source paths, output path and numerical controls.
-    Returns:
-      report dictionary containing source/dependency status and case records.
-      A case's NPZ file contains complete port/reference outputs and a small
-      plotting slice. An unequal-filter discrepancy is reported as expected,
-      never relabeled as agreement.
     Side effects:
-      Writes only the configured output directory, starts one child at a
-      time, and sets every BLAS vendor to one thread in those children.
+      Builds one transform plan and runs 41 aperture projections with
+      the likelihood's OpenMP thread count. The likelihood's own state
+      (its model, IA record, plan and last_datavector) is read, never
+      changed, and no file is written.
     """
-    settings = validate_comparison_settings(settings=settings)
-    report = comparison_status(settings=settings)
-    output = Path(settings["output"])
-    output.mkdir(parents=True, exist_ok=True)
-    report["configuration"] = settings
-    report["cases"] = []
-    tasks = ["tatt", "main", "integrator"]
-    if settings["frozen_physics"]:
-        tasks.append("frozen")
-    for task in tasks:
-        if task != "frozen" and report["sources"][task]["status"] != "verified":
-            report["cases"].append({"name": task, "status": "unavailable"})
-            continue
-        temporary_directory = tempfile.TemporaryDirectory(
-            prefix="comparison-", dir=output
-        )
-        with temporary_directory as temporary:
-            request_file = Path(temporary) / "request.yaml"
-            request_file.write_text(yaml.safe_dump(settings, sort_keys=False))
-            result_file = output / f"{task}_result.yaml"
-            # The child runs this file itself; its main() is the worker.
-            process = subprocess.run(
-                args=[sys.executable, "-B", str(Path(__file__).resolve()),
-                      "--worker", task, "--request", str(request_file),
-                      "--result", str(result_file)],
-                env=_worker_environment(threads=settings["threads"]),
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=120,
-            )
-            (output / f"{task}_stdout.txt").write_text(process.stdout)
-            (output / f"{task}_stderr.txt").write_text(process.stderr)
-            if process.returncode != 0:
-                report["cases"].append({
-                    "name": task,
-                    "status": "failed",
-                    "returncode": process.returncode,
-                    "diagnostic": process.stderr[-4000:],
-                })
-            else:
-                report["cases"].extend(yaml.safe_load(result_file.read_text()))
-    report_file = output / "comparison_report.yaml"
-    report_file.write_text(yaml.safe_dump(report, sort_keys=False))
-    report["report_file"] = str(report_file)
-    return report
-
-
-def load_comparison_case(case):
-    """Return owned plotting arrays from a completed case record."""
-    import numpy as np
-
-    if "arrays" not in case:
-        raise ValueError("This comparison has no numerical arrays.")
-    with np.load(case["arrays"], allow_pickle=False) as saved:
-        return {
-            "x": saved["x"].copy(),
-            "reference": saved["plot_reference"].copy(),
-            "ported": saved["plot_ported"].copy(),
-            "labels": saved["labels"].tolist(),
-        }
-
-
-def comparison_case(report, name):
-    """Select one named result, refusing absent or failed calculations."""
-    for case in report["cases"]:
-        if case["name"] == name:
-            if case["status"] != "completed":
-                raise ValueError(f"{name} did not complete: {case}")
-            return case
-    raise ValueError(f"No completed comparison named {name} is present.")
-
-
-def comparison_summary(report):
-    """Return a short display table without hiding unavailable cases."""
-    import pandas as pd
-
-    rows = []
-    if "cases" in report:
-        for case in report["cases"]:
-            rows.append({
-                "comparison": case["name"],
-                "status": case["status"],
-                "reference": case.get("kind", "not executed"),
-                "max scaled difference": case.get("max_scaled_error"),
-                "expected difference": case.get("expected_discrepancy", False),
-            })
-    else:
-        for name, source in report["sources"].items():
-            rows.append({
-                "source": name,
-                "commit": source["commit"],
-                "status": source["status"],
-                "diagnostic": "; ".join(source["problems"]),
-            })
-    return pd.DataFrame(rows)
-
-
-def _load_original_file(path, name):
-    """Execute an original standalone file without changing its contents."""
-    specification = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(specification)
-    specification.loader.exec_module(module)
-    return module
-
-
-def _save_case(settings, name, reference, ported, x, plot_reference,
-               plot_ported, labels, note, expected_discrepancy=False,
-               frozen=False):
-    """Store arrays and a scaled diagnostic that remains defined at zero."""
-    import numpy as np
-
-    if reference.shape != ported.shape:
-        raise ValueError(f"{name}: reference and port shapes differ.")
-    if not np.all(np.isfinite(reference)) or not np.all(np.isfinite(ported)):
-        raise ValueError(f"{name}: comparison contains nonfinite output.")
-    scale = float(np.max(np.abs(reference)))
-    if scale == 0.0:
+    # ----------------------------------------------------------------------
+    # Validation, before any expensive setup. cobaya_model.likelihood is
+    # Cobaya's {name: likelihood object} table. set_source_related stores
+    # model, ia and calibration, and logp stores last_datavector, in the
+    # same evaluation, so their presence means one complete evaluation.
+    # ----------------------------------------------------------------------
+    if LIKELIHOOD not in cobaya_model.likelihood:
         raise ValueError(
-            f"{name}: identically zero reference gives no reach check."
-        )
-    error = float(np.max(np.abs(ported - reference)) / scale)
-    filename = Path(settings["output"]) / f"{name}.npz"
-    np.savez(
-        filename,
-        reference=reference,
-        ported=ported,
-        x=x,
-        plot_reference=plot_reference,
-        plot_ported=plot_ported,
-        labels=np.asarray(labels),
+            f"The Cobaya model has no {LIKELIHOOD} likelihood; build it "
+            "from a numbered EXAMPLE_EVALUATE yaml of des_3pcf.")
+    likelihood = cobaya_model.likelihood[LIKELIHOOD]
+    for name in ("model", "ia", "calibration", "last_datavector"):
+        if not hasattr(likelihood, name):
+            raise ValueError(
+                f"The likelihood has no {name} yet; evaluate the model once "
+                "(cobaya_model.logposterior(point)) before decomposing it.")
+    requested = np.asarray(triplets)
+    if (requested.ndim != 2 or requested.shape[1] != 3
+            or requested.dtype.kind not in "iu"):
+        raise ValueError(
+            f"triplets has shape {requested.shape} and dtype {requested.dtype}; "
+            "supply an integer array of shape [ntriplet, 3].")
+    if not np.isfinite(velocity_shear):
+        raise ValueError(
+            f"velocity_shear = {velocity_shear}; supply a finite number.")
+
+    # ----------------------------------------------------------------------
+    # Row selection: keep exactly the Map3 rows whose bin triple matches a
+    # requested one; a triple with no matching row is an error, not an
+    # empty result. selected is a True/False flag per data-vector row;
+    # flatnonzero turns it into the row positions, in the likelihood order.
+    # ----------------------------------------------------------------------
+    rows = likelihood.rows
+    selected = np.zeros(shape=rows.values.size, dtype=bool)
+    for triplet in requested:
+        match = (rows.kind == "map3") & np.all(rows.bins == triplet, axis=1)
+        if not np.any(match):
+            raise ValueError(
+                f"No Map3 row has the source triple {triplet}; the bins run "
+                f"from 0 to {likelihood.source_ntomo - 1}.")
+        selected |= match
+    indices = np.flatnonzero(selected)
+    rows = rows.select(indices=indices)
+
+    # ----------------------------------------------------------------------
+    # The transform plan of the selected rows, with the same arguments as
+    # the likelihood's initialize. Angles convert from arcminutes to
+    # radians (pi / (180 * 60)); the side-bin edges are log-spaced between
+    # theta_min_arcmin and theta_max_arcmin, and the opening angle phi is
+    # sampled at the centres of phi_bins equal cells of [0, pi].
+    # ----------------------------------------------------------------------
+    theta_edges = np.exp(np.linspace(
+        start=np.log(likelihood.theta_min_arcmin),
+        stop=np.log(likelihood.theta_max_arcmin),
+        num=likelihood.ntheta + 1,
+    )) * np.pi / (180.0 * 60.0)
+    dphi = np.pi / likelihood.phi_bins
+    plan = ci.production.TransformPlan.for_aperture(
+        bins=np.ascontiguousarray(
+            a=rows.bins,
+            dtype=np.int32,
+        ),
+        filters=np.ascontiguousarray(a=rows.angles),
+        theta_lower=theta_edges[:-1],
+        phi=(np.arange(likelihood.phi_bins) + 0.5) * dphi,
+        dlnt=float(np.log(theta_edges[1] / theta_edges[0])),
+        dphi=dphi,
+        ell_min=likelihood.map_ell_min,
+        ell_max=likelihood.map_ell_max,
+        minimum_size=likelihood.minimum_fft_size,
+        lmax=likelihood.map_lmax,
+        mmax=likelihood.map_mmax,
+        nmu=likelihood.map_nmu,
+        transform_options=likelihood.transform_options,
+        projection_mode="prepared",
+        projection_settings=likelihood.projection_settings,
+        projection_batch_size=likelihood.projection_batch_size,
+        accuracy=likelihood.accuracy,
+    )
+
+    # ----------------------------------------------------------------------
+    # Components. dict(likelihood.ia, ct=..., ct_mode=0) copies the
+    # likelihood's IA record and overrides two keys in the copy (the
+    # record itself stays as the likelihood scored it). The compiled
+    # aperture_components returns one curve per operator and placement,
+    # the separately evaluated total, and their difference (closure).
+    # ----------------------------------------------------------------------
+    ia = dict(likelihood.ia, ct=float(velocity_shear), ct_mode=0)
+    ci.set_omp_threads(n=likelihood.omp_threads)
+    components = plan.aperture_components(
+        model=likelihood.model,
+        ia=ia,
+        calibration=likelihood.calibration,
     )
     return {
-        "name": name,
-        "status": "completed",
-        "kind": "frozen_reference" if frozen else "live_original_code",
-        "expected_discrepancy": expected_discrepancy,
-        "max_scaled_error": error,
-        "reference_scale": scale,
-        "shape": list(reference.shape),
-        "arrays": str(filename),
-        "note": note,
+        "components": components,
+        "rows": rows,
+        "indices": indices,
+        "prediction": np.array(likelihood.last_datavector[indices], copy=True),
+        "ia": ia,
     }
 
 
-def _bessel_comparison(settings, compiled, original, corrected):
-    """Compare identical finite FFTLog operators with their declared taper."""
-    import numpy as np
+# ==========================================================================
+# 2. bfmt feedback scenarios (EXAMPLE_FEEDBACK_SCENARIOS)
+# ==========================================================================
+#
+# Run the bfmt feedback scenarios of EXAMPLE_FEEDBACK_SCENARIOS through Cobaya.
+#
+# The notebook compares the change in all 400 DES Y3 two-point rows at one
+# cosmology when baryonic feedback modifies the nonlinear matter power. Every
+# prediction comes from the project's Cobaya likelihood des_3pcf.joint_shear,
+# built with cobaya.model.get_model from a numbered EXAMPLE yaml.
+#
+# Terms used in this file:
+#   bfmt = Cocoa's baryonic-feedback Cobaya theory block (the repository
+#       baryon_suppression); given a feedback model and its parameters it
+#       returns R_P = P_feedback/P_DMO, the ratio of the matter power
+#       spectrum with baryonic feedback to the gravity-only one.
+#   DMO = dark-matter-only: the power spectrum without baryonic feedback,
+#       the reference every response ratio divides by.
+#   R_P = that power-spectrum response ratio, tabulated over [z, k].
+#   external_baryon_suppression = the likelihood yaml key that requests R_P
+#       from bfmt and multiplies the nonlinear power of the xi rows by it.
+#       A power-only model supplies no bispectrum response, so the
+#       likelihood then refuses every Map3 row; the scenarios therefore use
+#       data/des_y3_xi1.dataset, whose mask cuts all Map3 rows.
+#   scenario catalog = configs/feedback_scenarios.yaml: one entry per bfmt
+#       model with its selector options, fixed feedback parameters and paper.
+#   FLAMINGO = a hydrodynamical simulation suite (one of the bfmt feedback
+#       models); BACCO = an emulator calibrated on simulations, whose paired
+#       diagnostic below evaluates its power and bispectrum responses
+#       together, from its calibrated cold-matter models.
+#
+# Each scenario changes only the nonlinear matter power, as the LSST Y1
+# feedback example does. Intrinsic-alignment loops keep their linear DMO
+# input, and no three-point response is inferred from these power-only
+# scenarios.
+# ==========================================================================
 
-    ell = np.geomspace(start=0.05, stop=30.0, num=settings["nfft"])
-    integrand = np.exp(-0.2 * ell[:, None] - 0.4 * ell[None, :])
-    integrand *= ell[:, None] ** 1.2 * ell[None, :] ** 0.8
-    source = original.two_Bessel(
-        x1=ell, x2=ell, fx1x2=integrand, nu1=1.13, nu2=0.89,
-        xy=1.7, c_window_width=0.25, N_pad=0,
-    )
-    reference = source.two_Bessel_binave(
-        ell1=1, ell2=3, binwidth_dlny1=0.12, binwidth_dlny2=0.12,
-    )[2]
-    ported = compiled.production.two_bessel(
-        ell=ell, integrand=integrand, order1=1, order2=3,
-        nu1=1.13, nu2=0.89, xy=1.7, dlnt=0.12, padding=0,
-        window=corrected, window_width=0.25,
-    )
-    name = "bessel_main_taper" if corrected else "bessel_tatt_untapered"
-    middle = ell.size // 2
-    return _save_case(
-        settings=settings, name=name, reference=reference, ported=ported,
-        x=1.7 / ell[::-1], plot_reference=reference[middle:middle + 1],
-        plot_ported=ported[middle:middle + 1], labels=["J1/J3 transform"],
-        note=("Main applies the Fourier-coefficient taper; TATT computes "
-              "and discards it. Each port call matches its named source mode."),
-    )
+# The dataset whose mask keeps the 400 xi rows and cuts all 80 Map3 rows.
+XI_DATASET = "des_y3_xi1.dataset"
+
+# The catalog format tag guards against reading an unrelated YAML.
+CATALOG_FORMAT = "des3pcf-bfmt-scenarios-v1"
+
+# The FLAMINGO tail test holds R_P constant above this wavenumber [h/Mpc].
+TAIL_PIVOT = 10.0
 
 
-class _ControlledMultipoles:
-    """Supply a symmetric smooth test bispectrum through fastnc's public API.
+class _TheoryMessages(logging.Handler):
+    """Collect bfmt warnings so a failed emulator cannot pass as no feedback.
 
-    This is a controlled input, not a cosmological fit. Holding these
-    multipoles fixed isolates the coupling, Fourier transform, bin average
-    and shear-rotation operations from the physical-model calculation.
-    Symmetry under ell1/ell2 exchange satisfies TATT's negative-M shortcut.
+    Some bfmt error paths log a message and return R_P = 1 instead of
+    raising an exception. run_scenarios attaches this handler to the bfmt
+    logger for each evaluation and refuses the scenario when it collected
+    any warning or error. The declared high-redshift continuation of bfmt
+    (above_zmax) produces no warning and is accepted.
     """
 
-    multipole_type = "legendre"
+    def __init__(self):
+        """Start with an empty message list; the process logging is unchanged."""
+        super().__init__(level=logging.WARNING)
+        self.messages = []
 
-    def kappa_bispectrum_multipole(self, L, ELL, PSI, **arguments):
-        """Return L-indexed Gaussian test rows on the requested source grid."""
-        import numpy as np
-
-        if arguments:
-            raise ValueError(
-                "The controlled provider has no source-bin parameters."
-            )
-        rows = []
-        for degree in L:
-            radial = np.exp(-0.03 * ELL**2)
-            shape = np.sin(2 * PSI) ** (2 * int(degree))
-            rows.append(radial * shape / (1 + degree)**2)
-        return np.asarray(rows, dtype=np.float64)
+    def emit(self, record):
+        """Keep the fully formatted message produced by the theory block."""
+        self.messages.append(record.getMessage())
 
 
-def _natural_comparison(settings, compiled, package):
-    """Call public FastNaturalComponents with cache and grid tuning disabled."""
-    import numpy as np
+def _require_installed_theory_data(model_number):
+    """Refuse missing emulator weights before a bfmt dependency can download.
 
-    phi = np.linspace(start=0.18, stop=2.95, num=settings["phi_count"])
-    calculator = package.fastnc.FastNaturalComponents(
-        verbose=False, Lmax=settings["lmax"], Mmax=settings["mmax"],
-        Lmax_diag=settings["lmax"], multipole_type="legendre",
-        cache=False, use_GLM_table=False, auto=False,
-        ell1min=0.05, ell1max=30.0, nfft=settings["nfft"],
-        t1=None, phi=phi, mu=[0, 1, 2, 3], dlnt=0.12,
-        nu1=1.01, nu2=1.01, N_pad=0, xy=1.0, projection="cent",
-    )
-    provider = _ControlledMultipoles()
-    calculator.set_bispectrum(bispectrum=provider)
-    calculator.compute()
-    reference = np.asarray([
-        calculator.Gamma0, calculator.Gamma1,
-        calculator.Gamma2, calculator.Gamma3,
-    ])
-    ell = calculator.ell1_fft.copy()
-    multipoles = provider.kappa_bispectrum_multipole(
-        L=np.arange(settings["lmax"] + 1),
-        ELL=calculator.ELL_FFT, PSI=calculator.PSI_FFT,
-    )
-    middle = ell.size // 2
-    opening = phi.size // 2
-    reference_slice = reference[:, middle, :, opening]
-    source_psi = calculator.GLM.psi.copy()
-    source_coupling = calculator.GLM(
-        np.arange(settings["lmax"] + 1),
-        np.arange(settings["mmax"] + 1), source_psi,
-    ).transpose(1, 0, 2)
-    analytic_coupling = compiled.production.legendre_coupling(
-        psi=source_psi, lmax=settings["lmax"], mmax=settings["mmax"], npsi=0,
-    )
-    coupling_labels = []
-    for mode in range(settings["mmax"] + 1):
-        for degree in range(settings["lmax"] + 1):
-            coupling_labels.append(f"M={mode}, L={degree}")
-    coupling = _save_case(
-        settings=settings, name="coupling_tatt_rectangle_bias",
-        reference=source_coupling, ported=analytic_coupling, x=source_psi,
-        plot_reference=source_coupling.reshape(-1, source_psi.size),
-        plot_ported=analytic_coupling.reshape(-1, source_psi.size),
-        labels=coupling_labels, expected_discrepancy=True,
-        note=("The original left-endpoint rectangle integrator caps at 4096 "
-              "samples. At L=M=0, psi=0, its integral is 4*pi^2/4096 "
-              "although the continuum result is zero. The coupling class "
-              "discards the integrator's convergence flag."),
-    )
-    coupling["source_left_endpoint_bias"] = float(source_coupling[0, 0, 0])
-    coupling["rectangle_bias_prediction"] = float(4 * np.pi**2 / 4096)
-    # The integration function itself exposes max_itern even though the
-    # public natural-component constructor does not pass that control on.
-    # A known zero integral isolates its endpoint rule without changing
-    # any method, class or source file.
-    def zero_integrand(angle):
-        return 4 * np.pi * np.cos(angle)
+    Several emulator packages fetch absent weight files from the internet
+    when they are first constructed. A notebook must not do that silently,
+    so the files those constructors read are checked first.
 
-    ladder = []
-    for iteration_limit in (6, 8, 10, 12):
-        value, converged = package.integration.aint(
-            fnc=zero_integrand, xmin=0.0, xmax=np.pi, Nx=2,
-            tol=1.0e-12, max_itern=iteration_limit,
-        )
-        count = 2 ** (iteration_limit + 2)
-        ladder.append({
-            "left_rectangle_count": count,
-            "source_integral": float(value),
-            "predicted_bias": float(4 * np.pi**2 / count),
-            "converged": bool(converged),
-        })
-    coupling["rectangle_bias_ladder"] = ladder
-    results = [coupling]
-    for exact in (False, True):
-        # Read the actual source table length. Its metadata field Npsi
-        # says 201 while the default self.psi array contains 200 nodes.
-        # Matching that array isolates numerical angular integration from
-        # the separate choice to interpolate at all.
-        npsi = 0 if exact else calculator.GLM.psi.size
-        plan = compiled.production.TransformPlan(
-            ell=ell, phi=phi, indices=np.arange(ell.size, dtype=np.int32),
-            lmax=settings["lmax"], mmax=settings["mmax"], npsi=npsi,
-            nu1=1.01, nu2=1.01, xy=1.0, dlnt=0.12,
-            padding=0, window=False, projection="centroid", ordered_legs=False,
-        )
-        real, imaginary = plan.natural_components(b_l=multipoles)
-        ported = real + 1j * imaginary
-        ported_slice = ported[:, middle, :, opening]
-        if exact:
-            name = "natural_exact_coupling"
-            note = (
-                "The same live TATT output is compared with exact C angular "
-                "coupling. This deliberately removes the source's 200-node "
-                "interpolation; its difference is not a source-agreement error."
-            )
+    Arguments:
+      model_number = bfmt selector baryon_model, 1 through 5.
+    Returns:
+      nothing when every needed file is present.
+    Raises:
+      FileNotFoundError naming the first missing file; Cocoa's installation
+      keys (external_modules/code/baryon_suppression/README.md) supply it.
+    """
+    from theory.bacco_bispectrum.emulator import installed_bacco_weights
+
+    paths = []
+    if model_number in (2, 5):
+        spec = importlib.util.find_spec(name="BCemu")
+        if spec is None:
+            raise FileNotFoundError("Install BCemu with Cocoa's installation keys.")
+        base = Path(spec.origin).parent / "input_data"
+        if model_number == 2:
+            for redshift in ("0", "0p5", "1", "1p5", "2"):
+                paths.append(base / f"kpls_emulator_z{redshift}_nComp3.pkl")
         else:
-            name = "natural_tatt_public"
-            note = (
-                "Live public TATT with centroid projection and matching "
-                "200-node linear angular interpolation. Source nodes retain "
-                "the demonstrated finite rectangle-integration bias; C "
-                "nodes use analytic coupling. This is not a DES error bound."
+            paths.append(base / "BCemu2025_meta.json")
+    if model_number == 4:
+        installed_bacco_weights()
+        spec = importlib.util.find_spec(name="baccoemu")
+        base = Path(spec.origin).parent
+        # bfmt also loads the ordinary BACCO power constructor, whose
+        # directories trigger downloads when absent.
+        for name in ("sigma8_emu_2.0.2", "cold_matter_linear_emu_1.0.2",
+                     "total_matter_linear_emu_1.0.2", "no_wiggles_emu_1.0.2",
+                     "nonlinear_emu_1.0.3"):
+            paths.append(base / name)
+    for path in paths:
+        if not path.exists():
+            raise FileNotFoundError(f"Cocoa setup must supply {path} before evaluation.")
+
+
+def _held_tail_theory():
+    """Return a bfmt subclass that holds R_P constant above TAIL_PIVOT h/Mpc.
+
+    The FLAMINGO tail test replaces the model's continuation on the
+    smallest scales by its value at the pivot. Inside Cobaya the response
+    reaches the likelihood only through the bfmt product, so the test uses
+    this subclass in place of bfmt: it runs the ordinary bfmt calculation,
+    then, at every redshift, sets R_P at every requested wavenumber above
+    the pivot to its value there. bfmt requests are in 1/Mpc, so the pivot
+    is TAIL_PIVOT * h in those units. This is an alternative modeling
+    assumption for one diagnostic, not a repair of the model.
+
+    Returns:
+      the class, for the "external" entry of a Cobaya theory block.
+    """
+    from cobaya.theories.bfmt.bfmt import bfmt
+
+    class held_tail_bfmt(bfmt):
+        """bfmt with R_P held at its TAIL_PIVOT h/Mpc value on smaller scales."""
+
+        def calculate(self, state, want_derived=True, **params_values_dict):
+            """Run bfmt, then hold each R_P row above the pivot wavenumber.
+
+            Returns:
+              False when bfmt rejected the point (Cobaya then assigns zero
+              probability), otherwise None.
+            Side effects:
+              replaces state["baryon_suppression"] rows in place.
+            """
+            accepted = super().calculate(state, want_derived, **params_values_dict)
+            if accepted is False:
+                return False
+            h = self.provider.get_param("H0") / 100.0
+            pivot = TAIL_PIVOT * h
+            log_k = np.log(self.requested_k)
+            above = self.requested_k > pivot
+            for redshift, row in state["baryon_suppression"].items():
+                value = np.exp(np.interp(np.log(pivot), log_k, np.log(row)))
+                held = row.copy()
+                held[above] = value
+                state["baryon_suppression"][redshift] = held
+            return None
+
+    return held_tail_bfmt
+
+
+def _scenario_information(information, scenario, theory_options, tail=False):
+    """Return the Cobaya input of one bfmt scenario on the xi-only dataset.
+
+    Arguments:
+      information = the example yaml as loaded by yaml_load_file, without
+        its sampler and output blocks; it is copied, never modified.
+      scenario = one catalog entry (name, options, parameters, paper), or
+        None for the gravity-only (DMO) reference.
+      theory_options = the catalog's shared bfmt options (nz, nk, above_zmax).
+      tail = True replaces bfmt by the held-tail subclass (FLAMINGO test).
+    Returns:
+      a new Cobaya input dictionary.
+    Raises:
+      ValueError when a feedback parameter already appears in the example.
+    """
+    info = copy.deepcopy(information)
+    likelihood = info["likelihood"][LIKELIHOOD]
+    likelihood["data_file"] = XI_DATASET
+    if scenario is None:
+        return info
+
+    # The fixed feedback parameters enter as constant Cobaya parameters;
+    # one already present would be silently overwritten, so refuse it.
+    for name in scenario["parameters"]:
+        if name in info["params"]:
+            raise ValueError(
+                f"The feedback parameter {name} of scenario {scenario['name']} "
+                "is already a parameter of the example yaml."
             )
-        results.append(_save_case(
-            settings=settings, name=name, reference=reference, ported=ported,
-            x=1 / ell[::-1],
-            plot_reference=np.concatenate(
-                (reference_slice.real, reference_slice.imag)
-            ),
-            plot_ported=np.concatenate((ported_slice.real, ported_slice.imag)),
-            labels=[
-                r"$\mathrm{Re}\,\Gamma_0$",
-                r"$\mathrm{Re}\,\Gamma_1$",
-                r"$\mathrm{Re}\,\Gamma_2$",
-                r"$\mathrm{Re}\,\Gamma_3$",
-                r"$\mathrm{Im}\,\Gamma_0$",
-                r"$\mathrm{Im}\,\Gamma_1$",
-                r"$\mathrm{Im}\,\Gamma_2$",
-                r"$\mathrm{Im}\,\Gamma_3$",
-            ],
-            note=note, expected_discrepancy=exact,
-        ))
-    return results
+    likelihood["external_baryon_suppression"] = True
+    options = dict(theory_options)
+    options.update(scenario["options"])
+    if tail:
+        options["external"] = _held_tail_theory()
+    info["theory"]["bfmt"] = options
+    info["params"].update(scenario["parameters"])
+    return info
 
 
-def _aperture_comparisons(settings, compiled, original):
-    """Exercise equal filters and display the original unequal-filter error."""
-    import numpy as np
+def _evaluate(info, point):
+    """Evaluate one Cobaya model and return its xi rows and response grid.
 
-    d2 = np.geomspace(start=0.002, stop=0.02, num=5)
-    d3 = np.geomspace(start=0.003, stop=0.03, num=5)
-    phi = np.linspace(start=0.2, stop=2.9, num=7)
-    dlnd = float(np.log(d2[1] / d2[0]))
-    dphi = float(phi[1] - phi[0])
-    side2, side3, opening = np.meshgrid(d2, d3, phi, indexing="ij")
-    envelope = np.exp(-(side2 / 0.015)**2 - (side3 / 0.019)**2)
-    gamma = []
-    for component in range(4):
-        gamma.append(envelope * np.exp(1j * (component + 1) * opening / 3))
-    gamma = np.asarray(gamma)
-    radii = np.asarray([0.004, 0.008, 0.012])
-    results = []
-    for unequal in (False, True):
-        ratios = np.asarray([1.0, 1.35, 1.8]) if unequal else np.ones(3)
-        filters = np.ascontiguousarray(radii[:, None] * ratios[None, :])
-        reference = original.calculateMap3(
-            three_pt=gamma, d2_vals=side2, d3_vals=side3, phi_vals=opening,
-            logr_bin_size=dlnd, phi_bin_size=dphi, filters=filters.T.copy(),
+    bfmt's BACCO branch reads the primordial amplitude A_s from the
+    provider without declaring it as a requirement. The example yaml
+    samples sigma8, so A_s exists only as a CAMB derived parameter; the
+    explicit add_requirements call makes CAMB provide it to every model.
+
+    Arguments:
+      info = Cobaya input from _scenario_information.
+      point = the example's evaluate point (sampler.evaluate.override).
+    Returns:
+      dictionary with xi (the xi rows), response (R_P[z,k] in h/Mpc, or None
+      for the DMO model), h, As, the likelihood (for its grids) and, for
+      bfmt BACCO, the cold-matter coordinates of the paired diagnostic.
+    Raises:
+      RuntimeError when the posterior is not finite or bfmt logged any
+      warning or error (including its fallback to R_P = 1).
+    Side effects:
+      Runs CAMB, BiHalofit, bfmt and the native xi projection once; the
+      native cosmolike state is overwritten, as at every likelihood call.
+    """
+    from cobaya.model import get_model
+
+    # ----------------------------------------------------------------------
+    # Model and message capture. bfmt's logger is switched to WARNING only
+    # for this evaluation; the finally block restores it even on errors.
+    # ----------------------------------------------------------------------
+    model = get_model(info_or_yaml_or_file=info)
+    model.add_requirements(requirements={"As": None})
+    messages = _TheoryMessages()
+    logger = None
+    previous_level = None
+    if "bfmt" in model.theory:
+        logger = model.theory["bfmt"].log
+        previous_level = logger.level
+        logger.setLevel(logging.WARNING)
+        logger.addHandler(messages)
+
+    # ----------------------------------------------------------------------
+    # One evaluation. BCEmu's import changes NumPy's global error policy;
+    # np.errstate restores the caller's policy when the block ends.
+    # ----------------------------------------------------------------------
+    try:
+        with np.errstate():
+            posterior = model.logposterior(params_values=point)
+    finally:
+        if logger is not None:
+            logger.removeHandler(messages)
+            logger.setLevel(previous_level)
+    if messages.messages:
+        raise RuntimeError("bfmt reported: " + "; ".join(messages.messages))
+    if not np.isfinite(posterior.logpost):
+        raise RuntimeError(
+            f"The Cobaya posterior is {posterior.logpost}; bfmt or CAMB "
+            "rejected the declared feedback/cosmology point."
         )
-        wr, wi = compiled.production.aperture_weights(
-            d2=d2, d3=d3, phi=phi, dlnd=dlnd, dphi=dphi, filters=filters,
-        )
-        ported = compiled.production.aperture_apply(
-            wr=wr, wi=wi,
-            gr=np.ascontiguousarray(gamma.real.reshape(1, 4, -1)),
-            gi=np.ascontiguousarray(gamma.imag.reshape(1, 4, -1)),
-        )[0]
-        name = "aperture_unequal" if unequal else "aperture_equal"
-        results.append(_save_case(
-            settings=settings, name=name, reference=reference, ported=ported,
-            x=radii, plot_reference=reference[None, :],
-            plot_ported=ported[None, :], labels=["Map3"],
-            expected_discrepancy=unequal,
-            note=("Rafael's adapted NumPy function is executed unchanged. "
-                  "Its k2.all()==1/k3.all()==1 test treats every nonzero "
-                  "ratio as equal to one, selecting the equal-filter kernel "
-                  "for these unequal filters. The port uses the general "
-                  "kernel."),
-        ))
-    return results
+
+    # ----------------------------------------------------------------------
+    # Results: the xi rows of the scored vector and, with feedback on, the
+    # response the likelihood applied (baryon_suppression_table reads R_P
+    # at h * k for the h/Mpc table nodes).
+    # ----------------------------------------------------------------------
+    likelihood = model.likelihood[LIKELIHOOD]
+    datavector = np.array(likelihood.last_datavector, copy=True)
+    result = {
+        "xi": datavector[likelihood.xi_indices],
+        "response": None,
+        "h": float(likelihood.h),
+        "As": float(model.provider.get_param("As")),
+        "likelihood": likelihood,
+        "model": model,
+    }
+    if likelihood.external_baryon_suppression:
+        result["response"] = likelihood.baryon_suppression_table()
+    if "bfmt" in model.theory and model.theory["bfmt"].baryon_model == 4:
+        result["bacco_coordinates"] = _bacco_coordinates(model=model, point=point)
+    return result
 
 
-def _frozen_physics(settings, compiled):
-    """Compare the C model with saved outputs; no original physics runs here."""
-    import numpy as np
+def _bacco_coordinates(model, point):
+    """Return the cold-matter BACCO coordinates of the bfmt evaluation.
 
-    # These deterministic tables define the existing frozen physics fixture.
-    # Keeping the input definition explicit avoids importing pytest in a
-    # user notebook. Its identity is checked by the comparison tests.
-    k = np.geomspace(start=1.0e-5, stop=1.0e3, num=96)
-    z = np.linspace(start=0.0, stop=2.0, num=41)
-    linear = 2.0e4 * k / (1.0 + (k / 0.15)**2)**1.8
-    nonlinear0 = linear * (1.0 + (k / 0.35)**2)**0.22
-    sources = np.empty(shape=(2, z.size), dtype=np.float64)
-    sources[0] = z**2 * np.exp(-(z / 0.6)**1.5)
-    sources[1] = z**2 * np.exp(-(z / 0.95)**1.5)
-    inputs = dict(
-        k=k, p_linear0=linear, z=z,
-        p_nonlinear=nonlinear0[None, :] / (1 + z[:, None])**2.4,
-        chi=3000 * z / (1 + 0.35 * z),
-        dz_dchi=(1 + 0.35 * z)**2 / 3000,
-        growth=1 / (1 + z), sources=sources,
-        omega_m=0.3, omega_de=0.7, w0=-1.0, wa=0.0,
-        ns=0.965, sigma8=0.8,
-        los_z=np.linspace(start=0.005, stop=2.0, num=25),
-        kernel_nz=101, source_readers=True, table_boost=8,
+    The paired diagnostic must use the same coordinates as the bfmt power
+    response: cold-matter density omega_cold = Omega_m - Omega_nu (bfmt's
+    own massive-neutrino convention, Omega_nu h^2 = m_nu/94.13 eV), the
+    baryon density, and sigma8 of the cold field from the BACCO amplitude
+    emulator that bfmt carries (sigma8 of total matter is not sigma8_cold).
+
+    Arguments:
+      model = evaluated Cobaya model whose bfmt block runs BACCO.
+      point = the evaluated parameter point (the five BACCO coordinates
+        come from the model's constant parameters).
+    Returns:
+      JSON-compatible dictionary of the eight BaccoColdResponses coordinates.
+    """
+    provider = model.provider
+    h = provider.get_param("H0") / 100.0
+    neutrino_mass = provider.get_param("mnu")
+    omega_cold = provider.get_param("omegam") - neutrino_mass / 94.13 / h**2
+    omega_baryon = provider.get_param("omegab")
+    sigma = model.theory["bfmt"].baccoemulator.get_sigma8(
+        cold=True,
+        omega_cold=omega_cold,
+        omega_baryon=omega_baryon,
+        A_s=provider.get_param("As"),
+        hubble=h,
+        ns=provider.get_param("ns"),
+        neutrino_mass=neutrino_mass,
+        w0=provider.get_param("w"),
+        wa=provider.get_param("wa"),
     )
-    model = reference_physics_model(factory=compiled.production.PhysicsModel, **inputs)
-    theory = reference_bihalofit(inputs=inputs)
-    filename = PROJECT / "tests/data_vector/reference_physics_fastnc.json"
-    record = json.loads(filename.read_text())
-    sides = np.asarray(record["sides"], dtype=np.float64)
-    redshift = np.asarray(record["redshifts"], dtype=np.float64)
-    matter = []
-    for component in range(4):
-        matter.append(theory.evaluate(
-            k1=sides[:, 0], k2=sides[:, 1], k3=sides[:, 2], z=redshift,
-            component=component,
-        ))
-    matter = np.asarray(matter)
-    reference = np.asarray(record["matter"])
-    results = [_save_case(
-        settings=settings, name="physics_matter_frozen", reference=reference,
-        ported=matter, x=np.arange(sides.shape[0]),
-        plot_reference=reference, plot_ported=matter,
-        labels=["total", "tree", "one halo", "three halo"], frozen=True,
-        note=("Python theory versus stored source outputs; no live original-code run. The "
-              "source nonlinear-radius root permits the established 2e-4 "
-              "matter comparison tolerance; the tree has a tighter test."),
-    )]
-    for mode in (0, 1):
-        parameters = dict(record["parameters"], c1rho=0.0134)
-        parameters["power_mode"] = mode
-        actual = model.ia(
-            sides=sides, redshifts=redshift, parameters=parameters
-        )
-        expected = np.asarray(record["alignment"][str(mode)])
-        labels = []
-        for component in range(19):
-            labels.append(f"IA {component}")
-        results.append(_save_case(
-            settings=settings, name=f"physics_ia_mode{mode}_frozen",
-            reference=expected, ported=actual, x=np.arange(sides.shape[0]),
-            plot_reference=expected.T, plot_ported=actual.T, labels=labels,
-            frozen=True,
-            note=("Stored 19-component source outputs. A right-triangle ddB "
-                  "zero is checked with its vertex's roundoff scale by the "
-                  "separate high-precision tests; a relative error at zero "
-                  "is not a useful diagnostic."),
-        ))
-    for result in results:
-        fixture_hash = hashlib.sha256(filename.read_bytes()).hexdigest()
-        result["fixture_sha256"] = fixture_hash
-        result["source_commit"] = record["source_commit"]
-    return results
+    coordinates = {
+        "omega_cold": float(omega_cold),
+        "omega_baryon": float(omega_baryon),
+        "sigma8_cold": float(np.asarray(sigma).item()),
+    }
+    constants = model.parameterization.constant_params()
+    for name in ("M_c", "eta", "beta", "M1_z0_cen", "theta_inn"):
+        coordinates[name] = float(constants[name + "_baccoemu"])
+    return coordinates
 
 
-def _worker(task, settings):
-    """Dispatch one isolated run after its process thread limits are set."""
-    sys.path.insert(0, str(PROJECT / "interface"))
-    import cosmolike_des_3pcf_interface as compiled
+def run_scenarios(information, point, catalog_path):
+    """Compute every catalog bfmt scenario and its two-point response.
 
-    compiled.set_omp_threads(nthreads=settings["threads"])
-    if task == "frozen":
-        return _frozen_physics(settings=settings, compiled=compiled)
-    directory = Path(settings["sources"][task])
-    if task == "tatt":
-        sys.path.insert(0, str(directory))
-        import fastnc
+    For the gravity-only reference and then for each catalog entry, a
+    Cobaya model is built from the example yaml on the xi-only dataset;
+    the entries add the bfmt block and switch external_baryon_suppression
+    on. The Map3 rows are refused by the likelihood (they are NaN in its
+    data vector) and are not returned. Afterwards the reference model is
+    evaluated again, with Cobaya's cache off, and its xi rows must equal
+    the first ones bit for bit: no feedback state may survive in the
+    native cosmolike globals that every model shares.
 
-        if Path(fastnc.__file__).resolve().parent != directory / "fastnc":
-            raise RuntimeError("Python imported a different fastnc checkout.")
-        bessel = _bessel_comparison(
-            settings=settings, compiled=compiled,
-            original=fastnc.twobessel, corrected=False,
+    Arguments:
+      information = the example yaml (for example EXAMPLE_EVALUATE1.yaml)
+        loaded with cobaya.yaml.yaml_load_file, sampler and output removed.
+      point = its evaluate point (sampler.evaluate.override).
+      catalog_path = YAML listing bfmt selectors, feedback points and papers.
+    Returns:
+      dictionary with rows (the 400 xi rows), reference (DMO xi), means
+      [scenario, row], responses R_P[scenario, z, k], k [h/Mpc], z, names,
+      records (one per scenario), tail_test (FLAMINGO xi with R_P held
+      above TAIL_PIVOT h/Mpc, or None) and record (run provenance).
+    Raises:
+      ValueError for an unknown catalog format, a changed DMO restoration
+      or a feedback parameter already in the example; RuntimeError when
+      bfmt rejects a point or reports a warning. Physical model errors are
+      propagated, never replaced by unity responses.
+    Side effects:
+      Builds 2 + len(scenarios) Cobaya models (plus one for the tail
+      test), each running CAMB, BiHalofit and the xi projection once. No
+      input file changes and no sampler or Fisher run starts.
+    """
+    # ----------------------------------------------------------------------
+    # Catalog. Every bfmt model's weight files are checked before the
+    # first model is built.
+    # ----------------------------------------------------------------------
+    catalog_path = Path(catalog_path).resolve()
+    catalog = yaml.safe_load(catalog_path.read_text())
+    if catalog.get("format") != CATALOG_FORMAT:
+        raise ValueError(
+            f"{catalog_path} has format {catalog.get('format')!r}; "
+            f"run_scenarios reads {CATALOG_FORMAT!r} catalogs."
         )
-        natural = _natural_comparison(
-            settings=settings, compiled=compiled, package=fastnc,
-        )
-        return [bessel] + natural
-    if task == "main":
-        original = _load_original_file(
-            path=directory / "fastnc/hankel/twobessel.py",
-            name="original_main_bessel",
-        )
-        return [_bessel_comparison(
-            settings=settings, compiled=compiled, original=original,
-            corrected=True,
-        )]
-    original = _load_original_file(
-        path=directory / "python/fast_map3.py", name="original_rafael_map3",
+    for scenario in catalog["scenarios"]:
+        _require_installed_theory_data(model_number=scenario["options"]["baryon_model"])
+
+    # ----------------------------------------------------------------------
+    # Gravity-only reference on the xi-only dataset (feedback key off).
+    # ----------------------------------------------------------------------
+    reference_info = _scenario_information(
+        information=information, scenario=None,
+        theory_options=catalog["theory_options"],
     )
-    return _aperture_comparisons(
-        settings=settings, compiled=compiled, original=original,
+    reference_run = _evaluate(info=reference_info, point=point)
+    reference_likelihood = reference_run["likelihood"]
+    rows = reference_likelihood.xi_rows
+    reference = reference_run["xi"]
+
+    # ----------------------------------------------------------------------
+    # Scenario loop: one model per catalog entry. FLAMINGO also runs the
+    # tail test, in which only the continuation above the pivot changes.
+    # ----------------------------------------------------------------------
+    source = COCOA / "external_modules/code/baryon_suppression/bfmt.py"
+    source_sha256 = hashlib.sha256(source.read_bytes()).hexdigest()
+    names = []
+    means = []
+    responses = []
+    records = []
+    tail_test = None
+    for scenario in catalog["scenarios"]:
+        info = _scenario_information(
+            information=information, scenario=scenario,
+            theory_options=catalog["theory_options"],
+        )
+        run = _evaluate(info=info, point=point)
+        names.append(scenario["name"])
+        means.append(run["xi"])
+        responses.append(run["response"])
+        record = {
+            "name": scenario["name"],
+            "paper": scenario["paper"],
+            "producer": "Cocoa bfmt baryon_suppression through des_3pcf.joint_shear",
+            "supplied_spectra": ["P"],
+            "source_sha256": source_sha256,
+            "options": dict(catalog["theory_options"], **scenario["options"]),
+            "feedback_parameters": dict(scenario["parameters"]),
+            "h": run["h"],
+            "As": run["As"],
+            "bfmt_request_k_units": "1/Mpc, the table numbers 10^log10k",
+            "likelihood_k_units": "h/Mpc; R_P read at h*k",
+        }
+        if "bacco_coordinates" in run:
+            record["bacco_coordinates"] = run["bacco_coordinates"]
+            record["bacco_sigma8_source"] = "bfmt Burger2025 sigma8_cold emulator"
+            record["matter_field"] = "cold; applying to total P is an approximation"
+        records.append(record)
+        run["model"].close()
+
+        if scenario["name"] == "FLAMINGO":
+            tail_info = _scenario_information(
+                information=information, scenario=scenario,
+                theory_options=catalog["theory_options"], tail=True,
+            )
+            tail_run = _evaluate(info=tail_info, point=point)
+            tail_test = tail_run["xi"]
+            tail_run["model"].close()
+        print(scenario["name"], "completed; all two-point rows:", run["xi"].size)
+
+    # ----------------------------------------------------------------------
+    # DMO restoration: the reference model again, without Cobaya's cache,
+    # after every scenario model has changed the shared native state.
+    # ----------------------------------------------------------------------
+    reference_run["model"].logposterior(params_values=point, cached=False)
+    restored = reference_likelihood.last_datavector[reference_likelihood.xi_indices]
+    if not np.array_equal(restored, reference):
+        raise ValueError(
+            "The gravity-only xi rows changed after the scenarios; maximum "
+            f"relative change {np.max(np.abs(restored / reference - 1.0))}."
+        )
+    reference_run["model"].close()
+
+    # ----------------------------------------------------------------------
+    # Result: the curves plus a record naming the inputs, so the saved npz
+    # is traceable to its exact example yaml, catalog and dataset.
+    # ----------------------------------------------------------------------
+    return {
+        "rows": rows,
+        "reference": reference,
+        "means": np.asarray(means),
+        "responses": np.asarray(responses),
+        "k": 10.0**reference_likelihood.log10k_interp_2D,
+        "z": reference_likelihood.z_interp_2D.copy(),
+        "names": names,
+        "records": records,
+        "tail_test": tail_test,
+        "record": {
+            "likelihood": LIKELIHOOD,
+            "dataset": XI_DATASET,
+            "dataset_sha256": hashlib.sha256(
+                (PROJECT / "data" / XI_DATASET).read_bytes()).hexdigest(),
+            "point": dict(point),
+            "catalog_sha256": hashlib.sha256(catalog_path.read_bytes()).hexdigest(),
+            "restoration_exact": True,
+            "scope": "power-only scenario; no inferred bispectrum or feedback constraint",
+            "flamingo_tail_test": f"hold R_P constant above {TAIL_PIVOT} h/Mpc",
+        },
+    }
+
+
+def bacco_diagnostic(records):
+    """Evaluate the installed paired models on two supported triangle families.
+
+    Arguments:
+      records = records from run_scenarios, including BACCO coordinates.
+    Returns:
+      k[80], power[2,80], bispectrum[2,2,80], and JSON-compatible provenance.
+      Axis meanings are redshift [0,1], triangle [equilateral,scalene], k.
+      Scalene sides are [0.6k,k,1.2k]. All are inside the weights' side box.
+    Raises:
+      StopIteration when the records contain no BACCO entry.
+    Side effects:
+      Loads two already-installed small emulators. No physical projection.
+    """
+    from theory.bacco_bispectrum.emulator import BaccoColdResponses
+
+    # next(...) takes the first record whose name is BACCO from the
+    # generator expression; with no such record the generator is exhausted
+    # and next raises StopIteration.
+    record = next(item for item in records if item["name"] == "BACCO")
+    emulator = BaccoColdResponses(coordinates=record["bacco_coordinates"])
+
+    # The side range 0.03--6 stays away from calibration boundaries for
+    # both shapes; the 80 sampled sides run over 0.05--5 h/Mpc. Squeezed
+    # and degenerate triangles are avoided in this example.
+    wave = np.geomspace(0.05, 5.0, 80)
+    power = []
+    bispectrum = []
+    for redshift in (0.0, 1.0):
+        shapes = []
+        for ratios in ((1.0, 1.0, 1.0), (0.6, 1.0, 1.2)):
+            sides = wave[:, None] * np.asarray(ratios)[None, :]
+            response_p, response_b = emulator.evaluate(z=redshift, k=wave, sides=sides)
+            shapes.append(response_b)
+        power.append(response_p)
+        bispectrum.append(shapes)
+
+    return {
+        "k": wave,
+        "power": np.asarray(power),
+        "bispectrum": np.asarray(bispectrum),
+        "record": {
+            "coordinates": record["bacco_coordinates"],
+            "sigma8_source": record["bacco_sigma8_source"],
+            "weights": emulator.weights,
+            "matter_field": "CDM+baryons",
+            "redshifts": [0.0, 1.0],
+            "shapes": [[1.0, 1.0, 1.0], [0.6, 1.0, 1.2]],
+        },
+    }
+
+
+def save_scenarios(result, paired, destination):
+    """Save the notebook's plotted arrays and input evidence without pickle.
+
+    Arguments:
+      result, paired = outputs of run_scenarios and bacco_diagnostic.
+      destination = notebook-owned NPZ under chains/; reruns replace this output.
+    Returns:
+      resolved output path. Source inputs and emulator weights are untouched.
+    Side effects:
+      Creates the destination directory when needed and writes the npz
+      file (an existing file at the destination is replaced).
+    """
+    destination = Path(destination).resolve()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    # One JSON metadata string carries every record, so the npz holds only
+    # plain arrays and loads with allow_pickle=False.
+    record = dict(result["record"], scenarios=result["records"], paired=paired["record"])
+    arrays = dict(
+        k=result["k"],
+        z=result["z"],
+        responses=result["responses"],
+        reference=result["reference"],
+        means=result["means"],
+        labels=result["rows"].labels,
+        paired_k=paired["k"],
+        paired_power=paired["power"],
+        paired_bispectrum=paired["bispectrum"],
+        metadata=np.asarray(json.dumps(record, sort_keys=True)),
+    )
+    if result["tail_test"] is not None:
+        arrays["tail_test"] = result["tail_test"]
+    np.savez_compressed(destination, **arrays)
+    return destination
+
+
+# ==========================================================================
+# 3. Covariance teaching example (EXAMPLE_COVARIANCE_PME and _MAPS)
+# ==========================================================================
+#
+# Teach covariance corrections with controlled joint Gaussian measurements.
+#
+# The example is self-contained: the vectors are synthetic Gaussian draws
+# with a covariance prescribed in this file, so the exact precision matrix
+# and the exact truncation error of every estimator are known in closed
+# form. Two-point-like and three-point-like rows get different units and
+# correlated fluctuations on purpose, to exercise the same mixed-unit
+# bookkeeping as the survey vector. The same precision.py functions used by
+# the forecast are called directly; no compiled model, CAMB calculation,
+# download or file is needed. Loading external simulation vectors is the
+# separate explicit call at the end of the module.
+#
+# Terms used in this file:
+#   precision matrix = the inverse covariance, the matrix that weights the
+#       chi2 and the parameter fit.
+#   PME = the precision-matrix expansion of Friedrich and Eifler (2018,
+#       arXiv:1703.07786): instead of inverting a noisy sample covariance,
+#       expand the precision around the inverse of an analytic model
+#       covariance M; only M is ever inverted.
+#   Wishart correction = the sample covariance of N independent Gaussian
+#       draws follows a Wishart distribution, so products of sample
+#       covariances are biased; the second-order PME term subtracts exactly
+#       that bias (precision.py holds the formula).
+#   whitening = the change of coordinates d -> L^-1 d with C = L L^T, after
+#       which the covariance is the identity (each covariance eigenvector
+#       rescaled by one over the square root of its eigenvalue); errors and
+#       ranks measured there are dimensionless and unit-free.
+#   coverage = the fraction of repeated experiments whose quoted error
+#       interval actually contains the truth; a quoted sigma without
+#       coverage can be too optimistic.
+# ==========================================================================
+
+
+def controlled_joint_covariance(ndata=24):
+    """Specify C=A+B and an imperfect independent model M=A+Bm.
+
+    A is a diagonal known random contribution and B a dense contribution
+    with correlations both within and between the two-point-like and
+    three-point-like row groups. The controlled experiment draws the A and
+    B random vectors independently, so the total covariance really is the
+    sum of the two prescribed pieces and every estimator can be compared
+    with the exact answer.
+
+    Arguments:
+      ndata = even integer at least 8, split equally into the two row groups.
+    Returns:
+      Dictionary with true/analytic/component covariances, row labels and a
+      three-column illustrative derivative matrix. The row scales 1e-4 and
+      1e-8 only expose mixed units; they are not calibrated survey variances.
+    Raises:
+      ValueError for an invalid dimension.
+    """
+    # isinstance(ndata, bool) is checked separately because Python booleans
+    # are integers (True == 1) and would otherwise slip through.
+    if (isinstance(ndata, bool) or int(ndata) != ndata
+            or ndata < 8 or ndata % 2):
+        raise ValueError("ndata must be an even integer at least 8.")
+    ndata = int(ndata)
+
+    # ----------------------------------------------------------------------
+    # Dimensionless shapes. B = 0.12 * exp(-|i-j|/3) + 0.025: a short
+    # correlation length of 3 rows at amplitude 0.12, plus a small 0.025
+    # offset correlating every pair of rows (including the two groups).
+    # A is diagonal with variances 0.8 + 0.1 cos(i/4): order one, slowly
+    # varying, never close to zero. The model Bm = 0.8 B + 0.01 I is
+    # deliberately imperfect: 20 percent low, with a small spurious
+    # diagonal.
+    # ----------------------------------------------------------------------
+    coordinate = np.arange(ndata, dtype=np.float64)
+    separation = np.abs(coordinate[:, None] - coordinate[None, :])
+    component = 0.12 * np.exp(-separation / 3.0)
+    component += 0.025 * np.ones((ndata, ndata))
+    known = np.diag(0.8 + 0.1 * np.cos(coordinate / 4.0))
+    component_model = 0.8 * component + 0.01 * np.eye(ndata)
+
+    # ----------------------------------------------------------------------
+    # Units. The first half of the rows plays the two-point group at scale
+    # 1e-4 and the second half the three-point group at scale 1e-8, four
+    # orders of magnitude apart, so any estimator that mishandles mixed
+    # units fails visibly.
+    # ----------------------------------------------------------------------
+    scales = np.full(ndata, 1.0e-4)
+    scales[ndata // 2:] = 1.0e-8
+    units = scales[:, None] * scales[None, :]
+    component *= units
+    known *= units
+    component_model *= units
+
+    # ----------------------------------------------------------------------
+    # Three prescribed summary responses, not derivatives of a shear
+    # model: a constant offset, two smooth oscillations, and an extra
+    # response of the three-point group alone in the last column, so the
+    # parameters couple the two groups differently.
+    # ----------------------------------------------------------------------
+    derivative = np.empty((ndata, 3))
+    derivative[:, 0] = scales
+    derivative[:, 1] = scales * np.cos(coordinate / 4.0)
+    derivative[:, 2] = scales * np.sin(coordinate / 3.0)
+    derivative[ndata // 2:, 2] += scales[ndata // 2:]
+
+    # ----------------------------------------------------------------------
+    # Row labels in the survey convention: kind "xip" for the two-point
+    # half, "map3" for the three-point half.
+    # ----------------------------------------------------------------------
+    kinds = np.full(ndata, "map3", dtype="U4")
+    kinds[:ndata // 2] = "xip"
+    labels = []
+    for index, kind in enumerate(kinds):
+        labels.append(f"controlled_{kind}_{index:03d}")
+
+    return {
+        "known": known,
+        "component": component,
+        "component_model": component_model,
+        "truth": known + component,
+        "analytic": known + component_model,
+        "derivatives": derivative,
+        "row_labels": np.asarray(labels),
+        "row_kind": kinds,
+        "parameter_names": ["amplitude", "alignment", "shape"],
+        "scope": "Controlled Gaussian joint vectors; not DES simulations.",
+    }
+
+
+def draw_vectors(covariance, count, generator):
+    """Generate independent zero-mean vectors with an explicit covariance.
+
+    With C = L L^T (Cholesky) and n a standard normal vector, L n has
+    covariance C exactly; multiplying by L preserves the intentionally
+    different observable units without an SVD rank threshold.
+
+    Arguments:
+      covariance = positive definite [ndata,ndata] matrix.
+      count = number of realizations; generator = supplied NumPy Generator.
+    Returns:
+      Float64 vectors[count,ndata].
+    Raises:
+      numpy.linalg.LinAlgError (from the Cholesky factorization) when the
+      covariance is not positive definite.
+    """
+    factor = np.linalg.cholesky(covariance)
+    normal = generator.standard_normal(size=(count, covariance.shape[0]))
+    return normal @ factor.T
+
+
+def covariance_of_vectors(vectors):
+    """Subtract the estimated mean and divide by N-1.
+
+    Arguments:
+      vectors = finite [N,ndata] independent realizations, N>=2.
+    Returns:
+      Unbiased sample covariance. Rank deficiency is allowed and no inverse
+      is attempted; after mean removal its rank is at most N-1.
+    Raises:
+      ValueError for invalid arrays or insufficient realizations.
+    """
+    values = np.asarray(vectors, dtype=np.float64)
+    if (values.ndim != 2 or values.shape[0] < 2 or values.shape[1] == 0
+            or not np.all(np.isfinite(values))):
+        raise ValueError("Vectors must be finite [N,ndata] with N>=2.")
+    centered = values - np.mean(values, axis=0)
+    return centered.T @ centered / (values.shape[0] - 1)
+
+
+def precision_diagnostics(precision, truth, derivative, validation):
+    """Compare a supplied precision with known truth and held-out vectors.
+
+    All comparisons happen in true-whitened coordinates (module
+    docstring): with the true covariance factored as C = Lc Lc^T, a
+    perfect precision estimate turns Lc^T Psi Lc into the identity, so
+    the eigenvalues of Lc^T Psi Lc - I are dimensionless errors.
+
+    Arguments:
+      precision = symmetric candidate [ndata,ndata], possibly indefinite.
+      truth = known true covariance; derivative = [ndata,nparameter].
+      validation = independent zero-mean truth draws, unused in preparation.
+    Returns:
+      Eigenvalues of Lc.T precision Lc-I and its relative Frobenius error.
+      Positive candidates also yield parameter-error and validation statistics.
+      Indefinite candidates are retained as failures, without eigenvalue repair.
+    """
+    # ----------------------------------------------------------------------
+    # Whitened error: symmetrize against rounding, then read off the
+    # eigenvalues. A smallest eigenvalue at or below zero means the
+    # candidate is not a valid precision matrix.
+    # ----------------------------------------------------------------------
+    factor = np.linalg.cholesky(truth)
+    normalized = factor.T @ precision @ factor
+    normalized = 0.5 * (normalized + normalized.T)
+    eigenvalues = np.linalg.eigvalsh(normalized)
+    error = normalized - np.eye(truth.shape[0])
+    result = {
+        "positive": bool(eigenvalues[0] > 0.0),
+        "minimum_precision_eigenvalue_in_true_units": float(eigenvalues[0]),
+        "precision_error_eigenvalues": eigenvalues - 1.0,
+        "relative_precision_frobenius_error": float(
+            np.linalg.norm(error) / np.sqrt(truth.shape[0])
+        ),
+    }
+    if not result["positive"]:
+        result["inference_status"] = "refused_nonpositive_precision"
+        return result
+
+    # ----------------------------------------------------------------------
+    # Linear parameter fit weighted by the candidate precision: the
+    # information matrix D^T Psi D, its inverse as the quoted parameter
+    # covariance, and the explicit least-squares estimator matrix.
+    # ----------------------------------------------------------------------
+    information = derivative.T @ precision @ derivative
+    parameter_covariance = np.linalg.solve(
+        information, np.eye(information.shape[0]),
+    )
+    estimator = parameter_covariance @ derivative.T @ precision
+
+    # ----------------------------------------------------------------------
+    # Validation: fit every held-out draw and compare the scatter of the
+    # fitted parameters with the quoted covariance. The exact frequentist
+    # covariance of the linear estimator depends on the true C, not on the
+    # covariance whose inverse was used to weight the fit, hence the
+    # sandwich product below.
+    # ----------------------------------------------------------------------
+    fitted = validation @ estimator.T
+    empirical = covariance_of_vectors(vectors=fitted)
+    sandwich = estimator @ truth @ estimator.T
+    result.update({
+        "inference_status": "positive_precision",
+        "parameter_covariance": parameter_covariance,
+        "exact_fit_covariance": sandwich,
+        "validation_fit_covariance": empirical,
+        "sigma": np.sqrt(np.diag(parameter_covariance)),
+        "validation_variance_over_quoted": (
+            np.diag(empirical) / np.diag(parameter_covariance)
+        ),
+        "exact_variance_over_quoted": (
+            np.diag(sandwich) / np.diag(parameter_covariance)
+        ),
+        # The einsum operands read: for each validation vector n, the
+        # quadratic form sum_ij validation[n,i] precision[i,j]
+        # validation[n,j] — one chi2-like number per vector. Its mean per
+        # row is 1 for a perfect precision.
+        "validation_mean_quadratic_per_row": float(
+            np.mean(np.einsum("ni,ij,nj->n", validation, precision, validation))
+            / truth.shape[0]
+        ),
+    })
+    return result
+
+
+def controlled_precision_study(ndata=24, training_count=18,
+                               validation_count=1200, seed=1937):
+    """Compare full and component PME with one fixed, independent model.
+
+    Training contains N independent A and B vectors; their sum samples C.
+    The B-only sample uses those same N B vectors, so comparisons share the
+    available physical realizations. Two disjoint halves supply independent
+    B covariance estimates for the split-group polynomial. Validation uses
+    a separately seeded stream of fresh joint vectors and never tunes M.
+
+    Arguments:
+      ndata = even vector length; training_count = even N>=6 and N<=ndata.
+      validation_count = integer number of held-out draws at least 100.
+      seed = integer entropy for separate training/validation generators.
+    Returns:
+      Known matrices, samples, component/full/split estimates, positivity,
+      true and estimated residual radii, truncation and validation diagnostics.
+    Raises:
+      ValueError for invalid counts; no repeated draw selects a nicer result.
+    """
+    # ----------------------------------------------------------------------
+    # Validation. The bool checks keep True/False out (Python booleans are
+    # integers); the lower limits keep every sample covariance meaningful.
+    # ----------------------------------------------------------------------
+    if (isinstance(training_count, bool)
+            or int(training_count) != training_count
+            or training_count < 6 or training_count % 2
+            or training_count > ndata):
+        raise ValueError("Use even training_count from 6 through ndata.")
+    if (isinstance(validation_count, bool)
+            or int(validation_count) != validation_count
+            or validation_count < 100):
+        raise ValueError("validation_count must be an integer at least 100.")
+
+    # ----------------------------------------------------------------------
+    # Random streams. The seed is an arbitrary fixed integer so the
+    # notebook is reproducible; SeedSequence.spawn gives two independent
+    # child streams, one for training draws and one for validation draws,
+    # so changing one count never shifts the other stream.
+    # ----------------------------------------------------------------------
+    system = controlled_joint_covariance(ndata=ndata)
+    streams = np.random.SeedSequence(entropy=seed).spawn(2)
+    training_rng = np.random.default_rng(seed=streams[0])
+    validation_rng = np.random.default_rng(seed=streams[1])
+
+    # ----------------------------------------------------------------------
+    # Draws: N component (B) vectors and N known (A) vectors; their sums
+    # are the joint training vectors. The validation draws come from the
+    # full true covariance on the separate stream.
+    # ----------------------------------------------------------------------
+    component_vectors = draw_vectors(
+        covariance=system["component"], count=int(training_count),
+        generator=training_rng,
+    )
+    known_vectors = draw_vectors(
+        covariance=system["known"], count=int(training_count),
+        generator=training_rng,
+    )
+    joint_vectors = component_vectors + known_vectors
+    validation = draw_vectors(
+        covariance=system["truth"], count=int(validation_count),
+        generator=validation_rng,
+    )
+
+    # ----------------------------------------------------------------------
+    # Sample covariances: the full joint sample, the B-only sample, and
+    # the two disjoint half-samples feeding the split-group estimator.
+    # ----------------------------------------------------------------------
+    sample_component = covariance_of_vectors(vectors=component_vectors)
+    sample_joint = covariance_of_vectors(vectors=joint_vectors)
+    half = int(training_count) // 2
+    sample_first = covariance_of_vectors(vectors=component_vectors[:half])
+    sample_second = covariance_of_vectors(vectors=component_vectors[half:])
+
+    # ----------------------------------------------------------------------
+    # Exact references in model-whitened coordinates. The residual is the
+    # whitened truth minus the identity; its spectral radius (the largest
+    # absolute eigenvalue) controls how fast the PME converges. The
+    # second-order polynomial I - R + R^2, evaluated with the exact
+    # residual, gives the best answer any second-order estimator could
+    # reach; the exact truth precision is the overall reference.
+    # ----------------------------------------------------------------------
+    model = system["analytic"]
+    factor = np.linalg.cholesky(model)
+    normalized_truth = whiten_covariance(
+        covariance=system["truth"], factor=factor,
+    )
+    residual = normalized_truth - np.eye(ndata)
+    true_radius = float(np.max(np.abs(np.linalg.eigvalsh(residual))))
+    inverse_factor = solve_triangular(factor, np.eye(ndata), lower=True)
+    analytic_precision = inverse_factor.T @ inverse_factor
+    truth_precision = np.linalg.solve(system["truth"], np.eye(ndata))
+    polynomial = np.eye(ndata) - residual + residual @ residual
+    truncated = inverse_factor.T @ polynomial @ inverse_factor
+    estimates = {
+        "truth": truth_precision,
+        "analytic": analytic_precision,
+        "exact_second_order": truncated,
+    }
+
+    # ----------------------------------------------------------------------
+    # The three estimators under study: the component PME (known A plus a
+    # Wishart-corrected B sample), the full-covariance PME (one
+    # Wishart-corrected joint sample), and the split-group polynomial
+    # (two independent half-samples instead of a Wishart correction).
+    # ----------------------------------------------------------------------
+    estimator_diagnostics = {}
+    estimates["component_wishart"], estimator_diagnostics["component"] = (
+        component_precision_expansion(
+            analytic=model, component_model=system["component_model"],
+            component_sample=sample_component,
+            independent_count=training_count,
+        )
+    )
+    estimates["full_wishart"], estimator_diagnostics["full"] = (
+        precision_expansion(
+            analytic=model, sample=sample_joint,
+            independent_count=training_count,
+        )
+    )
+    estimates["component_split"] = split_precision_expansion(
+        analytic=model, sample_first=system["known"] + sample_first,
+        sample_second=system["known"] + sample_second,
+    )
+
+    # ----------------------------------------------------------------------
+    # Diagnostics for every estimate against the known truth and the
+    # held-out validation draws.
+    # ----------------------------------------------------------------------
+    diagnostics = {}
+    for name, precision in estimates.items():
+        diagnostics[name] = precision_diagnostics(
+            precision=precision, truth=system["truth"],
+            derivative=system["derivatives"], validation=validation,
+        )
+    normalized_sample = whiten_covariance(
+        covariance=sample_joint, factor=factor,
+    )
+
+    return {
+        "system": system,
+        "sample_joint": sample_joint,
+        "sample_component": sample_component,
+        "estimates": estimates,
+        "diagnostics": diagnostics,
+        "estimator_diagnostics": estimator_diagnostics,
+        "true_residual_spectral_radius": true_radius,
+        "true_second_order_operator_error_bound": true_radius**3
+        / (1.0 - true_radius),
+        "sample_rank_in_model_units": int(
+            np.linalg.matrix_rank(normalized_sample)
+        ),
+        "training_count": int(training_count),
+        "validation_count": int(validation_count),
+        "seed": seed,
+        "training_stream": streams[0].spawn_key,
+        "validation_stream": streams[1].spawn_key,
+        "sample_inverse_attempted": False,
+    }
+
+
+def plot_precision_errors(report):
+    """Draw dimensionless precision errors, including failed estimates.
+
+    Arguments:
+      report = controlled_precision_study result.
+    Returns:
+      Shared figure/axes. Each line sorts the eigenvalues of Lc.T Psi Lc-I;
+      sorted positions are not identifications of shared physical eigenvectors.
+    """
+    # The plotting module is named cosmolike_notebook_utils.3pcf: a module
+    # name starting with a digit cannot appear in an import statement, so
+    # importlib.import_module loads it from its name as text.
+    plots = importlib.import_module(name="cosmolike_notebook_utils.3pcf")
+    names = (
+        "analytic",
+        "component_wishart",
+        "component_split",
+        "full_wishart",
+    )
+    labels = [
+        "Analytic model",
+        "Known A + Wishart B",
+        "Known A + independent B groups",
+        "Full-covariance Wishart",
+    ]
+    curves = []
+    coordinate = np.arange(report["system"]["truth"].shape[0]) + 1
+    for name in names:
+        errors = report["diagnostics"][name]["precision_error_eigenvalues"]
+        curves.append((coordinate, errors[None, :]))
+    return plots.plot_ia_components(
+        components=curves, component_labels=["Precision error"],
+        coordinate_label="Sorted eigenvalue index",
+        quantity_label=r"Eigenvalues of $L_C^{\mathsf{T}}\hat{\Psi} L_C-I$",
+        legend=labels, xscale="linear", ncols=1, figsize=(10, 5),
+        bintextpos=None, colorbar=None, show=None,
     )
 
 
-def main():
-    """Internal child-process command; notebooks use run_code_comparison."""
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--worker", choices=("tatt", "main", "integrator", "frozen"),
-        required=True,
+def plot_precision_parameter_errors(report):
+    """Plot quoted parameter errors only for positive precision estimates.
+
+    A positive precision alone does not establish coverage (module
+    docstring); the validation variance ratios of the report are the
+    separate check of the quoted errors.
+
+    Arguments:
+      report = controlled_precision_study result with known true precision.
+    Returns:
+      Shared figure/axis showing sigma/sigma_true.
+    """
+    # importlib.import_module loads the digit-led module name (see
+    # plot_precision_errors).
+    plots = importlib.import_module(name="cosmolike_notebook_utils.3pcf")
+    errors = []
+    labels = []
+    methods = (
+        ("analytic", "Analytic model"),
+        ("component_wishart", "Known A + Wishart B"),
+        ("component_split", "Known A + independent B groups"),
+        ("full_wishart", "Full-covariance Wishart"),
     )
-    parser.add_argument("--request", type=Path, required=True)
-    parser.add_argument("--result", type=Path, required=True)
-    arguments = parser.parse_args()
-    settings = yaml.safe_load(arguments.request.read_text())
-    result = _worker(task=arguments.worker, settings=settings)
-    arguments.result.write_text(yaml.safe_dump(result, sort_keys=False))
+    for name, label in methods:
+        diagnostics = report["diagnostics"][name]
+        if diagnostics["positive"]:
+            errors.append(diagnostics["sigma"])
+            labels.append(label)
+        else:
+            print(f"No parameter contour for {label}: nonpositive precision.")
+    return plots.plot_parameter_errors(
+        names=report["system"]["parameter_names"], errors=errors,
+        errors_ref=report["diagnostics"]["truth"]["sigma"],
+        legend=labels, figsize=(11, 5), show=None,
+    )
 
 
-if __name__ == "__main__":
-    main()
+def load_joint_simulations(path, expected_labels, expected_kind,
+                           expected_estimator, excluded_parent_ids=()):
+    """Read explicitly labeled independent joint vectors without reordering.
+
+    The NPZ must contain vectors[N,p], row_labels[p], row_kind[p],
+    parent_ids[N], and scalar estimator. A parent ID names the independent
+    sky realization a vector came from; each must occur exactly once.
+    Multiple patches sharing a parent are refused, because averaging them
+    here would change the estimator and its covariance. Unique IDs alone
+    do not prove independence — that is a scientific input declaration,
+    and the caller must establish how the survey realizations were built.
+
+    Arguments:
+      path = an explicit NPZ file, read with allow_pickle=False.
+      expected_labels, expected_kind = exact ordered row identities of the
+          analytic covariance; each group must contain xi and Map3 rows.
+      expected_estimator = declared estimator string, e.g. finite_sas (the
+          aperture estimator built from finite shear aperture statistics;
+          the pipeline's other choice is full_filter). A family name does
+          not verify triangle cuts, weights, masks or source calibration;
+          compare their input/measurement manifests separately before
+          interpreting a survey correction.
+      excluded_parent_ids = parents used for analytic tuning or validation;
+          any overlap is refused before a sample covariance is formed.
+    Returns:
+      Owned vectors, labels, kinds, parent IDs and independent count.
+    Raises:
+      ValueError for shape, finite-value, row-order, estimator or parent
+      errors.
+    """
+    # ----------------------------------------------------------------------
+    # Read the required arrays; a missing name fails before anything is
+    # interpreted. The copies detach the results from the open archive.
+    # ----------------------------------------------------------------------
+    filename = Path(path)
+    required = (
+        "vectors",
+        "row_labels",
+        "row_kind",
+        "parent_ids",
+        "estimator",
+    )
+    arrays = {}
+    with np.load(filename, allow_pickle=False) as archive:
+        for name in required:
+            if name not in archive.files:
+                raise ValueError(f"Simulation archive lacks {name}.")
+            arrays[name] = archive[name].copy()
+
+    # ----------------------------------------------------------------------
+    # Vector and row checks: finite numeric vectors, row labels and kinds
+    # matching the analytic covariance exactly, and both row groups
+    # present.
+    # ----------------------------------------------------------------------
+    vectors = arrays["vectors"]
+    if (vectors.dtype.kind not in "fiu" or vectors.ndim != 2
+            or vectors.shape[0] < 3
+            or not np.all(np.isfinite(vectors))):
+        raise ValueError("Need finite independent vectors[N,p] with N>2.")
+    labels = arrays["row_labels"]
+    kinds = arrays["row_kind"]
+    parents = arrays["parent_ids"]
+    if (labels.shape != (vectors.shape[1],)
+            or kinds.shape != labels.shape
+            or parents.shape != (vectors.shape[0],)):
+        raise ValueError("Simulation rows or parent IDs have wrong shapes.")
+    if (not np.array_equal(labels, expected_labels)
+            or not np.array_equal(kinds, expected_kind)):
+        raise ValueError("Simulation rows do not match the analytic matrix.")
+    if (np.unique(labels).size != labels.size
+            or np.any(~np.isin(kinds, ("xip", "xim", "map3")))
+            or not np.any(kinds == "map3")
+            or not np.any(kinds != "map3")):
+        raise ValueError("Require unique labeled joint xi and Map3 rows.")
+
+    # ----------------------------------------------------------------------
+    # Estimator and parent checks: one declared estimator string matching
+    # the analytic side, and parent IDs that are nonempty, unique and
+    # disjoint from the tuning/validation parents.
+    # ----------------------------------------------------------------------
+    if arrays["estimator"].shape != ():
+        raise ValueError("Simulation estimator must be one declared string.")
+    if str(arrays["estimator"].item()) != expected_estimator:
+        raise ValueError("Simulation and analytic estimators differ.")
+    if parents.dtype.kind not in "iuUS":
+        raise ValueError("Parent IDs must be integer or text identifiers.")
+    if parents.dtype.kind in "US" and np.any(parents == ""):
+        raise ValueError("Parent IDs must not be empty text identifiers.")
+    if np.unique(parents).size != parents.size:
+        raise ValueError(
+            "Repeated parent IDs: patches are not independent skies."
+        )
+    if np.intersect1d(parents, np.asarray(excluded_parent_ids)).size:
+        raise ValueError("Training parents overlap tuning or validation.")
+
+    return {
+        "vectors": vectors.copy(),
+        "row_labels": labels.copy(),
+        "row_kind": kinds.copy(),
+        "parent_ids": parents.copy(),
+        "independent_count": int(vectors.shape[0]),
+        "estimator": expected_estimator,
+    }
