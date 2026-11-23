@@ -10,9 +10,11 @@ interpolation and nonlinear IA approximations differ between the two
 calculations and keep their own convergence and model checks.
 
 This page records a source inspection; it ran no build, timing or
-physical evaluation. File names below belong to the project's
-`scripts/des3pcf/` package and `tests/`, and to the CosmoLike core's
-`cosmolike/` sources, including its `3pcf/` subdirectory.
+physical evaluation. File names below belong to the project's retired
+`scripts/des3pcf/` package (removed with the private prediction route
+and kept in Git history), to `tests/`, and to the CosmoLike core's
+`cosmolike/` sources, including its `3pcf/` subdirectory. The C route is
+current; the Python route inspected here is preserved evidence only.
 
 1. [The physical coefficients and the adapter](#adapter)
 2. [The density coefficient in the tensor basis](#basis)
@@ -84,9 +86,10 @@ discrepancy. Both models use one power of $`\Omega_m`$ in $`C_2`$; a
 different convention with $`\Omega_m^2/\Omega_{m,\rm fid}`$ appears in
 core comments but is not the executable formula in either route.
 
-The array test in `test_pipeline.py` checks the coefficient conversion at
-several redshifts with a nondefault pivot and unequal redshift slopes, so
-it tests the algebra of the adapter. The native restoration tests in
+The array test in the retired `test_pipeline.py` (kept in Git history)
+checked the coefficient conversion at several redshifts with a nondefault
+pivot and unequal redshift slopes, so it tested the algebra of the
+retired adapter. The native restoration tests in
 `test_core_two_point_sequences.py` check repeated ordinary-core state
 changes. Whether the two native projection routines reconstruct identical
 functions between input nodes is a separate question, treated below.

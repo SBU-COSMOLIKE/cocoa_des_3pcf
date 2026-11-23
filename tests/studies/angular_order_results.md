@@ -32,8 +32,8 @@ finite sum for each requested order pair and side ratio.
 The baseline sets `lmax=mmax=20`, ten logarithmic side bins from 8 to
 80 arcmin, 63 opening-angle centers on the interval from 0 to $`\pi`$,
 point angular sampling, centroid projection and ordered source legs, with
-a 576-node aligned FFT grid
-([TATT configuration](../../configs/des_y3_tatt_demo_fisher.yaml)).
+a 576-node aligned FFT grid (the retired configuration
+`configs/des_y3_tatt_demo_fisher.yaml`, kept in Git history).
 The archived Y3 theory configuration uses `Lmax=50` and `Mmax=100`
 together with its own estimator geometry and physical inputs, so matching
 those orders alone would not match its predictions
@@ -111,7 +111,8 @@ modes, but the 63 samples cannot test the new harmonics separately. The
 cutoff M=50 avoids this pairwise alias within its kept signed range; it
 does not establish convergence of the full angular integrand, which also
 contains angle-dependent aperture weights and centroid rotations.
-[Angle construction](../../scripts/run_3pcf.py),
+Angle construction: the retired `scripts/run_3pcf.py`, kept in Git
+history;
 [mode average and phase](https://github.com/SBU-COSMOLIKE/cocoa-cosmolike-core/blob/lowrank_fftlog/cosmolike/3pcf/transform_3pcf.c#L212)
 
 The radial grid stays explicit as well. `aligned_fft_grid` chooses its

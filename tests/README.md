@@ -5,9 +5,11 @@ The tests are organized by the quantity being checked.
 - [Data-vector checks](data_vector/README.md) cover the physical bispectra,
   angular transforms, interpolation and both aperture routes.
 - [Covariance checks](covariance/README.md) cover halo preparation, joint
-  cumulant terms, xi spin/noise factors and shared geometry.
-- [Python and CLI checks](#python_cli) cover exact parameter keys, survey
-  row ordering, derivatives, Fisher weighting and precision expansion.
+  cumulant terms, xi spin/noise factors, shared geometry and the
+  production covariance driver.
+- [Likelihood, forecast and driver checks](#python_cli) cover exact
+  parameter keys, survey row ordering, derivatives, Fisher weighting and
+  precision expansion.
 - <a name="optional_studies"></a>[Optional studies](studies/README.md#optional_studies)
   measure angular orders, interpolation and source choices, derivative
   steps, feedback responses and estimator conventions, with saved records
@@ -17,7 +19,7 @@ The tests are organized by the quantity being checked.
   that reproduces them.
 
 1. [Running the checks](#running)
-2. [Python and CLI checks](#python_cli)
+2. [Likelihood, forecast and driver checks](#python_cli)
 3. [Build modes and thread ownership](#modes)
 4. [What passing establishes](#scope)
 
@@ -26,8 +28,10 @@ The tests are organized by the quantity being checked.
 We assume Cocoa is active, the component library has been built using the
 [project instructions](../README.md#build), and the current directory is
 `Cocoa/`. Most tests create small arrays without DES data products or a
-Boltzmann solve. The BACCO component checks also use the installed paired
-emulator and weights; they do not download them or run a survey forecast.
+Boltzmann solve. A few build the actual Cobaya model of a numbered
+example, so they run CAMB at one point. The BACCO component checks also
+use the installed paired emulator and weights; they do not download them
+or run a survey forecast.
 
 **Step :one:**: reserve parallel work for OpenMP and keep BLAS serial.
 
@@ -76,12 +80,12 @@ results, not performance comparisons. The covariance references are
 analytic formulas or independently organized contractions; the aperture
 reference includes the hash of its pinned external source.
 
-## Python and CLI checks <a name="python_cli"></a>
+## Likelihood, forecast and driver checks <a name="python_cli"></a>
 
-The Python files directly in `tests/` check the likelihood, forecast and
-command-line layers. Most run on small arrays the tests build; a few run
-physical C predictions (`test_pipeline.py`) or a bounded CAMB solve
-(`test_camb_tables.py`).
+The Python files directly in `tests/` check the Cobaya likelihood, the
+forecast arithmetic and the project drivers. Most run on small arrays the
+tests build; the files named in the likelihood paragraph below evaluate
+the actual Cobaya model of a numbered example.
 
 **Input and configuration contracts.** `test_input_contracts.py` stops
 invalid scientific inputs with a named diagnostic, and
@@ -90,22 +94,27 @@ forecast or sampler starts. `refusal_worker.py` runs one deliberately
 invalid call in a separate Python process, so the required diagnostic and
 exit status are observed rather than assumed.
 
-**CAMB preparation.** `test_camb_tables.py` checks bounded CAMB
-preparation against a fresh final-amplitude solve and the opposite unit
-API. `test_camb_setting_identity.py` checks CAMB settings and saved
-identities without running CAMB or native C.
+**Likelihood on the Cobaya route.** `test_likelihood_calibration.py`
+checks the per-row multiplicative shear calibration and bit-identical
+restoration when a parameter point is revisited.
+`test_bfmt_suppression.py` pins the likelihood's power-response read
+against an independent interpolation and checks the end-to-end wiring of
+the power-only feedback key; `test_bacco_cobaya.py` does the same for the
+paired BACCO responses. `test_notebook_wrappers.py` checks that the
+interface wrappers hold exactly the likelihood's joint vector and follow
+parameter changes. `test_nautilus_examples.py` runs the shared Nautilus
+driver on an analytic posterior and checks that every prior enters the
+posterior exactly once. Theory tables and the background come from one
+evaluation of one Cobaya model, so the retired cross-file check that the
+supplied bispectrum table and the background share their redshifts and
+$`\Omega_{\rm m}(z)`$ has no failure mode left to catch.
 
-**Pipeline, sources and CLI.** `test_pipeline.py` checks the assembled
-mean pipeline with physical C calculations, and `test_pipeline_cli.py`
-exercises the command-line workflow on small physical tables the tests build.
-`test_pipeline_setting_sequences.py` and
-`test_core_two_point_sequences.py` compare prediction caches and the
-restored DES Y3 two-point bridge with independently initialized
-processes. `test_prepare_demo_sources.py`, `test_source_grids.py`,
-`test_survey.py` and `test_estimator_geometry.py` cover demonstration
-source preprocessing, source and power-table sampling, survey labels and
-radial binning. `test_prediction_provenance.py` checks exact-file
-provenance of saved predictions.
+**Sources and survey rows.** `test_prepare_demo_sources.py`,
+`test_source_grids.py`, `test_survey.py` and `test_estimator_geometry.py`
+cover demonstration source preprocessing, source and power-table
+sampling, survey labels and radial binning.
+`test_core_two_point_sequences.py` compares the restored DES Y3 two-point
+bridge with independently initialized processes.
 
 **Forecast arithmetic.** `test_forecast.py`, `test_fisher_comparison.py`,
 `test_fixed_dark_energy.py`, `test_derivative_templates.py` and
@@ -124,18 +133,16 @@ without running physical forecasts.
 `test_full_smaller_step_study.py` check the shared accuracy estimator,
 exact half/quarter/double-step stencil reuse, QR/SVD nuisance projection,
 weak directions and joint observable-block substitutions. The scientific
-calculations are visible in `EXAMPLE_FISHER_ACCURACY.ipynb`; the retired
-Fisher workflow/archive wrappers have no replacement layer.
+calculations are visible in `EXAMPLE_FISHER_ACCURACY.ipynb`.
 `test_coupling_high_orders.py` compares the geometric coupling with
-independent quadrature at the larger study orders, and
-`test_code_comparison.py` checks source identity and isolated execution
-for the external-code comparison.
+independent quadrature at the larger study orders.
 
-**Timing controls without measurement.** `test_scaling.py`,
-`test_scaling_plot.py` and `test_scaling_threepcf.py` check benchmark
-control, the timing display and workload preparation using controlled
-numbers, never measured runtimes. `test_quadrature.py` checks fixed
-quadrature measures, fine rules and oscillating integrals.
+**Timing controls.** `test_benchmark_scaling.py` runs the real timing
+driver ([the timing guide](timing/README.md)) on two points at one and
+two threads and checks its component accounting, recomputation guards and
+cross-thread agreement. `test_scaling_plot.py` checks the timing display
+using controlled numbers, never measured runtimes. `test_quadrature.py`
+checks fixed quadrature measures, fine rules and oscillating integrals.
 
 ## Build modes and thread ownership <a name="modes"></a>
 
@@ -164,8 +171,8 @@ make -C projects/des_3pcf/interface -f MakefileCosmolike -j1
 The Makefile keeps separate strict and debug object directories and
 relinks the mode you select. Thread comparisons retain the same input
 arrays and ordered sums.
-There is no timing loop. Separate cold-start and changed-state performance
-measurements belong to a later quiet-machine exercise.
+There is no timing loop in the routine tests; timing runs are the
+separate quiet-machine exercise of [the timing guide](timing/README.md).
 
 ## What passing establishes <a name="scope"></a>
 

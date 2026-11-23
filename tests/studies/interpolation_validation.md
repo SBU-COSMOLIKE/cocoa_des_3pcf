@@ -64,7 +64,8 @@ limitation.
 
 ## Multipole interpolation <a name="multipole"></a>
 
-[The stage diagnostic](multipole_stage2_diagnostic.py) holds the
+The stage diagnostic (the retired `multipole_stage2_diagnostic.py`,
+kept in Git history) holds the
 projected bispectrum and angular integration samples bitwise fixed and
 integrates each linear angular segment against its Legendre polynomial
 with an independent Gauss rule exact for that product. The comparison
@@ -93,7 +94,8 @@ table does not establish accuracy at every Fourier triangle.
 
 ## All 80 finite-SAS aperture rows <a name="rows"></a>
 
-[The mean study](projection_mean_convergence.py) evaluates every aperture
+The mean study (the retired `projection_mean_convergence.py`, kept in
+Git history) evaluates every aperture
 row for the NLA and TATT fiducial points. Sources keep their original
 125-point preparation in this test, and the finite-triangle geometry,
 FFT, angular integration and public joint covariance stay fixed. Only
@@ -157,8 +159,9 @@ native samples are not the untouched upstream file.
 The versioned records are under [`results/`](results):
 `projection_stretched_diagnostic.npz`, `residual_mean_diagnostic.npz`,
 `multipole_mixed_diagnostic.npz` and `projection_mean_convergence/`.
-A regeneration writes its working copies under the local `chains/`
-directory, which Git ignores.
+Both producing drivers were retired with the private prediction route,
+so these tables can no longer be regenerated; the saved records are the
+preserved evidence.
 Tests and models used no more than four OpenMP workers and serial BLAS,
 and no new timing trial ran. The corrected native code passed the strict
 and debug collections; [the validation record](../VALIDATION.md) keeps

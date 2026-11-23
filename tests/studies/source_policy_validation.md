@@ -265,9 +265,11 @@ The numerical statements above use the six-case results in
 `summary.json`, `diagnostics.npz`, `point_*.npz`, `manifest.json` and
 `resolved_numerics.json`. Additional numbers come from reading those
 saved arrays and applying the fixed joint covariance; no physical
-prediction or CAMB calculation was launched for them. The
-[study script](source_policy_convergence.py) records the exact resolved
-configuration and dependencies in each manifest. The original input
+prediction or CAMB calculation was launched for them. The study script
+(the retired `source_policy_convergence.py`, kept in Git history)
+records the exact resolved configuration and dependencies in each
+manifest; it was removed with the private prediction route, so these
+cases can no longer be rerun. The original input
 configuration is kept in project commit `97e5010`, and later
 demonstration defaults are not substituted for that archived definition.
 Each run used at most four OpenMP workers and one BLAS worker.

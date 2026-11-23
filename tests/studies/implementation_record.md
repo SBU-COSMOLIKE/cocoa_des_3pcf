@@ -156,8 +156,8 @@ history accounts for only a small part of the measured route difference
 at this point; it does not establish general neutrino or dark-energy
 accuracy.
 
-The optional [YAML example](../../configs/des_y3_supplied_bihalofit.yaml) uses the
-49/193/97/33 counts tested here. Its absolute data chi-squared shift is below
+The retired optional configuration (`configs/des_y3_supplied_bihalofit.yaml`,
+kept in Git history) used the 49/193/97/33 counts tested here. Its absolute data chi-squared shift is below
 0.2 at this fiducial point. There has been no Fisher-derivative convergence
 test for this baseline table. At the time of that comparison no default switch was made. Parameter-space
 checks and further refinement are required before interpreting forecasts
@@ -235,23 +235,25 @@ error budget.
 | Frozen IA, nonlinear-power prescription | 1.69e-15 | Stored reference, all 19 terms |
 
 [EXAMPLE_COMPARE_CODES.ipynb](../../EXAMPLE_COMPARE_CODES.ipynb) keeps these
-cells with their outputs, including all five figures. The runner also
-writes a matching execution copy and the individual PNG files under
-`chains/code_comparison/`. Rerunning the notebook against the YAML
-beside it reproduces the table and the figures.
+cells with their outputs, including all five figures. The measurements
+above were produced by live execution of the original codes; the current
+notebook compares against saved JSON references under
+`tests/data_vector/` that record the source revisions, and the project
+no longer imports or runs those codes.
 
 ### Credits and checks <a name="comparison-credits"></a>
 
 The fastnc implementations are credited to Sunao Sugiyama and Rafael
 Heringer Gomes. Rafael's `fast_map3.py` credits Mike Jarvis and TreeCorr
-and carries its redistribution notice. This workflow imports those files
-from the user's checkouts; it does not distribute modified copies.
+and carries its redistribution notice. The recorded workflow imported
+those files from the user's checkouts; it did not distribute modified
+copies.
 
-`tests/test_code_comparison.py` checks source-hash refusal, missing-source
-reporting, thread settings and real execution of the available original
-files. It checks equal-filter agreement and requires the unequal-filter
-case to expose a difference. Source-dependent tests skip with a named
-reason when the explicit checkouts or required packages are absent.
+The retired `tests/test_code_comparison.py` (kept in Git history) checked
+source-hash refusal, missing-source reporting, thread settings and real
+execution of the available original files, with equal-filter agreement
+and a required unequal-filter difference. It retired with the
+live-execution route; the fixture comparison lives in the notebook.
 
 
 ## paper targets <a name="paper_targets"></a>

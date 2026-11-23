@@ -11,7 +11,9 @@ Each number is the median elapsed time over ten different parameter points.
 The calculation returns all 80 DES Y3 aperture entries: twenty source triplets
 and four filter radii. NLA and TATT use the same cosmological points and
 numerical grids. BLAS uses one thread throughout. The machine is an Apple
-M2 Pro with twelve physical cores, running macOS.
+M2 Pro with twelve physical cores, running macOS. This is a dated record
+of the retired private prediction route; the [closing section](#records)
+says what can no longer be rerun.
 
 | Model | Median time, 1 thread | Median time, 4 threads | Median time, 8 threads | Speedup at 4 threads | Speedup at 8 threads |
 |---|---:|---:|---:|---:|---:|
@@ -111,13 +113,14 @@ The two measurement groups use different three-point CAMB producers as
 inputs. The LSST control timings use the earlier producer; their case
 specification does not involve the corrected producer code, and their
 rechecked vectors are unchanged. The three-point NLA and TATT timings use
-the corrected producer. The
-[continuation script](continue_des3pcf_scaling.py) and the manifest record
-which producer each block used. Absolute input paths refer to the
-measurement machine; the [benchmark guide](../README.md) gives the
-regular CLI commands.
+the corrected producer. The [manifest](manifest.json) records which
+producer each block used. Absolute input paths refer to the measurement
+machine.
 
-`continue_des3pcf_scaling.py` is the source saved with this measurement.
-It uses the recorded version of the scaling helpers. For a current timing
-run use [the timing instructions](../README.md); do not replay that archived
-continuation against a different implementation.
+This record measured the retired private prediction route. Its harness,
+its configurations and the continuation source saved beside it
+(`continue_des3pcf_scaling.py`) were removed with that route and remain
+in Git history, so this workload can no longer be rerun. The current
+driver times the Cobaya evaluation at a different interval boundary;
+[the timing guide](../README.md) states both boundaries before any
+comparison.

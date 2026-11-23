@@ -31,8 +31,8 @@ t_j=0.5\,e^{j\Delta},\quad j=0,\ldots,20,
 where the final value is the upper edge and the preceding values are
 lower edges. A low-side cut selects a subset of this bank; it does not
 build ten new logarithmic bins beginning at exactly 8 arcmin. The current
-demonstration does the latter, and
-[the TATT YAML](../../configs/des_y3_tatt_demo_fisher.yaml) labels that
+demonstration does the latter, and the retired TATT configuration
+(`configs/des_y3_tatt_demo_fisher.yaml`, kept in Git history) labels that
 choice an approximation. A direct comparison follows from this: keep a
 numerically checked physical model fixed, replace only the radial bin
 bank by the original 20-bin construction and its kept subset, and record
@@ -96,8 +96,9 @@ galaxy catalogue weights distribute triangles within each measurement
 bin. A Fourier-mode average of the x-projected correlation is likewise
 not automatically a catalogue-weighted average after a
 triangle-dependent centroid rotation, so the `angular_average=point` and
-optional `x_modes` routes keep those names during any comparison.
-[CLI geometry construction](../../scripts/run_3pcf.py)
+optional `x_modes` routes keep those names during any comparison. The
+geometry construction inspected here lived in the retired
+`scripts/run_3pcf.py`, kept in Git history.
 
 ## What the measurement files contain <a name="measurements"></a>
 

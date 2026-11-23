@@ -47,7 +47,7 @@ YAMLs with their CAMB and bispectrum theory components. It compares the
 result with the fixed synthetic input, then changes the IA amplitude,
 source redshift shift and matter density separately. Each change must
 affect the prediction, and restoring the parameters must restore its
-bytes. This checks provider wiring and stale state; it does not establish
+bytes. This checks provider wiring and retained state; it does not establish
 numerical convergence or agreement with observed DES measurements.
 
 ```bash
@@ -122,15 +122,11 @@ after the signed-residual and shape-chart corrections. It also records
 why the first TATT demonstration Fisher was rejected. The measurements
 are in [the interpolation record](interpolation_validation.md).
 
-Two drivers reproduce its tables without a CAMB run:
-
-```bash
-python tests/studies/multipole_stage2_diagnostic.py --output chains/multipole_stage2_diagnostic
-```
-
-```bash
-python tests/studies/projection_mean_convergence.py --output chains/projection_mean_convergence
-```
+The two producing drivers, `multipole_stage2_diagnostic.py` and
+`projection_mean_convergence.py`, were retired with the private
+prediction route and remain in Git history, so these tables can no
+longer be regenerated. The saved records below are the preserved
+evidence.
 
 Saved records:
 [results/projection_stretched_diagnostic.npz](results/projection_stretched_diagnostic.npz),
@@ -148,10 +144,10 @@ derivative in the joint covariance metric. It supplies the
 source baseline that the demonstration Fisher configurations declare. The
 measurements are in [the source record](source_policy_validation.md).
 
-```bash
-python tests/studies/source_policy_convergence.py --project . \
-  --output chains/source_policy_convergence
-```
+Its producing driver, `source_policy_convergence.py`, was retired with
+the private prediction route and remains in Git history, so the six
+cases can no longer be rerun. The saved records below are the preserved
+evidence.
 
 Saved records: the six-case comparison in
 [results/source_policy_convergence/](results/source_policy_convergence)

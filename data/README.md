@@ -1,96 +1,112 @@
 # Input data and generated calculations
 
-1. [Input files](#inputs)
-2. [Generated theory tables and forecasts](#generated)
-3. [Demonstration source processing](#sources)
+1. [Input files and their sources](#inputs)
+2. [Acknowledgements](#acknowledgements)
+3. [Generated calculations](#generated)
+4. [Demonstration source processing](#sources)
 
-## Input files <a name="inputs"></a>
+## Input files and their sources <a name="inputs"></a>
 
-The project includes these inputs in version control. No Python download
-script is needed.
+The project includes these inputs in version control (the FITS and NPZ
+files through Git LFS), so nothing needs to be downloaded before running
+the examples. Every input names its origin:
 
-| Directory | Contents and purpose |
-|---|---|
-| `upstream_y3/` | Released simulated vectors, source distributions, joint covariance and the upstream configurations that identify their use |
-| `upstream_y3_observed/` | Observed unblinded DES Y3 two-point and Map3 vectors, their joint covariance and identifying configurations |
-| `upstream_healpix/` | Scalar HEALPix pixel window at NSIDE 1024 |
-| `demonstration/` | The processed source distribution and its YAML record |
+| Input | Origin and pinned revision | Paper |
+|---|---|---|
+| `upstream_y3/`: simulated DES Y3 $`\xi_\pm`$ and Map3 vectors at the CosmoGrid cosmology, the joint covariance from 796 simulations, and nine CosmoSIS configurations | [3pcf_integrator](https://github.com/rchgomes/3pcf_integrator) at commit `d6098d326dcb03bc750adcc9627119f52d928944`; manifest [y3_reference_manifest.yaml](y3_reference_manifest.yaml) | [Methods paper](https://arxiv.org/abs/2503.03964); simulations from [CosmoGrid](https://arxiv.org/abs/2209.04662) |
+| `upstream_y3_observed/`: observed unblinded DES Y3 $`\xi_\pm`$ and Map3 vectors, the same covariance and nine configurations | Same repository and commit; manifest [y3_observed_manifest.yaml](y3_observed_manifest.yaml) | [DES Y3 third-order shear results](https://arxiv.org/abs/2508.14018) |
+| `upstream_healpix/pixel_window_n1024.fits`: scalar HEALPix pixel window at NSIDE 1024 | [healpy-data](https://github.com/healpy/healpy-data) at the commit and URL in [pixel_window_manifest.yaml](pixel_window_manifest.yaml) | [HEALPix, Górski et al. 2005](https://arxiv.org/abs/astro-ph/0409513) |
+| `demonstration/`: the processed source distribution, two fixed synthetic data vectors and the xi-only row mask | Produced in this project from the `upstream_y3/` inputs ([demonstration source processing](#sources)) | |
+| `chains/rafael/maps_cov_512_v2/` (local, never committed): CosmoGrid DES Y3 shear maps at NSIDE 512 | Supplied by Rafael Gomes; described in the [map download guide](../notes/covariance_from_simulations/MAPS_README.md) | [Methods paper](https://arxiv.org/abs/2503.03964); [CosmoGrid](https://arxiv.org/abs/2209.04662) |
 
-**We thank Rafael Gomes for making the analysis inputs available through
-[3pcf_integrator](https://github.com/rchgomes/3pcf_integrator).** The released
-files retain their original names and contents. The reference and observed
-YAML manifests record the source commit, Git blob hashes and byte lengths.
-The pixel-window manifest identifies the HEALPix/healpy source and hash.
-The upstream INI files document the source analysis; they are not scripts
-that this project executes.
+The manifests record the source commit, the Git blob hash and the byte
+length of every copied file, and the upstream INI files document the
+source analysis; they are not scripts that this project executes.
+[scripts/download_y3_data.sh](../scripts/download_y3_data.sh) names all
+24 DES Y3 files: it downloads each from the pinned commit and checks its
+hash against the manifests. A present file with the right hash is left
+alone; a mismatching file stops the script and is never overwritten.
+
+**Step :one:**: to recreate or verify the DES Y3 inputs (11.7 MB in
+total), run from `projects/des_3pcf`:
+
+```bash
+bash scripts/download_y3_data.sh
+```
+
+An optional directory argument
+(`bash scripts/download_y3_data.sh /some/dir`) downloads the set
+somewhere else for inspection.
 
 The released simulated vectors and the observed measurements are different
 scientific inputs. They belong in `data/`; predictions saved to detect a
 change in our calculation belong in `tests/`. Neither input establishes
 that this port matches the published estimator, cuts or likelihood. See
-[the inference guide](../README.md#sampling) for the examples' choices and
+[the case table](../README.md#running_cosmolike_projects) for the examples' choices and
 [the paper comparison](../README.md#estimator) for the remaining differences.
+The full simulation realizations are not included, and the released
+covariance does not replace the simulations needed to calibrate a
+covariance correction.
 
-The full simulation realizations are not included. These released vectors
-and covariance matrices do not replace the simulations needed to calibrate
-a covariance correction.
+## Acknowledgements <a name="acknowledgements"></a>
 
-## Generated theory tables and forecasts <a name="generated"></a>
+**We thank Rafael C. H. Gomes for making the analysis inputs available
+through [3pcf_integrator](https://github.com/rchgomes/3pcf_integrator).**
+The released files retain their original names and contents.
 
-We assume Cocoa is activated and the shell is in `Cocoa/`. Generated files
-are written under the project's ignored `chains/` directory. Each configuration
-sets its destination in `physics.tables` and `outputs`.
+The observed vectors are the Dark Energy Survey collaboration's Y3
+measurement, built on its Y3 shape catalogue; credit the collaboration
+and cite the [third-order shear results](https://arxiv.org/abs/2508.14018)
+when using them. The simulated vectors, the 796-simulation covariance and
+the local shear maps come from CosmoGrid-based DES Y3 simulations
+([Kacprzak et al.](https://arxiv.org/abs/2209.04662)). The pixel window
+is the official HEALPix table distributed with healpy
+([Górski et al. 2005](https://arxiv.org/abs/astro-ph/0409513)).
 
-**Step :one:**: prepare the fiducial tables shared by the NLA and TATT examples.
+## Generated calculations <a name="generated"></a>
 
-```bash
-python projects/des_3pcf/scripts/run_3pcf.py prepare \
-  projects/des_3pcf/configs/des_y3_nla_demo_fisher.yaml
-```
-
-This writes `chains/y3_demo_pchip9601_physics.npz`. A likelihood varying
-cosmology recomputes its prediction; this saved fiducial table is not a
-substitute for that calculation. Existing files require explicit
-`--overwrite`. Recompute dependent results after changing the inputs or
-numerical settings; do not relabel an old forecast as a current result.
-
-**Step :two:**: prepare the separate neutrino tables for a BACCO calculation.
-
-```bash
-python projects/des_3pcf/scripts/run_3pcf.py prepare \
-  projects/des_3pcf/configs/des_y3_bacco_fisher.yaml
-```
-
-This writes `chains/y3_bacco_physics.npz`. The [BACCO guide](../../../external_modules/code/cosmolike_core/theory/bacco_bispectrum/README.md#bacco)
-describes its emulator inputs and physical assumptions.
+No preparation command exists: the Cobaya model computes CAMB and the
+matter bispectrum at each evaluation, so there is no saved theory table
+to create first. Generated products are written under the project's
+ignored `chains/` directory by the notebooks that explain them.
 
 | Generated file | How to create it |
 |---|---|
-| `chains/paired_feedback_demo.npz` | Run the response-construction cell in [EXAMPLE_JOINT_FEEDBACK.ipynb](../EXAMPLE_JOINT_FEEDBACK.ipynb) |
-| `chains/compression/training.npz` | Run the numbered Cobaya model and derivative cells in [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) |
-| `chains/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) including its direct TATT derivative calculation |
+| `chains/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) including its direct TATT derivative calculation; the case-4 datasets read this matrix |
+| `chains/conditional_xi_compression.npz` | Run the conditional-xi section of [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) |
+| `chains/joint_feedback/` | Run [EXAMPLE_JOINT_FEEDBACK.ipynb](../EXAMPLE_JOINT_FEEDBACK.ipynb) |
+| `chains/EXAMPLE_EVALUATE1_fisher.npz` | Run the Fisher section of [EXAMPLE_EVALUATE1.ipynb](../EXAMPLE_EVALUATE1.ipynb) |
 
-The artificial feedback response illustrates the calculation; it is not a
-hydrodynamic calibration. The compression matrix is trained from the chosen
-derivatives using an independent teaching covariance; it is not the
-published compression. Both are generated calculations and stay in `chains/`.
-Frozen numerical comparisons, including timing vectors, stay in `tests/`.
-Figures use `chains/`; sampler chains use their configured chain directory.
+The compression matrix is trained from the chosen derivatives using an
+independent teaching covariance; it is not the published compression.
+Generated calculations stay in `chains/`; frozen numerical comparisons,
+including timing vectors, stay in `tests/`. Sampler chains use their
+configured chain directory.
 
 ## Demonstration source processing <a name="sources"></a>
 
-The included `demonstration/y3_demo_sources.fits` clips negative samples
-and renormalizes each source bin. Its YAML record contains the input and
-output hashes and the amount removed. This is the explicitly approved
-teaching assumption, not a recalibration of the DES source model.
-Recorded absolute paths describe where the processing occurred; consumers
-resolve the included file from their YAML configuration and check its hash.
+The included `demonstration/y3_demo_sources.fits` is produced from the
+`NZ_SOURCE` extension of
+`upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits`: it clips
+negative samples and renormalizes each source bin. Its YAML record
+contains the input and output hashes and the amount removed. This is the
+explicitly approved teaching assumption, not a recalibration of the DES
+source model. Recorded absolute paths describe where the processing
+occurred; consumers resolve the included file from their YAML
+configuration and check its hash.
 
 Reproduce the processing in the source-distribution section of
 [EXAMPLE_EVALUATE1.ipynb](../EXAMPLE_EVALUATE1.ipynb). After its setup cell,
 you can jump directly to that section without running a cosmology or Fisher
 calculation. It shows clipping, the removed area and normalization, and
-checks that the resulting samples exactly match the included file.
+checks that the resulting samples exactly match the included file;
+`tests/test_prepare_demo_sources.py` executes those same cells.
 An optional cell writes a FITS copy under `chains/`; it never replaces the
 input in `data/`. Changing the source model of an inference requires changing
 `nz_source_file` in its `.dataset` file explicitly.
+
+The other demonstration files are this project's own:
+`y3_nla_synthetic.txt` and `y3_tatt_synthetic.txt` are fixed synthetic
+fiducial mean vectors whose headers state their fiducial point and IA
+convention, and `y3_xi_rows_mask.txt` is the xi-only row mask that
+`des_y3_xi1.dataset` reads to cut the Map3 rows.
