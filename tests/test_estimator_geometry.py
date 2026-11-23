@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from cosmolike_des_3pcf_interface.production import TransformPlan
-from des3pcf.survey import forecast_rows
+from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 
 
 def engine(compiled, side_keep=None, rule="geometric", offset=0.):

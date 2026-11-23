@@ -159,7 +159,7 @@ def test_wrapper_passes_nonzero_shear_calibration(compiled):
     import cosmolike_des_3pcf_feedback_wrappers as wrapper
     from native_inputs import init_two_point
     from test_pipeline import toy_tables
-    from des3pcf.survey import forecast_rows
+    from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 
     tables, parameters = toy_tables()
     tables["p_linear"] = tables["p_nonlinear"].copy()

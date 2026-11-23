@@ -287,7 +287,7 @@ def build_inputs(settings):
     """
     import numpy as np
     from cosmolike_des_3pcf_interface import covariance_inputs
-    from des3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows
+    from cobaya.likelihoods.des_3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows
 
     radii = np.asarray(settings["aperture_radii_arcmin"])
     rows = forecast_rows(nbin=4, aperture_radii=radii * ARCMIN_TO_RADIAN)

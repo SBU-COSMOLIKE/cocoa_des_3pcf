@@ -50,10 +50,10 @@ sys.path.insert(0, str(PROJECT / "scripts"))
 sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 
 from des3pcf.physical_provider import camb_tables, load_tables, save_tables, camb_accuracy_settings
-from des3pcf.survey import shifted_sources
-from des3pcf.survey import reconstructed_sources
-from des3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows, read_survey
-from des3pcf.survey import read_joint_covariance, read_source_distributions
+from cobaya.likelihoods.des_3pcf.survey import shifted_sources
+from cobaya.likelihoods.des_3pcf.survey import reconstructed_sources
+from cobaya.likelihoods.des_3pcf.survey import ARCMIN_TO_RADIAN, forecast_rows, read_survey
+from cobaya.likelihoods.des_3pcf.survey import read_joint_covariance, read_source_distributions
 from des3pcf.physical_provider import PhysicalProvider
 from des3pcf.pipeline import JointPrediction
 from des3pcf.pipeline import COSMOLOGY_NAMES, IA_NAMES

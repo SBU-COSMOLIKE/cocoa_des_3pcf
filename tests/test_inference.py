@@ -25,7 +25,7 @@ sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_cor
 from likelihood_example import prior_distributions
 from likelihood_example import check_likelihood
 from likelihood_example import make_likelihood
-from des3pcf.survey import SurveyRows
+from cobaya.likelihoods.des_3pcf.survey import SurveyRows
 import run_3pcf as driver
 
 

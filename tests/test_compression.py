@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from cobaya.likelihoods.des_3pcf.compression import LinearCompression, fit_compression, load_compression
 from likelihood_example import make_likelihood
-from des3pcf.survey import SurveyRows
+from cobaya.likelihoods.des_3pcf.survey import SurveyRows
 
 
 def example():

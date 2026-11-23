@@ -143,8 +143,8 @@ def source_archive(config, case, directory, original):
       are retained even for the linear case so provenance remains complete.
     """
     from des3pcf.physical_provider import load_tables, save_tables
-    from des3pcf.survey import reconstructed_sources
-    from des3pcf.survey import read_source_distributions
+    from cobaya.likelihoods.des_3pcf.survey import reconstructed_sources
+    from cobaya.likelihoods.des_3pcf.survey import read_source_distributions
 
     method, padding, count, _, _ = CASES[case]
     tables, metadata = load_tables(path=original)

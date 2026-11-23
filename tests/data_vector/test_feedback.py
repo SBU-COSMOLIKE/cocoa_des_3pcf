@@ -137,7 +137,7 @@ def test_joint_feedback_cache_and_metadata(compiled):
     """One retained DMO model supports A/B/A without a new Boltzmann solve."""
     from des3pcf.physical_provider import PhysicalProvider
     from des3pcf.pipeline import JointPrediction
-    from des3pcf.survey import forecast_rows
+    from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 
     tables = physical_inputs()
     from theory.bihalofit.variance import reference_matter_fraction

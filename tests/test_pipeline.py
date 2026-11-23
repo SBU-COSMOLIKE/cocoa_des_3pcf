@@ -12,7 +12,7 @@ import pytest
 
 from des3pcf.physical_provider import PhysicalProvider
 from des3pcf.pipeline import JointPrediction
-from des3pcf.survey import forecast_rows
+from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 
 
 def toy_tables():

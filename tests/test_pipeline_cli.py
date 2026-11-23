@@ -17,7 +17,7 @@ import pytest
 import yaml
 
 from des3pcf.physical_provider import save_tables
-from des3pcf.survey import forecast_rows, ARCMIN_TO_RADIAN
+from cobaya.likelihoods.des_3pcf.survey import forecast_rows, ARCMIN_TO_RADIAN
 
 
 PROJECT = Path(__file__).resolve().parents[1]

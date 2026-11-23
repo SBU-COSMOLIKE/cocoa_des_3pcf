@@ -32,12 +32,12 @@ from copy import deepcopy
 import numpy as np
 
 from des3pcf.physical_provider import camb_tables, load_tables, save_tables
-from des3pcf.survey import shifted_sources
+from cobaya.likelihoods.des_3pcf.survey import shifted_sources
 from des3pcf.physical_provider import camb_accuracy_settings
 from des3pcf.physical_provider import _camb_power_limits
 from cosmolike_des_3pcf_interface import aligned_fft_grid
 from des3pcf.pipeline import COSMOLOGY_NAMES, IA_NAMES
-from des3pcf.survey import ARCMIN_TO_RADIAN, read_source_distributions, read_survey
+from cobaya.likelihoods.des_3pcf.survey import ARCMIN_TO_RADIAN, read_source_distributions, read_survey
 
 
 PROJECT = Path(__file__).resolve().parents[2]

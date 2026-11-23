@@ -17,9 +17,9 @@ import numpy as np
 from copy import deepcopy
 
 from des3pcf.physical_provider import validate_tables
-from des3pcf.survey import shifted_sources
+from cobaya.likelihoods.des_3pcf.survey import shifted_sources
 from des3pcf.physical_provider import camb_tables, _camb_power_limits
-from des3pcf.survey import reconstructed_sources
+from cobaya.likelihoods.des_3pcf.survey import reconstructed_sources
 from des3pcf.physical_provider import camb_accuracy_settings
 from cosmolike_des_3pcf_interface.production import TransformPlan
 from cosmolike_des_3pcf_interface import shear_power_rows

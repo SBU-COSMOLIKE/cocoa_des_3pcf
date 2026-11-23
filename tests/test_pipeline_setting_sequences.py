@@ -32,7 +32,7 @@ from cosmolike_notebook_utils.fisher import ExactMeanCache
 from theory_inputs import prepared_physics_model as physics_model
 from des3pcf.physical_provider import PhysicalProvider
 from des3pcf.pipeline import JointPrediction
-from des3pcf.survey import forecast_rows
+from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 from test_pipeline import toy_tables
 
 

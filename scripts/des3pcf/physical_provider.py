@@ -16,7 +16,7 @@ import json
 from pathlib import Path
 
 import numpy as np
-from des3pcf.survey import shifted_sources, reconstructed_sources, _source_edge_arrays
+from cobaya.likelihoods.des_3pcf.survey import shifted_sources, reconstructed_sources, _source_edge_arrays
 from theory.bihalofit.model import uniform_segments
 from copy import deepcopy
 

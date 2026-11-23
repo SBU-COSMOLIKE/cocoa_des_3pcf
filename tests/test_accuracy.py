@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from cosmolike_des_3pcf_interface import covariance_inputs
-from des3pcf.survey import forecast_rows
+from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 
 
 import cosmolike_des_3pcf_interface as ci

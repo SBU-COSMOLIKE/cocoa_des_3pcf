@@ -172,7 +172,7 @@ def test_joint_prediction_rejects_amplitude_and_rebuilds_bcm(compiled):
     """A notebook's BCM A/B/A sequence changes both xi and Map3 and then restores."""
     from des3pcf.pipeline import JointPrediction
     from des3pcf.physical_provider import PhysicalProvider
-    from des3pcf.survey import forecast_rows
+    from cobaya.likelihoods.des_3pcf.survey import forecast_rows
 
     tables, point, metadata = response_inputs()
     provider = PhysicalProvider(

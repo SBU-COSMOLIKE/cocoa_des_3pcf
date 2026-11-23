@@ -19,8 +19,8 @@ import numpy as np
 import pytest
 
 from des3pcf.physical_provider import load_tables, save_tables
-from des3pcf.survey import reconstructed_sources
-from des3pcf.survey import shifted_sources
+from cobaya.likelihoods.des_3pcf.survey import reconstructed_sources
+from cobaya.likelihoods.des_3pcf.survey import shifted_sources
 from des3pcf.physical_provider import validate_tables
 ARRAY_NAMES = ("k", "p_linear0", "z", "p_nonlinear", "chi", "dz_dchi", "growth", "sources", "los_z")
 SCALAR_NAMES = ("omega_m", "omega_de", "w0", "wa", "ns", "sigma8")
@@ -380,7 +380,7 @@ def test_measured_edge_padding_keeps_an_endpoint_spike_inside_its_support():
 def test_native_edges_survive_fits_and_physical_archive(tmp_path):
     """Keep actual supplied cell edges, including the zero observer cell."""
     from astropy.io import fits
-    from des3pcf.survey import read_source_distributions
+    from cobaya.likelihoods.des_3pcf.survey import read_source_distributions
 
     tables, _, metadata = source_tables(count=65)
     native_z = np.concatenate((np.zeros(1), tables["source_native_z"]))

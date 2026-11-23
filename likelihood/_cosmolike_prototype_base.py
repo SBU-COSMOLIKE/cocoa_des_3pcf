@@ -55,14 +55,12 @@ import numpy as np
 from cobaya.likelihoods.base_classes import DataSetLikelihood
 from getdist import IniFile
 
-# PROJECT = projects/des_3pcf; CORE = the cosmolike core checkout. The three
-# sys.path entries make the compiled interface (interface/), the project
-# helpers (scripts/des3pcf) and cosmolike_notebook_utils importable without
-# an installation step.
+# PROJECT = projects/des_3pcf; CORE = the cosmolike core checkout. The two
+# sys.path entries make the compiled interface (interface/) and
+# cosmolike_notebook_utils importable without an installation step.
 PROJECT = Path(__file__).resolve().parents[1]
 CORE = PROJECT.parents[1] / "external_modules/code/cosmolike_core"
 sys.path.insert(0, str(PROJECT / "interface"))
-sys.path.insert(0, str(PROJECT / "scripts"))
 sys.path.insert(0, str(CORE))
 
 # ci = the compiled cosmolike library of this project
@@ -71,7 +69,9 @@ sys.path.insert(0, str(CORE))
 # state. ci.production is its Python production layer (the Map3 transform
 # plan and physics model built on the same compiled kernels).
 import cosmolike_des_3pcf_interface as ci
-from des3pcf.survey import (
+# survey = likelihood/survey.py, the readers of the measurement, the
+# covariance and the source n(z), imported relative to this package.
+from .survey import (
     read_survey,
     read_joint_covariance,
     read_source_distributions,

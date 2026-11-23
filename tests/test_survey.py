@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from astropy.io import fits
 
-from des3pcf.survey import read_survey, read_joint_covariance, ARCMIN_TO_RADIAN
+from cobaya.likelihoods.des_3pcf.survey import read_survey, read_joint_covariance, ARCMIN_TO_RADIAN
 from cosmolike_des_3pcf_interface import quadrature, shape_noise, xi_bin_weights
 from cosmolike_des_3pcf_interface import aligned_fft_grid
 

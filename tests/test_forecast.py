@@ -15,7 +15,7 @@ from cosmolike_notebook_utils.fisher import (
     figure_of_merit,
 )
 from cosmolike_notebook_utils.covariance.precision import precision_expansion, split_precision_expansion
-from des3pcf.survey import shifted_sources
+from cobaya.likelihoods.des_3pcf.survey import shifted_sources
 from des3pcf.physical_provider import load_tables, save_tables
 
 
