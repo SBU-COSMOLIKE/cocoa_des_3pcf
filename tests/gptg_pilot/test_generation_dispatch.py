@@ -25,8 +25,8 @@ code = compile(ast.fix_missing_locations(ast.Module(body=[main], type_ignores=[]
 
 with tempfile.TemporaryDirectory() as temporary:
     project = Path(temporary)
-    (project / 'maps_cov_512_v2').mkdir()
-    np.save(project / 'maps_cov_512_v2/indices_512.npy', np.arange(2))
+    (project / 'chains/rafael/maps_cov_512_v2').mkdir(parents=True)
+    np.save(project / 'chains/rafael/maps_cov_512_v2/indices_512.npy', np.arange(2))
     pilot = project / 'pilot'
     pilot.mkdir()
     # The frozen geometry and per-pixel noise are required inputs even

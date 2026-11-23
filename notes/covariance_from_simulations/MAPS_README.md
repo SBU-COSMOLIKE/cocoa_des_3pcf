@@ -7,8 +7,14 @@ The local inventory settled at 15,997 map files on 21 November 2026. Every
 present map was measured by the coarse diagnostic, but producer completeness
 and checksums remain unverified. Three combinations of the observed labels
 are absent: run 168/cut 2/draws 7 and 19, and run 168/cut 3/draw 19.
-There are 200 distinct run labels; that alone does not identify their relation
-to the paper's 199 full-sky realizations.
+There are 200 distinct run labels in this download. Rafael confirmed on
+23 November 2026 that the paper used 199 parent simulations and only
+`nreal0`; the download also contains repeated noise realizations. Its extra
+parent label still needs to be mapped to the published selection.
+
+The map archive is now at `chains/rafael/maps_cov_512_v2/`, beside
+`chains/rafael/datavector_2pt3pt/`. The notebook reads the maps from that
+location; no map copies are needed.
 
 ## Start with the viewing notebook
 
@@ -33,11 +39,11 @@ python -m pip install --no-deps astropy-healpix==1.0.3
 
 The saved notebook outputs include the bounded map inspection and plots;
 the viewing notebook itself runs no covariance measurement. A separate
-[aperture-moment pilot](../EXAMPLE_COVARIANCE_MAPS.ipynb) now studies a bounded
+[aperture-moment pilot](../../EXAMPLE_COVARIANCE_MAPS.ipynb) now studies a bounded
 measurement from these maps.
 
 The numerical map files, including `indices_512.npy`, are ignored by Git.
-Only this README and the viewing notebook are tracked here. Save generated
+The guide and viewing notebook are tracked under notes/covariance_from_simulations; the downloaded arrays live under chains/rafael/maps_cov_512_v2/. Save generated
 figures and measured data vectors under the project's `chains/` directory.
 Do not commit the simulation download.
 
@@ -91,8 +97,8 @@ footprint and equatorial extension. NESTED spans all longitudes and reaches
 use `order="ring"` for these previews and interpret coordinates as RA/Dec
 from the footprint match; compare Figure 1 of the
 [DES Y3 shape-catalog paper](https://academic.oup.com/mnras/article/504/3/4312/6211014).
-Record this as geometric evidence rather than
-as a producer-confirmed coordinate or shear-basis declaration.
+Rafael confirmed RING ordering on 23 November 2026. The coordinate and
+shear-basis conventions remain distinct from the pixel-order declaration.
 
 The notebook plots the retained-pixel footprint and both components of two
 maps in the first source bin. It uses at most 30,000 evenly selected array
@@ -111,9 +117,9 @@ For example, `ShearMaps_DESY3_run_0000_ncut0_nreal17.npy` separates into:
 |---|---|
 | `ShearMaps` | The stored quantities are shear-map values, as Rafael confirmed. |
 | `DESY3` | The maps target DES Year 3; the precise source distributions and weights still need their producer record. |
-| `run_0000` | Run identifier 0, padded to four digits. We interpret this provisionally as the parent density/sky realization. Confirm its link to the underlying CosmoGrid simulation before treating different runs as independent. |
-| `ncut0` | Footprint-cut identifier 0. We interpret different cuts as survey patches obtained from a parent sky; the actual rotations and overlap need the producer's definition. |
-| `nreal17` | Realization identifier 17. The working interpretation is a shape-noise draw at fixed run and cut, but the producer has not yet confirmed what is randomized. With labels starting at zero, it is the eighteenth labeled realization, not seventeen new independent skies. |
+| `run_0000` | Parent CosmoGrid lightcone simulation 0, padded to four digits; confirmed by Rafael. |
+| `ncut0` | DES cutout 0 of four per parent full sky. Rafael describes these four cutouts as independent survey realizations. |
+| `nreal17` | Noise realization 17 on the same sky and cutout, confirmed by Rafael. The paper used only nreal0; extra noise draws are not additional independent skies. |
 | `.npy` | NumPy's array file format. It records array shape and numerical type, not the scientific meaning of these labels. |
 
 Thus the intended reading is **run 0, footprint cut 0, realization 17**.
@@ -125,25 +131,23 @@ We have not been given a change record explaining that release revision.
 
 Two files differing only in `nreal` are expected to share the parent sky and
 cut, while changing the realization draw. Two files differing only in `ncut`
-are expected to select different patches from the same parent. These are
-working interpretations to confirm, not metadata encoded by the NPY format.
-Until confirmed, retain all three labels in measured-vector records and
+are expected to select different patches from the same parent. Rafael has now confirmed these label meanings. Retain all three labels in
+measured-vector records and
 keep the entire `run` group together in training/validation splits. In
 particular, never pass the number of files as the independent-sky count.
 
 ## A file is not an independent Universe
 
-The filename table gives the working interpretation, which still needs
-producer confirmation before counting independent simulations. If several files
+The filename table records Rafael's confirmed interpretation. If several files
 share a density realization and differ only in galaxy shape noise, they
 cannot be counted as new independent realizations of cosmic structure.
 Keep all descendants of a parent simulation together when assigning training
 and validation sets. Do not average different footprints and call that one
 DES survey; this changes the measurement whose covariance is being estimated.
 
-Ask the producer to confirm the label meanings, parent simulation IDs and
-cosmology, the inferred RING/equatorial convention, source-bin distributions, shape
-noise prescription and noiseless-map availability, shear signs/basis,
+Rafael confirmed the labels and RING ordering, and can supply noiseless
+convergence and shear maps. Still obtain the exact parent selection, cosmology,
+coordinate basis, source-bin distributions, shape-noise prescription, shear signs,
 footprint weights and pixel occupancies, and checksums or expected file sizes.
 If different cuts use different pixel lists, obtain that mapping too.
 The download can be used for bounded previews while these details arrive;
@@ -165,15 +169,21 @@ not corrected by changing a filename or rescaling the survey area. Until
 resolution and estimator matching are tested, the maps can teach and test
 the covariance workflow, but do not establish a matched published likelihood.
 
-The [PME notebook](../EXAMPLE_COVARIANCE_PME.ipynb) explains how simulations
-can correct an analytic precision matrix. The [introductory notes](../notes/covariance_from_simulations/covariance_from_simulations.pdf)
+The separate `chains/rafael/datavector_2pt3pt/` download contains the
+NSIDE1024 paper-estimator measurements for 100 parents and four cutouts
+each: 400 matched NPY/FITS pairs. These are not the coarse moments measured
+by the pilot below. All pairs contain 200 xi-plus, 200 xi-minus and 80 Map3
+entries; the NPY ordering agrees exactly with the FITS columns.
+
+The [PME notebook](../../EXAMPLE_COVARIANCE_PME.ipynb) explains how simulations
+can correct an analytic precision matrix. The [introductory notes](../covariance_from_simulations/covariance_from_simulations.pdf)
 derive the method, explain repeated-noise realizations and describe the
 validation needed before using the correction in a forecast. Neither artifact
 claims that a DES covariance has already been calibrated from this download.
 
 ## Covariance pilot and storage
 
-The [measurement driver](../scripts/measure_covariance_maps.py) streams one
+The [measurement driver](../../scripts/measure_covariance_maps.py) streams one
 map at a time, with OpenMP limited to four workers and BLAS to one. It saves
 16 coarse aperture moments per map and a small set of primary aperture
 values under `../chains/`; it never copies a map or writes a per-map figure.
@@ -216,16 +226,17 @@ positive and its mean validation weight is closer to one, but that single
 average does not establish calibrated parameter errors. The all-map pass
 saved about 12 MB of tables, with no temporary map copies. Repeated draws dominated the measured fluctuations, and weak
 cross-draw shear correlations do not establish the assumed shared sky.
-Confirm whether these files contain signal plus noise or noise only, and
-what `nreal` randomizes, before interpreting the covariance split physically.
+Rafael now confirms repeated noise realizations on the same skies. The
+historical weak cross-draw signal remains a measurement diagnostic to
+understand; it does not overturn that provenance.
 
 ## Compare with the released covariance
 
 The project includes Rafael's 480-row joint covariance and its paired row
-definitions. The [map notebook](../EXAMPLE_COVARIANCE_MAPS.ipynb) audits these
+definitions. The [map notebook](../../EXAMPLE_COVARIANCE_MAPS.ipynb) audits these
 inputs and reads a bounded xi-plus comparison using source-bin slot four,
 cut zero, draw zero, and the released bins from 39.622 to 99.527 arcminutes.
-The separate [pair driver](../scripts/measure_covariance_xip.py) uses exact
+The separate [pair driver](../../scripts/measure_covariance_xip.py) uses exact
 angular binning and saves only small text vectors. It needs these optional
 packages in addition to the viewing notebook's astropy-healpix dependency:
 
@@ -242,8 +253,9 @@ python projects/des_3pcf/scripts/measure_covariance_xip.py --runs 32
 The comparison is conditional on equal pixel weights and the specified
 shear basis, and it does not remove the 512-versus-1024 resolution difference.
 If the released covariance shares these parent skies, it is not independent
-validation. Its FITS header says `NSIM=500`, whereas the paired upstream
-likelihood configuration uses 796; that provenance conflict remains open.
+validation. Rafael confirmed that its `NSIM=500` header is a stale typo: the covariance
+used 796 mocks from 199 parent simulations. Preserve the original FITS file
+and record 796 as the producer-confirmed count in analysis metadata.
 The Map3 block is identical to the standalone Map3 file, but the standalone
 two-point covariance differs from the joint file's two-point block. Use the
 joint reference consistently; do not splice the two products together.
@@ -265,11 +277,12 @@ the producer's account of what was randomized.
 The completed eight-pair test finds a same-run cross signal consistent with
 zero, while the same-map signal is clearly positive. It challenges the
 fixed-sky interpretation under independent, uncorrelated pixel noise;
-it does not identify the actual randomization. These historical label tests
+it does not overturn Rafael's subsequent confirmation of repeated noise
+on fixed skies. These historical label tests
 remain in the main map notebook.
 
-The [comparison note for Rafael](../notes/covariance_comparison/covariance_comparison.pdf)
-and its [notebook](../notes/covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
+The [comparison note for Rafael](../covariance_comparison/covariance_comparison.pdf)
+and its [notebook](../covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
 now focus only on two matrix comparisons. First, all 15,997 measured
 aperture vectors enter both the direct covariance and the
 second-, fourth- and sixth-order Eifler estimates, with the starting matrix fixed
@@ -281,8 +294,8 @@ reproduce the figures without reopening the maps. The nominal file count
 used in the Eifler square correction is stated explicitly; it is not an
 established independent-sky count.
 
-The separate [map-generation note](../notes/gptg_simulations/gptg_simulations.pdf)
-and [worked notebook](../notes/gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb)
+The separate [map-generation note](../gptg_simulations/gptg_simulations.pdf)
+and [worked notebook](../gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb)
 fit an initial point-transformed Gaussian model to 32 supplied maps and save
 64 new four-bin maps with a stated Gaussian noise model under
 `chains/gptg_method/maps/`. Their names begin `GPTG_DES_`; they are not

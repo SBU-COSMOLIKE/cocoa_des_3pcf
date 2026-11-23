@@ -136,12 +136,13 @@ are insufficient.
 - `chains/` contains generated theory tables, predictions, Fisher products,
   compression matrices, plots, logs and sampler results. Ignore it in Git.
   Do not introduce `outputs/`, `plots/` or `runs/` for these products.
-- `maps_cov_512_v2/` is a local simulation download. Ignore its contents
-  except its README and viewing notebook; never stage the map arrays.
+- `chains/rafael/maps_cov_512_v2/` is a local simulation download. Ignore its contents
+  entirely; never stage the map arrays. Its tracked MAPS_README.md and
+  EXAMPLE_VIEW_MAPS.ipynb live under notes/covariance_from_simulations/.
   Rafael confirmed NSIDE 512 and footprint pixel IDs in `indices_512.npy`.
-  The footprint comparison strongly identifies RING/equatorial coordinates;
-  record this as geometric evidence. Confirm shear signs and parent/cut/noise
-  labels before measurement. The preview uses astropy-healpix, not healpy.
+  Rafael confirmed RING ordering and the labels: run is the parent
+  lightcone, ncut selects one of four cutouts, nreal is a repeated noise
+  realization; the paper used nreal0. Confirm shear signs separately. The preview uses astropy-healpix, not healpy.
   File counts are not independent-sky counts. Keep previews bounded and
   store generated measurements in `chains/`. The covariance introduction
   lives in `notes/covariance_from_simulations/` with its LaTeX source and PDF.

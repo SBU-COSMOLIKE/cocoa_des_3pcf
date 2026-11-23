@@ -70,7 +70,7 @@ def main():
             "and more than one for a covariance."
         )
     project = Path(__file__).resolve().parents[1]
-    folder = project / "maps_cov_512_v2"
+    folder = project / "chains/rafael/maps_cov_512_v2"
     data = project / "data" / "upstream_y3_observed" / "data"
     output = project / "chains" / "covariance_xip_comparison"
     indices = np.load(file=folder / "indices_512.npy", allow_pickle=False)

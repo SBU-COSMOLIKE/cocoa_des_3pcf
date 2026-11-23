@@ -365,7 +365,7 @@ def main():
     if source_indices is None:
         source_indices = args.calibration_dir / f'indices_{calibration_nside}.npy'
         if not source_indices.exists():
-            source_indices = PROJECT / 'maps_cov_512_v2' / f'indices_{calibration_nside}.npy'
+            source_indices = PROJECT / 'chains/rafael/maps_cov_512_v2' / f'indices_{calibration_nside}.npy'
     input_indices = np.load(source_indices, allow_pickle=False)
     indices, geometry, ell, factor, nodes, weights = setup(
         lmax=record['lmax'],

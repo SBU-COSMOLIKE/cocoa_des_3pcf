@@ -8,9 +8,6 @@ outputs/
 runs/
 chains/
 *.pyc
-/maps_cov_512_v2/*
-!/maps_cov_512_v2/README.md
-!/maps_cov_512_v2/EXAMPLE_VIEW_MAPS.ipynb
 notes/**/*.aux
 notes/**/*.log
 notes/**/*.out

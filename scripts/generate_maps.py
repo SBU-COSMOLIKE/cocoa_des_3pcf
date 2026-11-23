@@ -114,7 +114,7 @@ def setup(lmax, nside=512, indices=None, index_nside=512):
             or not 1 <= lmax < 3*nside):
         raise ValueError('Use power-of-two NSIDE refinement and lmax < 3*NSIDE.')
     if indices is None:
-        indices = np.load(file=PROJECT/'maps_cov_512_v2/indices_512.npy')
+        indices = np.load(file=PROJECT/'chains/rafael/maps_cov_512_v2/indices_512.npy')
     if nside != index_nside:
         parent = ducc0.healpix.Healpix_Base(index_nside, 'RING')
         target = ducc0.healpix.Healpix_Base(nside, 'RING')
@@ -167,7 +167,7 @@ def fit(args):
     )
     indices, geometry, ell, factor, nodes, weights = setup(lmax=args.lmax)
     first_weight, second_weight, centers = aperture_weights(indices=indices)
-    paths = sorted((PROJECT/'maps_cov_512_v2').glob(
+    paths = sorted((PROJECT/'chains/rafael/maps_cov_512_v2').glob(
         'ShearMaps_DESY3_run_*_ncut0_nreal0.npy'
     ))[:args.runs]
     if len(paths) != args.runs:

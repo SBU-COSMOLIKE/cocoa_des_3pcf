@@ -196,7 +196,7 @@ def main():
             if line and not line.startswith("#"):
                 name, size, modified = line.split()
                 previous[name] = (int(size), int(modified))
-    folder = PROJECT / "maps_cov_512_v2"
+    folder = PROJECT / "chains/rafael/maps_cov_512_v2"
     records = []
     for path in sorted(folder.glob("ShearMaps*.npy")):
         match = re.fullmatch(
