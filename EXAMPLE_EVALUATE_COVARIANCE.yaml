@@ -1,0 +1,180 @@
+# Fiducial point of the analytic covariance: EXAMPLE_EVALUATE1 with m_i = 0.
+# Run covariance/compute_covariance.py on this file from the Cocoa/ folder.
+timing: true
+debug: false
+stop_at_error: true
+likelihood:
+  des_3pcf.joint_shear:
+    data_file: des_y3_joint1.dataset
+params:
+  omega_m:
+    prior:
+      min: 0.1
+      max: 0.5
+    ref: 0.289
+    latex: \Omega_{\rm m}
+    drop: true
+  omega_b:
+    prior:
+      min: 0.03
+      max: 0.07
+    ref: 0.0463
+    latex: \Omega_{\rm b}
+    drop: true
+  h:
+    prior:
+      min: 0.55
+      max: 0.91
+    ref: 0.722
+    latex: h
+    drop: true
+  ns:
+    prior:
+      min: 0.87
+      max: 1.07
+    ref: 0.959
+    latex: n_{\rm s}
+  sigma8:
+    prior:
+      min: 0.6
+      max: 1.0
+    ref: 0.7865548373195137
+    latex: \sigma_8
+  a1:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref: -0.33
+    latex: A_1
+  eta1:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref: 2.81
+    latex: \eta_1
+  m1:
+    prior:
+      dist: truncnorm
+      a: -10.296703296703297
+      b: 11.68131868131868
+      loc: -0.0063
+      scale: 0.0091
+    ref: -0.0063
+    latex: m_1
+  m2:
+    prior:
+      dist: truncnorm
+      a: -10.282051282051283
+      b: 15.35897435897436
+      loc: -0.0198
+      scale: 0.0078
+    ref: -0.0198
+    latex: m_2
+  m3:
+    prior:
+      dist: truncnorm
+      a: -9.98684210526316
+      b: 16.32894736842105
+      loc: -0.0241
+      scale: 0.0076
+    ref: -0.0241
+    latex: m_3
+  m4:
+    prior:
+      dist: truncnorm
+      a: -8.302631578947368
+      b: 18.013157894736846
+      loc: -0.0369
+      scale: 0.0076
+    ref: -0.0369
+    latex: m_4
+  dz1:
+    prior:
+      dist: truncnorm
+      a: -5.555555555555556
+      b: 5.555555555555556
+      loc: 0.0
+      scale: 0.018
+    ref: 0
+    latex: \Delta z_1
+  dz2:
+    prior:
+      dist: truncnorm
+      a: -6.666666666666667
+      b: 6.666666666666667
+      loc: 0.0
+      scale: 0.015
+    ref: 0
+    latex: \Delta z_2
+  dz3:
+    prior:
+      dist: truncnorm
+      a: -9.090909090909092
+      b: 9.090909090909092
+      loc: 0.0
+      scale: 0.011
+    ref: 0
+    latex: \Delta z_3
+  dz4:
+    prior:
+      dist: truncnorm
+      a: -5.88235294117647
+      b: 5.88235294117647
+      loc: 0.0
+      scale: 0.017
+    ref: 0
+    latex: \Delta z_4
+  a2: 0.0
+  eta2: 0.0
+  bta: 0.0
+  w0:
+    value: -1.0
+    drop: true
+  wa: 0.0
+  mnu: 0.06
+  nnu: 3.046
+  H0:
+    value: 'lambda h: 100*h'
+  omegabh2:
+    value: 'lambda omega_b, h: omega_b*h**2'
+  omegach2:
+    value: 'lambda omega_m, omega_b, mnu, h: (omega_m-omega_b)*h**2-(mnu*(3.046/3)**0.75)/94.0708'
+  w:
+    value: 'lambda w0: w0'
+theory:
+  camb:
+    path: ./external_modules/code/CAMB
+    stop_at_error: true
+    use_renames: true
+    extra_args:
+      halofit_version: takahashi
+      dark_energy_model: ppf
+      num_massive_neutrinos: 3
+      neutrino_hierarchy: degenerate
+      kmax: 5.0
+      k_per_logint: 0
+      WantCls: false
+  bihalofit: {}
+sampler:
+  evaluate:
+    override:
+      omega_m: 0.289
+      omega_b: 0.0463
+      h: 0.722
+      ns: 0.959
+      sigma8: 0.7865548373195137
+      a1: -0.33
+      eta1: 2.81
+      # The analytic covariance requires fiducial m_i = 0.
+      m1: 0.0
+      m2: 0.0
+      m3: 0.0
+      m4: 0.0
+      dz1: 0
+      dz2: 0
+      dz3: 0
+      dz4: 0
+covariance:
+  # mnu = 0.06 eV enters the halo model as one clustering matter fluid.
+  neutrino_model: single_fluid_effective_growth
+output: ./projects/des_3pcf/chains/EXAMPLE_EVALUATE_COVARIANCE.npz
