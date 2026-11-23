@@ -11,10 +11,14 @@ import numpy as np
 import pytest
 import yaml
 
-from des3pcf.comparison import BLAS_VARIABLES, FORMAT
-from des3pcf.comparison import _worker_environment
-from des3pcf.comparison import comparison_status, validate_comparison_settings
-from des3pcf.comparison import load_comparison_case, run_code_comparison
+from cosmolike_des_3pcf_notebook_wrappers import BLAS_VARIABLES, FORMAT
+from cosmolike_des_3pcf_notebook_wrappers import _worker_environment
+from cosmolike_des_3pcf_notebook_wrappers import (
+    comparison_status, validate_comparison_settings,
+)
+from cosmolike_des_3pcf_notebook_wrappers import (
+    load_comparison_case, run_code_comparison,
+)
 
 
 PROJECT = Path(__file__).resolve().parents[1]
