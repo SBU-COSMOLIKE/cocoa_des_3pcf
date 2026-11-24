@@ -6,7 +6,8 @@ of a numbered example. These checks run EXAMPLE_EVALUATE1 (NLA) three
 times: the arrays of xi and map3 must hold exactly the values of the
 joint vector, a change of sigma8 must reach every Map3 entry, chi2 must
 be the compiled joint chi2 of that vector, and a value for a parameter
-the yaml fixes must be refused rather than ignored.
+the yaml fixes, or a parameter name the model does not know, must be
+refused rather than ignored.
 """
 
 import numpy as np
@@ -46,3 +47,8 @@ def test_observables_hold_the_joint_vector_and_follow_parameters():
     # EXAMPLE_EVALUATE1 fixes a2 = 0 (NLA); another value cannot be honoured.
     with pytest.raises(ValueError, match="fixes it"):
         nw.datavector(A2=[0.5, 0.0])
+
+    # A mistyped parameter is refused before any evaluation, rather than
+    # returning the fiducial value as if the change had been applied.
+    with pytest.raises(ValueError, match="has no parameter"):
+        nw.get_chi2(sigm8=0.8)

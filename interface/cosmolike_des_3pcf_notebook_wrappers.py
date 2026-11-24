@@ -1,10 +1,10 @@
 """Notebook wrappers for the des_3pcf Cosmolike interface.
 
-The EXAMPLE notebooks of this project all compute the same observables:
-the shear two-point correlation functions xi_+ and xi_-, the third-order
-aperture-mass statistic Map3, the joint data vector that holds both, and
-its chi2. This module computes them at any parameter point, so every
-notebook imports the same functions instead of redefining them:
+The observables of this project are the shear two-point correlation
+functions xi_+ and xi_-, the third-order aperture-mass statistic Map3,
+the joint data vector that holds both, and its chi2. This module computes
+them at any parameter point, so a notebook imports them instead of
+redefining them (EXAMPLE_IA_COMPONENTS does):
 
     import cosmolike_des_3pcf_notebook_wrappers as nw
     nw.configure()                      # EXAMPLE_EVALUATE1.yaml, one thread
@@ -48,7 +48,6 @@ directly (lsst_y1 samples H0 and As_1e9).
 """
 
 from pathlib import Path
-import sys
 
 import numpy as np
 from cobaya.model import get_model
@@ -183,10 +182,17 @@ def _point(omegam, omegab, h, ns, sigma8, A1, A2, BTA, shear_photoz_bias,
 
     # Split the request along the model's own classification: a sampled
     # parameter is forwarded, a fixed one is accepted only at its yaml
-    # value, and any other name is dropped (for example a parameter of a
-    # theory block the configured yaml does not carry).
+    # value. A standard argument the yaml does not carry is dropped (it
+    # keeps the same call working across the numbered yamls), but an extra
+    # keyword the model does not know is a typo or a missing theory block,
+    # so it raises instead of silently leaving the point unchanged.
     sampled = model.parameterization.sampled_params()
     fixed = model.parameterization.constant_params()
+    unknown = [name for name in extra if name not in sampled and name not in fixed]
+    if unknown:
+        raise ValueError(
+            f"{_STATE['yaml']} has no parameter {unknown}; check the name, "
+            "or configure the theory block that defines it.")
     point = {}
     for name, value in requested.items():
         if name in sampled:
