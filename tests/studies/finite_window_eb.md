@@ -111,9 +111,10 @@ part does not establish exact E/B separation.
 
 The methods analysis cuts measured triangle sides near 8 arcmin before
 reconstructing the aperture statistic, which differs from discarding a
-small aperture radius. The project uses a stated 8 to 80 arcmin theory
-quadrature; [the estimator study](estimator_conventions.md) lists its
-remaining measurement differences.
+small aperture radius. The likelihood integrates over the measured side
+bins (20 log bins from 0.5 to 80 arcmin, of which the cut keeps the 9 with
+a lower edge of at least 8 arcmin); [the estimator study](estimator_conventions.md)
+lists the remaining measurement differences.
 [Gomes et al., methods paper, Section III](https://arxiv.org/html/2503.03964v2#S3)
 
 Exact finite-interval E/B separation requires weights constructed for

@@ -273,8 +273,9 @@ def xi(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
     Use it to plot or compare the two-point part of the prediction: the
     values are the xi entries of datavector() arranged on the dataset's
     angular grid, one [nsource, nsource] table of source-bin pairs per
-    angular bin. The angular bins are the dataset's (theta_min to theta_max in log
-    bins, averaged over each bin as the measurement is).
+    angular bin. The angular bins are the dataset's measured bins (their
+    edges come from its two-point file), and each value is averaged over
+    its bin as the measurement is.
 
     Arguments:
       as in datavector.

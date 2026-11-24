@@ -110,11 +110,11 @@ uses 400 two-point shear-correlation entries and 80 third-order aperture
 entries, with the full fixed public simulation covariance. Every row is
 retained by an all-one mask, including the two/three-point cross-covariance.
 The simulated data vector, source reconstruction, power, Hubble rate,
-growth and current finite-triangle assumptions are fixed across the
-comparison. In particular, the triangle model samples two side lengths and
+growth and finite-triangle assumptions of that time are fixed across the
+comparison. In particular, the triangle model sampled two side lengths and
 their included angle, called SAS: 10 side bins from 8 to 80 arcmin and 63
-angle bins. Its exact correspondence to the published bin averaging and
-measurement edges remains a separate estimator question.
+angle bins. The likelihood now uses the measured side bins instead
+([the estimator study](estimator_conventions.md)).
 
 The baseline uses uniform ranges from 0 to 3.1 in redshift, from -18 to 12
 in the logarithm of the middle wavenumber, from -24 to 0 in the logarithm

@@ -59,7 +59,7 @@ def test_external_simulation_rows_and_parent_identity(tmp_path):
         file=path, vectors=vectors, row_labels=labels, row_kind=kinds,
         parent_ids=parents, estimator=np.array("finite_sas"),
     )
-    with pytest.raises(ValueError, match="patches are not independent"):
+    with pytest.raises(ValueError, match="each cutout"):
         notebook.load_joint_simulations(
             path=path, expected_labels=labels, expected_kind=kinds,
             expected_estimator="finite_sas",
