@@ -99,7 +99,7 @@ def test_bad_scientific_inputs_are_refused(fault):
 def test_named_columns_scales_and_display_are_preserved():
     """Stored column order and display intervals determine the drawn response."""
     result = {
-        "parameter_names": np.array(["a2", "a1"]),
+        "parameter_names": np.array(["DES_A2_1", "DES_A1_1"]),
         "derivatives_h2": np.array([[2., 1.], [4., 2.], [5., 3.]]),
         "row_kind": np.array(["xip", "xim", "map3"]),
         "row_labels": np.array(["first", "second", "third"]),
@@ -114,7 +114,7 @@ def test_named_columns_scales_and_display_are_preserved():
                       any(isinstance(t, ast.Name) and t.id == "shapes"
                           for t in node.targets))
     namespace = dict(response_plots=shared, derivatives=result["derivatives_h2"],
-                     names=list(result["parameter_names"]), mimic="a2", mimic_scale=.2,
+                     names=list(result["parameter_names"]), mimic="DES_A2_1", mimic_scale=.2,
                      forecast={"covariance": result["fiducial_covariance"],
                                "row_kind": result["row_kind"]})
     exec(compile(ast.Module(body=[assignment], type_ignores=[]), "notebook", "exec"),

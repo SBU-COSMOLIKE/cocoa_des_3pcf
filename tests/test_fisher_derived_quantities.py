@@ -17,11 +17,17 @@ def amplitude_reports(forecast):
 
 
 def test_s8_error_keeps_cross_covariance_and_fom_ratio():
-    """A negative Omega_m/sigma8 correlation reduces the S8 variance."""
+    """A negative Omega_m/sigma8 correlation reduces the S8 variance.
+
+    The notebook takes dS8/dp from the forecast record (CAMB's sigma8 at the
+    stencils). This toy uses the coordinates (Omega_m, sigma8) at
+    Omega_m = 0.3, sigma8 = 0.8, where that gradient is (4/3, 1).
+    """
     covariance = np.array([[0.0009, -0.0024], [-0.0024, 0.01]])
     forecast = {
-        "names": ["omega_m", "sigma8"],
-        "fiducial": {"omega_m": 0.3, "sigma8": 0.8},
+        "names": ["omegam", "sigma8"],
+        "fiducial": {"omegam": 0.3, "sigma8": 0.8},
+        "s8_gradient": np.array([0.8 / (2.0 * 0.3), 1.0]),
         "errors": {},
         "information": {"fisher_two_point": np.linalg.inv(covariance),
                         "fisher_joint": np.linalg.inv(0.25*covariance)},

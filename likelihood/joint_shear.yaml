@@ -79,17 +79,4 @@ xi_ell:
   logarithmic: true
 xi_theta_count: 32
 power_mode: 2
-input_params:
-- a1
-- eta1
-- a2
-- eta2
-- bta
-- m1
-- m2
-- m3
-- m4
-- dz1
-- dz2
-- dz3
-- dz4
+params: !defaults [params_source]

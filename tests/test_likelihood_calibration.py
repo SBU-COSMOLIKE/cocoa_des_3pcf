@@ -32,7 +32,7 @@ def row_factors(bins, point):
     Arguments:
       bins = [nrow, 3] zero-based source bins; xi rows hold -1 in the
           third column.
-      point = parameter dictionary with m1..m4.
+      point = parameter dictionary with DES_M1..DES_M4.
     Returns:
       one factor per row.
     """
@@ -40,7 +40,7 @@ def row_factors(bins, point):
     for row in range(bins.shape[0]):
         for source in bins[row]:
             if source >= 0:
-                factors[row] *= 1.0 + point[f"m{source + 1}"]
+                factors[row] *= 1.0 + point[f"DES_M{source + 1}"]
     return factors
 
 
@@ -62,7 +62,7 @@ def test_calibration_rescales_each_row_and_restores():
     # The displaced point changes only the four calibrations.
     # ----------------------------------------------------------------------
     second = dict(first)
-    second.update(m1=0.04, m2=-0.02, m3=0.01, m4=-0.03)
+    second.update(DES_M1=0.04, DES_M2=-0.02, DES_M3=0.01, DES_M4=-0.03)
 
     with get_model(info_or_yaml_or_file=info) as model:
         likelihood = model.likelihood["des_3pcf.joint_shear"]

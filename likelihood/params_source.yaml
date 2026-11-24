@@ -1,0 +1,164 @@
+  # Default priors of the DES nuisance parameters. Every EXAMPLE yaml
+  # lists them again explicitly, so the examples stay fixed if these
+  # defaults change.
+  # ------------------------------------------------------------------------
+  # Nuisance parameters, listed explicitly so the example does not depend
+  # on defaults that may change (likelihood/params_source.yaml).
+  # ------------------------------------------------------------------------
+  # WL photo-z errors
+  DES_DZ_S1:
+    prior:
+      dist: truncnorm
+      a: -5.555555555555556
+      b: 5.555555555555556
+      loc: 0.0
+      scale: 0.018
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.018
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^1
+  DES_DZ_S2:
+    prior:
+      dist: truncnorm
+      a: -6.666666666666667
+      b: 6.666666666666667
+      loc: 0.0
+      scale: 0.015
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.015
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^2
+  DES_DZ_S3:
+    prior:
+      dist: truncnorm
+      a: -9.090909090909092
+      b: 9.090909090909092
+      loc: 0.0
+      scale: 0.011
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.011
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^3
+  DES_DZ_S4:
+    prior:
+      dist: truncnorm
+      a: -5.88235294117647
+      b: 5.88235294117647
+      loc: 0.0
+      scale: 0.017
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.017
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^4
+  # Intrinsic alignment
+  DES_A1_1:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: -0.33
+      scale: 0.5
+    proposal: 0.5
+    latex: A_\mathrm{1-IA,DES}^1
+  DES_A1_2:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: 2.81
+      scale: 0.5
+    proposal: 0.5
+    latex: \eta_\mathrm{1-IA,DES}
+  DES_A2_1:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: 0.65
+      scale: 0.5
+    proposal: 0.5
+    latex: A_\mathrm{2-IA,DES}^1
+  DES_A2_2:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: 1.69
+      scale: 0.5
+    proposal: 0.5
+    latex: \eta_\mathrm{2-IA,DES}
+  DES_BTA_1:
+    prior:
+      min: 0.0
+      max: 2.0
+    ref:
+      dist: norm
+      loc: 0.91
+      scale: 0.15
+    proposal: 0.1
+    latex: b_\mathrm{TA-IA,DES}
+  # Shear calibration parameters
+  DES_M1:
+    prior:
+      dist: truncnorm
+      a: -10.296703296703297
+      b: 11.68131868131868
+      loc: -0.0063
+      scale: 0.0091
+    ref:
+      dist: norm
+      loc: -0.0063
+      scale: 0.0091
+    proposal: 0.004
+    latex: m_\mathrm{DES}^1
+  DES_M2:
+    prior:
+      dist: truncnorm
+      a: -10.282051282051283
+      b: 15.35897435897436
+      loc: -0.0198
+      scale: 0.0078
+    ref:
+      dist: norm
+      loc: -0.0198
+      scale: 0.0078
+    proposal: 0.004
+    latex: m_\mathrm{DES}^2
+  DES_M3:
+    prior:
+      dist: truncnorm
+      a: -9.98684210526316
+      b: 16.32894736842105
+      loc: -0.0241
+      scale: 0.0076
+    ref:
+      dist: norm
+      loc: -0.0241
+      scale: 0.0076
+    proposal: 0.004
+    latex: m_\mathrm{DES}^3
+  DES_M4:
+    prior:
+      dist: truncnorm
+      a: -8.302631578947368
+      b: 18.013157894736846
+      loc: -0.0369
+      scale: 0.0076
+    ref:
+      dist: norm
+      loc: -0.0369
+      scale: 0.0076
+    proposal: 0.004
+    latex: m_\mathrm{DES}^4

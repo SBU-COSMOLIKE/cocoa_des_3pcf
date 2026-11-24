@@ -28,7 +28,7 @@ def test_numbered_covariance_keeps_all_rows_and_the_cross_block(number):
     assert len(fits.getdata(three, extname="map3")) == 80
     # These Gaussian widths are read by the numbered likelihood; their
     # truncation bounds are not extra Gaussian Fisher information.
-    assert info["params"]["dz3"]["prior"]["scale"] == .011
+    assert info["params"]["DES_DZ_S3"]["prior"]["scale"] == .011
 
 
 def test_native_ia_signs_power_choices_and_restoration(compiled):

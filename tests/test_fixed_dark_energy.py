@@ -6,15 +6,21 @@ from test_fisher_derived_quantities import amplitude_reports
 
 
 def toy_forecast():
-    """Interleave dark energy and nuisance coordinates to test index selection."""
-    names = ["omega_m", "w0", "a1", "sigma8", "wa"]
+    """Interleave dark energy and nuisance coordinates to test index selection.
+
+    The coordinates are (Omega_m, w, DES_A1_1, sigma8, wa) at Omega_m = 0.3,
+    sigma8 = 0.8, so the gradient of S8 = sigma8 (Omega_m/0.3)^(1/2) the
+    notebook reads from the forecast record is (4/3, 0, 0, 1, 0).
+    """
+    names = ["omegam", "w", "DES_A1_1", "sigma8", "wa"]
     likelihood = np.diag([1., 2., 1., 2., 1.])
     likelihood[0, 1] = likelihood[1, 0] = 1.
     likelihood[2, 3] = likelihood[3, 2] = 1.
     prior = np.diag([0., 0., 1., 0., 0.])
     return {
         "names": names,
-        "fiducial": {"omega_m": .3, "sigma8": .8, "w0": -1., "wa": 0.},
+        "fiducial": {"omegam": .3, "sigma8": .8, "w": -1., "wa": 0.},
+        "s8_gradient": np.array([4/3, 0., 0., 1., 0.]),
         "errors": {},
         "information": {"fisher_two_point": likelihood+prior,
                         "fisher_joint": 2*likelihood+prior},
@@ -27,14 +33,14 @@ def test_fixed_dark_energy_keeps_ia_marginalization_and_prior_once():
     original = deepcopy(forecast)
     reports = amplitude_reports(forecast)
     first, joint = reports[True, "two_point"], reports[True, "joint"]
-    # Fixing w0 gives Var(Omega_m)=1 and1/2. Marginalizing a1 with its
-    # single prior gives Var(sigma8)=2/3 and3/8. grad(S8)=(4/3,1).
+    # Fixing w gives Var(Omega_m)=1 and 1/2. Marginalizing DES_A1_1 with its
+    # single prior gives Var(sigma8)=2/3 and 3/8. grad(S8)=(4/3,1).
     np.testing.assert_allclose(first["sigma_s8"]**2, 22/9, rtol=3e-14)
     np.testing.assert_allclose(joint["sigma_s8"]**2, 91/72, rtol=3e-14)
     np.testing.assert_allclose(first["omega_m_s8_fom"], np.sqrt(3/2), rtol=3e-14)
     np.testing.assert_allclose(joint["omega_m_s8_fom"]/first["omega_m_s8_fom"],
                                4*np.sqrt(2)/3, rtol=3e-14)
-    assert first["names"] == ["omega_m", "a1", "sigma8"]
+    assert first["names"] == ["omegam", "DES_A1_1", "sigma8"]
     np.testing.assert_allclose(first["parameter_covariance"][1, 1], 2/3, rtol=3e-14)
     np.testing.assert_allclose(joint["parameter_covariance"][1, 1], .5, rtol=3e-14)
     # Keeping dark energy marginalized is a different experiment.

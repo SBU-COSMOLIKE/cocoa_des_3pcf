@@ -27,11 +27,13 @@ Terms used in this file:
                  right) so the chi2 runs over a few linear modes instead of
                  every row; likelihood/compression.py trains and saves it.
   nuisance parameters = survey systematics sampled together with cosmology,
-                 read from Cobaya by bare name: photo-z shifts dz1..dz4,
-                 shear calibrations m1..m4, and the intrinsic-alignment
-                 amplitudes a1, eta1 (tidal alignment and its redshift
-                 exponent), a2, eta2 (tidal torquing) and bta (density
-                 weighting).
+                 read from Cobaya with the DES_ prefix of the des_y3
+                 project: photo-z shifts DES_DZ_S1..DES_DZ_S4, shear
+                 calibrations DES_M1..DES_M4, and the intrinsic-alignment
+                 slots DES_A1_1, DES_A1_2 (tidal-alignment amplitude and its
+                 redshift exponent), DES_A2_1, DES_A2_2 (tidal torquing) and
+                 DES_BTA_1 (density weighting); likelihood/params_source.yaml
+                 gives their default priors.
 
 What happens at one sampled point (logp):
   get_datavector
@@ -77,6 +79,12 @@ from .survey import (
     read_source_distributions,
     reconstructed_sources,
 )
+
+# Prefix of every nuisance-parameter name this likelihood reads from Cobaya,
+# e.g. DES_DZ_S1 (photo-z shift of source bin 1) or DES_M1 (shear
+# calibration of source bin 1), as in the des_y3 project. It must match the
+# names in params_source.yaml.
+survey = "DES"
 
 
 class _cosmolike_prototype_base(DataSetLikelihood):
@@ -758,10 +766,11 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         arrays set_cosmo_related stored.
 
         Arguments:
-          **params = the sampled nuisance values by name: dz1..dz4 (photo-z
-            shifts), m1..m4 (shear calibrations), a1, eta1, a2, eta2, bta
-            (intrinsic alignment). A name the run does not sample reads as
-            0 (no shift, no calibration, no alignment).
+          **params = the sampled nuisance values by name:
+            DES_DZ_S1..4 (photo-z shifts), DES_M1..4 (shear calibrations),
+            DES_A1_1, DES_A1_2, DES_A2_1, DES_A2_2, DES_BTA_1 (intrinsic
+            alignment). A name the run does not sample reads as 0 (no
+            shift, no calibration, no alignment).
 
         Side effects: sets cosmolike's source and lens samples and nuisance
         parameters; sets the attributes calibration, sources, ia and model
@@ -770,13 +779,13 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         """
         # ------------------------------------------------------------------
         # Per-bin photo-z shifts and multiplicative shear calibrations from
-        # the sampled parameters (bin i reads dz<i> and m<i>).
+        # the sampled parameters (bin i reads DES_DZ_S<i> and DES_M<i>).
         # ------------------------------------------------------------------
         shifts = np.zeros(self.source_ntomo)
         self.calibration = np.zeros(self.source_ntomo)
         for index in range(self.source_ntomo):
-            shifts[index] = params.get(f"dz{index + 1}", 0.0)
-            self.calibration[index] = params.get(f"m{index + 1}", 0.0)
+            shifts[index] = params.get(survey + "_DZ_S" + str(index + 1), 0.0)
+            self.calibration[index] = params.get(survey + "_M" + str(index + 1), 0.0)
 
         # ------------------------------------------------------------------
         # Reconstruct the source n(z) on the common source_z grid, with the
@@ -820,16 +829,17 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         # arrays as parameter slots, not as bins: slot 0 holds the
         # amplitude and slot 1 the redshift exponent of
         # A(z) = a * ((1 + z)/(1 + zpivot))^eta. The remaining slots must
-        # be zero. a1/eta1 is the tidal-alignment term, a2/eta2 the
-        # tidal-torquing term, and bta (amplitude only) the density
-        # weighting of the TATT expansion.
+        # be zero. DES_A1_1/DES_A1_2 (a1, eta1) are the tidal-alignment
+        # term, DES_A2_1/DES_A2_2 (a2, eta2) the tidal-torquing term, and
+        # DES_BTA_1 (bta, amplitude only) the density weighting of the
+        # TATT expansion; a1 ... bta below are those values.
         # ------------------------------------------------------------------
         a1 = np.zeros(self.source_ntomo)
         a2 = np.zeros(self.source_ntomo)
         bta = np.zeros(self.source_ntomo)
-        a1[:2] = [params.get("a1", 0.0), params.get("eta1", 0.0)]
-        a2[:2] = [params.get("a2", 0.0), params.get("eta2", 0.0)]
-        bta[0] = params.get("bta", 0.0)
+        a1[:2] = [params.get(survey + "_A1_1", 0.0), params.get(survey + "_A1_2", 0.0)]
+        a2[:2] = [params.get(survey + "_A2_1", 0.0), params.get(survey + "_A2_2", 0.0)]
+        bta[0] = params.get(survey + "_BTA_1", 0.0)
         ci.set_nuisance_ia(
             A1=a1,
             A2=a2,

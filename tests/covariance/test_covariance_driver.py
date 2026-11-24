@@ -240,8 +240,8 @@ def test_adapter_refusals_name_the_value():
     """Nonzero m_i, an undeclared positive mnu and a shared variance fail."""
     massless = survey.configuration(neutrino_model="massless")
     single = survey.configuration(neutrino_model="single_fluid_effective_growth")
-    with pytest.raises(ValueError, match="m2 = 0.01"):
-        survey.check_point(settings=single, parameters={"m2": 0.01, "mnu": 0.0},
+    with pytest.raises(ValueError, match="DES_M2 = 0.01"):
+        survey.check_point(settings=single, parameters={"DES_M2": 0.01, "mnu": 0.0},
                            nbin=4)
     with pytest.raises(ValueError, match="mnu = 0.06 eV"):
         survey.check_point(settings=massless, parameters={"mnu": 0.06}, nbin=4)

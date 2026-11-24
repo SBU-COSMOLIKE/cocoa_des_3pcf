@@ -202,9 +202,9 @@ def test_cobaya_read_agrees_with_direct_bfmt_request():
 
     # ----------------------------------------------------------------------
     # The same CAMB + bfmt asked for R_P at exactly h * k. The likelihood
-    # and the bispectrum block are dropped, with the nuisance parameters
-    # only they read; the external likelihood asks CAMB for sigma8(z = 0)
-    # so the sigma8-parameterized CAMB run is still valid.
+    # and the bispectrum block are dropped, with the DES_ nuisance
+    # parameters only they read; the external likelihood asks CAMB for
+    # sigma8(z = 0) so the model keeps one CAMB requirement of its own.
     # ----------------------------------------------------------------------
     direct = copy.deepcopy(info)
     direct["likelihood"] = {"power": {
@@ -214,10 +214,10 @@ def test_cobaya_read_agrees_with_direct_bfmt_request():
     direct["theory"].pop("bihalofit")
     cosmology = {}
     for name, value in point.items():
-        if name in ("omega_m", "omega_b", "h", "ns", "sigma8"):
+        if name in ("omegam", "omegab", "H0", "ns", "As_1e9"):
             cosmology[name] = value
     for name in list(direct["params"]):
-        if name in ("a1", "eta1", "a2", "eta2", "bta") or name[:-1] in ("m", "dz"):
+        if name.startswith("DES_"):
             direct["params"].pop(name)
     with get_model(info_or_yaml_or_file=direct) as model:
         model.add_requirements(requirements={"baryon_suppression": {

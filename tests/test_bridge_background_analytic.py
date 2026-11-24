@@ -583,8 +583,11 @@ def test_production_like_background_sampling(compiled, background_observer,
     doubled twice. The
     toy source is not the survey n(z), and no DES accuracy claim follows.
     """
+    # Cobaya's loader resolves the "params: !defaults [params_source]" line.
+    from cobaya.yaml import yaml_load_file
+
     configuration = "likelihood/joint_shear.yaml"
-    settings = yaml.safe_load(stream=(PROJECT / configuration).read_text())
+    settings = yaml_load_file(str(PROJECT / configuration))
     initial = settings["power_nz"]
     source_count = settings["source_nz"]
     measurements = []

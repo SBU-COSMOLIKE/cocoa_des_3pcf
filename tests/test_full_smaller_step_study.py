@@ -46,8 +46,8 @@ def polynomial_mean(parameters):
     Returns:
       Three-element vector, with no files or physical model state changed.
     """
-    x = parameters["omega_m"]
-    y = parameters["h"]
+    x = parameters["omegam"]
+    y = parameters["H0"]
     z = parameters["offset"]
     return np.array([
         x**3 + 2.0 * y + z,
@@ -65,8 +65,8 @@ def retained_inputs():
     Returns:
       Namespace containing fiducial, steps, derivatives, center and mean cache.
     """
-    fiducial = {"omega_m": 0.25, "h": -0.75, "offset": -0.0}
-    steps = {"omega_m": 0.125, "h": 0.0625, "offset": 0.125}
+    fiducial = {"omegam": 0.25, "H0": -0.75, "offset": -0.0}
+    steps = {"omegam": 0.125, "H0": 0.0625, "offset": 0.125}
     predict = cnu.ExactMeanCache(predict=polynomial_mean)
     names, center, first, second = cnu.differentiate(
         predict=predict,
@@ -166,15 +166,15 @@ def test_quarter_step_uses_only_two_new_means_per_parameter():
     )
     point = namespace["fiducial"]
     expected = np.array([
-        [3.0 * point["omega_m"]**2, 2.0, 1.0],
-        [4.0 * point["omega_m"]**3, 3.0 * point["h"]**2, 3.0],
-        [5.0 * point["omega_m"]**4, 1.0, 0.0],
+        [3.0 * point["omegam"]**2, 2.0, 1.0],
+        [4.0 * point["omegam"]**3, 3.0 * point["H0"]**2, 3.0],
+        [5.0 * point["omegam"]**4, 1.0, 0.0],
     ])
     # The five-point stencil for x**5 has error -4*s**4 at spacing s. The
     # shared stencil (cnu.five_point) sums in its own order, so the match
     # is exact up to round-off, amplified by the division by the small
     # quarter step (about 1e-13 here).
-    expected[2, 0] -= 4.0 * (namespace["steps"]["omega_m"] / 4.0)**4
+    expected[2, 0] -= 4.0 * (namespace["steps"]["omegam"] / 4.0)**4
     np.testing.assert_allclose(actual=namespace["quarter_derivatives"], desired=expected,
                                rtol=1.0e-12, atol=1.0e-12 * np.max(np.abs(expected)))
     assert np.signbit(namespace["fiducial"]["offset"])
@@ -201,7 +201,7 @@ def test_quarter_step_refuses_inconsistent_retained_values(failure):
     elif failure == "center":
         namespace["refined_stencils_h2"][0, 2, 0] += 0.001
     else:
-        namespace["steps"]["omega_m"] = 1.0e-20
+        namespace["steps"]["omegam"] = 1.0e-20
     calls = []
 
     def get_dv(parameters):
@@ -237,7 +237,7 @@ def test_full_comparison_reconstructs_cross_information_and_single_prior():
     namespace = {
         "np": np,
         "cnu": cnu,
-        "names": ["w0", "wa"],
+        "names": ["w", "wa"],
         "row_kind": np.array(["xip", "xim", "map3"]),
         "covariance": covariance,
         "priors": {"wa": 0.2},
@@ -278,9 +278,9 @@ def test_wider_step_reuses_original_outer_nodes():
     assert len(calls) == 4
     assert namespace["wide_predictions"] == 4
     assert namespace["model"].closed
-    x = namespace["fiducial"]["omega_m"]
-    y = namespace["fiducial"]["h"]
-    wider_step = 2 * namespace["steps"]["omega_m"]
+    x = namespace["fiducial"]["omegam"]
+    y = namespace["fiducial"]["H0"]
+    wider_step = 2 * namespace["steps"]["omegam"]
     expected = np.array([
         [3 * x**2, 2.0],
         [4 * x**3, 3 * y**2],
@@ -292,7 +292,7 @@ def test_wider_step_reuses_original_outer_nodes():
         namespace["wide_derivatives"][:, 2],
         namespace["refined_h2"][:, 2],
     )
-    for name in ("omega_m", "h"):
+    for name in ("omegam", "H0"):
         column = namespace["names"].index(name)
         np.testing.assert_array_equal(
             namespace["wide_stencils"][name][[1, 2, 3]],
@@ -318,8 +318,8 @@ def test_projection_and_block_cells_keep_the_full_covariance():
         "cnu": cnu,
         "solve_triangular": solve_triangular,
         "covariance": covariance,
-        "names": ["w0", "wa", "omega_m", "h"],
-        "priors": {"omega_m": 0.3},
+        "names": ["w", "wa", "omegam", "H0"],
+        "priors": {"omegam": 0.3},
         "row_kind": np.array(["xip", "xim"] * 2 + ["map3"] * 4),
         "dh2": derivatives.copy(),
         "refined_h2": derivatives + 0.03 * random.normal(size=(8, 4)),
@@ -360,7 +360,7 @@ def test_projection_and_block_cells_keep_the_full_covariance():
         / np.linalg.det(np.linalg.inv(replacement)[:2, :2])
     )
     np.testing.assert_allclose(
-        namespace["block_substitutions"]["step:omega_m:xi"], ratio,
+        namespace["block_substitutions"]["step:omegam:xi"], ratio,
     )
 
 

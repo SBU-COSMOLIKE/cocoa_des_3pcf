@@ -249,7 +249,7 @@ def check_point(settings, parameters, nbin):
     Arguments:
         settings = mapping returned by configuration().
         parameters = dict {name: value} of the resolved input parameters.
-        nbin = number of source bins; m1 to m<nbin> are checked.
+        nbin = number of source bins; DES_M1 to DES_M<nbin> are checked.
     Returns:
         nothing when the point is accepted.
     Raises:
@@ -258,7 +258,7 @@ def check_point(settings, parameters, nbin):
     """
     # A calibration absent from the yaml reads as zero in the likelihood.
     for index in range(nbin):
-        name = f"m{index + 1}"
+        name = f"DES_M{index + 1}"
         value = parameters.get(name, 0.0)
         if value != 0.0:
             raise ValueError(

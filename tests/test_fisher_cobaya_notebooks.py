@@ -95,24 +95,44 @@ def test_notebook_prediction_and_absolute_derivatives(filename):
     class Model:
         """Supply deterministic likelihood values without any physical solver."""
 
-        def loglike(self, params_values, return_derived, cached):
-            """Record the exact Cobaya arguments and update the retained vector.
-
-            Arguments:
-              params_values = two physical coordinates, a1 and wa.
-              return_derived, cached = flags passed by the notebook.
-            Returns:
-              Finite scalar likelihood, independent of the stand-in data units.
-            """
-            calls.append((return_derived, cached))
-            x = params_values["a1"]
+        def update(self, params_values):
+            """Set the retained vector from the coordinates DES_A1_1 and wa."""
+            x = params_values["DES_A1_1"]
             y = params_values["wa"]
             likelihood.last_datavector = np.array([
                 x + 3.0 * y,
                 123.0,
                 x**3 + 2.0 * y,
             ])
+
+        def loglike(self, params_values, return_derived, cached):
+            """Record the Cobaya arguments of a notebook without an S8 forecast.
+
+            Arguments:
+              params_values = physical coordinates, with DES_A1_1 and wa.
+              return_derived, cached = flags passed by the notebook.
+            Returns:
+              Finite scalar likelihood, independent of the stand-in data units.
+            """
+            calls.append((return_derived, cached))
+            self.update(params_values=params_values)
             return -1.0
+
+        def loglikes(self, params_values, return_derived, as_dict, cached):
+            """Record the Cobaya arguments of a notebook with an S8 forecast.
+
+            Arguments:
+              params_values = physical coordinates, with DES_A1_1 and wa.
+              return_derived, as_dict, cached = flags passed by the notebook.
+            Returns:
+              likelihood and derived dictionaries, as Cobaya returns them with
+              as_dict=True; the stand-in sigma8 = 0.8 (1 + wa).
+            """
+            assert as_dict
+            calls.append((return_derived, cached))
+            self.update(params_values=params_values)
+            return ({"des_3pcf.joint_shear": -1.0},
+                    {"sigma8": 0.8 * (1.0 + params_values["wa"])})
 
     class Interface:
         """Select two rows, as the native dataset selector does in production."""
@@ -133,33 +153,51 @@ def test_notebook_prediction_and_absolute_derivatives(filename):
         "model": Model(),
         "likelihood": likelihood,
         "ci": Interface,
+        "sigma8_values": {},
     }
     functions = []
     for cell in notebook_cells(filename=filename):
         for node in ast.parse(source=cell).body:
-            if isinstance(node, ast.FunctionDef) and node.name == "get_dv":
+            if isinstance(node, ast.FunctionDef) and node.name in ("get_dv", "get_s8"):
                 functions.append(node)
-    assert len(functions) == 1
+    assert [node.name for node in functions].count("get_dv") == 1
     definition = ast.Module(body=functions, type_ignores=[])
     exec(compile(definition, filename=filename, mode="exec"), namespace)
     predict = namespace["get_dv"]
-    point = {"a1": -0.33, "wa": 0.0}
-    steps = {"a1": 0.01, "wa": 0.04}
+    point = {"DES_A1_1": -0.33, "wa": 0.0}
+    steps = {"DES_A1_1": 0.01, "wa": 0.04}
     names, center, first, second = cnu.differentiate(
         predict=predict,
         parameters=point,
         steps=steps,
     )
-    expected = np.array([[1.0, 3.0], [3.0 * point["a1"]**2, 2.0]])
-    assert names == ["a1", "wa"]
+    expected = np.array([[1.0, 3.0], [3.0 * point["DES_A1_1"]**2, 2.0]])
+    assert names == ["DES_A1_1", "wa"]
     np.testing.assert_allclose(actual=first, desired=expected, atol=2.0e-14)
     np.testing.assert_allclose(actual=second, desired=expected, atol=2.0e-14)
     np.testing.assert_allclose(actual=center, desired=[-0.33, -0.33**3])
-    assert all(flags == (False, False) for flags in calls)
-    assert point == {"a1": -0.33, "wa": 0.0}
+    # Notebooks with an S8 forecast ask Cobaya for the derived sigma8.
+    with_s8 = "get_s8" in namespace
+    assert all(flags == (with_s8, False) for flags in calls)
+    assert point == {"DES_A1_1": -0.33, "wa": 0.0}
+
+    if with_s8:
+        # S8 = sigma8 (Omega_m/0.3)^(1/2) with the stand-in sigma8: its
+        # gradient at Omega_m = 0.3, wa = 0 is (0.8/0.6, 0.8). get_s8 reads
+        # the sigma8 that get_dv recorded, evaluating new points first.
+        s8_point = {"DES_A1_1": -0.33, "omegam": 0.3, "wa": 0.0}
+        s8_names, s8_center, _, s8_h2 = cnu.differentiate(
+            predict=namespace["get_s8"],
+            parameters=s8_point,
+            steps={"omegam": 0.003, "wa": 0.04},
+        )
+        assert s8_names == ["omegam", "wa"]
+        np.testing.assert_allclose(actual=s8_center, desired=[0.8], rtol=1.0e-15)
+        np.testing.assert_allclose(actual=s8_h2[0], desired=[0.8 / 0.6, 0.8], rtol=1.0e-9)
 
     # The accuracy notebook supplies offsets about zero to the shared noise
-    # function. Its absolute displacement must remain 0.01 even at a1=-0.33.
+    # function. Its absolute displacement must remain 0.01 even at
+    # DES_A1_1 = -0.33.
     offsets = cnu.make_offset_predictor(
         predict=predict,
         reference=point,
@@ -168,11 +206,11 @@ def test_notebook_prediction_and_absolute_derivatives(filename):
     noise = cnu.get_stencil_noise(
         dv=offsets,
         index=0,
-        h=steps["a1"],
+        h=steps["DES_A1_1"],
         CV=np.zeros(2),
         invcov=np.eye(2),
     )
-    assert noise["eps"] == steps["a1"]
+    assert noise["eps"] == steps["DES_A1_1"]
     np.testing.assert_allclose(actual=noise["ddv"], desired=expected[:, 0])
     assert noise["sigma"] < 1.0e-14
 

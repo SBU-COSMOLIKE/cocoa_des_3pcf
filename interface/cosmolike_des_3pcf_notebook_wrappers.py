@@ -9,7 +9,7 @@ redefining them (EXAMPLE_IA_COMPONENTS does):
     import cosmolike_des_3pcf_notebook_wrappers as nw
     nw.configure()                      # EXAMPLE_EVALUATE1.yaml, one thread
     theta, xi_plus, xi_minus = nw.xi()  # at the project fiducial
-    radii, triplets, map3 = nw.map3(sigma8=0.82)
+    radii, triplets, map3 = nw.map3(As_1e9=2.0)
     nw.get_chi2(omegam=0.31)
 
 Every value comes from the project's Cobaya likelihood: configure() builds
@@ -33,18 +33,20 @@ Two layers of state matter here:
   function ran before it.
 - The project fiducial point is the sampler.evaluate.override point of
   EXAMPLE_EVALUATE1.yaml, read once when the module is imported into the
-  plain constants below (omegam, sigma8, M, ...). The functions use them
+  plain constants below (omegam, As_1e9, M, ...). The functions use them
   as default argument values, which Python evaluates once, at import:
   assigning nw.omegam = 0.31 later does not change the defaults; pass
   omegam=0.31 to the call instead.
 
-Parameter names follow the lsst_y1 wrappers where the physics is the
-same: omegam, omegab, ns; A1 = [a1, eta1] and A2 = [a2, eta2] are the
-tidal-alignment and tidal-torquing amplitudes and redshift slopes of the
-TATT intrinsic-alignment model, BTA its density weighting; M = [m_1..m_4]
-the multiplicative shear calibrations and shear_photoz_bias =
-[dz_1..dz_4] the source photo-z shifts. des_3pcf samples h and sigma8
-directly (lsst_y1 samples H0 and As_1e9).
+Parameter names follow the lsst_y1 wrappers: omegam, omegab, H0, ns and
+As_1e9 = 10^9 A_s (sigma8 is derived); A1 = [a1, eta1] and A2 = [a2,
+eta2] are the tidal-alignment and tidal-torquing amplitudes and redshift
+slopes of the TATT intrinsic-alignment model, BTA its density weighting;
+M = [m_1..m_4] the multiplicative shear calibrations and
+shear_photoz_bias = [dz_1..dz_4] the source photo-z shifts. In the
+yamls these are the DES_ nuisance parameters of the des_y3 project
+(DES_A1_1, DES_A1_2, DES_A2_1, DES_A2_2, DES_BTA_1, DES_M<i>,
+DES_DZ_S<i>).
 """
 
 from pathlib import Path
@@ -79,18 +81,18 @@ RADIAN_TO_ARCMIN = 180.0 * 60.0 / np.pi
 _FIDUCIAL = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE1.yaml"))
 _OVERRIDE = _FIDUCIAL["sampler"]["evaluate"]["override"]
 
-omegam = _OVERRIDE["omega_m"]
-omegab = _OVERRIDE["omega_b"]
-h = _OVERRIDE["h"]
+omegam = _OVERRIDE["omegam"]
+omegab = _OVERRIDE["omegab"]
+H0 = _OVERRIDE["H0"]
 ns = _OVERRIDE["ns"]
-sigma8 = _OVERRIDE["sigma8"]
+As_1e9 = _OVERRIDE["As_1e9"]
 
 # NLA at the fiducial: a2, eta2 and bta are fixed to zero in the yaml.
-A1_FID = [_OVERRIDE["a1"], _OVERRIDE["eta1"]]
-A2_FID = [_FIDUCIAL["params"]["a2"], _FIDUCIAL["params"]["eta2"]]
-BTA_FID = _FIDUCIAL["params"]["bta"]
-M_FID = [_OVERRIDE[f"m{i}"] for i in range(1, 5)]
-SHEAR_PHOTOZ_FID = [_OVERRIDE[f"dz{i}"] for i in range(1, 5)]
+A1_FID = [_OVERRIDE["DES_A1_1"], _OVERRIDE["DES_A1_2"]]
+A2_FID = [_FIDUCIAL["params"]["DES_A2_1"], _FIDUCIAL["params"]["DES_A2_2"]]
+BTA_FID = _FIDUCIAL["params"]["DES_BTA_1"]
+M_FID = [_OVERRIDE[f"DES_M{i}"] for i in range(1, 5)]
+SHEAR_PHOTOZ_FID = [_OVERRIDE[f"DES_DZ_S{i}"] for i in range(1, 5)]
 
 
 # ----------------------------------------------------------------------
@@ -149,7 +151,7 @@ def configure(yaml="EXAMPLE_EVALUATE1.yaml", likelihood=None, theory=None,
     _STATE["yaml"] = yaml
 
 
-def _point(omegam, omegab, h, ns, sigma8, A1, A2, BTA, shear_photoz_bias,
+def _point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA, shear_photoz_bias,
            M, extra):
     """Translate the wrapper arguments into the Cobaya point of the model.
 
@@ -164,20 +166,20 @@ def _point(omegam, omegab, h, ns, sigma8, A1, A2, BTA, shear_photoz_bias,
         raise ValueError("Call nw.configure() before computing an observable.")
 
     requested = {
-        "omega_m": omegam,
-        "omega_b": omegab,
-        "h": h,
+        "omegam": omegam,
+        "omegab": omegab,
+        "H0": H0,
         "ns": ns,
-        "sigma8": sigma8,
-        "a1": A1[0],
-        "eta1": A1[1],
-        "a2": A2[0],
-        "eta2": A2[1],
-        "bta": BTA,
+        "As_1e9": As_1e9,
+        "DES_A1_1": A1[0],
+        "DES_A1_2": A1[1],
+        "DES_A2_1": A2[0],
+        "DES_A2_2": A2[1],
+        "DES_BTA_1": BTA,
     }
     for index in range(4):
-        requested[f"m{index + 1}"] = M[index]
-        requested[f"dz{index + 1}"] = shear_photoz_bias[index]
+        requested[f"DES_M{index + 1}"] = M[index]
+        requested[f"DES_DZ_S{index + 1}"] = shear_photoz_bias[index]
     requested.update(extra)
 
     # Split the request along the model's own classification: a sampled
@@ -232,7 +234,7 @@ def _evaluate(point):
     return model.likelihood[LIKELIHOOD]
 
 
-def datavector(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
+def datavector(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
                A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
                shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
     """Compute the joint xi_+, xi_- and Map3 data vector in measured order.
@@ -245,7 +247,7 @@ def datavector(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
     grids.
 
     Arguments:
-      omegam, omegab, h, ns, sigma8 = cosmology; A1, A2, BTA = TATT
+      omegam, omegab, H0, ns, As_1e9 = cosmology (As_1e9 = 10^9 A_s); A1, A2, BTA = TATT
         amplitudes (module docstring); shear_photoz_bias, M = the four
         source photo-z shifts and shear calibrations; extra = parameters
         of added theory blocks (configure(params=...)).
@@ -259,13 +261,13 @@ def datavector(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
         external_baryon_suppression the Map3 entries are NaN (the
         likelihood refuses them for a power-only feedback model).
     """
-    likelihood = _evaluate(_point(omegam, omegab, h, ns, sigma8, A1, A2, BTA,
+    likelihood = _evaluate(_point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA,
                                   shear_photoz_bias, M, extra))
     return (np.array(likelihood.rows.labels, copy=True),
             np.array(likelihood.last_datavector, copy=True))
 
 
-def xi(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
+def xi(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
        A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
        shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
     """Compute the binned shear correlation functions xi_+ and xi_-.
@@ -284,7 +286,7 @@ def xi(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
         xi_plus, xi_minus = [ntheta, nsource, nsource], dimensionless,
         both bin orderings filled; NaN where the dataset has no row.
     """
-    likelihood = _evaluate(_point(omegam, omegab, h, ns, sigma8, A1, A2, BTA,
+    likelihood = _evaluate(_point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA,
                                   shear_photoz_bias, M, extra))
     rows = likelihood.rows
     values = likelihood.last_datavector
@@ -314,7 +316,7 @@ def xi(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
     return theta * RADIAN_TO_ARCMIN, result["xip"], result["xim"]
 
 
-def map3(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
+def map3(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
          A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
          shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
     """Compute the third-order aperture-mass statistic Map3.
@@ -338,7 +340,7 @@ def map3(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
     Raises:
       ValueError if a Map3 row has unequal radii (use datavector).
     """
-    likelihood = _evaluate(_point(omegam, omegab, h, ns, sigma8, A1, A2, BTA,
+    likelihood = _evaluate(_point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA,
                                   shear_photoz_bias, M, extra))
     rows = likelihood.rows
     selected = np.flatnonzero(rows.kind == "map3")
@@ -370,7 +372,7 @@ def map3(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
     return radii * RADIAN_TO_ARCMIN, np.array(triplets, dtype=np.int32), values
 
 
-def get_chi2(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
+def get_chi2(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
              A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
              shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
     """Compute chi2 of the configured dataset at one parameter point.
@@ -386,13 +388,13 @@ def get_chi2(omegam=omegam, omegab=omegab, h=h, ns=ns, sigma8=sigma8,
     Returns:
       chi2 as a float.
     """
-    likelihood = _evaluate(_point(omegam, omegab, h, ns, sigma8, A1, A2, BTA,
+    likelihood = _evaluate(_point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA,
                                   shear_photoz_bias, M, extra))
     return float(ci.compute_joint_chi2(prediction=likelihood.last_datavector))
 
 
 def map3_components(triplets, velocity_shear=0.0, omegam=omegam,
-                    omegab=omegab, h=h, ns=ns, sigma8=sigma8,
+                    omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
                     A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
                     shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
     """Split the Map3 rows of chosen source triplets into IA operators.
@@ -430,7 +432,7 @@ def map3_components(triplets, velocity_shear=0.0, omegam=omegam,
       ValueError for a triplet with no Map3 row or a non-finite
       velocity_shear.
     """
-    likelihood = _evaluate(_point(omegam, omegab, h, ns, sigma8, A1, A2, BTA,
+    likelihood = _evaluate(_point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA,
                                   shear_photoz_bias, M, extra))
     requested = np.asarray(triplets)
     # dtype.kind is numpy's one-letter type-class code: "i" = signed and
