@@ -4,11 +4,11 @@ Usage (from Cocoa/, with the cocoa environment active and start_cocoa.sh
 sourced):
 
   python projects/des_3pcf/tests/benchmark_scaling.py \
-      --yaml projects/des_3pcf/EXAMPLE_EVALUATE2.yaml \
+      --yaml projects/des_3pcf/EXAMPLE_EVALUATE3.yaml \
       --output projects/des_3pcf/chains/benchmark_scaling/nla \
       --threads 1 4 8
 
-EXAMPLE_EVALUATE2 is the NLA case and EXAMPLE_EVALUATE3 the TATT case; run
+EXAMPLE_EVALUATE3 is the NLA case and EXAMPLE_EVALUATE4 the TATT case; run
 them separately. Use a quiet machine: other programs change the times.
 
 What is measured. Each thread count runs in a fresh child process with

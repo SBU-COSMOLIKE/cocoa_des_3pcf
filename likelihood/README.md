@@ -12,7 +12,7 @@ theory:
   bihalofit: {}
 likelihood:
   des_3pcf.joint_shear:
-    data_file: des_y3_joint2_sim.dataset
+    data_file: des_y3_joint3_sim.dataset
 ```
 
 The complete examples also specify cosmological parameters, nuisance
@@ -28,7 +28,7 @@ $`P_H=R_P P_D`$ and $`B_H=R_B B_D`$. The three-point model retains DMO power
 for quadratic IA; the two-point core receives the once-corrected nonlinear
 power through its existing setter. Linear TATT power and the fixed covariance
 stay unchanged. No BACCO module is imported by this likelihood. See
-[the commented setup in example 2](../EXAMPLE_EVALUATE2.yaml).
+[the commented setup in example 2](../EXAMPLE_EVALUATE3.yaml).
 
 `joint_shear.py` selects the probe. `survey.py` holds the survey readers:
 the functions that read the ASCII data vector, covariance, mask and
@@ -77,7 +77,7 @@ not required for a joint forecast.
 Run from the activated Cocoa directory:
 
 ```bash
-cobaya-run projects/des_3pcf/EXAMPLE_EVALUATE2.yaml
+cobaya-run projects/des_3pcf/EXAMPLE_EVALUATE3.yaml
 ```
 
 See the [project README](../README.md) for data provenance, Nautilus examples

@@ -22,7 +22,7 @@ sampler checks and actual likelihood initialization).
 OFF: 39 tests passed (quadrature, analytic xi integrals, odd/even padding,
 numbered examples, three real likelihood initializations and source notebook).
 ON -> OFF rebuild without cleaning succeeds; final installed extension is OFF.
-Actual EXAMPLE_EVALUATE2 Cobaya run, production sampling, OpenMP=1, BLAS=1:
+Actual EXAMPLE_EVALUATE3 Cobaya run, production sampling, OpenMP=1, BLAS=1:
   all 480 NLA mean entries finite
   normalized log likelihood = 7124.056851076294
 This is a runtime regression check, not an accuracy or posterior validation.
@@ -38,7 +38,7 @@ Local macOS/Clang covariance-OFF rebuild: all 37 translation units compiled;
 no compiler warnings or errors. Linux/GCC build was not run locally.
 52 tests passed: quadrature, numbered examples/sampler checks and transforms.
 DES and LSST Y1 extensions imported together in both orders.
-EXAMPLE_EVALUATE2 through Cobaya, OpenMP=1 and BLAS=1: all 480 prediction
+EXAMPLE_EVALUATE3 through Cobaya, OpenMP=1 and BLAS=1: all 480 prediction
 entries bitwise equal to the saved pre-visibility-change result;
 normalized log likelihood = 7124.056851076294, unchanged.
 Map generation remained running throughout; no TreeCorr measurement ran.

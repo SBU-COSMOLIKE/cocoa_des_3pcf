@@ -71,7 +71,7 @@ OMP_NUM_THREADS=8 python ./projects/des_3pcf/covariance/compute_covariance.py \
 ```
 
 [EXAMPLE_EVALUATE_COVARIANCE.yaml](../EXAMPLE_EVALUATE_COVARIANCE.yaml)
-is the EXAMPLE_EVALUATE2 fiducial with the shear offsets $`m_i`$ set to
+is the EXAMPLE_EVALUATE3 fiducial with the shear offsets $`m_i`$ set to
 zero and `single_fluid_effective_growth` declared for its
 $`m_\nu=0.06`$ eV. Command options, one per flag:
 

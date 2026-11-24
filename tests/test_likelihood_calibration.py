@@ -13,7 +13,7 @@ data vector bit for bit: no state of the displaced point may survive.
 Every evaluation passes cached=False: Cobaya otherwise serves a revisited
 point from its state cache without calling logp, and last_datavector
 would still hold the previous point's vector.
-The test runs EXAMPLE_EVALUATE2 (CAMB, the bispectrum block and the joint
+The test runs EXAMPLE_EVALUATE3 (CAMB, the bispectrum block and the joint
 xi + Map3 likelihood) at its fiducial point.
 """
 
@@ -50,9 +50,9 @@ def test_calibration_rescales_each_row_and_restores():
     from cobaya.yaml import yaml_load_file
 
     # ----------------------------------------------------------------------
-    # EXAMPLE_EVALUATE2 at its fiducial point, CAMB taken from Cocoa.
+    # EXAMPLE_EVALUATE3 at its fiducial point, CAMB taken from Cocoa.
     # ----------------------------------------------------------------------
-    info = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE2.yaml"))
+    info = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE3.yaml"))
     first = dict(info["sampler"]["evaluate"]["override"])
     info.pop("sampler")
     info.pop("output")

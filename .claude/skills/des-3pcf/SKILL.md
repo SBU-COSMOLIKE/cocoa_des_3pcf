@@ -479,7 +479,7 @@ Review existing scripts against this rule; do not merely rename or move
 an unwanted framework into another package.
 
 Source clipping for the authorized demonstration is taught directly in
-EXAMPLE_EVALUATE2.ipynb. Do not recreate a preparation CLI. The bundled source
+EXAMPLE_EVALUATE3.ipynb. Do not recreate a preparation CLI. The bundled source
 file remains the input; the notebook verifies its samples and can write an
 optional copy under chains/. tests/test_prepare_demo_sources.py executes the
 actual teaching cells on hand-integrated curves and the bundled FITS.
@@ -532,7 +532,7 @@ The IA, accuracy and BACCO Fisher notebooks now evaluate numbered Cobaya
 models directly and call shared core Fisher functions in visible cells,
 following the ordinary LSST Y1 pattern. Do not reintroduce FisherWorkflow,
 AccuracyStudy or a private CAMB route into these examples. Their unmasked,
-uncompressed row labels match numbered cases 2 and 3; other selections need
+uncompressed row labels match numbered cases 3 and 4; other selections need
 matching labels and covariance. DES steps are absolute physical offsets;
 the noise helper receives zero-centered offsets so negative or zero
 fiducials cannot change that meaning. Gaussian priors enter once. Full

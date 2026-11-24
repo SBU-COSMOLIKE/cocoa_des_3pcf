@@ -1,6 +1,6 @@
 # Numerical settings for the joint shear projection. Theory is selected in the example YAML.
 path: null
-data_file: des_y3_joint2_sim.dataset
+data_file: des_y3_joint3_sim.dataset
 # False: gravity-only P and B. True: request paired R_P/R_B from a theory block.
 external_baryon_response: false
 # True: apply the power-only bfmt R_P to the xi rows; every Map3 row must be masked.

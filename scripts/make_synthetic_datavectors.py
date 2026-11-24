@@ -1,6 +1,6 @@
-"""Write the synthetic data vectors of cases 2, 3 and 5 from the current model.
+"""Write the synthetic data vectors of cases 3, 4 and 5 from the current model.
 
-Cases 2 (NLA) and 3 and 5 (TATT) score synthetic vectors: the model's own
+Cases 3 (NLA) and 4 and 5 (TATT) score synthetic vectors: the model's own
 mean at the example yaml's fiducial point (its sampler.evaluate.override).
 At that point a correct installation then gives chi2 = 0. The vectors must
 follow the model: rerun this after any change to the theory, the row
@@ -26,7 +26,7 @@ from convert_desy3_fits import write_vector  # noqa: E402
 
 def main():
     """Evaluate each fiducial and write its full mean as the synthetic vector."""
-    for label, example in (("nla", "EXAMPLE_EVALUATE2.yaml"), ("tatt", "EXAMPLE_EVALUATE3.yaml")):
+    for label, example in (("nla", "EXAMPLE_EVALUATE3.yaml"), ("tatt", "EXAMPLE_EVALUATE4.yaml")):
         # Step 1: the example's model and fiducial point; CAMB by absolute path.
         info = yaml_load_file(str(PROJECT / example))
         point = dict(info["sampler"]["evaluate"]["override"])

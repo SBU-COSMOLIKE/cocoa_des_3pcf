@@ -179,7 +179,7 @@ open (private communication, 2026-11-23):
   $`n = 50`$ would likely give much the same. The likelihood default
   `map_mmax: 20` is checked against 100 by
   `tests/test_map_multipole_truncation.py`, which evaluates the
-  EXAMPLE_EVALUATE2 fiducial at both cutoffs, prints the measured
+  EXAMPLE_EVALUATE3 fiducial at both cutoffs, prints the measured
   differences and bounds the relative Map3 change below $`10^{-8}`$ and
   the covariance-weighted distance $`d^{\mathsf T} C^{-1} d`$ of the
   change $`d`$ below $`10^{-12}`$. The separate Legendre cutoff of the

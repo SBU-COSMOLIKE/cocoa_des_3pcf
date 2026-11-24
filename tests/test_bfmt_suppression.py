@@ -132,19 +132,19 @@ def test_map3_rows_and_combined_feedback_are_refused():
 
     with pytest.raises(ValueError, match="80 Map3 rows"):
         joint_shear(info={
-            "data_file": "des_y3_joint2_sim.dataset",
+            "data_file": "des_y3_joint3_sim.dataset",
             "external_baryon_suppression": True,
         })
     with pytest.raises(ValueError, match="both True"):
         joint_shear(info={
-            "data_file": "des_y3_xi2_sim.dataset",
+            "data_file": "des_y3_xi3_sim.dataset",
             "external_baryon_suppression": True,
             "external_baryon_response": True,
         })
 
     # The xi-only dataset keeps the 400 xi rows and cuts all 80 Map3 rows.
     likelihood = joint_shear(info={
-        "data_file": "des_y3_xi2_sim.dataset",
+        "data_file": "des_y3_xi3_sim.dataset",
         "external_baryon_suppression": True,
     })
     assert likelihood.map_indices.size == 80
@@ -166,13 +166,13 @@ def test_cobaya_read_agrees_with_direct_bfmt_request():
     # ----------------------------------------------------------------------
     # Example model on the xi-only dataset with the power-only key on.
     # ----------------------------------------------------------------------
-    info = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE2.yaml"))
+    info = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE3.yaml"))
     point = dict(info["sampler"]["evaluate"]["override"])
     info.pop("sampler")
     info.pop("output")
     info["theory"]["camb"]["path"] = str(COCOA / "external_modules/code/CAMB")
     likelihood_info = info["likelihood"]["des_3pcf.joint_shear"]
-    likelihood_info["data_file"] = "des_y3_xi2_sim.dataset"
+    likelihood_info["data_file"] = "des_y3_xi3_sim.dataset"
     likelihood_info["external_baryon_suppression"] = True
     info["theory"]["bfmt"] = {
         "baryon_model": 3,

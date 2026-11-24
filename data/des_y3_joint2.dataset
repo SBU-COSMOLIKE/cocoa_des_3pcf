@@ -1,4 +1,4 @@
-# Case 4: the observed (unblinded) DES Y3 data with every row kept and the fixed Gaussian covariance.
+# Case 2: the observed (unblinded) DES Y3 data with every row kept and the fixed Gaussian covariance.
 # It does not reproduce the published cuts, compression or Percival likelihood (case 1 does, except the compression).
 # All 400 xi and 80 Map3 rows are retained; normalized fixed Gaussian, no Hartlap, Percival or PME correction and no compression.
 # Source n(z): the recorded demonstration processing of the released nz_source table (0.04 per cent of the bin-1 area clipped).

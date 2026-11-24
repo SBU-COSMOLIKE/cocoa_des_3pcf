@@ -147,7 +147,7 @@ ignored `chains/` directory by the notebooks that explain them.
 | `chains/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) including its direct TATT derivative calculation; the case-5 dataset `des_y3_joint5_sim.dataset` reads this matrix |
 | `chains/conditional_xi_compression.npz` | Run the conditional-xi section of [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) |
 | `chains/joint_feedback/` | Run [EXAMPLE_JOINT_FEEDBACK.ipynb](../EXAMPLE_JOINT_FEEDBACK.ipynb) |
-| `chains/EXAMPLE_EVALUATE2_fisher.npz` | Run the Fisher section of [EXAMPLE_EVALUATE2.ipynb](../EXAMPLE_EVALUATE2.ipynb) |
+| `chains/EXAMPLE_EVALUATE3_fisher.npz` | Run the Fisher section of [EXAMPLE_EVALUATE3.ipynb](../EXAMPLE_EVALUATE3.ipynb) |
 
 The compression matrix is trained from the chosen derivatives using an
 independent teaching covariance; it is not the published compression.
@@ -168,7 +168,7 @@ occurred; consumers resolve the included file from their YAML
 configuration and check its hash.
 
 Reproduce the processing in the source-distribution section of
-[EXAMPLE_EVALUATE2.ipynb](../EXAMPLE_EVALUATE2.ipynb). After its setup cell,
+[EXAMPLE_EVALUATE3.ipynb](../EXAMPLE_EVALUATE3.ipynb). After its setup cell,
 you can jump directly to that section without running a cosmology or Fisher
 calculation. It shows clipping, the removed area and normalization, and
 checks that the resulting samples exactly match the included file;
@@ -180,7 +180,7 @@ input in `data/`. Changing the source model of an inference requires changing
 The synthetic vectors `des_y3_nla_synthetic.datavector` and
 `des_y3_tatt_synthetic.datavector`, which the `_sim` datasets read, are
 this project's own: the model's mean at the fiducial point of
-`EXAMPLE_EVALUATE2.yaml` (NLA) and `EXAMPLE_EVALUATE3.yaml` (TATT).
+`EXAMPLE_EVALUATE3.yaml` (NLA) and `EXAMPLE_EVALUATE4.yaml` (TATT).
 `python scripts/make_synthetic_datavectors.py` writes them; rerun it after
 any change to the theory, the row geometry or the likelihood defaults.
 `tests/test_synthetic_datavectors.py` fails when they are out of date

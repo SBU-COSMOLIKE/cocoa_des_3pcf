@@ -2,7 +2,7 @@
 
 interface/cosmolike_des_3pcf_notebook_wrappers.py computes xi, Map3, the
 joint data vector and chi2 at any parameter point through the Cobaya model
-of a numbered example. These checks run EXAMPLE_EVALUATE2 (NLA) three
+of a numbered example. These checks run EXAMPLE_EVALUATE3 (NLA) three
 times: the arrays of xi and map3 must hold exactly the values of the
 joint vector, a change of A_s must reach every Map3 entry, chi2 must
 be the compiled joint chi2 of that vector, and a value for a parameter
@@ -19,7 +19,7 @@ import cosmolike_des_3pcf_notebook_wrappers as nw
 
 def test_observables_hold_the_joint_vector_and_follow_parameters():
     """xi and map3 rearrange the data vector; A_s changes Map3; chi2 matches."""
-    nw.configure(yaml="EXAMPLE_EVALUATE2.yaml", threads=2)
+    nw.configure(yaml="EXAMPLE_EVALUATE3.yaml", threads=2)
 
     labels, values = nw.datavector()
     theta, xi_plus, xi_minus = nw.xi()
@@ -44,7 +44,7 @@ def test_observables_hold_the_joint_vector_and_follow_parameters():
     chi2 = nw.get_chi2()
     assert chi2 == float(ci.compute_joint_chi2(prediction=values))
 
-    # EXAMPLE_EVALUATE2 fixes DES_A2_1 = 0 (NLA); another value cannot be
+    # EXAMPLE_EVALUATE3 fixes DES_A2_1 = 0 (NLA); another value cannot be
     # honoured.
     with pytest.raises(ValueError, match="fixes it"):
         nw.datavector(A2=[0.5, 0.0])
@@ -58,15 +58,15 @@ def test_observables_hold_the_joint_vector_and_follow_parameters():
 def test_defaults_follow_the_configured_yaml():
     """A parameter left out takes the configured yaml's fiducial value.
 
-    EXAMPLE_EVALUATE3 (TATT) samples DES_A2_1, DES_A2_2 and DES_BTA_1 at
-    nonzero fiducial values; case 2 fixes them to zero. A default call
+    EXAMPLE_EVALUATE4 (TATT) samples DES_A2_1, DES_A2_2 and DES_BTA_1 at
+    nonzero fiducial values; case 3 fixes them to zero. A default call
     after configuring case 3 must equal a call at case 3's own fiducial,
-    and differ from a call at the case-2 values.
+    and differ from a call at the case-3 values.
     """
     from cobaya.yaml import yaml_load_file
 
-    nw.configure(yaml="EXAMPLE_EVALUATE3.yaml", threads=2)
-    override = yaml_load_file(str(nw.PROJECT / "EXAMPLE_EVALUATE3.yaml"))["sampler"]["evaluate"]["override"]
+    nw.configure(yaml="EXAMPLE_EVALUATE4.yaml", threads=2)
+    override = yaml_load_file(str(nw.PROJECT / "EXAMPLE_EVALUATE4.yaml"))["sampler"]["evaluate"]["override"]
     _, values = nw.datavector()
     _, explicit = nw.datavector(A2=[override["DES_A2_1"], override["DES_A2_2"]],
                                 BTA=override["DES_BTA_1"])

@@ -1,7 +1,9 @@
 # Validation record
 
-The cases were renumbered on 2026-11-24: the observed DES Y3 data with the
-published setup became case 1, and the earlier cases 1-4 became 2-5. The
+The cases were renumbered on 2026-11-24 so that both observed-data cases
+come first: 1 = observed data, published setup; 2 = observed data, all
+rows (formerly 3); 3 = NLA synthetic (formerly 1); 4 = TATT synthetic
+(formerly 2); 5 = TATT synthetic with compression (formerly 4). The
 records below use the new file names; their counts ("four") describe the
 four cases that existed when each record was made.
 
@@ -105,7 +107,7 @@ Checks used serial BLAS and `OMP_THREAD_LIMIT=6`, one numerical job at a time:
 | Source processing, original-code configuration, public covariance, pixel window and CLI configuration tests | 40 passed; live upstream execution deselected |
 | Shared Nautilus examples, likelihood priors/selection and scaling control/plot tests | 64 passed |
 | Accuracy-result identities, Fisher screening and step-plot readers | 26 passed |
-| Real `EXAMPLE_NAUTILUS2.py` through `5.py`, each with `--check` | All four exited successfully |
+| Real `EXAMPLE_NAUTILUS3.py` through `5.py`, each with `--check` | All four exited successfully |
 
 The four fiducial log likelihoods were respectively 7124.056851, 7124.056851,
 6398.736620 and 1810.569075. These are normalized likelihood densities, not
@@ -136,7 +138,7 @@ loosening their tolerances. Preflight may import numerical initializers,
 but still runs neither CAMB nor physical model integration.
 
 The [real Cobaya check](studies/cobaya_joint_check.py) then loaded
-`EXAMPLE_NAUTILUS2.yaml` and `EXAMPLE_NAUTILUS3.yaml` at their production
+`EXAMPLE_NAUTILUS3.yaml` and `EXAMPLE_NAUTILUS4.yaml` at their production
 sampling, without starting a sampler. The covariance-weighted difference
 from each fixed synthetic input was:
 
@@ -174,7 +176,7 @@ native reset and separate native-function aliases. Native calls now use
 `ci` explicitly. Survey rows retain ordinary owned arrays without a frozen
 dataclass or reflective assignment loop. Numerical physics code was unchanged.
 
-`EXAMPLE_EVALUATE2–5.yaml` and `EXAMPLE_MCMC2–5.yaml` match the corresponding
+`EXAMPLE_EVALUATE3–5.yaml` and `EXAMPLE_MCMC3–5.yaml` match the corresponding
 Nautilus case's likelihood, theory, parameters and priors. They use the same
 simulation covariance, including the compressed Percival choice in case 5.
 The MCMC controls follow LSST Y1, with speed measurement enabled instead of

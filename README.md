@@ -45,23 +45,23 @@ two-/three-point cross terms.
 | Case | Data | IA model | Likelihood | Rows kept | Dataset and example files |
 |---|---|---|---|---|---|
 | 1 | Observed (unblinded) Y3 measurements | NLA | [Percival](#percival), 796 simulations, `parameter_count = 15` | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
-| 2 | Synthetic NLA fiducial mean | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint2_sim.dataset`; `EXAMPLE_EVALUATE2.yaml`, `EXAMPLE_MCMC2.yaml`, `EXAMPLE_NAUTILUS2.yaml`/`.py` |
-| 3 | Synthetic TATT fiducial mean | TATT | Fixed Gaussian | All 480 rows | `des_y3_joint3_sim.dataset`; `EXAMPLE_EVALUATE3.yaml`, `EXAMPLE_MCMC3.yaml`, `EXAMPLE_NAUTILUS3.yaml`/`.py` |
-| 4 | Observed (unblinded) Y3 measurements | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint4.dataset`; `EXAMPLE_EVALUATE4.yaml`, `EXAMPLE_MCMC4.yaml`, `EXAMPLE_NAUTILUS4.yaml`/`.py` |
+| 2 | Observed (unblinded) Y3 measurements | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint2.dataset`; `EXAMPLE_EVALUATE2.yaml`, `EXAMPLE_MCMC2.yaml`, `EXAMPLE_NAUTILUS2.yaml`/`.py` |
+| 3 | Synthetic NLA fiducial mean | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint3_sim.dataset`; `EXAMPLE_EVALUATE3.yaml`, `EXAMPLE_MCMC3.yaml`, `EXAMPLE_NAUTILUS3.yaml`/`.py` |
+| 4 | Synthetic TATT fiducial mean | TATT | Fixed Gaussian | All 480 rows | `des_y3_joint4_sim.dataset`; `EXAMPLE_EVALUATE4.yaml`, `EXAMPLE_MCMC4.yaml`, `EXAMPLE_NAUTILUS4.yaml`/`.py` |
 | 5 | Synthetic TATT fiducial mean | TATT | [Percival](#percival) with an independent-pilot MOPED compression | All 480 rows enter the compression | `des_y3_joint5_sim.dataset`; `EXAMPLE_EVALUATE5.yaml`, `EXAMPLE_MCMC5.yaml`, `EXAMPLE_NAUTILUS5.yaml`/`.py` |
 
-Case 2 is the first example to run: its synthetic data were generated at
-the example's own fiducial point, so one evaluation checks the
-installation, and [EXAMPLE_EVALUATE2.ipynb](EXAMPLE_EVALUATE2.ipynb) is
-its notebook. Case 3 repeats it with TATT, and case 4 scores the observed
-data with every row kept and the fixed Gaussian. Case 1 reruns the
-published DES Y3 analysis where the project allows it
-([published rerun](#published_rerun)); case 5 demonstrates the Percival
-likelihood under compression and first needs
+Cases 1 and 2 score the observed DES Y3 data. Case 1 reruns the
+published analysis where the project allows it
+([published rerun](#published_rerun)); case 2 keeps every row with the
+fixed Gaussian. Case 3 is the first example to run: its synthetic data
+were generated at the example's own fiducial point, so one evaluation
+checks the installation, and [EXAMPLE_EVALUATE3.ipynb](EXAMPLE_EVALUATE3.ipynb)
+is its notebook. Case 4 repeats it with TATT, and case 5 demonstrates the
+Percival likelihood under compression and first needs
 `chains/independent_pilot_compression.npz` from
 [EXAMPLE_COMPRESSION.ipynb](EXAMPLE_COMPRESSION.ipynb)
 ([compression FAQ](#compression)). For power-only feedback on the
-two-point rows, `des_y3_xi2_sim.dataset` keeps only the 400 $`\xi`$ rows
+two-point rows, `des_y3_xi3_sim.dataset` keeps only the 400 $`\xi`$ rows
 ([baryonic feedback](#feedback)).
 
 ## What "fixed Gaussian" and "Percival" mean <a name="percival"></a>
@@ -106,13 +106,13 @@ this once that matrix is set as `compression_file`. The dataset keys are
 
 # Reading path through the examples <a name="reading_path"></a>
 
-Start with one evaluation of `EXAMPLE_EVALUATE2.yaml`
+Start with one evaluation of `EXAMPLE_EVALUATE3.yaml`
 ([basic instructions](#running_cosmolike_projects)): it checks the
 installation that every later example uses.
 
 ```mermaid
 flowchart TB
-  A["EXAMPLE_EVALUATE2.yaml: first evaluation"] --> B["EXAMPLE_EVALUATE2.ipynb: joint vector and Fisher"]
+  A["EXAMPLE_EVALUATE3.yaml: first evaluation"] --> B["EXAMPLE_EVALUATE3.ipynb: joint vector and Fisher"]
   B --> C["EXAMPLE_FISHER_IA / _ACCURACY / _BACCO notebooks: Fisher studies"]
   C --> D["notes/: the teaching notes behind each study"]
   A --> E["EXAMPLE_MCMC1-5.yaml: chains"]
@@ -204,12 +204,12 @@ and
         "${CONDA_PREFIX}"/bin/mpirun -n 1 --oversubscribe --mca pml ob1 --mca btl vader,tcp,self \
           --bind-to core:overload-allowed --report-bindings \
           --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
-          cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE2.yaml -f
+          cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE3.yaml -f
 
   - macOS (arm)
 
         mpirun -n 1 --oversubscribe \
-          cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE2.yaml -f
+          cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE3.yaml -f
 
 - **MCMC (Metropolis-Hastings Algorithm)**:
 
@@ -218,12 +218,12 @@ and
         "${CONDA_PREFIX}"/bin/mpirun -n 4 --oversubscribe --mca pml ob1 --mca btl vader,tcp,self \
           --bind-to core:overload-allowed --report-bindings \
           --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
-          cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC2.yaml -f
+          cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC3.yaml -f
 
   - macOS (arm)
 
         mpirun -n 4 --oversubscribe \
-          cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC2.yaml -f
+          cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC3.yaml -f
 
 Replace the number 2 with 1, 3, 4 or 5 to select another case
 ([the five examples](#examples)). Each YAML
@@ -244,7 +244,7 @@ remaining ranks evaluate separate models.
 check the fiducial without sampling.
 
 ```bash
-python ./projects/des_3pcf/EXAMPLE_NAUTILUS2.py --check
+python ./projects/des_3pcf/EXAMPLE_NAUTILUS3.py --check
 ```
 
 **Step :two:**: sample with an explicit budget.
@@ -256,15 +256,15 @@ python ./projects/des_3pcf/EXAMPLE_NAUTILUS2.py --check
         -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \
         -x OMP_NUM_THREADS -x OMP_PROC_BIND -x OMP_PLACES -x OMP_DYNAMIC \
         -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS --mca mpi_yield_when_idle 1 \
-        --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0 \
+        --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0,eno1,enp1s0f0np0 \
         --bind-to core:overload-allowed --report-bindings \
         --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
-        python ./projects/des_3pcf/EXAMPLE_NAUTILUS2.py --nlive 1000 --neff 10000 --maxfeval 100000
+        python ./projects/des_3pcf/EXAMPLE_NAUTILUS3.py --nlive 1000 --neff 10000 --maxfeval 100000
 
 - macOS (arm)
 
       mpirun -n 12 --oversubscribe \
-        python ./projects/des_3pcf/EXAMPLE_NAUTILUS2.py --nlive 1000 --neff 10000 --maxfeval 100000
+        python ./projects/des_3pcf/EXAMPLE_NAUTILUS3.py --nlive 1000 --neff 10000 --maxfeval 100000
 
 The rank counts are example allocations, matching the main README's
 Nautilus examples; size them to the machine. Launcher options, one per
@@ -295,8 +295,11 @@ likelihood evaluation.
 > **Running on more than one node.**
 >
 > 1. **Network interface.** TCP must use an interface routable between compute
->    nodes. A common exclusion list is
->    `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0`; adapt it to the cluster.
+>    nodes. The tested UofA exclusion list is
+>    `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0,eno1,enp1s0f0np0`; adapt it to the cluster.
+>    On the tested UofA nodes this leaves `enp1s0f1np1` available.
+>    Before launching, run `unset OMPI_MCA_btl_tcp_if_include` so an
+>    inherited inclusion list cannot conflict with the explicit exclusion.
 >    Keep `ib0` if routable IP-over-InfiniBand is the intended network. These
 >    examples exchange parameter vectors and scalar scores, so communication
 >    volume is small; actual scaling still depends on the machine.
@@ -355,7 +358,7 @@ export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
   -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \
   -x OMP_NUM_THREADS -x OMP_PROC_BIND -x OMP_PLACES -x OMP_DYNAMIC \
   -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS --mca mpi_yield_when_idle 1 \
-  --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0 \
+  --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0,eno1,enp1s0f0np0 \
   --bind-to core:overload-allowed --report-bindings \
   --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
   cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC1.yaml -f
@@ -436,7 +439,7 @@ ratios $`R_P=P_{\rm hydro}/P_{\rm DMO}`$ and
 $`R_B=B_{\rm hydro}/B_{\rm DMO}`$ from compatible simulations; a power
 response alone does not determine the bispectrum response.
 
-**Step :one:**: in [EXAMPLE_EVALUATE2.yaml](EXAMPLE_EVALUATE2.yaml),
+**Step :one:**: in [EXAMPLE_EVALUATE3.yaml](EXAMPLE_EVALUATE3.yaml),
 uncomment the `bacco_bispectrum` theory block.
 
 **Step :two:**: uncomment `external_baryon_response: true` in the
@@ -451,7 +454,7 @@ likelihood block and the five commented `*_baccoemu` parameters.
 
 **Power-only suppression on the two-point rows.** The power-only feedback
 models of the `bfmt` theory block supply no bispectrum response, so they
-apply only to a xi-only selection: set `data_file: des_y3_xi2_sim.dataset` and
+apply only to a xi-only selection: set `data_file: des_y3_xi3_sim.dataset` and
 `external_baryon_suppression: true` in the likelihood block, and add the
 `bfmt` theory block with its model choice and parameters
 (`external_modules/code/baryon_suppression/README.md` lists them). The
@@ -466,14 +469,14 @@ compares the installed power-only scenarios of
 
 # Running Fisher <a name="fisher"></a>
 
-[EXAMPLE_EVALUATE2.ipynb](EXAMPLE_EVALUATE2.ipynb) shows the ordinary
+[EXAMPLE_EVALUATE3.ipynb](EXAMPLE_EVALUATE3.ipynb) shows the ordinary
 workflow: evaluate the numbered Cobaya model, differentiate its data
 vector, and call the shared Fisher functions of
 `cosmolike_core/cosmolike_notebook_utils/` (section "Fisher"). Derivatives
 and matrices are saved under `chains/`. The IA, accuracy and BACCO
 notebooks ([exploring notebooks](#notebooks)) follow the same calling
 pattern on their own questions; their unmasked, uncompressed rows match
-numbered cases 2 and 3.
+numbered cases 3 and 4.
 
 # Unit tests <a name="unit_tests"></a> <a name="tests"></a>
 
@@ -789,7 +792,7 @@ kernel after recompiling.
 
 | Notebook | Question addressed |
 |---|---|
-| [EXAMPLE_EVALUATE2.ipynb](EXAMPLE_EVALUATE2.ipynb) | What does one joint evaluation return, and how does its Fisher forecast follow? |
+| [EXAMPLE_EVALUATE3.ipynb](EXAMPLE_EVALUATE3.ipynb) | What does one joint evaluation return, and how does its Fisher forecast follow? |
 | [IA notebook](notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb) and [teaching note](notes/intrinsic_alignments/intrinsic_alignments.pdf) | How do NLA/TATT responses and joint Fisher constraints compare? |
 | [Aperture-mass notebook](notes/aperture_mass_statistic/aperture_mass_statistic.ipynb) and [teaching note](notes/aperture_mass_statistic/aperture_mass_statistic.pdf) | What is the third-order aperture mass, and how are the 80 Map3 rows computed? |
 | [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Which sampling controls and derivative steps stabilize the forecast? |

@@ -1,11 +1,11 @@
-# Fiducial point of the analytic covariance: EXAMPLE_EVALUATE2 with m_i = 0.
+# Fiducial point of the analytic covariance: EXAMPLE_EVALUATE3 with m_i = 0.
 # Run covariance/compute_covariance.py on this file from the Cocoa/ folder.
 timing: true
 debug: false
 stop_at_error: true
 likelihood:
   des_3pcf.joint_shear:
-    data_file: des_y3_joint2_sim.dataset
+    data_file: des_y3_joint3_sim.dataset
 params:
   As_1e9:
     prior:

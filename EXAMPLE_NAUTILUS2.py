@@ -1,4 +1,4 @@
-"""Run the DES Y3 joint two-/three-point Nautilus example 2 (NLA with synthetic data).
+"""Run the DES Y3 joint two-/three-point Nautilus example 2 (NLA on the observed DES Y3 data, all rows).
 
 This file follows lsst_y1/EXAMPLE_EMUL2_NAUTILUS1.py: it binds the shared
 run() in cosmolike_core/cocoa_hybrid_sampling.py to this project and example.

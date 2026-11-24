@@ -1,4 +1,4 @@
-"""Test the source-processing cells students run in EXAMPLE_EVALUATE2.
+"""Test the source-processing cells students run in EXAMPLE_EVALUATE3.
 
 The small calculation now lives in the notebook. These checks execute its
 actual cells, compare hand-integrated areas and reproduce the bundled source
@@ -14,7 +14,7 @@ from astropy.io import fits
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-NOTEBOOK = PROJECT / "EXAMPLE_EVALUATE2.ipynb"
+NOTEBOOK = PROJECT / "EXAMPLE_EVALUATE3.ipynb"
 
 
 def run_cell(identity, namespace):

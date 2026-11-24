@@ -7,7 +7,7 @@ them at any parameter point, so a notebook imports them instead of
 redefining them (EXAMPLE_IA_COMPONENTS does):
 
     import cosmolike_des_3pcf_notebook_wrappers as nw
-    nw.configure()                      # EXAMPLE_EVALUATE2.yaml, one thread
+    nw.configure()                      # EXAMPLE_EVALUATE3.yaml, one thread
     theta, xi_plus, xi_minus = nw.xi()  # at the project fiducial
     radii, triplets, map3 = nw.map3(As_1e9=2.0)
     nw.get_chi2(omegam=0.31)
@@ -34,11 +34,11 @@ Two layers of state matter here:
 - A parameter left out of a call takes the value of the configured
   yaml's own fiducial point (its sampler.evaluate.override), read by
   configure() each time it builds a model. So nw.configure(yaml=
-  "EXAMPLE_EVALUATE3.yaml") followed by nw.map3() evaluates the TATT
+  "EXAMPLE_EVALUATE4.yaml") followed by nw.map3() evaluates the TATT
   fiducial, not the NLA one, and an edited yaml takes effect at the next
   configure(), without restarting the kernel.
 - The constants below (omegam, As_1e9, A1_FID, M_FID, ...) hold the
-  project fiducial point of EXAMPLE_EVALUATE2.yaml (case 2), for notebooks
+  project fiducial point of EXAMPLE_EVALUATE3.yaml (case 3), for notebooks
   that quote it; the functions do not read them.
 
 Parameter names follow the lsst_y1 wrappers: omegam, omegab, H0, ns and
@@ -79,9 +79,9 @@ RADIAN_TO_ARCMIN = 180.0 * 60.0 / np.pi
 
 
 # ----------------------------------------------------------------------
-# The project fiducial point (EXAMPLE_EVALUATE2.yaml, sampler.evaluate).
+# The project fiducial point (EXAMPLE_EVALUATE3.yaml, sampler.evaluate).
 # ----------------------------------------------------------------------
-_FIDUCIAL = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE2.yaml"))
+_FIDUCIAL = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE3.yaml"))
 _OVERRIDE = _FIDUCIAL["sampler"]["evaluate"]["override"]
 
 omegam = _OVERRIDE["omegam"]
@@ -104,7 +104,7 @@ SHEAR_PHOTOZ_FID = [_OVERRIDE[f"DES_DZ_S{i}"] for i in range(1, 5)]
 _STATE = {"model": None, "yaml": None, "fiducial": {}}
 
 
-def configure(yaml="EXAMPLE_EVALUATE2.yaml", likelihood=None, theory=None,
+def configure(yaml="EXAMPLE_EVALUATE3.yaml", likelihood=None, theory=None,
               params=None, threads=1):
     """Build the Cobaya model that every observable function evaluates.
 
@@ -112,10 +112,10 @@ def configure(yaml="EXAMPLE_EVALUATE2.yaml", likelihood=None, theory=None,
     or the dataset changes (it replaces the previous model).
 
     Arguments:
-      yaml = a numbered example yaml of this project (EXAMPLE_EVALUATE2 is
-        NLA, EXAMPLE_EVALUATE3 TATT; see the README for the others).
+      yaml = a numbered example yaml of this project (EXAMPLE_EVALUATE3 is
+        NLA, EXAMPLE_EVALUATE4 TATT; see the README for the others).
       likelihood = keys that replace the yaml's des_3pcf.joint_shear
-        settings, for example {"data_file": "des_y3_xi2_sim.dataset",
+        settings, for example {"data_file": "des_y3_xi3_sim.dataset",
         "external_baryon_suppression": True}.
       theory = theory blocks to add or replace, {name: options}; None as
         options removes a block (for example {"bfmt": {...}} for baryonic
@@ -427,7 +427,7 @@ def map3_components(triplets, velocity_shear=0.0, omegam=None,
     weighted and tidal-torquing IA terms; the velocity-shear term) times
     eight placements, which say which of the three legs carry an
     intrinsic shape (GGG = all three lensed, ..., III = all three
-    intrinsic). Configure a TATT yaml (EXAMPLE_EVALUATE3) so every IA
+    intrinsic). Configure a TATT yaml (EXAMPLE_EVALUATE4) so every IA
     operator has a nonzero amplitude.
 
     The projection is repeated once per operator and placement, so this

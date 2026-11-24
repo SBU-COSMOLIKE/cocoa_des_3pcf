@@ -5,7 +5,7 @@ debug: false
 stop_at_error: true
 likelihood:
   des_3pcf.joint_shear:
-    data_file: des_y3_joint2_sim.dataset
+    data_file: des_y3_joint2.dataset
     # Uncomment with the BACCO theory block and its five parameters.
     # external_baryon_response: true
 params:

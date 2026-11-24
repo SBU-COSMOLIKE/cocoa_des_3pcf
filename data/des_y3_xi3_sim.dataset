@@ -1,12 +1,11 @@
-# Case 2: synthetic NLA data vector with the fixed Gaussian covariance (a teaching configuration, not the published analysis).
-# The synthetic vector is the model's own mean at the declared fiducial point; all 400 xi and 80 Map3 rows are retained.
-# Normalized fixed Gaussian with the complete joint cross-covariance; no Hartlap, Percival or PME correction and no compression.
+# The des_y3_joint3_sim inputs with every Map3 row cut by the mask: only the 400 xi rows enter the chi2.
+# Use it with external_baryon_suppression, whose power-only feedback models supply no bispectrum response for the Map3 rows.
 # Source n(z): the recorded demonstration processing of the released nz_source table (0.04 per cent of the bin-1 area clipped).
 # Priors differ from the published analysis by design: 10^9 A_s sampled uniformly (sigma8 derived), mnu = 0.06 fixed.
 # scripts/convert_desy3_fits.py writes every data/ input named here from the released FITS files.
 
 data_file = des_y3_nla_synthetic.datavector
-mask_file =
+mask_file = des_y3_xi_only.mask
 compression_file =
 mock_count = 0
 parameter_count = 0

@@ -460,9 +460,9 @@ units; ratios near zero do not give a stable convergence criterion.
 |---|---|
 | `notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb` | IA sign responses, finite model distances and two-point/joint local information with varied or fixed dark energy |
 | `EXAMPLE_FISHER_ACCURACY.ipynb` | Numerical-refinement and Fisher interpretation through the shared prediction |
-| `EXAMPLE_NAUTILUS2.yaml` | NLA sampling of a noiseless mean-generated synthetic data vector |
-| `EXAMPLE_NAUTILUS3.yaml` | TATT sampling of a noiseless mean-generated synthetic data vector |
-| `EXAMPLE_NAUTILUS4.yaml` | Observed NLA demonstration with explicitly unvalidated estimator/source/cut assumptions |
+| `EXAMPLE_NAUTILUS3.yaml` | NLA sampling of a noiseless mean-generated synthetic data vector |
+| `EXAMPLE_NAUTILUS4.yaml` | TATT sampling of a noiseless mean-generated synthetic data vector |
+| `EXAMPLE_NAUTILUS2.yaml` | Observed NLA demonstration with explicitly unvalidated estimator/source/cut assumptions |
 | `data/upstream_y3_observed/` | Versioned observed inputs with their source manifest; no download step |
 
 The [inference guide](../../README.md#sampling) states how to inspect these choices and

@@ -21,7 +21,7 @@ import cosmolike_des_3pcf_interface as ci
 def main():
     """Check both probes, parameter restoration and the native power input."""
     # Enable the same commented options a user enables in numbered case 2.
-    lines = (PROJECT / "EXAMPLE_EVALUATE3.yaml").read_text(encoding="utf-8").splitlines()
+    lines = (PROJECT / "EXAMPLE_EVALUATE4.yaml").read_text(encoding="utf-8").splitlines()
     enabled = []
     theory_block = False
     for line in lines:

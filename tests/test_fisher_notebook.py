@@ -9,11 +9,11 @@ from cobaya.yaml import yaml_load_file
 PROJECT = Path(__file__).resolve().parents[1]
 
 
-@pytest.mark.parametrize("number", [2, 3])
+@pytest.mark.parametrize("number", [3, 4])
 def test_numbered_covariance_keeps_all_rows_and_the_cross_block(number):
     """Read the numbered YAML and its ASCII dataset, without initializing theory.
 
-    Cases 2 and 3 (the synthetic NLA and TATT vectors) keep every row and
+    Cases 3 and 4 (the synthetic NLA and TATT vectors) keep every row and
     the full joint covariance, including its xi-Map3 cross block.
     """
     from cobaya.likelihoods.des_3pcf.survey import (

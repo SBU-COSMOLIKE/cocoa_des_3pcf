@@ -1,6 +1,6 @@
 """Check that the synthetic data vectors are the current model's mean.
 
-Cases 2 (NLA) and 3 (TATT) score synthetic vectors written by
+Cases 3 (NLA) and 4 (TATT) score synthetic vectors written by
 scripts/make_synthetic_datavectors.py: the model's mean at each example
 yaml's fiducial point. If the theory, the row geometry or the likelihood
 defaults change without rerunning that script, the vectors go out of date
@@ -16,13 +16,13 @@ import pytest
 PROJECT = Path(__file__).resolve().parents[1]
 COCOA = PROJECT.parents[1]
 
-# chi2 of the vector against itself. Case 2 reproduces it to 1e-27; the
+# chi2 of the vector against itself. Case 3 reproduces it to 1e-27; the
 # TATT path differs between processes at the 1e-11 level (FFT plans), so
 # the bound sits far above that and far below any analysis-relevant size.
 CHI2_BOUND = 1.0e-8
 
 
-@pytest.mark.parametrize("case", [2, 3])
+@pytest.mark.parametrize("case", [3, 4])
 def test_synthetic_vector_gives_zero_chi2_at_its_fiducial(case):
     """Evaluate the case at its fiducial point; chi2 must vanish."""
     from cobaya.model import get_model

@@ -209,8 +209,8 @@ def test_massless_neutrinos(response_model):
 
 # The dataset of each numbered case (real data plain, simulated or synthetic
 # vectors with the _sim suffix).
-DATASETS = {1: "des_y3_joint1.dataset", 2: "des_y3_joint2_sim.dataset",
-            3: "des_y3_joint3_sim.dataset", 4: "des_y3_joint4.dataset",
+DATASETS = {1: "des_y3_joint1.dataset", 2: "des_y3_joint2.dataset",
+            3: "des_y3_joint3_sim.dataset", 4: "des_y3_joint4_sim.dataset",
             5: "des_y3_joint5_sim.dataset"}
 
 

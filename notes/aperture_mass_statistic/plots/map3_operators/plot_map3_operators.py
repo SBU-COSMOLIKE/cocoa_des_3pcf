@@ -1,6 +1,6 @@
 """Redraw map3_operators.pdf from data.json: the intrinsic-alignment
 operator split of the Map3 prediction at the TATT point of
-EXAMPLE_EVALUATE3.yaml.
+EXAMPLE_EVALUATE4.yaml.
 
 One panel: each curve is one physical operator's contribution to one
 source triplet's Map3 rows -- summed over the eight galaxy placements

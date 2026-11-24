@@ -133,7 +133,7 @@ estimated redshift).  The likelihood is
 \texttt{des\us 3pcf.joint\us shear}; its numerical settings live in
 \texttt{likelihood/joint\us shear.yaml}, and the fiducial evaluation
 point is the \texttt{override} block of
-\texttt{EXAMPLE\us EVALUATE2.yaml} (Section~\ref{sec:fiducial}).
+\texttt{EXAMPLE\us EVALUATE3.yaml} (Section~\ref{sec:fiducial}).
 
 The companion notebook \texttt{aperture\us mass\us statistic.ipynb},
 beside this note, recomputes every number this note quotes and
@@ -201,7 +201,7 @@ a figure or a numerical comparison calls for them.
 
 \paragraph{The cosmology.}
 The fiducial point is the \texttt{override} block -- the entries that
-pin the evaluation point -- of \texttt{EXAMPLE\us EVALUATE2.yaml}
+pin the evaluation point -- of \texttt{EXAMPLE\us EVALUATE3.yaml}
 (Table~\ref{tab:fid}).  The model is flat $w$CDM with $w = -1$:
 $\Omega_{\rm m}$ is the matter density today in units of the critical
 density, $\Omega_{\rm b}$ the baryon part of it, $H_0$ the Hubble
@@ -254,7 +254,7 @@ the yaml key that carries it.
     \hline
   \end{tabular}
   \caption{The fiducial point: the evaluate \texttt{override} of
-    \texttt{EXAMPLE\us EVALUATE2.yaml}, plus the parameters that yaml
+    \texttt{EXAMPLE\us EVALUATE3.yaml}, plus the parameters that yaml
     fixes.  $10^9 A_{\rm s}$ is quoted to eight digits here; the yaml
     carries the full value.  The companion notebook prints every
     value from the yaml and computes the derived $\sigma_8$ by one
@@ -265,7 +265,7 @@ the yaml key that carries it.
 \paragraph{The TATT point of the intrinsic-alignment section.}
 Section~\ref{sec:ia} needs a point where the quadratic alignment
 terms are switched on.  It uses the \texttt{override} of
-\texttt{EXAMPLE\us EVALUATE3.yaml}: the same cosmology, calibrations
+\texttt{EXAMPLE\us EVALUATE4.yaml}: the same cosmology, calibrations
 and shifts as Table~\ref{tab:fid}, with
 \begin{equation}
   A_2 = 0.65, \qquad \eta_2 = 1.69, \qquad b_{\rm TA} = 0.91 .

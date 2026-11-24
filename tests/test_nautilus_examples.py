@@ -25,19 +25,19 @@ PROJECT = Path(__file__).resolve().parents[1]
 
 @pytest.mark.parametrize("example", [
     "EXAMPLE_EVALUATE1.yaml",
-    "EXAMPLE_EVALUATE2.yaml",
     "EXAMPLE_EVALUATE3.yaml",
     "EXAMPLE_EVALUATE4.yaml",
+    "EXAMPLE_EVALUATE2.yaml",
     "EXAMPLE_EVALUATE5.yaml",
     "EXAMPLE_MCMC1.yaml",
-    "EXAMPLE_MCMC2.yaml",
     "EXAMPLE_MCMC3.yaml",
     "EXAMPLE_MCMC4.yaml",
+    "EXAMPLE_MCMC2.yaml",
     "EXAMPLE_MCMC5.yaml",
     "EXAMPLE_NAUTILUS1.yaml",
-    "EXAMPLE_NAUTILUS2.yaml",
     "EXAMPLE_NAUTILUS3.yaml",
     "EXAMPLE_NAUTILUS4.yaml",
+    "EXAMPLE_NAUTILUS2.yaml",
     "EXAMPLE_NAUTILUS5.yaml",
 ])
 def test_cobaya_loads_project_likelihood_defaults(example):
@@ -61,8 +61,8 @@ def test_cobaya_loads_project_likelihood_defaults(example):
 
 # The dataset of each numbered case (real data plain, simulated or synthetic
 # vectors with the _sim suffix).
-DATASETS = {1: "des_y3_joint1.dataset", 2: "des_y3_joint2_sim.dataset",
-            3: "des_y3_joint3_sim.dataset", 4: "des_y3_joint4.dataset",
+DATASETS = {1: "des_y3_joint1.dataset", 2: "des_y3_joint2.dataset",
+            3: "des_y3_joint3_sim.dataset", 4: "des_y3_joint4_sim.dataset",
             5: "des_y3_joint5_sim.dataset"}
 
 
