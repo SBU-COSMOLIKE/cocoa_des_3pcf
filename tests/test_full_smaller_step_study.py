@@ -75,6 +75,7 @@ def retained_inputs():
     )
     namespace = {
         "np": np,
+        "cnu": cnu,
         "fiducial": fiducial,
         "steps": steps,
         "names": names,
@@ -169,9 +170,13 @@ def test_quarter_step_uses_only_two_new_means_per_parameter():
         [4.0 * point["omega_m"]**3, 3.0 * point["h"]**2, 3.0],
         [5.0 * point["omega_m"]**4, 1.0, 0.0],
     ])
-    # The five-point stencil for x**5 has error -4*s**4 at spacing s.
+    # The five-point stencil for x**5 has error -4*s**4 at spacing s. The
+    # shared stencil (cnu.five_point) sums in its own order, so the match
+    # is exact up to round-off, amplified by the division by the small
+    # quarter step (about 1e-13 here).
     expected[2, 0] -= 4.0 * (namespace["steps"]["omega_m"] / 4.0)**4
-    np.testing.assert_array_equal(x=namespace["quarter_derivatives"], y=expected)
+    np.testing.assert_allclose(actual=namespace["quarter_derivatives"], desired=expected,
+                               rtol=1.0e-12, atol=1.0e-12 * np.max(np.abs(expected)))
     assert np.signbit(namespace["fiducial"]["offset"])
     for column, name in enumerate(namespace["names"]):
         step = namespace["steps"][name] / 4.0
