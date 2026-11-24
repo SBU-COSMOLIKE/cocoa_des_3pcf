@@ -3,9 +3,9 @@
 # All 400 xi and 80 Map3 rows are retained. Small-scale baryonic contamination, exact finite-SAS estimator agreement and connected IA covariance changes are not validated by this demonstration.
 # The likelihood is a normalized fixed Gaussian with the complete joint cross-covariance. It applies no Hartlap, Percival or PME correction and no MOPED compression.
 # Source clipping and normalization follow the explicitly recorded demonstration source file. These processed curves are not a calibrated replacement for the published source model.
-# Uniform cosmological and IA ranges below are demonstration priors. In particular sigma8 is sampled uniformly, unlike a uniform S8 prior in the published inference.
+# Uniform cosmological and IA ranges below are demonstration priors. In particular 10^9 A_s is sampled uniformly (sigma8 is derived), unlike a uniform S8 prior in the published inference.
 # Gaussian source-calibration widths and means follow 2503.03964 Table 3; finite bounds explicitly truncate and renormalize each Gaussian prior.
-# Flat dark energy w0=-1,wa=0 and mnu=0.06 eV are fixed. Ct and the bispectrum-only feedback fb remain fixed at zero.
+# Flat dark energy w=-1, wa=0 and mnu=0.06 eV are fixed. Ct and the bispectrum-only feedback fb remain fixed at zero.
 # A short --check evaluates the fiducial probability; it does not establish numerical convergence or a converged posterior.
 
 two_point_file = upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits

@@ -31,12 +31,11 @@ def main():
         info = yaml.safe_load(
             (PROJECT / f"EXAMPLE_NAUTILUS{number}.yaml").read_text(),
         )
+        # The evaluate override is the fiducial the synthetic data were
+        # drawn at; it holds exactly the sampled parameters.
+        point = dict(info["sampler"]["evaluate"]["override"])
         info.pop("sampler", None)
         info["likelihood"]["des_3pcf.joint_shear"]["omp_threads"] = args.threads
-        point = {}
-        for name, specification in info["params"].items():
-            if isinstance(specification, dict) and "prior" in specification:
-                point[name] = specification["ref"]
         with get_model(info_or_yaml_or_file=info) as model:
             likelihood = model.likelihood["des_3pcf.joint_shear"]
             score = model.logposterior(params_values=point)
@@ -45,8 +44,8 @@ def main():
             if not np.isfinite(score.logpost) or chi2 > 1.0e-6:
                 raise AssertionError(f"{mode}: reference discrepancy chi2={chi2}.")
             records.append(f"{mode} reference delta_chi2 = {chi2:.17e}")
-            for parameter, step in (("a1", 0.01), ("dz1", 0.001),
-                                    ("omega_m", 0.003)):
+            for parameter, step in (("DES_A1_1", 0.01), ("DES_DZ_S1", 0.001),
+                                    ("omegam", 0.003)):
                 displaced = dict(point)
                 displaced[parameter] += step
                 changed_score = model.logposterior(params_values=displaced)

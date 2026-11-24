@@ -37,25 +37,22 @@ def main():
             line = line.replace("# ", "", 1)
         enabled.append(line)
     info = yaml.safe_load("\n".join(enabled))
+    # The evaluate override is the example's fiducial point.
+    point = dict(info["sampler"]["evaluate"]["override"])
     info.pop("sampler")
     info.pop("output")
     info["likelihood"]["des_3pcf.joint_shear"]["omp_threads"] = 6
-    point = {}
-    for name, settings in info["params"].items():
-        if isinstance(settings, dict) and "prior" in settings:
-            point[name] = settings["ref"]
-    # Sample these two coordinates only to exercise invalidation. Their
-    # small interior ranges are test choices, not recommended survey priors.
+    # Sample one feedback coordinate only to exercise invalidation. Its
+    # small interior range is a test choice, not a recommended survey prior.
+    # The amplitude is already sampled (As_1e9; sigma8 is derived).
     info["params"]["eta_baccoemu"] = {"prior": {"min": -0.5, "max": 0.0}}
-    info["params"]["sigma8"] = {"prior": {"min": 0.77, "max": 0.81}}
     point["eta_baccoemu"] = -0.3
-    point["sigma8"] = 0.7865548373195137
     records = []
     with get_model(info_or_yaml_or_file=info) as model:
         likelihood = model.likelihood["des_3pcf.joint_shear"]
         for mode in ("NLA", "TATT"):
-            point["a2"] = 0.0 if mode == "NLA" else 0.65
-            point["bta"] = 0.0 if mode == "NLA" else 0.91
+            point["DES_A2_1"] = 0.0 if mode == "NLA" else 0.65
+            point["DES_BTA_1"] = 0.0 if mode == "NLA" else 0.91
             score = model.logposterior(params_values=point)
             assert np.isfinite(score.logpost)
             first = likelihood.get_datavector(**point)
@@ -65,8 +62,8 @@ def main():
             saved_baseline = baseline["native"]["log_bispectrum"].copy()
             for parameter, step in (
                 ("eta_baccoemu", 0.05),
-                ("sigma8", 0.003),
-                ("dz1", 0.001),
+                ("As_1e9", 0.01),
+                ("DES_DZ_S1", 0.001),
             ):
                 displaced = dict(point)
                 displaced[parameter] += step

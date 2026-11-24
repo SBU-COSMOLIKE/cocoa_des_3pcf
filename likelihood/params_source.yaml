@@ -1,10 +1,6 @@
   # Default priors of the DES nuisance parameters. Every EXAMPLE yaml
   # lists them again explicitly, so the examples stay fixed if these
   # defaults change.
-  # ------------------------------------------------------------------------
-  # Nuisance parameters, listed explicitly so the example does not depend
-  # on defaults that may change (likelihood/params_source.yaml).
-  # ------------------------------------------------------------------------
   # WL photo-z errors
   DES_DZ_S1:
     prior:
