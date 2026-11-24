@@ -216,9 +216,44 @@ python projects/des_3pcf/tests/check_matter_emulator_support.py
 ```
 
 The result is written to `chains/matter_emulator_prior/support.txt`.
-Exit status 1 means a required field is unavailable; it does not describe
-an accuracy failure. The reviewed candidate supplies finite total-matter
-power but explicitly rejects cold-matter power. Therefore the ordinary
-projects' 50-point CAMB comparison cannot yet be applied to this likelihood
-unchanged. This check supplies no substitute spectrum and runs no maps,
-TreeCorr measurements or forecasts.
+The check explicitly enables `cold_power: eisenstein_hu`, using the project's
+number of massive species. It verifies the linear-field interface at fixed
+mass in flat LCDM. It does not establish the approximation's accuracy or
+supply nonlinear cold power. Exit status 1 reports a missing required field.
+
+## Cold-matter substitution error
+
+`compare_cold_total_power.py` isolates the error of using total power where
+the likelihood requests linear cold power. It uses CAMB in both runs,
+retains the actual neutrino density and all other model choices, and keeps
+the measurement covariance fixed. Each command starts a fresh process, so a
+cached native table cannot conceal a changed spectrum. The three points are
+the current first example's fiducial and two changes of Omega_m to 0.25 and
+0.40, all at mnu=0.06 eV. Other fiducial parameters stay fixed.
+
+Run from activated Cocoa, first with the true cold spectrum:
+
+```bash
+python projects/des_3pcf/tests/compare_cold_total_power.py --mode exact --output projects/des_3pcf/chains/cold_total_mnu006
+```
+
+Then replace only cold power with total power:
+
+```bash
+python projects/des_3pcf/tests/compare_cold_total_power.py --mode total --output projects/des_3pcf/chains/cold_total_mnu006
+```
+
+The saved vectors, spectrum ratios, configuration and native/source revisions
+remain under `chains/`. The reported distance is the prediction difference
+contracted with the covariance inverse, not the difference between two fits
+to the observed data. For a finite-simulation likelihood it remains a
+Gaussian covariance-distance diagnostic, not a change in that log-likelihood.
+
+At the 24 November 2026 run, the first example's joint mean changed only
+at rounding level: covariance distances were 6.94e-28, 9.76e-29 and 1.01e-25
+at the fiducial and the two shifted matter densities. This is the NLA,
+fixed-covariance example, with its native mask and MOPED transformation.
+The cold table is handed to the core, but the active shear/Map3 mean does
+not depend on the halo variance that consumes it. These numbers do not
+validate substituting total power in a halo covariance or in another
+observable that actively uses the cold field.
