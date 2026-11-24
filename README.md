@@ -608,6 +608,7 @@ kernel after recompiling.
 |---|---|
 | [EXAMPLE_EVALUATE1.ipynb](EXAMPLE_EVALUATE1.ipynb) | What does one joint evaluation return, and how does its Fisher forecast follow? |
 | [IA notebook](notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb) and [teaching note](notes/intrinsic_alignments/intrinsic_alignments.pdf) | How do NLA/TATT responses and joint Fisher constraints compare? |
+| [Aperture-mass notebook](notes/aperture_mass_statistic/aperture_mass_statistic.ipynb) and [teaching note](notes/aperture_mass_statistic/aperture_mass_statistic.pdf) | What is the third-order aperture mass, and how are the 80 Map3 rows computed? |
 | [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Which sampling controls and derivative steps stabilize the forecast? |
 | [EXAMPLE_IA_COMPONENTS.ipynb](EXAMPLE_IA_COMPONENTS.ipynb) | How do ordered intrinsic-alignment terms enter the aperture signal? |
 | [EXAMPLE_JOINT_FEEDBACK.ipynb](EXAMPLE_JOINT_FEEDBACK.ipynb) | How do separate power and bispectrum responses change the joint mean? |
