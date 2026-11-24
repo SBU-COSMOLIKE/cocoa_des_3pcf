@@ -283,15 +283,17 @@ python projects/des_3pcf/scripts/measure_covariance_xip.py --runs 32
 The comparison is conditional on equal pixel weights and the specified
 shear basis, and it does not remove the 512-versus-1024 resolution difference.
 If the released covariance shares these parent skies, it is not independent
-validation. Rafael confirmed that an `NSIM=500` header value is a typo from
-an older version of the file: the covariance used 796 mocks, the four
-cutouts of each of 199 parent simulations. The 500 is in the COVMAT header
-of the observed `real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits`,
-whose name says 796; the simulated
-`sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits` reads
-`NSIM=400`, a value Rafael has been asked about. Preserve the
-original FITS files and record 796 as the producer-confirmed count in
-analysis metadata.
+validation. Every released covariance used 796 mocks, the four cutouts
+of each of 199 parent simulations; the Map3-only matrix is a block of the
+joint xi/Map3 one. The COVMAT headers are typos: `NSIM=500` in the joint
+`xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits` and in the observed
+`real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits`, and
+`NSIM=400` in `sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits`.
+Preserve the original FITS files and record 796 as the producer-confirmed
+count in analysis metadata. Treat the cutouts (ncut) as independent and the
+noise realizations (nreal) of one cutout as not independent. The 400 local
+vectors of datavector_2pt3pt may serve as the first simulation input of the
+covariance tests; their row order is that of the released data vectors.
 The Map3 block is identical to the standalone Map3 file, but the standalone
 two-point covariance differs from the joint file's two-point block. Use the
 joint reference consistently; do not splice the two products together.

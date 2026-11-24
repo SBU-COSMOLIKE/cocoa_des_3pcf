@@ -51,13 +51,15 @@ bash scripts/download_rafael_sims.sh datavector_2pt3pt
 The script checks every file against the committed manifests named in the
 table and keeps it only when its SHA-256 matches, so an interrupted
 download can simply be restarted. The released joint covariance in
-`upstream_y3/` came from these simulations: Rafael confirms it used 796
-mocks, the four cutouts of each of 199 CosmoGrid skies. The COVMAT
-header of the observed Map3 file
-(`real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits`) reads
-`NSIM=500`, a typo inherited from an older version (Rafael); its own name
-says 796. The simulated Map3 file's header reads `NSIM=400`, a value
-Rafael has been asked about.
+`upstream_y3/` came from these simulations. Every covariance there used
+796 mocks, the four cutouts of each of 199 CosmoGrid skies: the joint
+xi/Map3 matrix and the Map3-only matrix, which is a block of the joint
+one (the measurement's author, private communication, 2026-11-23). The
+COVMAT headers disagree and are typos: `NSIM=500` in
+`xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits` and in the observed
+`real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits`, and
+`NSIM=400` in `sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits`.
+The files are kept as released; 796 is the count to use.
 
 The released simulated vectors and the observed measurements are different
 scientific inputs. They belong in `data/`; predictions saved to detect a
