@@ -53,3 +53,23 @@ def test_observables_hold_the_joint_vector_and_follow_parameters():
     # returning the fiducial value as if the change had been applied.
     with pytest.raises(ValueError, match="has no parameter"):
         nw.get_chi2(As_1e8=2.0)
+
+
+def test_defaults_follow_the_configured_yaml():
+    """A parameter left out takes the configured yaml's fiducial value.
+
+    EXAMPLE_EVALUATE3 (TATT) samples DES_A2_1, DES_A2_2 and DES_BTA_1 at
+    nonzero fiducial values; case 2 fixes them to zero. A default call
+    after configuring case 3 must equal a call at case 3's own fiducial,
+    and differ from a call at the case-2 values.
+    """
+    from cobaya.yaml import yaml_load_file
+
+    nw.configure(yaml="EXAMPLE_EVALUATE3.yaml", threads=2)
+    override = yaml_load_file(str(nw.PROJECT / "EXAMPLE_EVALUATE3.yaml"))["sampler"]["evaluate"]["override"]
+    _, values = nw.datavector()
+    _, explicit = nw.datavector(A2=[override["DES_A2_1"], override["DES_A2_2"]],
+                                BTA=override["DES_BTA_1"])
+    np.testing.assert_array_equal(values, explicit)
+    _, nla = nw.datavector(A2=[0.0, 0.0], BTA=0.0)
+    assert np.any(values != nla)

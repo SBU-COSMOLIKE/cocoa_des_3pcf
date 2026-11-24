@@ -6,6 +6,9 @@ Terms used in this file:
       the cutoff is the largest series order n kept.
   map_mmax = the likelihood key holding that cutoff for the Map3
       aperture transform (likelihood/joint_shear.yaml).
+  map_lmax = the Legendre cutoff of the bispectrum's angular expansion
+      in the same transform, a separate truncation (the published
+      theory configuration used Lmax = 50).
 
 The published DES Y3 measurement and its theory kept multipoles up to
 n = 100; the likelihood default is map_mmax = 20. This test runs
@@ -15,7 +18,10 @@ difference two ways: the largest relative change of a Map3 row, and the
 covariance-weighted distance d^T C^-1 d of the full-vector change d
 with the joint covariance C. The distance is the quadratic form of the
 difference between the two computations, so it measures their
-disagreement directly; the loaded data vector never enters it.
+disagreement directly; the loaded data vector never enters it. A
+second test does the same for map_lmax = 20 against 50, the truncation
+that dominates the angular error. Neither establishes convergence of
+Fisher derivatives, only of the mean at the fiducial.
 Every evaluation passes cached=False: Cobaya otherwise serves a
 revisited point from its state cache without calling logp, and
 last_datavector would still hold the previous point's vector.
@@ -37,8 +43,15 @@ COCOA = PROJECT.parents[1]
 RELATIVE_BOUND = 1.0e-8
 DISTANCE_BOUND = 1.0e-12
 
+# Bounds on the map_lmax = 20 vs 50 difference. The measured values are
+# about 2.6e-3 (relative Map3 change) and 1.2e-3 (distance): adequate for
+# the mean, well inside the 0.2 accuracy target, and kept here so a
+# change of either default shows up.
+LMAX_RELATIVE_BOUND = 5.0e-3
+LMAX_DISTANCE_BOUND = 1.0e-2
 
-def evaluate_with_cutoff(mmax):
+
+def evaluate_with_cutoff(mmax, lmax=None):
     """Evaluate EXAMPLE_EVALUATE2 at its fiducial with one map_mmax.
 
     Arguments:
@@ -62,6 +75,13 @@ def evaluate_with_cutoff(mmax):
     info.pop("output")
     info["theory"]["camb"]["path"] = str(COCOA / "external_modules/code/CAMB")
     info["likelihood"]["des_3pcf.joint_shear"]["map_mmax"] = mmax
+    if lmax is not None:
+        # The projection settings carry their own lmax, which must equal
+        # map_lmax; copy the whole default block with lmax changed.
+        defaults = yaml_load_file(str(PROJECT / "likelihood/joint_shear.yaml"))
+        projection = dict(defaults["projection_settings"], lmax=lmax)
+        info["likelihood"]["des_3pcf.joint_shear"]["map_lmax"] = lmax
+        info["likelihood"]["des_3pcf.joint_shear"]["projection_settings"] = projection
 
     with get_model(info_or_yaml_or_file=info) as model:
         likelihood = model.likelihood["des_3pcf.joint_shear"]
@@ -96,3 +116,16 @@ def test_default_cutoff_matches_the_measurement_cutoff():
           f"d^T C^-1 d = {distance:.3e}")
     assert relative < RELATIVE_BOUND
     assert distance < DISTANCE_BOUND
+
+
+def test_default_legendre_cutoff_against_the_published_lmax():
+    """map_lmax = 20 must stay within the bounds of map_lmax = 50."""
+    default, map_indices, covariance = evaluate_with_cutoff(mmax=20)
+    reference, _, _ = evaluate_with_cutoff(mmax=20, lmax=50)
+    change = default - reference
+    relative = np.max(np.abs(change[map_indices] / reference[map_indices]))
+    distance = change @ np.linalg.solve(covariance, change)
+    print(f"map_lmax 20 vs 50: max |dMap3/Map3| = {relative:.3e}, "
+          f"d^T C^-1 d = {distance:.3e}")
+    assert relative < LMAX_RELATIVE_BOUND
+    assert distance < LMAX_DISTANCE_BOUND

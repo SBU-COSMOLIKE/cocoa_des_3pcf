@@ -44,7 +44,7 @@ two-/three-point cross terms.
 
 | Case | Data | IA model | Likelihood | Rows kept | Dataset and example files |
 |---|---|---|---|---|---|
-| 1 | Observed (unblinded) Y3 measurements | NLA | Percival, 796 simulations, `parameter_count = 16` | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
+| 1 | Observed (unblinded) Y3 measurements | NLA | Percival, 796 simulations, `parameter_count = 15` | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
 | 2 | Synthetic NLA fiducial mean | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint2_sim.dataset`; `EXAMPLE_EVALUATE2.yaml`, `EXAMPLE_MCMC2.yaml`, `EXAMPLE_NAUTILUS2.yaml`/`.py` |
 | 3 | Synthetic TATT fiducial mean | TATT | Fixed Gaussian | All 480 rows | `des_y3_joint3_sim.dataset`; `EXAMPLE_EVALUATE3.yaml`, `EXAMPLE_MCMC3.yaml`, `EXAMPLE_NAUTILUS3.yaml`/`.py` |
 | 4 | Observed (unblinded) Y3 measurements | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint4.dataset`; `EXAMPLE_EVALUATE4.yaml`, `EXAMPLE_MCMC4.yaml`, `EXAMPLE_NAUTILUS4.yaml`/`.py` |
@@ -345,7 +345,9 @@ and, in place of the `cobaya-run` line,
 Case 1 scores the observed (unblinded) DES Y3 data with the published
 setup where the project allows it: the Y3 cosmic-shear $`\xi_\pm`$ scale
 cuts (227 of 400 $`\xi`$ rows, all 80 Map3 rows) and the Percival
-likelihood with `mock_count = 796` and `parameter_count = 16`
+likelihood with `mock_count = 796` and `parameter_count = 15`, the 15
+parameters case 1 samples (the published analysis used 16, as it also
+samples $`m_\nu`$)
 (`data/des_y3_joint1.dataset`).
 
 **Step :one:**: evaluate the fiducial once, with the thread setup of the
@@ -890,7 +892,12 @@ rows (confirmed by the measurement's author, R. Gomes):
   evaluates the fiducial at 20
   and at 100 and bounds the relative Map3 change below $`10^{-8}`$ and
   the covariance-weighted distance $`d^{\mathsf T} C^{-1} d`$ of the
-  change $`d`$ below $`10^{-12}`$.
+  change $`d`$ below $`10^{-12}`$. The separate Legendre cutoff of the
+  bispectrum expansion matters more: raising `map_lmax` from 20 to the
+  published 50 changes Map3 by up to 0.26 % with
+  $`d^{\mathsf T} C^{-1} d \approx 10^{-3}`$, adequate for the mean (the
+  same test bounds it); convergence of Fisher derivatives in `map_lmax`
+  is not yet shown.
 - The HEALPix pixel window entered only the simulations; the theory for
   the DES Y3 catalogue measurement has none, and the likelihood applies
   none. The pixel-window comparison is in

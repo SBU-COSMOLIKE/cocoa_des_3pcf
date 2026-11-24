@@ -182,7 +182,12 @@ open (private communication, 2026-11-23):
   EXAMPLE_EVALUATE2 fiducial at both cutoffs, prints the measured
   differences and bounds the relative Map3 change below $`10^{-8}`$ and
   the covariance-weighted distance $`d^{\mathsf T} C^{-1} d`$ of the
-  change $`d`$ below $`10^{-12}`$.
+  change $`d`$ below $`10^{-12}`$. The separate Legendre cutoff of the
+  bispectrum expansion matters more: raising `map_lmax` from 20 to the
+  published 50 changes Map3 by up to 0.26 % with
+  $`d^{\mathsf T} C^{-1} d \approx 10^{-3}`$, adequate for the mean (the
+  same test bounds it); convergence of Fisher derivatives in `map_lmax`
+  is not yet shown.
 - The NSIDE 1024 HEALPix pixel window entered only the map-based
   simulations; the theory for the catalogue measurement has none, and
   the likelihood applies none. The pixel-window comparison is in

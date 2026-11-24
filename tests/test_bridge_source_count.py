@@ -85,3 +85,69 @@ def test_source_count_follows_the_stored_table(case, message):
     assert 0 != result.returncode, output
     assert "model built" not in output
     assert message in output, output
+
+
+# Two installers write the one source table, redshift.shear_zdist_table:
+# the ordinary core (set_source_sample) and the 3pcf bridge
+# (core.set_source_sample). Each used to keep its own private record of
+# the table's bin count, so after the other installer replaced the table
+# its record was out of date; a 3 -> 2 -> 3 sequence then read past the
+# allocation and crashed. The count now lives with the table
+# (redshift.shear_zdist_table_nbin), and either order must succeed.
+MIXED = """
+import sys
+sys.path[:0] = [{tests!r}]
+import numpy as np
+import cosmolike_des_3pcf_interface as compiled
+
+z = np.linspace(0.01, 2.0, 60)
+def table(count):
+    curves = [np.exp(-((z - 0.3 * (index + 1)) / 0.2)**2) for index in range(count)]
+    return np.ascontiguousarray(np.column_stack([z] + curves))
+def ordinary(count):
+    compiled.init_source_sample_size(Ntomo=count)
+    compiled.set_source_sample(nofz=table(count))
+def bridge(count):
+    compiled.core.set_source_sample_size(ntomo=count)
+    compiled.core.set_source_sample(nofz=table(count))
+
+compiled.initial_setup()
+first, second = (ordinary, bridge) if "ordinary_first" == {case!r} else (bridge, ordinary)
+first(3)
+second(2)
+first(3)
+print("installed")
+"""
+
+
+@pytest.mark.parametrize("case", ["ordinary_first", "bridge_first"])
+def test_mixed_installers_share_the_source_count(case):
+    """Alternating the two source installers 3 -> 2 -> 3 must not crash."""
+    result = subprocess.run(
+        args=[sys.executable, "-B", "-c", MIXED.format(tests=str(TESTS), case=case)],
+        capture_output=True, text=True, check=False, timeout=120,
+    )
+    output = result.stdout + result.stderr
+    assert 0 == result.returncode, output
+    assert "installed" in output, output
+
+
+def test_both_resets_clear_the_joint_dataset():
+    """ci.initial_setup and ci.core.initial_setup must both forget the data.
+
+    A notebook that resets through either and then scores a new prediction
+    must be refused, not scored against the previous dataset.
+    """
+    import numpy as np
+    import cosmolike_des_3pcf_interface as compiled
+
+    for reset in (compiled.initial_setup, compiled.core.initial_setup):
+        data = np.array([1.0, 2.0, 3.0])
+        compiled.init_joint_data(data=data, covariance=np.eye(3),
+                                 indices=np.arange(3, dtype=np.int32),
+                                 compression=np.empty((0, 0)),
+                                 mock_count=0, parameter_count=0)
+        assert np.isfinite(compiled.compute_joint_loglike(prediction=data))
+        reset()
+        with pytest.raises(ValueError, match="Initialize joint data"):
+            compiled.compute_joint_loglike(prediction=data)

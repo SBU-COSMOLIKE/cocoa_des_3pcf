@@ -259,12 +259,6 @@ def main():
     (DATA / "des_y3_source.nz").write_text("".join(lines))
     print("wrote data/des_y3_source.nz")
 
-    # Step 5: the two synthetic demonstration vectors (one value per line,
-    # after comment lines) in the same "index value" layout.
-    for model in ("nla", "tatt"):
-        values = np.loadtxt(DATA / f"demonstration/y3_{model}_synthetic.txt")
-        write_vector(DATA / f"des_y3_{model}_synthetic.datavector", values)
-
 
 if __name__ == "__main__":
     main()

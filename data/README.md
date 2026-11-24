@@ -177,10 +177,11 @@ An optional cell writes a FITS copy under `chains/`; it never replaces the
 input in `data/`. Changing the source model of an inference requires changing
 `nz_source_file` in its `.dataset` file explicitly.
 
-The other demonstration files are this project's own:
-`y3_nla_synthetic.txt` and `y3_tatt_synthetic.txt` are fixed synthetic
-fiducial mean vectors whose headers state their fiducial point and IA
-convention. The converter copies them into
-`des_y3_nla_synthetic.datavector` and `des_y3_tatt_synthetic.datavector`,
-the files the `_sim` datasets read
+The synthetic vectors `des_y3_nla_synthetic.datavector` and
+`des_y3_tatt_synthetic.datavector`, which the `_sim` datasets read, are
+this project's own: the model's mean at the fiducial point of
+`EXAMPLE_EVALUATE2.yaml` (NLA) and `EXAMPLE_EVALUATE3.yaml` (TATT).
+`python scripts/make_synthetic_datavectors.py` writes them; rerun it after
+any change to the theory, the row geometry or the likelihood defaults.
+`tests/test_synthetic_datavectors.py` fails when they are out of date
 ([the ASCII likelihood inputs](#ascii)).

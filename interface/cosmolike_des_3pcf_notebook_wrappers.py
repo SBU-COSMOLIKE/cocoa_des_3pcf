@@ -31,12 +31,15 @@ Two layers of state matter here:
   replaces it; every observable function evaluates it from scratch at
   its point (Cobaya's cache is bypassed), so no call depends on which
   function ran before it.
-- The project fiducial point is the sampler.evaluate.override point of
-  EXAMPLE_EVALUATE2.yaml, read once when the module is imported into the
-  plain constants below (omegam, As_1e9, M, ...). The functions use them
-  as default argument values, which Python evaluates once, at import:
-  assigning nw.omegam = 0.31 later does not change the defaults; pass
-  omegam=0.31 to the call instead.
+- A parameter left out of a call takes the value of the configured
+  yaml's own fiducial point (its sampler.evaluate.override), read by
+  configure() each time it builds a model. So nw.configure(yaml=
+  "EXAMPLE_EVALUATE3.yaml") followed by nw.map3() evaluates the TATT
+  fiducial, not the NLA one, and an edited yaml takes effect at the next
+  configure(), without restarting the kernel.
+- The constants below (omegam, As_1e9, A1_FID, M_FID, ...) hold the
+  project fiducial point of EXAMPLE_EVALUATE2.yaml (case 2), for notebooks
+  that quote it; the functions do not read them.
 
 Parameter names follow the lsst_y1 wrappers: omegam, omegab, H0, ns and
 As_1e9 = 10^9 A_s (sigma8 is derived); A1 = [a1, eta1] and A2 = [a2,
@@ -98,7 +101,7 @@ SHEAR_PHOTOZ_FID = [_OVERRIDE[f"DES_DZ_S{i}"] for i in range(1, 5)]
 # ----------------------------------------------------------------------
 # The configured Cobaya model (one at a time).
 # ----------------------------------------------------------------------
-_STATE = {"model": None, "yaml": None}
+_STATE = {"model": None, "yaml": None, "fiducial": {}}
 
 
 def configure(yaml="EXAMPLE_EVALUATE2.yaml", likelihood=None, theory=None,
@@ -128,6 +131,10 @@ def configure(yaml="EXAMPLE_EVALUATE2.yaml", likelihood=None, theory=None,
       theory blocks initialize; no point is evaluated yet).
     """
     info = yaml_load_file(str(PROJECT / yaml))
+    # The yaml's own fiducial point fills every parameter a call leaves
+    # out (an MCMC yaml has no evaluate block: then every sampled
+    # parameter must be passed).
+    fiducial = dict(info.get("sampler", {}).get("evaluate", {}).get("override", {}))
     info.pop("sampler", None)
     info.pop("output", None)
 
@@ -147,8 +154,15 @@ def configure(yaml="EXAMPLE_EVALUATE2.yaml", likelihood=None, theory=None,
 
     if _STATE["model"] is not None:
         _STATE["model"].close()
+    # Forget the previous model before building the next one. Cosmolike's
+    # data, covariance and tables are process-global: a build that fails
+    # part-way may already have replaced them, and the old Python model
+    # would then no longer match the native state. After a failure every
+    # observable call raises until configure() succeeds.
+    _STATE.update(model=None, yaml=None, fiducial={})
     _STATE["model"] = get_model(info_or_yaml_or_file=info)
     _STATE["yaml"] = yaml
+    _STATE["fiducial"] = fiducial
 
 
 def _point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA, shear_photoz_bias,
@@ -159,27 +173,32 @@ def _point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA, shear_photoz_bias,
     logposterior evaluates. Only the sampled parameters of the configured
     model enter the point.
     A parameter the yaml fixes must be requested at its fixed value: a
-    different value raises, because the model could not honour it.
+    different value raises, because the model could not honour it. An
+    argument left as None takes the configured yaml's fiducial value.
     """
     model = _STATE["model"]
     if model is None:
         raise ValueError("Call nw.configure() before computing an observable.")
 
-    requested = {
+    # The arguments the call gave; None means "the configured yaml's
+    # fiducial value", filled in below for the sampled parameters.
+    given = {
         "omegam": omegam,
         "omegab": omegab,
         "H0": H0,
         "ns": ns,
         "As_1e9": As_1e9,
-        "DES_A1_1": A1[0],
-        "DES_A1_2": A1[1],
-        "DES_A2_1": A2[0],
-        "DES_A2_2": A2[1],
+        "DES_A1_1": None if A1 is None else A1[0],
+        "DES_A1_2": None if A1 is None else A1[1],
+        "DES_A2_1": None if A2 is None else A2[0],
+        "DES_A2_2": None if A2 is None else A2[1],
         "DES_BTA_1": BTA,
     }
     for index in range(4):
-        requested[f"DES_M{index + 1}"] = M[index]
-        requested[f"DES_DZ_S{index + 1}"] = shear_photoz_bias[index]
+        given[f"DES_M{index + 1}"] = None if M is None else M[index]
+        given[f"DES_DZ_S{index + 1}"] = (
+            None if shear_photoz_bias is None else shear_photoz_bias[index])
+    requested = {name: value for name, value in given.items() if value is not None}
     requested.update(extra)
 
     # Split the request along the model's own classification: a sampled
@@ -203,6 +222,9 @@ def _point(omegam, omegab, H0, ns, As_1e9, A1, A2, BTA, shear_photoz_bias,
             raise ValueError(
                 f"{name} = {value}, but {_STATE['yaml']} fixes it to "
                 f"{fixed[name]}; configure a yaml that samples {name}.")
+    for name in sampled:
+        if name not in point and name in _STATE["fiducial"]:
+            point[name] = float(_STATE["fiducial"][name])
     missing = [name for name in sampled if name not in point]
     if missing:
         raise ValueError(f"No value for the sampled parameters {missing}; "
@@ -234,9 +256,9 @@ def _evaluate(point):
     return model.likelihood[LIKELIHOOD]
 
 
-def datavector(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
-               A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
-               shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
+def datavector(omegam=None, omegab=None, H0=None, ns=None, As_1e9=None,
+               A1=None, A2=None, BTA=None,
+               shear_photoz_bias=None, M=None, **extra):
     """Compute the joint xi_+, xi_- and Map3 data vector in measured order.
 
     This is the prediction the likelihood scores, one entry per dataset
@@ -267,9 +289,9 @@ def datavector(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
             np.array(likelihood.last_datavector, copy=True))
 
 
-def xi(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
-       A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
-       shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
+def xi(omegam=None, omegab=None, H0=None, ns=None, As_1e9=None,
+       A1=None, A2=None, BTA=None,
+       shear_photoz_bias=None, M=None, **extra):
     """Compute the binned shear correlation functions xi_+ and xi_-.
 
     Use it to plot or compare the two-point part of the prediction: the
@@ -316,9 +338,9 @@ def xi(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
     return theta * RADIAN_TO_ARCMIN, result["xip"], result["xim"]
 
 
-def map3(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
-         A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
-         shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
+def map3(omegam=None, omegab=None, H0=None, ns=None, As_1e9=None,
+         A1=None, A2=None, BTA=None,
+         shear_photoz_bias=None, M=None, **extra):
     """Compute the third-order aperture-mass statistic Map3.
 
     Use it to plot or compare the three-point part of the prediction:
@@ -372,9 +394,9 @@ def map3(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
     return radii * RADIAN_TO_ARCMIN, np.array(triplets, dtype=np.int32), values
 
 
-def get_chi2(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
-             A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
-             shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
+def get_chi2(omegam=None, omegab=None, H0=None, ns=None, As_1e9=None,
+             A1=None, A2=None, BTA=None,
+             shear_photoz_bias=None, M=None, **extra):
     """Compute chi2 of the configured dataset at one parameter point.
 
     chi2 = (d - t)^T C^-1 (d - t) over the rows the dataset's mask keeps,
@@ -393,10 +415,10 @@ def get_chi2(omegam=omegam, omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
     return float(ci.compute_joint_chi2(prediction=likelihood.last_datavector))
 
 
-def map3_components(triplets, velocity_shear=0.0, omegam=omegam,
-                    omegab=omegab, H0=H0, ns=ns, As_1e9=As_1e9,
-                    A1=A1_FID, A2=A2_FID, BTA=BTA_FID,
-                    shear_photoz_bias=SHEAR_PHOTOZ_FID, M=M_FID, **extra):
+def map3_components(triplets, velocity_shear=0.0, omegam=None,
+                    omegab=None, H0=None, ns=None, As_1e9=None,
+                    A1=None, A2=None, BTA=None,
+                    shear_photoz_bias=None, M=None, **extra):
     """Split the Map3 rows of chosen source triplets into IA operators.
 
     Use it to see which intrinsic-alignment term drives a Map3 prediction
