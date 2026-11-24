@@ -187,7 +187,7 @@ def test_cobaya_read_agrees_with_direct_bfmt_request():
     }
     info["params"].update(feedback)
     with get_model(info_or_yaml_or_file=info) as model:
-        model.logposterior(params_values=point)
+        model.logposterior(params_values=point, cached=False)
         likelihood = model.likelihood["des_3pcf.joint_shear"]
         actual = likelihood.baryon_suppression_table()
         datavector = np.array(likelihood.last_datavector, copy=True)
