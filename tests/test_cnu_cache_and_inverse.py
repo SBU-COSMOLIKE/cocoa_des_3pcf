@@ -46,3 +46,17 @@ def test_cache_record_keeps_every_checksum():
     # against the old cache refuses instead of passing.
     settings["lsst"]["data_files"]["mask.txt"] = "changed"
     assert cache_record(name="t", settings=settings)["data_files"] != record["data_files"]
+
+
+def test_get_fom_refuses_a_fisher_that_is_not_positive_definite():
+    """A negative eigenvalue outside the pair must stop the FoM.
+
+    The pair block of the inverse can look positive definite while the
+    full matrix has a negative eigenvalue; such a matrix is no Gaussian
+    likelihood, so no FoM exists.
+    """
+    good = np.diag([4.0, 9.0, 1.0])
+    np.testing.assert_allclose(cnu.get_FoM(i=0, j=1, F=good), 6.0, rtol=1.0e-14)
+    bad = np.diag([4.0, 9.0, -1.0])
+    with pytest.raises(ValueError, match="not positive definite"):
+        cnu.get_FoM(i=0, j=1, F=bad)
