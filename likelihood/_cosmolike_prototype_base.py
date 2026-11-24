@@ -51,6 +51,7 @@ bispectrum. This class neither starts CAMB nor selects a matter-bispectrum
 fitting formula.
 """
 
+import json
 from pathlib import Path
 import sys
 
@@ -246,6 +247,23 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                     raise ValueError(
                         "Compression input labels differ from selected rows.")
                 compression = saved["matrix"]
+
+                # The finite-simulation likelihood (mock_count > 0) treats
+                # T as fixed: transforming every mock by a fixed T gives a
+                # sample covariance of the compressed vector. A T trained
+                # on the same mocks is itself a random function of them,
+                # and that argument fails (Percival et al. 2021,
+                # arXiv:2108.10402, Appendix C). A file that records such
+                # training is therefore refused.
+                metadata = {}
+                if "metadata" in saved.files:
+                    metadata = json.loads(str(saved["metadata"].item()))
+                if (ini.int("mock_count", 0) > 0
+                        and metadata.get("covariance_training_independent") is False):
+                    raise ValueError(
+                        "The compression was trained on the simulations of the "
+                        "finite-simulation covariance; train it on an "
+                        "independent covariance.")
 
         # ------------------------------------------------------------------
         # Feedback options, checked before any native state changes. The
