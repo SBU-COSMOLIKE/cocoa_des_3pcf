@@ -13,7 +13,7 @@ the examples. Every input names its origin:
 
 | Input | Origin and pinned revision | Paper |
 |---|---|---|
-| `upstream_y3/`: simulated DES Y3 $`\xi_\pm`$ and Map3 vectors at the CosmoGrid cosmology, the joint covariance from 796 simulations, and nine CosmoSIS configurations | [3pcf_integrator](https://github.com/rchgomes/3pcf_integrator) at commit `d6098d326dcb03bc750adcc9627119f52d928944`; manifest [y3_reference_manifest.yaml](y3_reference_manifest.yaml) | [Methods paper](https://arxiv.org/abs/2503.03964); simulations from [CosmoGrid](https://arxiv.org/abs/2209.04662) |
+| `upstream_y3/`: simulated DES Y3 $`\xi_\pm`$ and Map3 vectors at the CosmoGrid cosmology, the joint covariance from 796 mocks (four cutouts of each of 199 CosmoGrid skies), and nine CosmoSIS configurations | [3pcf_integrator](https://github.com/rchgomes/3pcf_integrator) at commit `d6098d326dcb03bc750adcc9627119f52d928944`; manifest [y3_reference_manifest.yaml](y3_reference_manifest.yaml) | [Methods paper](https://arxiv.org/abs/2503.03964); simulations from [CosmoGrid](https://arxiv.org/abs/2209.04662) |
 | `upstream_y3_observed/`: observed unblinded DES Y3 $`\xi_\pm`$ and Map3 vectors, the same covariance and nine configurations | Same repository and commit; manifest [y3_observed_manifest.yaml](y3_observed_manifest.yaml) | [DES Y3 third-order shear results](https://arxiv.org/abs/2508.14018) |
 | `upstream_healpix/pixel_window_n1024.fits`: scalar HEALPix pixel window at NSIDE 1024 | [healpy-data](https://github.com/healpy/healpy-data) at the commit and URL in [pixel_window_manifest.yaml](pixel_window_manifest.yaml) | [HEALPix, Górski et al. 2005](https://arxiv.org/abs/astro-ph/0409513) |
 | `demonstration/`: the processed source distribution, two fixed synthetic data vectors and the xi-only row mask | Produced in this project from the `upstream_y3/` inputs ([demonstration source processing](#sources)) | |
@@ -52,10 +52,12 @@ The script checks every file against the committed manifests named in the
 table and keeps it only when its SHA-256 matches, so an interrupted
 download can simply be restarted. The released joint covariance in
 `upstream_y3/` came from these simulations: Rafael confirms it used 796
-mocks, the four cutouts of each of 199 CosmoGrid skies, and that an
-`NSIM=500` header in an older release of the covariance file is a typo.
-The pinned Map3 file's COVMAT header reads `NSIM=400`; Rafael has been
-asked about that value.
+mocks, the four cutouts of each of 199 CosmoGrid skies. The COVMAT
+header of the observed Map3 file
+(`real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits`) reads
+`NSIM=500`, a typo inherited from an older version (Rafael); its own name
+says 796. The simulated Map3 file's header reads `NSIM=400`, a value
+Rafael has been asked about.
 
 The released simulated vectors and the observed measurements are different
 scientific inputs. They belong in `data/`; predictions saved to detect a

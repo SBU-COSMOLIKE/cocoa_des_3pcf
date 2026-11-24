@@ -285,9 +285,11 @@ shear basis, and it does not remove the 512-versus-1024 resolution difference.
 If the released covariance shares these parent skies, it is not independent
 validation. Rafael confirmed that an `NSIM=500` header value is a typo from
 an older version of the file: the covariance used 796 mocks, the four
-cutouts of each of 199 parent simulations. The COVMAT header of the pinned
+cutouts of each of 199 parent simulations. The 500 is in the COVMAT header
+of the observed `real_map3_desy3_unblind_scalecut3pcf_796simcov_2025Mar11.fits`,
+whose name says 796; the simulated
 `sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits` reads
-`NSIM=400`; Rafael has been asked which file carries the 500. Preserve the
+`NSIM=400`, a value Rafael has been asked about. Preserve the
 original FITS files and record 796 as the producer-confirmed count in
 analysis metadata.
 The Map3 block is identical to the standalone Map3 file, but the standalone

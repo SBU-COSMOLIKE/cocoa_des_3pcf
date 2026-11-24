@@ -32,8 +32,8 @@ stay unchanged. No BACCO module is imported by this likelihood. See
 
 `joint_shear.py` selects the probe. `survey.py` holds the survey readers:
 the functions that read the measurement tables, the joint covariance and
-the source distributions named by the `.dataset`, used by `initialize` and
-by notebooks that need the raw rows. `_cosmolike_prototype_base.py` follows
+the source distributions named by the `.dataset`, read once by
+`initialize` (and by the survey tests). `_cosmolike_prototype_base.py` follows
 LSST Y1: `initialize` reads the dataset and configures the native library;
 `get_requirements` requests theory products; `set_cosmo_related` and
 `set_source_related` supply cosmology and nuisance inputs;
