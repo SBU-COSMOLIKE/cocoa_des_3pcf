@@ -171,8 +171,8 @@ accurate massive-neutrino or arbitrary-$`w_0w_a`$ bispectrum. Its use of
 $`P_{\mathrm{L}}(k,0)D(z)^2`$ imposes scale-independent growth; supplying a more
 complete background does not remove that approximation. Baryonic feedback
 remains a separately supplied response. Matching the measurement, finite
-triangle cuts, IA prescription and covariance assumptions of Rafael's
-analyses remains necessary for reproducing their inferences.
+triangle cuts, IA prescription and covariance assumptions of the published
+three-point analyses remains necessary for reproducing their inferences.
 
 ### Shared variance inputs
 
@@ -244,7 +244,7 @@ no longer imports or runs those codes.
 ### Credits and checks <a name="comparison-credits"></a>
 
 The fastnc implementations are credited to Sunao Sugiyama and Rafael
-Heringer Gomes. Rafael's `fast_map3.py` credits Mike Jarvis and TreeCorr
+Heringer Gomes. The `fast_map3.py` in 3pcf_integrator credits Mike Jarvis and TreeCorr
 and carries its redistribution notice. The recorded workflow imported
 those files from the user's checkouts; it did not distribute modified
 copies.

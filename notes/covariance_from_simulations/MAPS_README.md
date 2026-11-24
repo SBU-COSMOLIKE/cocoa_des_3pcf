@@ -6,7 +6,7 @@ and [his analysis code](https://github.com/rchgomes/3pcf_integrator).
 The local inventory settled at 15,997 map files on 21 November 2026. Every
 present map was measured by the coarse diagnostic. Three combinations of the
 observed labels are absent: run 168/cut 2/draws 7 and 19, and run 168/cut
-3/draw 19. There are 200 distinct run labels in this download. Rafael
+3/draw 19. There are 200 distinct run labels in this download. The producer
 confirmed on 23 November 2026 that the paper used 199 parent simulations and
 only `nreal0`; the download also contains repeated noise realizations. Its
 extra parent label still needs to be mapped to the published selection.
@@ -17,8 +17,8 @@ SHA-256 manifests:
 lists 15,999 files (378 GB: the 15,997 maps plus `indices_512.npy` and
 `missing.txt`), and
 [data/rafael_datavector_2pt3pt.sha256](../../data/rafael_datavector_2pt3pt.sha256)
-lists 800 files (21 MB). The manifests pin the redistributed copies; Rafael
-supplied no checksums of his own.
+lists 800 files (21 MB). The manifests pin the redistributed copies; no
+producer checksums were supplied.
 
 **Step :one:**: from `projects/des_3pcf`, download one folder or both into
 `chains/rafael/`:
@@ -70,7 +70,7 @@ Do not commit the simulation download.
 
 ## What a file contains
 
-Rafael confirmed that these are **NSIDE 512 CosmoGrid shear maps**. Only
+These are **NSIDE 512 CosmoGrid shear maps**, producer-confirmed. Only
 pixels where the DES footprint is nonzero are retained. The companion
 `indices_512.npy` lists those HEALPix pixel indices. Thus the final array axis
 is a list of retained pixels, not a rectangular image and not a list of
@@ -118,7 +118,7 @@ footprint and equatorial extension. NESTED spans all longitudes and reaches
 use `order="ring"` for these previews and interpret coordinates as RA/Dec
 from the footprint match; compare Figure 1 of the
 [DES Y3 shape-catalog paper](https://academic.oup.com/mnras/article/504/3/4312/6211014).
-Rafael confirmed RING ordering on 23 November 2026. The coordinate and
+RING ordering is producer-confirmed (23 November 2026). The coordinate and
 shear-basis conventions remain distinct from the pixel-order declaration.
 
 The notebook plots the retained-pixel footprint and both components of two
@@ -136,41 +136,41 @@ For example, `ShearMaps_DESY3_run_0000_ncut0_nreal17.npy` separates into:
 
 | Part | Meaning and present evidence |
 |---|---|
-| `ShearMaps` | The stored quantities are shear-map values, as Rafael confirmed. |
+| `ShearMaps` | The stored quantities are shear-map values, producer-confirmed. |
 | `DESY3` | The maps target DES Year 3; the precise source distributions and weights still need their producer record. |
-| `run_0000` | Parent CosmoGrid lightcone simulation 0, padded to four digits; confirmed by Rafael. |
-| `ncut0` | DES cutout 0 of four per parent full sky. Rafael describes these four cutouts as independent survey realizations. |
-| `nreal17` | Noise realization 17 on the same sky and cutout, confirmed by Rafael. The paper used only nreal0; extra noise draws are not additional independent skies. |
+| `run_0000` | Parent CosmoGrid lightcone simulation 0, padded to four digits; producer-confirmed. |
+| `ncut0` | DES cutout 0 of four per parent full sky. The producer describes these four cutouts as independent survey realizations. |
+| `nreal17` | Noise realization 17 on the same sky and cutout, producer-confirmed. The paper used only nreal0; extra noise draws are not additional independent skies. |
 | `.npy` | NumPy's array file format. It records array shape and numerical type, not the scientific meaning of these labels. |
 
 Thus the intended reading is **run 0, footprint cut 0, realization 17**.
 The labels are identifiers, not source-bin indices, shear-component indices,
 resolution settings or version numbers. Source bins and components are axes
-inside each file; NSIDE 512 comes from Rafael's description and the folder.
+inside each file; NSIDE 512 comes from the producer's description and the folder name.
 The `_v2` in the folder name is a release label, not a noise realization.
 We have not been given a change record explaining that release revision.
 
 Two files differing only in `nreal` share the parent sky and cutout while
 changing the noise draw. Two files differing only in `ncut` select different
-cutouts of the same parent. Rafael confirmed these label meanings. Retain
+cutouts of the same parent. These label meanings are producer-confirmed. Retain
 all three labels in measured-vector records and count each cutout (one
-`run`, `ncut` pair) once: following Rafael's construction, the four cutouts
+`run`, `ncut` pair) once: following the released covariance's construction, the four cutouts
 of a parent sky are independent survey realizations, while repeated `nreal`
 draws of one cutout are not. In particular, never pass the number of files
 as the realization count.
 
 ## A file is not an independent Universe
 
-The filename table records Rafael's confirmed interpretation. Files that
+The filename table records the producer-confirmed interpretation. Files that
 share a cutout and differ only in `nreal` (galaxy shape noise on the same
 sky) are not new independent realizations of cosmic structure; the paper
 used `nreal0` alone. The four `ncut` cutouts of one parent sky do count as
-independent realizations: Rafael built the released covariance that way
-(796 mocks = 199 parents x 4 cutouts), and this project follows his choice.
+independent realizations: the released covariance was built that way
+(796 mocks = 199 parents x 4 cutouts), and this project follows that choice.
 Do not average different footprints and call that one DES survey; this
 changes the measurement whose covariance is being estimated.
 
-Rafael confirmed the labels and RING ordering, and noiseless convergence and
+The labels and RING ordering are producer-confirmed, and noiseless convergence and
 shear maps can be generated from CosmoGrid or from GowerSt2 (DES Y6). Still
 obtain the exact parent selection, cosmology, coordinate basis, source-bin
 distributions, shape-noise prescription, shear signs, footprint weights and
@@ -188,7 +188,7 @@ angular cuts and bin definitions as the analysis. Pair them before estimating
 a covariance so that their cross-covariance is retained. Store the measured
 vectors, row definitions and parent IDs under `../chains/`.
 
-Rafael's methods paper describes maps at NSIDE 1024, whereas these maps are
+The methods paper describes maps at NSIDE 1024, whereas these maps are
 512. Its pixel treatment and small-scale cuts therefore need a new check.
 Degrading a map changes its small-scale signal, noise and covariance; it is
 not corrected by changing a filename or rescaling the survey area. Until
@@ -202,7 +202,7 @@ Each `.npy` holds one joint vector in the released data-vector row order
 (200 xi-plus, 200 xi-minus and 80 Map3 entries), and its `.fits` carries
 all bin and scale information; the NPY ordering agrees exactly with the
 FITS columns. The paper covariance used 199 simulations (796 mocks =
-199 x 4 cutouts); Rafael retains only these first 400 vectors. They are not
+199 x 4 cutouts); the producer retains only these first 400 vectors. They are not
 the coarse moments measured by the pilot below.
 
 The [PME notebook](../../EXAMPLE_COVARIANCE_PME.ipynb) explains how simulations
@@ -256,13 +256,13 @@ positive and its mean validation weight is closer to one, but that single
 average does not establish calibrated parameter errors. The all-map pass
 saved about 12 MB of tables, with no temporary map copies. Repeated draws dominated the measured fluctuations, and weak
 cross-draw shear correlations do not establish the assumed shared sky.
-Rafael now confirms repeated noise realizations on the same skies. The
+The producer confirms repeated noise realizations on the same skies. The
 historical weak cross-draw signal remains a measurement diagnostic to
 understand; it does not overturn that provenance.
 
 ## Compare with the released covariance
 
-The project includes Rafael's 480-row joint covariance and its paired row
+The project includes the released 480-row joint covariance and its paired row
 definitions. The [map notebook](../../EXAMPLE_COVARIANCE_MAPS.ipynb) audits these
 inputs and reads a bounded xi-plus comparison using source-bin slot four,
 cut zero, draw zero, and the released bins from 39.622 to 99.527 arcminutes.
@@ -315,11 +315,11 @@ the producer's account of what was randomized.
 The completed eight-pair test finds a same-run cross signal consistent with
 zero, while the same-map signal is clearly positive. It challenges the
 fixed-sky interpretation under independent, uncorrelated pixel noise;
-it does not overturn Rafael's subsequent confirmation of repeated noise
+it does not overturn the producer's subsequent confirmation of repeated noise
 on fixed skies. These historical label tests
 remain in the main map notebook.
 
-The [comparison note for Rafael](../covariance_comparison/covariance_comparison.pdf)
+The [comparison note](../covariance_comparison/covariance_comparison.pdf)
 and its [notebook](../covariance_comparison/EXAMPLE_COVARIANCE_COMPARISON.ipynb)
 now focus only on two matrix comparisons. First, all 15,997 measured
 aperture vectors enter both the direct covariance and the
@@ -337,7 +337,7 @@ and [worked notebook](../gptg_simulations/EXAMPLE_GPTG_SIMULATIONS.ipynb)
 fit an initial point-transformed Gaussian model to 32 supplied maps and save
 64 new four-bin maps with a stated Gaussian noise model under
 `chains/gptg_method/maps/`. Their names begin `GPTG_DES_`; they are not
-Rafael's original realizations. The note explains the fit approximations,
+the original downloaded realizations. The note explains the fit approximations,
 source-bin cross correlations, noise-corrected cubic moments and current
 covariance differences. These generated maps are not yet validated replacements
 for the supplied N-body simulations.
@@ -345,4 +345,4 @@ for the supplied N-body simulations.
 New generated-map ensembles use float32 files and float64 calculations. The
 64-map check found a maximum relative precision-direction change of 5.3e-8
 from storage rounding. The original float64 pilot remains a small reference
-for repeating that test; Rafael's downloaded inputs are never converted.
+for repeating that test; the downloaded inputs are never converted.
