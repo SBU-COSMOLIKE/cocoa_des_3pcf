@@ -171,6 +171,17 @@ appendices whenever a tool feels unfamiliar.  The intrinsic-alignment
 theory of Section~\ref{sec:ia} stands on its own and can be read
 last; it depends only on Sections~\ref{sec:fields}--\ref{sec:map3}.
 
+The appendices are primers, not reference lists:
+Appendix~\ref{app:complex} builds complex rotations up to the spin-2
+rule; Appendix~\ref{app:fourier} fixes the two-dimensional Fourier
+conventions and the Dirac delta; Appendix~\ref{app:bessel} derives
+the Bessel integrals the filters need; Appendix~\ref{app:legendre}
+explains the Legendre basis and logarithmic Fourier transforms of
+the numerical transform; Appendix~\ref{app:probability} develops
+moments, cumulants and Wick's rule; and Appendix~\ref{app:homiso}
+spells out what homogeneity and isotropy allow.  Each can be read on
+its own before the section that uses it.
+
 Each of the longer sections ends with a short summary list and, where
 practice helps, one or two exercises whose solutions follow
 immediately.  The exercises are small: they rehearse a step of the
@@ -199,7 +210,9 @@ sampled number to order one).  The late-time amplitude $\sigma_8$ --
 the rms linear density contrast in spheres of $8\,h^{-1}$Mpc, with
 $h = H_0/(100\ {\rm km/s/Mpc})$ -- is a derived parameter of the
 yaml, computed by CAMB from $A_{\rm s}$ and the other parameters, not
-a sampled one.
+a sampled one.  At the fiducial point the derived value is
+$\sigma_8 = 0.7865548$; the companion notebook computes it from the
+yaml by one model evaluation (its Section~4).
 
 \paragraph{The nuisance parameters.}
 The intrinsic-alignment model of this yaml is NLA (defined in
@@ -213,7 +226,8 @@ the yaml key that carries it.
 
 \begin{table}[tbp]
   \centering
-  \small
+  \footnotesize
+  \setlength{\tabcolsep}{4.5pt}
   \begin{tabular}{llll}
     \hline
     parameter & yaml key & meaning & fiducial \\
@@ -223,22 +237,23 @@ the yaml key that carries it.
     $H_0$ & \texttt{H0} & Hubble constant [km/s/Mpc] & $72.2$ \\
     $n_{\rm s}$ & \texttt{ns} & scalar spectral index & $0.959$ \\
     $10^9 A_{\rm s}$ & \texttt{As\us 1e9} & primordial amplitude & $1.8520356$ \\
-    $\sigma_8$ & -- & derived from the above, not sampled & -- \\
-    $A_1$ & \texttt{DES\us A1\us 1} & linear (tidal-alignment) IA amplitude & $-0.33$ \\
+    $\sigma_8$ & -- & derived, not sampled & $0.7865548$ \\
+    $A_1$ & \texttt{DES\us A1\us 1} & linear IA amplitude & $-0.33$ \\
     $\eta_1$ & \texttt{DES\us A1\us 2} & its redshift slope & $2.81$ \\
-    $A_2,\ \eta_2$ & \texttt{DES\us A2\us 1}, \texttt{DES\us A2\us 2} & tidal-torquing amplitude, slope & $0$ \\
-    $b_{\rm TA}$ & \texttt{DES\us BTA\us 1} & density-weighting bias & $0$ \\
-    $m_1,\ldots,m_4$ & \texttt{DES\us M1} \ldots \texttt{DES\us M4} & shear calibrations & $-0.0063$, $-0.0198$, $-0.0241$, $-0.0369$ \\
-    $\Delta z_1,\ldots,\Delta z_4$ & \texttt{DES\us DZ\us S1} \ldots \texttt{S4} & source photo-z shifts & $0$ \\
-    $w,\ w_a$ & \texttt{w}, \texttt{wa} & dark-energy equation of state & $-1$, $0$ (fixed) \\
-    $\sum m_\nu$ & \texttt{mnu} & neutrino mass sum [eV] & $0.06$ (fixed) \\
+    $A_2,\ \eta_2$ & \texttt{DES\us A2\us 1}, \texttt{DES\us A2\us 2} & tidal torquing & $0$ \\
+    $b_{\rm TA}$ & \texttt{DES\us BTA\us 1} & density weighting & $0$ \\
+    $m_1,\ldots,m_4$ & \texttt{DES\us M1}--\texttt{M4} & shear calibrations & $-0.0063,\,-0.0198,\,-0.0241,\,-0.0369$ \\
+    $\Delta z_1,\ldots,\Delta z_4$ & \texttt{DES\us DZ\us S1}--\texttt{S4} & source photo-z shifts & $0$ \\
+    $w,\ w_a$ & \texttt{w}, \texttt{wa} & dark energy (fixed) & $-1$, $0$ \\
+    $\sum m_\nu$ & \texttt{mnu} & neutrino masses [eV] (fixed) & $0.06$ \\
     \hline
   \end{tabular}
   \caption{The fiducial point: the evaluate \texttt{override} of
     \texttt{EXAMPLE\us EVALUATE1.yaml}, plus the parameters that yaml
     fixes.  $10^9 A_{\rm s}$ is quoted to eight digits here; the yaml
     carries the full value.  The companion notebook prints every
-    value from the yaml (its Section~4).}
+    value from the yaml and computes the derived $\sigma_8$ by one
+    model evaluation (its Section~4).}
   \label{tab:fid}
 \end{table}
 
@@ -275,6 +290,17 @@ BiHalofit~\cite{BiHalofit}, a fitting formula calibrated on N-body
 simulations, supplies the nonlinear matter bispectrum.  Both run as
 Cobaya theory blocks of the example yaml; the likelihood never runs a
 private copy of either.
+
+\paragraph{Reproducing any number of this note.}
+The notebook wrappers default every argument to the fiducial point,
+so \texttt{nw.map3()} returns the $80$ rows of
+Figure~\ref{fig:map3} with no arguments at all, and any parameter
+can be moved by naming its yaml key,
+\texttt{nw.map3(As\us 1e9 = 1.9)}.  The companion notebook's
+expensive cells cache their results under the project's
+\texttt{chains/} folder and refuse to reuse a cache whose recorded
+settings differ, so a rerun is cheap and never silently
+inconsistent.
 \section{Random fields on the sky}
 \label{sec:fields}
 
@@ -439,18 +465,31 @@ information, as a transform pair.
 
 \paragraph{The transform pair, written out.}
 Running the derivation backwards expresses the correlation function
-through the power spectrum.  The two-dimensional angular integral of
-the plane wave produces a Bessel function
-(Appendix~\ref{app:bessel}, Eq.~\eqref{eq:j0def}), leaving
+through the power spectrum.
+
+\emph{Step 1.}  Write both fields of Eq.~\eqref{eq:xidef} through
+the inverse transform~\eqref{eq:fourier} and insert
+Eq.~\eqref{eq:powerdef}; the delta eats one integral:
+\begin{equation}
+  \xi(\theta)
+  \;=\; \int \frac{d^2\ell}{(2\pi)^2}\;
+  P_\kappa(\ell)\; e^{\,i\bell\cdot\btheta} ,
+  \label{eq:xistep1}
+\end{equation}
+with $\btheta$ the separation vector.
+
+\emph{Step 2.}  Go to polar coordinates.  The angular average of the
+plane wave is the defining integral of the Bessel function $J_0$
+(Appendix~\ref{app:bessel}, Eq.~\eqref{eq:j0def}), the circular
+average of a plane wave:
 \begin{equation}
   \xi(\theta)
   \;=\; \int_0^\infty \frac{d\ell\,\ell}{2\pi}\;
-  P_\kappa(\ell)\, J_0(\ell\theta) ,
+  P_\kappa(\ell)\, J_0(\ell\theta) .
   \label{eq:xifromp}
 \end{equation}
-where $J_0$ is the Bessel function of order zero, the circular
-average of a plane wave.  This one-dimensional form is how every
-two-point prediction in the project is actually evaluated.
+This one-dimensional form is how every two-point prediction in the
+project is actually evaluated.
 
 \subsection{Moments, connected parts and Wick's rule}
 \label{sec:bispectrum}
@@ -555,7 +594,13 @@ alone, written here through the three side lengths
 
 The same definition in three dimensions, with wavevectors $\bk_i$ and
 a $(2\pi)^3 \delta_{\rm D}^{(3)}$, defines the matter bispectrum
-$B_{\rm m}(k_1,k_2,k_3;z)$, the quantity BiHalofit fits.
+$B_{\rm m}(k_1,k_2,k_3;z)$, the quantity BiHalofit fits.  The
+dictionary between the two settings is mechanical: every statement
+of this section holds in three dimensions with $\btheta \to$
+position, $\bell \to \bk$, and each $(2\pi)^2 \to (2\pi)^3$.  The
+sky statistics of this note are two-dimensional; the matter
+statistics they are built from (Section~\ref{sec:limber}) are
+three-dimensional, and the Limber projection is the bridge.
 
 \paragraph{Why gravity makes a bispectrum: the setup.}
 At the lowest order of perturbation theory, gravity corrects the
@@ -895,6 +940,20 @@ $(\chi' - 0)/\chi' = 1$, so $q_a(0) = \int_0^\infty p_a(\chi')
 d\chi' = 1$.  When $\chi$ exceeds every $\chi'$ where
 $p_a(\chi') > 0$, the integration range contains no sources and
 $q_a = 0$: matter behind all the galaxies lenses none of them.
+
+\paragraph{Exercise 4.2 (tangential around the compass).}
+A patch carries the constant shear $\gamma = 0.1$ (a pure
+$\gamma_1$ stretch).  Using Eq.~\eqref{eq:tangential}, find
+$\gamma_t$ at separation directions $\phi_{\btheta} = 0^\circ$,
+$45^\circ$ and $90^\circ$ from a chosen center.
+
+\emph{Solution.}  $\gamma_t = -{\rm Re}\bigl(\gamma\,
+e^{-2i\phi_{\btheta}}\bigr)$ gives $-0.1$, $0$ and $+0.1$: the same
+constant stretch looks radial on one axis, tangential on the
+perpendicular axis, and purely cross-like in between.  Averaged
+around a ring it cancels -- the ring average of
+Eq.~\eqref{eq:ringidentity} sees a constant shear not at all, which
+is why aperture statistics are blind to it.
 \section{The aperture mass}
 \label{sec:aperture}
 
@@ -965,6 +1024,14 @@ where the last integral is one by a single integration by parts
 \end{equation}
 A filter with this property is called \emph{compensated}: its
 positive core and negative rim carry exactly opposite weight.
+
+The Gaussian family is one compensated filter among many -- finite
+polynomial families exist that vanish identically beyond one
+radius.  It is the standard choice because every integral it meets
+below closes analytically: the Fourier window of
+Eq.~\eqref{eq:uhat}, the shear weight of Eq.~\eqref{eq:qfil} and
+the triangle kernels of Section~\ref{sec:threepcf} all inherit
+their closed forms from Gaussians multiplying polynomials.
 
 \paragraph{Blind to a mass sheet.}
 The immediate consequence: add any constant $\kappa_0$ to the
@@ -1289,11 +1356,13 @@ Eq.~\eqref{eq:qdeffromu} and integrating the $F$ term by parts
 Eqs.~\eqref{eq:exchange}--\eqref{eq:innerint} and
 $2F/t^2 = \Qfil + \Ufil$,
 \begin{equation}
+\begin{split}
   2\pi \int_0^\infty d\theta\,\theta\, \Qfil\,\bar\gamma_t
-  = 2\pi \int_0^\infty dt\; t\,\bar\kappa(t)
+  &= 2\pi \int_0^\infty dt\; t\,\bar\kappa(t)
   \bigl[\Qfil(t) + \Ufil(t)\bigr]
-  - 2\pi \int_0^\infty d\theta\,\theta\, \Qfil\,\bar\kappa
-  = 2\pi \int_0^\infty dt\; t\, \Ufil(t)\, \bar\kappa(t) ,
+  - 2\pi \int_0^\infty d\theta\,\theta\, \Qfil\,\bar\kappa \\
+  &= 2\pi \int_0^\infty dt\; t\, \Ufil(t)\, \bar\kappa(t) ,
+\end{split}
   \label{eq:qassemble}
 \end{equation}
 which is exactly $\Map(R)$ of Eq.~\eqref{eq:mapring}.  Therefore
@@ -1397,6 +1466,22 @@ $\bar\gamma_t(\theta)$.
 $\bar\gamma_t = \theta_E^2/\theta^2 - 0 = \theta_E^2/\theta^2$: the
 tangential ring pattern of Figure~\ref{fig:ebpatterns}, falling as
 the inverse square of the radius.
+
+\paragraph{Exercise 5.3 (the $Q$ filter is not compensated).}
+Show that the Gaussian shear weight~\eqref{eq:qfil} integrates to
+one, $\int d^2\theta\, \Qfil(\theta) = 1$, unlike the compensated
+$U$.
+
+\emph{Solution.}  In polar form, with $a = 1/(2R^2)$,
+$\int d^2\theta\, \Qfil = \frac{1}{2R^4}\int_0^\infty
+d\theta\,\theta^3 e^{-a\theta^2} = \frac{1}{2R^4}\cdot\frac{1}{2a^2}
+= \frac{1}{2R^4}\cdot 2R^4 = 1$, using
+Eq.~\eqref{eq:gaussmoments}.  No contradiction with
+Eq.~\eqref{eq:compensated}: the mass-sheet blindness of the $Q$ form
+lives in $\gamma_t$ itself, which vanishes for a constant
+convergence (Eq.~\eqref{eq:ringidentity} with
+$\bar\kappa_< = \bar\kappa$), not in the sign structure of the
+weight.
 \section{The second moment}
 \label{sec:map2}
 
@@ -1491,38 +1576,87 @@ independent patches.  The companion notebook evaluates
 Eq.~\eqref{eq:map2} numerically for this spectrum and matches the
 $1/(8\pi)$ coefficient (its Section~2).
 
+\subsection{Why white noise is the physical case: shape noise}
+\label{sec:shapenoise}
+
+The white-noise example is not academic: it is the spectrum of the
+dominant measurement noise.  Galaxies have intrinsic ellipticities
+much larger than the lensing shear, and a survey samples the shear
+field only at galaxy positions.
+
+\emph{Step 1.}  Model the measured field as a sum of point
+contributions: $N$ galaxies at independent random positions
+$\btheta_g$ with mean density $\bar n$ per steradian, each carrying
+an independent complex ellipticity $\epsilon_g$ with
+$\langle\epsilon_g\rangle = 0$ and
+$\langle|\epsilon_g|^2\rangle = \sigma_\epsilon^2$:
+\begin{equation}
+  \gamma_{\rm noise}(\btheta)
+  \;=\; \frac{1}{\bar n}\sum_g \epsilon_g\,
+  \delta_{\rm D}(\btheta - \btheta_g) .
+  \label{eq:noisefield}
+\end{equation}
+
+\emph{Step 2.}  Transform and correlate.  Independent ellipticities
+kill every cross term, and averaging the galaxy positions over the
+patch produces the delta of Eq.~\eqref{eq:powerdef} with a constant
+coefficient:
+\begin{equation}
+  P_{\gamma,\rm noise}(\ell)
+  \;=\; \frac{\sigma_\epsilon^2}{\bar n} :
+  \label{eq:noisepower}
+\end{equation}
+pure white noise -- every angular frequency carries the same power,
+because a random point process has no preferred scale.
+
+\emph{Step 3.}  Nothing ties a random intrinsic orientation to the
+wavevector direction, so the noise splits evenly between E and B:
+$P^{E}_{\rm noise} = P^{B}_{\rm noise} =
+\sigma_\epsilon^2/(2\bar n)$.  Substituting into the white-noise
+result~\eqref{eq:map2white},
+\begin{equation}
+  \bigl\langle \Map^2 \bigr\rangle_{\rm noise}
+  \;=\; \frac{\sigma_\epsilon^2}{16\pi\, \bar n\, R^2} .
+  \label{eq:map2noise}
+\end{equation}
+This is the noise floor under every aperture measurement, and the
+equality of its E and B parts is what makes $\Mx$ statistics clean
+null tests: shape noise feeds both alike, lensing only the first.
+
 \subsection{The formula against a measured map}
 \label{sec:map2toy}
 
-The companion notebook closes the loop on a map rather than a
-formula.  It draws the Gaussian convergence map of
-Figure~\ref{fig:gaussianmap} with a known input spectrum, builds the
-aperture-mass map at each of the four radii of
-Eq.~\eqref{eq:radii}, and compares the measured map variance with
-the prediction of Eq.~\eqref{eq:map2}, evaluated for the same input
-spectrum on the map's own discrete Fourier grid.
+The companion notebook closes the loop on maps rather than a
+formula.  It draws $25$ Gaussian convergence maps with the known
+input spectrum of Figure~\ref{fig:gaussianmap}, builds each map's
+aperture-mass map at the four radii of Eq.~\eqref{eq:radii}, and
+compares the mean measured variance with the prediction of
+Eq.~\eqref{eq:map2}, evaluated for the same input spectrum on the
+maps' own discrete Fourier grid.
 
 Figure~\ref{fig:toymoments} (top) shows the comparison: the measured
-variances scatter around the prediction within their sampling
-uncertainty, estimated from the spread among sixteen sub-blocks of
-the map.  This is the second moment of Eq.~\eqref{eq:map2} seen
-end to end: a random field goes in, filtered maps come out, and the
-power-spectrum integral predicts their variance.
+variances agree with the prediction within a few times their
+sampling uncertainty (the spread over realizations divided by
+$\sqrt{25}$; the largest radius keeps the fewest Fourier modes under
+its window and scatters most).  This is the second moment of
+Eq.~\eqref{eq:map2} seen end to end: random fields go in, filtered
+maps come out, and the power-spectrum integral predicts their
+variance.
 
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=0.62\linewidth]{plots/toy_moments/toy_moments.pdf}
   \caption{Aperture-mass moments measured on simulated maps against
-    the radius, at the four radii of the DES Y3 measurement.  Top:
-    the variance of the Gaussian map of
-    Figure~\ref{fig:gaussianmap} (points, with block-estimated
-    uncertainties) against the power-spectrum prediction of
-    Eq.~\eqref{eq:map2} evaluated on the map's Fourier grid (line).
-    Bottom: the third moment of the same Gaussian map (consistent
-    with zero) and of the non-Gaussian toy map of
-    Section~\ref{sec:toythird} (clearly nonzero), each scaled by its
-    own map rms cubed.  Drawn by the companion notebook
-    (plots/toy\us moments).}
+    the radius, at the four radii of the DES Y3 measurement; every
+    point is a mean over $25$ realizations, with the spread over
+    realizations divided by $\sqrt{25}$ as its uncertainty.  Top:
+    the measured variance of the Gaussian field against the
+    power-spectrum prediction of Eq.~\eqref{eq:map2} evaluated on
+    the maps' Fourier grid (line).  Bottom: the third moment of the
+    Gaussian field (consistent with zero) and of the non-Gaussian
+    toy field of Section~\ref{sec:toythird} (nonzero at every
+    radius), each scaled by its own map rms cubed.  Drawn by the
+    companion notebook (plots/toy\us moments).}
   \label{fig:toymoments}
 \end{figure}
 
@@ -1610,6 +1744,17 @@ information beyond the equal-radius variance scanned in $R$.  (The
 same is \emph{not} true at third order, which is why the generalized
 third moment of Section~\ref{sec:threepcf} has three radius
 arguments.)
+
+\paragraph{Exercise 6.2 (the probed multipoles).}
+Using the window peak at $\ell = \sqrt{2}/R$ (notebook Section~2),
+find the multipoles the four measurement radii probe.
+
+\emph{Solution.}  One arcminute is
+$\pi/(180\cdot 60) \approx 2.909\times 10^{-4}$ radians, so
+$R = 7, 14, 25, 40$ arcmin give
+$\ell \approx 695,\ 347,\ 194,\ 122$: the aperture statistic reads
+the spectrum across roughly half a decade and a half of angular
+frequency.
 
 \section{The third moment}
 \label{sec:map3}
@@ -1748,9 +1893,29 @@ Dropping the radial components is the approximation; it is accurate
 at the multipoles used here ($\ell$ of a few hundred) and degrades
 only at very small $\ell$.
 
+\paragraph{The two-point warm-up.}
+Applying the three ingredients to the square of
+Eq.~\eqref{eq:kappadef} gives the convergence power spectrum of two
+source samples~\cite{GomesTATT},
+\begin{equation}
+  P^{ab}_\kappa(\ell)
+  \;=\;
+  \int d\chi\;
+  \frac{W_a(\chi)\, W_b(\chi)}{\chi^2}\;
+  P_{\rm m}\!\left(\frac{\ell}{\chi};\, z(\chi)\right),
+  \label{eq:limber2pt}
+\end{equation}
+with the window $W_a$ of Eq.~\eqref{eq:window} below: one window per
+leg, one factor $1/\chi$ per leg to convert the angular into the
+transverse wavenumber, and the three-dimensional matter spectrum
+evaluated at $k = \ell/\chi$.  Dimensions: $d\chi\, W^2 \chi^{-2}
+P_{\rm m}$ carries $L\cdot L^{-2}\cdot L^{-2}\cdot L^{3} = 1$.  This
+is the formula behind the $\xi_\pm$ rows of the data vector, through
+Eq.~\eqref{eq:xipm}.
+
 \paragraph{The result.}
-Applying the three ingredients to the cube of
-Eq.~\eqref{eq:kappadef} gives the projected
+The same three ingredients applied to the cube of
+Eq.~\eqref{eq:kappadef} give the projected
 bispectrum~\cite{GomesTATT}
 \begin{equation}
   B^{ijk}_\kappa(\ell_1,\ell_2,\ell_3)
@@ -1802,11 +1967,14 @@ Eq.~\eqref{eq:deltaexpand}: a field plus a square of itself.  The
 subtraction keeps the mean at zero.
 
 The notebook then measures the third moment of the aperture-mass
-maps of both fields at the four radii.  The Gaussian map's third
-moments are consistent with zero; the toy map's are nonzero at many
-times the sampling uncertainty
-(Figure~\ref{fig:toymoments}, bottom).  The exercise below shows why
-the sign comes out positive for positive $\alpha$.
+maps of both fields at the four radii, averaged over $25$
+realizations.  The Gaussian field's third moments are consistent
+with zero; the toy field's are nonzero at every radius, from $76$
+times the sampling uncertainty at $R = 7$ arcmin to $8.6$ times at
+$R = 40$ arcmin, falling with radius as the window keeps fewer
+modes (Figure~\ref{fig:toymoments}, bottom; notebook Section~3).
+The exercise below shows why the sign comes out positive for
+positive $\alpha$.
 
 \paragraph{Exercise 7.1 (the toy's skewness).}
 For a zero-mean Gaussian variable $g$ with variance $\sigma^2$, let
@@ -1906,9 +2074,21 @@ missing area removes statistics but adds no bias~\cite{JBJ}.
 The strategy of the DES analysis -- and of this project's
 likelihood -- is therefore: measure (or predict) the shear
 \emph{three-point correlation function} on triangles, then integrate
-it with known kernels into $\langle\Map^3\rangle$.  This section
-builds the three ingredients: the triangle bookkeeping, the natural
-components of the three-point function, and the kernel integral.
+it with known kernels into $\langle\Map^3\rangle$.
+
+On the measurement side the estimator is conceptually a weighted
+average over galaxy triples: every triple whose separations fall in
+a triangle bin contributes the product of its three (projected)
+ellipticities, weighted by the galaxies' measurement weights, and
+the bin's correlation estimate is that sum divided by the sum of
+weights.  Missing area only removes triples from the sum; it never
+biases the average, which is the property the map route lacks.
+Section~\ref{sec:measurement} describes the multipole shortcut that
+makes this count feasible.
+
+This section builds the three ingredients of the prediction side:
+the triangle bookkeeping, the natural components of the three-point
+function, and the kernel integral.
 
 \subsection{Triangles, and the projection problem}
 \label{sec:natural}
@@ -1928,7 +2108,7 @@ defined.)  Figure~\ref{fig:trianglegeo} draws the labelling.
     Left: the side--angle--side labelling, two side lengths $d_2$ and
     $d_3$ meeting at vertex~1 with opening angle $\phi$.  Right: the
     centroid construction; the dashed arrows are the offsets $r_a$
-    from the centroid to the three vertices, and at each vertex the
+    from the three vertices to the centroid, and at each vertex the
     shear is rotated so its first axis points along that vertex's
     offset direction.  Drawn by the companion notebook
     (plots/triangle\us geometry).}
@@ -2137,7 +2317,7 @@ prefactor and evaluates in closed form.
 \emph{Step 3.}  What remains is an integral over triangle shapes of
 the natural components against closed-form complex kernels.  The
 natural variables are the complex offsets from the triangle's
-centroid to its vertices: writing the first side as the real length
+vertices to its centroid: writing the first side as the real length
 $s = d_2/R_1$ and the second side as the complex number
 $t = (d_3/R_1)\, e^{i\phi}$ (both in units of the first radius), the
 three offsets are
@@ -2217,26 +2397,37 @@ $\langle M^2 M^*\rangle$.  Expanding $M = \Map + i\Mx$ and solving
 the linear system gives the four real third-order statistics; the
 one the likelihood uses is
 \begin{equation}
+\begin{split}
   \bigl\langle \Map^3 \bigr\rangle
-  \;=\; \frac{1}{4}\,{\rm Re}\Bigl[
+  &\;=\; \frac{1}{4}\,{\rm Re}\Bigl[
   \bigl\langle M^3 \bigr\rangle
   + \bigl\langle M^2 M^{*} \bigr\rangle
   + \bigl\langle M M^{*} M \bigr\rangle
   + \bigl\langle M^{*} M M \bigr\rangle
-  \Bigr]
-  \;=\; \frac{1}{4}\,{\rm Re}
+  \Bigr] \\
+  &\;=\; \frac{1}{4}\,{\rm Re}
   \sum_{\mu=0}^{3}
   \int \frac{s\,ds}{R^2} \int \frac{d^2 t}{2\pi R^2}\;
   \Gamma_\mu\, T_\mu ,
+\end{split}
   \label{eq:map3sas}
 \end{equation}
 where the three single-conjugate terms are the three placements of
 the conjugated leg, each pairing one $\Gamma_\mu$ with its $T_\mu$.
 The factor $1/4$ comes from solving for $\Map^3$ among the four
-combinations; the companions
-$\langle \Map^2 \Mx\rangle$, $\langle \Map \Mx^2\rangle$ and
-$\langle \Mx^3\rangle$ are the imaginary and differenced
-combinations and serve as B-mode and parity null tests~\cite{SKL}.
+combinations.  The companions are the imaginary and differenced
+combinations, and each has its own physical meaning~\cite{SKL}:
+\begin{itemize}
+  \item $\langle \Map^3\rangle$ is the cosmological signal, the
+    skewness of the E-mode convergence;
+  \item $\langle \Map \Mx^2\rangle$ detects a B~mode correlated
+    with the E~mode -- the signature expected from intrinsic
+    alignments rather than lensing;
+  \item $\langle \Mx^3\rangle$ and $\langle \Map^2 \Mx\rangle$
+    require a parity-violating field: a mirror-symmetric ensemble
+    forbids odd powers of the swirl, so either combination flags
+    systematics in the data processing.
+\end{itemize}
 
 \paragraph{Unequal radii.}
 With three radii $(R_1, R_2, R_3)$ the kernels keep the same
@@ -2355,6 +2546,28 @@ be checked directly:
 $r_2 = (e^{i\pi/3} - 2)/3$, $|r_2|^2 = (\cos\frac{\pi}{3} - 2)^2/9
 + \sin^2\frac{\pi}{3}/9 = (2.25 + 0.75)/9 = 1/3$, and
 $r_3 = -r_1 - r_2$ closes the sum.
+
+\paragraph{Exercise 8.2 (the kernel on that triangle).}
+Evaluate $T_0$ of Eq.~\eqref{eq:t0} on the same equilateral
+triangle.
+
+\emph{Solution.}  The Gaussian exponent needs
+$|r_1|^2 + |r_2|^2 + |r_3|^2 = 1$.  For the polynomial, take moduli
+and phases separately: the moduli give
+$|r_1 r_2 r_3|^2 = (1/3)^3 = 1/27$; the phases of
+$r_1, r_2, r_3$ are $30^\circ$, $150^\circ$ and $-90^\circ$ (each
+offset runs from its vertex to the centroid), summing to
+$90^\circ$, so the conjugated squares contribute the phase
+$e^{-2i\cdot 90^\circ} = -1$.  Hence
+$r_1^{*2} r_2^{*2} r_3^{*2} = -1/27$ and
+\begin{equation}
+  T_0 \;=\; -\,\frac{-1/27}{24}\; e^{-1/2}
+  \;=\; \frac{e^{-1/2}}{648}
+  \;\approx\; 9.4\times 10^{-4} :
+  \label{eq:t0equilateral}
+\end{equation}
+real and positive, as the mirror symmetry of the equilateral
+triangle demands (a complex $T_0$ there would pick a handedness).
 \section{Finite triangles versus the full filter}
 \label{sec:finite}
 
@@ -2385,13 +2598,31 @@ $9 \times 9$ block the scale cut keeps, next to the four filter
 scales.  Each kept side pair carries $63$ opening-angle bins
 (Section~\ref{sec:likelihood}).
 
+\paragraph{How much kernel weight the range covers.}
 The kernels of Eq.~\eqref{eq:map3sas} weight triangles with sides of
 order the aperture radii -- the Gaussian factor of
-Eq.~\eqref{eq:t0} kills sides beyond a few $R$ -- so for the
-smallest radius, $R = 7$ arcmin, much of the kernel support sits
-below the $8$ arcmin cut: the finite sum differs most from the full
-integral there.  Quantifying that difference per radius is an
-estimator study, not a side effect of this note.
+Eq.~\eqref{eq:t0} kills sides beyond a few $R$, and the measure of
+Eq.~\eqref{eq:measure} suppresses small ones -- so the covered
+fraction depends strongly on the radius.  The companion notebook
+integrates the equal-radius $|T_0|$ weight, with the bin measure,
+over the triangles the measured range excludes (its Section~8):
+\begin{itemize}
+  \item at $R = 7$ arcmin, $22$ percent of the kernel weight has a
+    side below the $8$ arcmin cut (the upper edge removes nothing);
+  \item at $R = 14$ arcmin, $9$ percent lies outside the measured
+    range, split between both ends;
+  \item at $R = 25$ and $R = 40$ arcmin, $75$ and $99$ percent lie
+    outside, almost entirely \emph{above} the $80$ arcmin upper
+    edge, because the kernel weight peaks at sides near $3R$.
+\end{itemize}
+These are statements about the kernel's geometry alone, not about
+the signal: the correlation functions fall steeply with separation,
+which concentrates the actual integrand at smaller sides than the
+bare kernel weight.  They still make the main point quantitative --
+the finite-SAS statistic and the full-filter integral are different
+numbers, most visibly at the largest radius -- and quantifying the
+\emph{signal}-weighted difference per radius is an estimator study,
+not a side effect of this note.
 
 \begin{figure}[tbp]
   \centering
@@ -2452,6 +2683,51 @@ GomesData}) were measured from the DES Y3 shape catalogue:
     (Eq.~\eqref{eq:twenty}): $80$ rows.
   \item The statistic is measured from the catalogue directly, so
     the likelihood applies no pixel window.
+\end{itemize}
+
+\paragraph{Why a multipole estimator.}
+A direct triangle count visits every galaxy triple, which is
+prohibitive for hundreds of millions of galaxies.  The LogMultipole
+estimator instead accumulates, for every pair of radial separations,
+the correlation's coefficients in the angular harmonics
+$e^{iM\phi}$ -- the same decomposition as
+Eq.~\eqref{eq:msum} -- which a tree code can build from pair
+operations.
+
+The conversion back to SAS bins is then the finite harmonic sum of
+Eq.~\eqref{eq:msum}, carried out once after the measurement.  The
+measured and predicted statistics therefore meet in the same
+representation twice over: both are harmonic expansions truncated at
+a finite order, and both end in the same weighted triangle sum of
+Eq.~\eqref{eq:gridsum}.
+
+\paragraph{Exercise 10.1 (the logarithmic width).}
+Show that $20$ logarithmic side bins from $0.5$ to $80$ arcmin have
+common width $\Delta\ln d = \ln(160)/20 \approx 0.2538$, so each bin
+is about $29$ percent wider than the one before.
+
+\emph{Solution.}  The full logarithmic span is
+$\ln(80/0.5) = \ln 160 \approx 5.075$; divided into $20$ equal
+pieces, $\Delta\ln d \approx 0.2538$, and each edge is
+$e^{0.2538} \approx 1.289$ times the previous one.  The notebook
+computes the same number from the likelihood keys (its Section~5).
+
+\paragraph{Summary of Sections~\ref{sec:finite}
+and~\ref{sec:likelihood}.}
+\begin{itemize}
+  \item The finite-SAS sum and the full-filter integral are
+    different estimators; the kernel-weight coverage of the measured
+    side range falls from $78$ percent at $R = 7$ arcmin to about
+    $1$ percent at $R = 40$ arcmin, where the kernel peaks beyond
+    the $80$ arcmin edge.
+  \item Because the compiled analytic covariance describes the
+    full-filter estimator, the project refuses analytic Map3
+    covariance rows and reads a simulation covariance built from
+    the same finite-SAS estimator.
+  \item The likelihood's transform plan reproduces the
+    measurement's bins, cut and angle grid from five yaml keys, and
+    its multipole caps are numerical knobs with three measurement
+    conventions still tracked as open.
 \end{itemize}
 
 \subsection{What the likelihood computes}
@@ -2852,16 +3128,18 @@ $\tfrac13\delta_{ij}\, s^2$ with
 $s^2 \to (\hat\bk_1\!\cdot\!\hat\bk_2)^2 - \tfrac13$ at this order,
 so
 \begin{equation}
+\begin{split}
   K^{(2)}_{\,C_2,\,ij}(\bk_1,\bk_2)
   =
-  C_2\left[
+  C_2\Bigl[
   \frac{\hat\bk_1\!\cdot\!\hat\bk_2}{2}
   \bigl(\hat k_{1,i}\hat k_{2,j} + \hat k_{2,i}\hat k_{1,j}\bigr)
-  - \frac{1}{3}
-  \bigl(\hat k_{1,i}\hat k_{1,j} + \hat k_{2,i}\hat k_{2,j}\bigr)
-  + \left(\frac{4}{9}
-  - \frac{(\hat\bk_1\!\cdot\!\hat\bk_2)^2}{3}\right)\delta_{ij}
-  \right] .
+  &- \frac{1}{3}
+  \bigl(\hat k_{1,i}\hat k_{1,j} + \hat k_{2,i}\hat k_{2,j}\bigr) \\
+  &+ \Bigl(\tfrac{4}{9}
+  - \tfrac{1}{3}(\hat\bk_1\!\cdot\!\hat\bk_2)^2\Bigr)\delta_{ij}
+  \Bigr] .
+\end{split}
   \label{eq:k2torque}
 \end{equation}
 
@@ -3001,16 +3279,18 @@ $\langle\tilde\delta(\bk_1)\tilde\delta(\bk_2)\tilde E(\bk_3)\rangle$
 receives one second-order factor; the three choices of where it sits
 give three terms, as in Eq.~\eqref{eq:treegeneral}:
 \begin{equation}
+\begin{split}
   B_{\delta\delta E}
   \;=\;
   2\,E\bigl[K^{(2)}(\bk_1,\bk_2)\bigr]\,
   P_{\rm L}(k_1) P_{\rm L}(k_2)
-  \;+\;
+  &\;+\;
   2\,C_1\, F_2(\bk_2,\bk_3)\,
-  P_{\rm L}(k_2) P_{\rm L}(k_3)
-  \;+\;
+  P_{\rm L}(k_2) P_{\rm L}(k_3) \\
+  &\;+\;
   2\,C_1\, F_2(\bk_3,\bk_1)\,
   P_{\rm L}(k_3) P_{\rm L}(k_1) .
+\end{split}
   \label{eq:bddestep1}
 \end{equation}
 In the first term the shape leg is second order and
@@ -3452,15 +3732,15 @@ alignment terms are largest; the companion notebook computes it
 through the project likelihood (its Section~7) and prints the
 extreme values quoted here.
 
-At this point the linear alignment adds between $+8.5$ and $+11$
+At this point the linear alignment adds between $+8.5$ and $+10.9$
 percent to the gravity-only rows of the lowest-redshift triplet (the
 fiducial $A_1 = -0.33$ raises the signal, because the alignment
 coefficient of Eq.~\eqref{eq:fia} carries a minus sign).  The
 density-weighting term reaches $0.12$ percent of the gravity term at
-its largest, and the tidal-torquing term reaches $0.70$ percent,
-changing sign at the largest radius.  The notebook also checks that
-the $5 \times 8$ pieces add back to the ordinary prediction to
-machine precision.
+its largest, and the tidal-torquing term $0.70$ percent, both at
+$R = 14$ arcmin, and both change sign at the largest radius.  The
+notebook also checks that the $5 \times 8$ pieces add back to the
+ordinary prediction to machine precision.
 
 \begin{figure}[tbp]
   \centering
@@ -3479,25 +3759,26 @@ machine precision.
 \paragraph{Where the contamination sits among the placements.}
 Figure~\ref{fig:placements} resolves the same rows along the other
 axis: for each placement, the contribution of each alignment
-operator at one radius.  The single-intrinsic placements dominate --
+operator at one radius.  The single-intrinsic placements dominate:
 they carry one factor of the small alignment coefficient instead of
-two or three -- and within them the placement whose intrinsic leg
-sits in the lowest-redshift bin is largest, because
-$f_{\rm IA}$ grows toward low redshift through the $1/D(z)$ factor
-and the low bin has the most galaxies in front of well-lensed
-background bins.
+two or three, so each additional intrinsic leg costs roughly another
+power of that coefficient.  The gravity operator lives entirely in
+GGG, and the linear alignment only in the placements with at least
+one intrinsic leg.
 
 \begin{figure}[tbp]
   \centering
   \includegraphics[width=0.62\linewidth]{plots/ia_placements/ia_placements.pdf}
   \caption{The same operator split as
     Figure~\ref{fig:operators}, resolved by galaxy placement at
-    $R = 14$ arcmin for the lowest-redshift triplet: each bar is one
-    placement's contribution to one alignment operator, divided by
-    the gravity-only (GGG) term.  Placements are labelled by which
-    ordered legs carry an intrinsic shape.  The gravity operator
-    lives entirely in GGG and is not drawn.  Computed by the
-    companion notebook (plots/ia\us placements).}
+    $R = 14$ arcmin for the lowest-redshift triplet: each marker is
+    one placement's contribution to one alignment operator, in
+    magnitude, divided by the gravity-only (GGG) term; open markers
+    are negative contributions, and exactly-zero entries carry no
+    marker.  Placements are labelled by which ordered legs carry an
+    intrinsic shape.  The gravity operator lives entirely in GGG and
+    is not drawn.  Computed by the companion notebook
+    (plots/ia\us placements).}
   \label{fig:placements}
 \end{figure}
 
@@ -3665,8 +3946,65 @@ only second-order kernel and moves gravity's $F_2$ off the density
 legs.  The surviving B terms are exactly the single-B bispectra of
 Eq.~\eqref{eq:bddb}, with the second-order kernel sitting on the B
 leg itself.
+
+\paragraph{Exercise 11.3 (a large coefficient, a small term).}
+At the TATT point, $b_{\rm TA} = 0.91$ makes
+$C_{1\delta} = 0.91\, C_1$ comparable to the linear coefficient
+itself.  Why, then, does the density-weighting operator contribute
+only about a tenth of a percent of the gravity term
+(Section~\ref{sec:operatorsplit}), while the linear alignment
+contributes ten percent?
+
+\emph{Solution.}  The two operators enter at different orders of
+the signal.  The linear alignment rides the full matter bispectrum
+through the kernel shift~\eqref{eq:nlakernel}: its size relative to
+gravity is set by $f_{\rm IA}\, p_a / q_a$, of order ten percent
+here.  Density weighting exists only in the residual tree-level
+terms of Eq.~\eqref{eq:bdde}, which carry
+$C_{1\delta}\, \Sigma_+\, P P$ against the much larger nonlinear
+bispectrum of the gravity term, and in placements that each cost
+further small factors.  A coefficient of order one multiplies a
+structurally small term.
 \section{Limits and pointers}
 \label{sec:limits}
+
+\paragraph{The whole chain, in ten steps.}
+Everything this note built fits in one list, from parameters to the
+$80$ numbers:
+\begin{enumerate}
+  \item CAMB turns the sampled cosmology into distances, growth and
+    the matter power spectrum; BiHalofit turns the power spectrum
+    into the nonlinear matter bispectrum
+    (Section~\ref{sec:fiducial}).
+  \item The TATT coefficients $C_1(z)$, $C_2(z)$,
+    $C_{1\delta}(z)$ follow from $(A_1, \eta_1, A_2, \eta_2,
+    b_{\rm TA})$; the linear alignment is folded into the lensing
+    efficiencies by the kernel shift (Section~\ref{sec:nla}).
+  \item The residual alignment bispectra are assembled from the
+    quadratic shape kernels (Sections~\ref{sec:iakernels}
+    and~\ref{sec:bdde}).
+  \item The Limber projection -- or, for the residual terms, its
+    redshift-resolved variant -- maps every three-dimensional
+    bispectrum onto the sky with one window per leg
+    (Sections~\ref{sec:limber} and~\ref{sec:iatotal}).
+  \item The Legendre expansion separates the triangle-shape
+    dependence into coefficients $b_L$
+    (Section~\ref{sec:multipole}).
+  \item Angular couplings and two FFTLog Bessel transforms turn the
+    $b_L$ into natural components on the SAS grid
+    (Section~\ref{sec:multipole}).
+  \item The aperture weights -- kernels, bin measure, mirrored
+    orientation, the factor $1/4$ -- are precomputed once from the
+    geometry (Section~\ref{sec:sasintegral}).
+  \item One dot product per radius and triplet contracts weights
+    with components into the Map3 rows
+    (Section~\ref{sec:gridsum}).
+  \item The joint vector gains the $\xi_\pm$ rows from the
+    two-point spectra (Section~\ref{sec:xipm}).
+  \item The likelihood scores data minus prediction with the
+    simulation covariance of the same finite-SAS estimator
+    (Section~\ref{sec:finite}).
+\end{enumerate}
 
 What this note does not cover, and where it lives instead:
 \begin{itemize}
@@ -3765,6 +4103,17 @@ The doubled angle entered through the double-angle identities, which
 in turn came from the two factors of $R$: a matrix feels a rotation
 twice.  That is Eq.~\eqref{eq:spin2}.
 
+\paragraph{A worked rotation.}
+Take a pure plus-stretch, $\gamma = 0.1$ (so $\gamma_1 = 0.1$,
+$\gamma_2 = 0$), and rotate the axes by $\varphi = 45^\circ$.
+Equation~\eqref{eq:spin2derived} gives
+$\gamma' = 0.1\, e^{-i\pi/2} = -0.1\,i$: a pure cross-stretch of the
+same strength, with $\gamma_1' = 0$.  Rotating by $90^\circ$ gives
+$\gamma' = -0.1$, the same ellipse described in axes where its long
+direction lies along the second axis; rotating by $180^\circ$
+returns $\gamma' = +0.1$, the statement that an ellipse has no
+front or back.
+
 \paragraph{A useful square.}
 For any vector packed as a complex number, squaring doubles its
 angle:
@@ -3859,6 +4208,30 @@ $(2\pi)^2\delta_{\rm D}$ of the summed wavevectors
 (Eqs.~\eqref{eq:powerdef} and~\eqref{eq:bispecdef}), which eats one
 of the integrals.
 
+\paragraph{Products and convolutions.}
+Two facts about products are used silently throughout the note.
+First, a product of two fields in real space transforms into a
+convolution,
+\begin{equation}
+  \widetilde{(fg)}(\bell)
+  \;=\; \int \frac{d^2\ell'}{(2\pi)^2}\;
+  \tilde f(\bell')\,\tilde g(\bell - \bell') ,
+  \label{eq:convolution}
+\end{equation}
+which follows by inserting both inverse transforms and using the
+delta~\eqref{eq:deltaapp}; the quadratic alignment operators of
+Section~\ref{sec:iakernels} are convolutions of exactly this form.
+Second, Parseval's identity,
+\begin{equation}
+  \int d^2\theta\; f(\btheta)^2
+  \;=\; \int \frac{d^2\ell}{(2\pi)^2}\;
+  \bigl|\tilde f(\bell)\bigr|^2 ,
+  \label{eq:parseval}
+\end{equation}
+the same insertion applied to $f \cdot f$ at zero separation; it is
+how the notebook turns a sum over Fourier modes into a map variance
+(its Section~3).
+
 \paragraph{Polar reduction.}
 For circular functions the angular integral is always the same
 object:
@@ -3920,6 +4293,16 @@ phases of the shears combine to four units of angular momentum, and
 $J_{M-3}$ in the three-point transform of
 Section~\ref{sec:multipole}, where three spin-2 phases and one
 harmonic order $M$ set the order.
+
+\paragraph{Why Bessel integrals are numerically hard.}
+At large argument $J_0$ oscillates like a slowly damped cosine, so
+an integral such as Eq.~\eqref{eq:xifromp} adds many alternating
+contributions that nearly cancel.  A quadrature that samples the
+integrand naively must resolve every oscillation at every
+separation, which is what makes closed forms (next paragraph) and
+the FFTLog method of Appendix~\ref{app:legendre} valuable: both
+handle the oscillations analytically and leave only smooth
+functions to the computer.
 
 \paragraph{The Gaussian--Bessel integral, term by term.}
 The closed form used in Eq.~\eqref{eq:besselone} follows from the
@@ -4116,6 +4499,25 @@ $3\sigma^4$, matching the direct integration above.  The companion
 notebook's Gaussian-map skewness check (its Section~3) is
 Eq.~\eqref{eq:wick} at work on $10^5$ correlated variables at once.
 
+\paragraph{Exercise D.1 (a mixed fourth moment).}
+For zero-mean jointly Gaussian $x, y$ with
+$\langle x^2\rangle = \langle y^2\rangle = \sigma^2$ and
+$\langle xy\rangle = \rho\,\sigma^2$, compute
+$\langle x^2 y^2\rangle$ with Wick's rule.
+
+\emph{Solution.}  The three pairings of $x, x, y, y$ are
+$\langle x^2\rangle\langle y^2\rangle$ and twice
+$\langle xy\rangle^2$:
+\begin{equation}
+  \langle x^2 y^2 \rangle
+  \;=\; \sigma^4\bigl(1 + 2\rho^2\bigr) .
+  \label{eq:mixedfourth}
+\end{equation}
+At $\rho = 1$ this is the single-variable $3\sigma^4$; at
+$\rho = 0$ the moments factorize.  This is the computation behind
+the toy skewness of Exercise~7.1, where the pair
+$(g^2, g^2)$ appears with $\rho = 1$.
+
 \section{Statistical homogeneity and isotropy}
 \label{app:homiso}
 
@@ -4138,8 +4540,19 @@ Parity (mirror symmetry) can remove more: a reflection swaps a
 triangle with its mirror image, so a parity-symmetric ensemble ties
 the statistics of the two orientations together rather than leaving
 them independent.  For the scalar bispectrum this makes the side
-lengths a complete label; for the spin-2 natural components it
-relates the values at $\phi$ and $2\pi - \phi$.
+lengths a complete label.  For the spin-2 natural components a
+reflection flips the opening angle and conjugates the shears, so a
+parity-symmetric ensemble obeys
+\begin{equation}
+  \Gamma_\mu(d_2, d_3, 2\pi - \phi)
+  \;=\; \Gamma_\mu^{*}(d_2, d_3, \phi) :
+  \label{eq:parity}
+\end{equation}
+the mirror triangle carries the conjugate correlation.  This is why
+the SAS grid stores only $0 < \phi < \pi$, with the
+mirrored-orientation term of Section~\ref{sec:gridsum} standing in
+for the reflected triangles, and why the aperture moment of
+Eq.~\eqref{eq:map3sas} comes out real.
 
 \paragraph{What the delta functions encode.}
 In Fourier space, homogeneity appeared twice in the main text: as
