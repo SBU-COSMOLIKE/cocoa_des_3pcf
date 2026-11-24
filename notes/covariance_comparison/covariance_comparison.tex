@@ -40,7 +40,7 @@ be compared entry by entry.
 
 \paragraph{What the comparisons show.}
 For the complete aperture sample, the second-order covariance has per-row standard
-deviations about 11--13\% larger for the squared moments, while changes for
+deviations 10.8--12.5\% larger for the squared moments, while changes for
 the cubed moments range from about $-0.1\%$ to $+1.4\%$. Correlation
 coefficients differ by as much as 0.199. The difference persists largely
 because the inverse expansion is truncated. Fourth order reduces the
@@ -67,9 +67,9 @@ Gomes et al.~\cite{gomes}.
 \paragraph{A map supplies values on the retained DES footprint.}
 Each file has four source-bin slots, two shear-component slots and 369,190
 retained pixel positions. The companion \nolinkurl{indices_512.npy} gives
-the HEALPix pixel IDs. The maps are NSIDE 512; RING ordering and equatorial
-coordinates are inferred from the footprint geometry. The shear basis and
-source-bin order still require their producer record. The calculation uses
+the HEALPix pixel IDs. The maps are NSIDE 512; RING ordering is producer-confirmed, and the
+equatorial coordinates follow from the footprint geometry. The shear basis
+and source-bin order still require their producer record. The calculation uses
 one fixed pixel interpretation for every method.
 
 \paragraph{The sixteen rows are coarse moments, with an explicit ordering.}
@@ -94,12 +94,17 @@ xi/Map3 data vector.
 
 \paragraph{Every available file enters the direct covariance.}
 The settled local inventory has 15,997 maps, with run labels 0--199,
-four cut labels and twenty realization labels. Three combinations of those
-observed labels are absent: run 168/cut 2/draws 7 and 19, and
-run 168/cut 3/draw 19. All present files were measured. Their small
-sixteen-row vectors are stored separately from the maps; the full generated
-measurement tables occupy about 12 MB. File labels do not by themselves
-establish independent skies or producer-certified completeness.
+four cut labels and twenty realization labels, as recorded in the map guide
+beside the simulations note. Three combinations of those observed labels are
+absent: run 168/cut 2/draws 7 and 19, and run 168/cut 3/draw 19. All three
+are extra noise draws, so every one of the 800 cutouts is present. All
+present files were measured. Their small sixteen-row vectors are stored
+separately from the maps in a few megabytes of text tables. The label
+meanings are producer-confirmed: a run label names a parent sky, a cut
+label one of its four DES cutouts, and a realization label a repeated
+noise draw on that cutout. A file count is therefore not an
+independent-realization count, and the local inventory is not
+producer-certified completeness.
 
 \paragraph{Compute a covariance of one measurement, not of its average.}
 Let $d_s$ be the sixteen-component vector from file $s$ and let
@@ -167,12 +172,17 @@ is evaluated with nominal
 \begin{equation}
  \nu=N-1=15996.
 \end{equation}
-Related maps are not established to be independent, and these nonlinear
-summary moments are not established to be Gaussian. This count therefore
-defines a formal all-file evaluation of the formula; it is not a validated
-independent-simulation degree of freedom. The unbiasedness guarantee does
-not follow for the archive merely because the matrix arithmetic can be
-performed. No effective independent count is inferred or fitted here.
+Under the producer-confirmed labels, repeated noise draws of one cutout
+are not independent realizations, while the four cutouts of a parent sky
+are counted as independent, as in the released covariance (796 mocks =
+199 parents times four cutouts). The archive holds 800 distinct cutouts,
+so the all-file count overcounts independent realizations by roughly a
+factor of twenty, and these nonlinear summary moments are not established
+to be Gaussian. The nominal count therefore defines a formal all-file
+evaluation of the formula; it is not a validated independent-simulation
+degree of freedom, and the unbiasedness guarantee does not follow for the
+archive merely because the matrix arithmetic can be performed. No
+effective independent count is inferred or fitted here.
 
 \paragraph{Construct a precision and then return to covariance units.}
 The second-order polynomial in reference coordinates is
@@ -245,9 +255,10 @@ we name the displayed halves explicitly.
 Per-row standard deviations, obtained by taking square roots of covariance
 diagonal entries, increase by 10.8--12.5\% for the squared moments.
 For the cubed moments the changes range from $-0.12\%$ to $+1.44\%$.
-The normalized covariance differences range from about $-0.78\%$ to
+The normalized covariance differences range from $-0.78\%$ to
 $+26.64\%$, and the largest absolute correlation-coefficient change is
-0.199. Variance percentages and standard-deviation percentages differ
+0.199; both follow from the text matrices recorded in
+\nolinkurl{plots/all_difference/} and \nolinkurl{plots/all_triangles/}. Variance percentages and standard-deviation percentages differ
 because one is the square of the other.
 
 \paragraph{A sample used by both methods is not an independent validation set.}
@@ -347,9 +358,10 @@ unknown survey precision. We checked one fixed direction by deleting all
 cuts and draws of one run label at a time. There are 200 labels, with
 77--80 files each. The direct-inverse weight changes by $-0.184\%$ to
 $+0.330\%$ on individual deletions. The approximate group-jackknife relative
-standard error is $1.38\%$. This uses run labels as provisional groups,
-not independently verified parent metadata; its usual equal-group prefactor
-is also approximate for these slightly unequal sizes. The direction was
+standard error is $1.38\%$. The run labels are the producer-confirmed
+parent skies, so each deletion removes one parent with all its cutouts and
+noise draws; the usual equal-group prefactor is approximate for these
+slightly unequal group sizes. The direction was
 selected from the full data, so this is a descriptive stability diagnostic.
 
 \paragraph{What that limited check tells us.}
@@ -362,8 +374,10 @@ $1.0424$, $0.9784$, $0.9962$ and $0.9994$, normalized to the 200-label
 result. These are correlated prefixes, and the final value is one by
 construction. The main estimates still use all files; no calibration,
 correction or validation partition has been introduced. The separate
-GPTG study instead generates additional independent validation maps and
-scores predictions without assuming the direct inverse is truth.
+GPTG study is designed to generate additional independent validation maps
+and score predictions without assuming the direct inverse is truth; its
+generation is currently paused with a partial ensemble, and no predictions
+have been scored.
 
 \section{Why the difference remains with many measured files}
 \paragraph{An infinite convergent series need not be accurate at second order.}
@@ -588,7 +602,8 @@ measure the uncertainty associated with independent skies.
 
 \FloatBarrier
 \paragraph{The correlations add information beyond the diagonal ratios.}
-The largest absolute correlation difference is about 0.355. Expressing the
+The largest absolute correlation difference is 0.355, from the text
+matrices recorded in \nolinkurl{plots/des_triangles/}. Expressing the
 measured covariance in units of the released covariance gives eigenvalues
 approximately 0.80, 1.05, 2.18 and 2.87. Equality would give four ones.
 The ordered eigenvalue extremes are noisy with 32 samples. They identify
@@ -604,18 +619,20 @@ joint matrix's first 400-by-400 block: their diagonal ratios range from
 0.895 to 1.092. We consistently use the joint matrix. Its FITS header says
 \nolinkurl{NSIM=500}, whereas the selected paired likelihood configuration
 uses 796 covariance realizations. The notebook reads and prints both
-values from the actual files. Their production history is needed to resolve
-that discrepancy; neither input has been changed.
+values from the actual files. The header is a producer-confirmed typo from
+an older file version: the released covariance used 796 mocks. Neither
+input has been changed; analyses should record 796.
 
 \paragraph{What remains to be supplied by the map producer.}
-The definitions of \nolinkurl{run}, \nolinkurl{ncut} and \nolinkurl{nreal}
-are needed to interpret file dependence and noise. We also need the shear
-basis, source-bin order, catalogue weights and pixel occupancies, and the
-relationship between these NSIDE 512 maps and the maps used for the released
-covariance. The local run labels extend from 0 to 199, while the methods
-paper describes 199 parent full skies and four footprints per sky. A label
-count alone does not establish that mapping. These questions concern how
-to interpret the matrices, not whether the comparisons can be reproduced.
+The label definitions are producer-confirmed: \nolinkurl{run} names the
+parent sky, \nolinkurl{ncut} one of its four DES cutouts and
+\nolinkurl{nreal} a repeated noise draw on that cutout; the paper used
+draw zero only. Still needed are the shear basis, source-bin order,
+catalogue weights and pixel occupancies, the relationship between these
+NSIDE 512 maps and the NSIDE 1024 maps used for the released covariance,
+and the mapping of the 200 local run labels onto the paper's 199 parent
+skies. These questions concern how to interpret the matrices, not whether
+the comparisons can be reproduced.
 
 \paragraph{Where the calculations live.}
 The companion \nolinkurl{EXAMPLE_COVARIANCE_COMPARISON.ipynb} is beside

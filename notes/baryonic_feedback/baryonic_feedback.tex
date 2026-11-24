@@ -43,8 +43,9 @@ TATT example, enables the additional BACCO theory block, and calls Cobaya
 for every prediction. It then uses the shared Fisher functions and plots
 the means, derivative responses and parameter errors. The original
 absolute-bispectrum provider remains in the YAML. Expensive cells run real
-models; their outputs are empty following the source refactor. No new
-physical forecast is reported in this note. Generated results belong in
+models; the committed notebook is executed on the current inputs, including
+the finite side-bin aperture data vector, and every forecast number quoted
+in this note is printed by one of its cells. Generated results belong in
 \texttt{chains/fisher\us bacco/}, not among the scientific input files.
 
 \section{Why the joint calculation needs two response functions}
@@ -252,11 +253,13 @@ this implementation names the power input, not a derivation of every
 three-point contribution.
 
 \paragraph{Which fluctuation amplitude enters the emulator.}
-The forecast's $\sigma_8$ is the total linear-density RMS in spheres of
-radius $8\,h^{-1}\mathrm{Mpc}$. BACCO's cold coordinate instead uses the
-cold linear spectrum. CAMB must supply that coordinate at each displaced
-cosmology. Holding the cold coordinate fixed while varying total $\sigma_8$
-would miss part of the feedback response. The current emulator also has
+The forecast samples the primordial amplitude \texttt{As\us 1e9}
+$=10^9A_s$; the derived $\sigma_8$ is the total linear-density RMS in
+spheres of radius $8\,h^{-1}\mathrm{Mpc}$. BACCO's amplitude coordinate
+instead uses the cold linear spectrum. CAMB must supply that cold
+coordinate at each displaced cosmology. Holding the cold coordinate fixed
+while varying the sampled amplitude would miss part of the feedback
+response. The current emulator also has
 no independent coordinate for every cosmological parameter. A changed
 CAMB prediction does not by itself establish that the feedback model's
 cosmology dependence is complete.
@@ -306,8 +309,9 @@ projecting the difference onto the allowed parameter responses.
 
 \section{What the five-parameter forecast means}
 \paragraph{State the restricted parameter space first.}
-The varied coordinates are total $\sigma_8$, $p_M$, $p_\eta$, $A_1$ and
-$A_2$. The remaining cosmological, alignment, source and gas parameters
+The varied coordinates are the sampled amplitude \texttt{As\us 1e9},
+$p_M$, $p_\eta$, and the alignment amplitudes $A_1$ and $A_2$ (sampled
+as \texttt{DES\us A1\us 1} and \texttt{DES\us A2\us 1}). The remaining cosmological, alignment, source and gas parameters
 are fixed. There are no added Gaussian priors on these five coordinates.
 The full five-by-five Fisher inverse marginalizes over the other four
 varied coordinates when one error is read; it remains conditional on all
@@ -334,6 +338,24 @@ posterior interval inside the declared domain. It does not justify
 clipping a Gaussian contour and calling it a new Fisher result. A bounded
 inference calculation must use the same physical continuation and priors.
 
+\paragraph{The executed five-parameter result.}
+Adding the aperture rows tightens every varied coordinate. The marginalized
+joint-to-two-point error ratios printed by the notebook are 0.720 for the
+sampled amplitude, 0.838 for $p_M$, 0.837 for $p_\eta$, 0.844 for $A_1$
+and 0.858 for $A_2$, and the feedback-pair figure of merit rises from 2.24
+to 3.17. Halving every derivative step changes the five marginalized errors
+by at most $4.2\times10^{-5}$ in relative terms (the $p_\eta$ error).
+Replacing the default neutrino prescription by \texttt{cold\us on\us total}
+changes the two figures of merit by at most $2.9\times10^{-6}$ in relative
+terms. Among the continuation
+alternatives, the high-$k$ anchor case moves the most: its mean shifts by
+$\Delta\chi^2=0.043$ for the joint rows, and its feedback-pair figures of
+merit become 2.30 and 3.25. The boundary check finds the $p_M$ local
+one-sigma interval, 13.51 to 14.49, inside the declared box, while the
+$p_\eta$ interval, $-0.98$ to $0.38$, crosses the declared bounds
+$-0.69$ and $0.19$ on both sides: the local Gaussian error is not a
+bounded posterior interval for $p_\eta$.
+
 \paragraph{Checks needed before a scientific conclusion.}
 Compare full derivatives at both step sizes and at refined response
 sampling, with the covariance and physical choices held fixed. Then
@@ -341,9 +363,8 @@ compare the physical continuation alternatives. The mean uses the
 numbered example's TATT choices, while the supplied covariance keeps its
 own simulation assumptions. Quadratic IA currently retains the declared
 gravity-only prescription. These are model assumptions to report, not
-errors that vanish when the interpolation grid becomes denser. The
-refactored notebook has no newly computed results; its eventual output
-must state these conditions alongside any gain attributed to Map3.
+errors that vanish when the interpolation grid becomes denser. Any gain
+attributed to Map3 must be stated alongside these conditions.
 
 \paragraph{Acknowledgements.}
 \textbf{We thank Sunao Sugiyama and Rafael Gomes for their three-point codes

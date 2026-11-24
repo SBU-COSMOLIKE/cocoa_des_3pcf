@@ -71,15 +71,16 @@ maps and pair them with three-point measurements from the same maps. Saving
 the maps allows this new measurement without generating new skies.
 
 \paragraph{What the production run supplies.}
-The ordinary DES Y3 covariance runner saves the Gaussian, super-sample and
-connected non-Gaussian matrices separately. Their sum supplies the fixed
+The ordinary Cocoa DES Y3 project's production covariance calculation
+saves the Gaussian, super-sample and connected non-Gaussian matrices
+separately. Their sum supplies the fixed
 analytical block after selecting the desired shear rows in the declared
 order. Galaxy-density and galaxy--shear rows of its full output are not
 part of this cosmic-shear block. The simulation measurement must use the
 same angular intervals and source-bin pairs. Survey area, source curves,
 noise convention and cosmology must also describe the intended experiment;
 this is input matching, not a test of the assumed accuracy of $A$.
-Until these measurements exist, the first-1000 aperture results remain a
+Until these measurements exist, the earlier aperture diagnostics remain a
 separate demonstration and are not results for a fixed production block.
 
 \paragraph{Remove the part of the three-point fluctuation predicted by $x$.}
@@ -254,9 +255,8 @@ estimation effect along with truncation and sampling error. At the exact
 population inverse, the transformation returns the original covariance.
 
 \paragraph{The first production calculation and the existing-map test.}
-The DES Y3 production calculation completed in 109.97 seconds on four
-threads, excluding its 1.20-second initialization. It saved separate
-$900\times900$ Gaussian, SSC and cNG matrices and their total. For a bounded
+The DES Y3 production calculation saved separate $900\times900$ Gaussian,
+SSC and cNG matrices and their total. For a bounded
 joint test we selected source-bin-four $\xi_+$ in angular bins 12--15 of
 20 logarithmic bins spanning 2.5--250 arcmin. Those four rows are paired
 with the eight cubic aperture moments from the same primary map. This
@@ -264,7 +264,7 @@ with the eight cubic aperture moments from the same primary map. This
 published joint 480-entry vector.
 
 \paragraph{What can already be measured without processing new maps.}
-There are 32 Rafael primary-map labels with the four pair measurements
+There are 32 supplied primary-map labels with the four pair measurements
 already recorded. Joining their labels to the saved cubic moments gives
 32 joint vectors. The exact analytical $A$ is extracted from the production
 total without rescaling. The cubic reference is twice the archived
@@ -402,7 +402,7 @@ in use.
 
 \paragraph{State the starting three-point reference honestly.}
 For this full-dimensional experiment the starting $D$ is the archived
-80-by-80 simulation covariance supplied with Rafael's public measurement.
+80-by-80 simulation covariance supplied with the public measurement release.
 The starting cross block is zero. This reference is fixed before using
 any of the new GPTG measurements:
 \begin{equation}
@@ -419,16 +419,17 @@ Its large residual cannot be attributed to missing terms in the production
 G+SSC+cNG covariance. It was a different, simplified starting matrix.
 
 \paragraph{Comparison, validation and current status.}
-The first 1,000 full vectors enter both the direct covariance and the
-second-, fourth- and sixth-order fixed-block corrections. The next 500
-vectors provide independent validation. MPI measurement processes exit
+The completed full vectors enter both the direct covariance and the
+second-, fourth- and sixth-order fixed-block corrections, with a disjoint
+later set reserved for independent validation. MPI measurement processes exit
 before the matrix analysis runs, keeping the computation within the stated
 CPU allocation. The validation uses the quadratic-minus-log-determinant
 score and never treats a validation inverse as truth. We also report the
 simple sample covariance with only $A$ replaced by its exact analytical
 value; this separates the benefit of knowing $A$ from the benefit of the
 precision expansion. Non-positive candidates remain reported failures.
-At this revision, the full measurement is running; there is no completed
+Measurement is currently paused: 1,878 complete vectors exist, audited in
+the companion map-generation note, and there is no completed
 480-dimensional scientific comparison. A 96-pixel MPI smoke test produced
 all 480 outputs, and a separate 480-dimensional algebra check passed at all
 three orders. Neither is a substitute for the full-map result.

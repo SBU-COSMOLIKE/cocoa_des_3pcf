@@ -47,8 +47,9 @@ there is no separate forecast driver. Open it from this directory or the
 DES project directory in an activated Cocoa environment. Its first cell
 finds the project and changes to the Cocoa directory so the YAML paths
 retain their usual meaning. Read the markdown before running the costly
-prediction and derivative cells. New physical forecasts have not been run
-following this refactor: empty notebook outputs are intentional.
+prediction and derivative cells. The committed notebook is executed on the
+current inputs, and every forecast number quoted in this note is printed
+by one of its cells.
 
 \section{The observables and the alignment parameters}
 \paragraph{A data vector is a list of measured numbers.}
@@ -59,8 +60,13 @@ mass first averages a shear field with a compensated angular filter; its
 third moment then measures a non-Gaussian property of that filtered field.
 The aperture radius is not the same quantity as a cut on triangle sides.
 The present numbered examples supply 400 two-point entries and 80 aperture
-entries. They retain the supplied cross-covariance, and their exact
-finite-triangle estimator agreement is still unvalidated.
+entries, and they retain the supplied cross-covariance. The likelihood now
+integrates its aperture means over the measured finite side bins: twenty
+logarithmic bins from 0.5 to 80 arcminutes, cut to the nine whose lower
+edge is at least 8 arcminutes, with first retained edge 8.151 arcminutes.
+What remains open is narrower: the producer's exact bin-survival rule, the
+63 opening-angle bin endpoints, and a covariance computed for the same
+finite bins (see \nolinkurl{tests/studies/estimator_conventions.md}).
 
 \paragraph{What NLA and TATT vary.}
 The nonlinear alignment model, NLA, gives the linear tidal response an
@@ -257,9 +263,10 @@ The marginalized error of parameter $\alpha$ is $\sqrt{P_{\alpha\alpha}}$.
 The quantity $1/\sqrt{F_{\alpha\alpha}}$ instead fixes every other
 parameter. To hold only $w_0,w_a$ fixed, remove their rows and columns from
 $F$ before inversion. Deleting them from $P$ would preserve their
-marginalization. The notebook reports an unresolved full case but still
-checks the fixed-dark-energy experiment; an unconstrained retained
-parameter is not silently removed and no pseudoinverse error is reported.
+marginalization. In the executed notebook both the full and the fixed-dark-energy
+experiments resolve; an unconstrained retained parameter would be reported
+rather than silently removed, and no pseudoinverse replaces a failed
+inverse.
 
 \paragraph{Differentiate the derived amplitude explicitly.}
 The commonly used amplitude combination is
@@ -318,15 +325,34 @@ simulation covariance and their declared source preparation. These Fisher
 experiments neither reproduce a finite-simulation posterior correction nor
 automatically reproduce the paper's compression and scale selection.
 Changing the data mask requires selecting the covariance and row metadata
-in the same order. No forecast number is supplied here until the companion
-notebook has been run and its convergence comparisons inspected.
+in the same order.
+
+\paragraph{The executed forecasts.}
+For the finite comparison of Section 2, the opposing NLA means differ by
+$\Delta\chi^2=15.06$ jointly, splitting into 7.83 from the two-point rows
+and 7.24 from the conditional three-point residual; the opposing TATT
+means give 7.48, splitting into 5.12 and 2.36. Halving every derivative
+step changes the NLA derivative columns by at most 0.074\%. The signed
+response cosines between the alignment-amplitude and sampled-amplitude
+columns are $-0.75$ (two-point) and $-0.80$ (joint) for NLA, and 0.74 and
+0.80 for TATT. Adding the aperture rows tightens the alignment coordinates: the
+joint-to-two-point marginalized error ratios are 0.90 for $A_1$ and 0.61
+for $\eta_1$ in NLA, and 0.88, 0.54, 0.64, 0.83 and 0.81 for
+$A_1,\eta_1,A_2,\eta_2,b_{\rm TA}$ in TATT. With free dark energy, $\sigma(S_8)$ improves from
+0.115 to 0.060 (NLA) and from 0.128 to 0.081 (TATT), and the
+$(\Omega_m,S_8)$ figure of merit from 150 to 458 and from 100 to 340.
+With $w_0,w_a$ fixed, the figures of merit become 915 to 1914 (NLA) and
+636 to 1805 (TATT). These are local Fisher statements under this note's
+fixed covariance and parameter spaces, not reproductions of either
+paper's posterior.
 
 \paragraph{Acknowledgements.}
 \textbf{We thank Sunao Sugiyama and Rafael Gomes for their codes and scientific
-work, which made these comparisons possible.} The source projects are
+work, which made these comparisons possible.} The upstream code references are
 \href{https://github.com/git-sunao/fastnc}{fastnc},
 \href{https://github.com/rchgomes/3pcf_integrator}{3pcf\us integrator} and
-\href{https://github.com/rchgomes/desy6-3pcf}{desy6-3pcf}.
+\href{https://github.com/rchgomes/desy6-3pcf}{desy6-3pcf}; this project
+compares with saved fixtures from those codes and does not run them.
 CosmoLike supplies the projection and Fisher machinery; the companion
 notebook follows Cocoa's ordinary Cobaya likelihood path.
 

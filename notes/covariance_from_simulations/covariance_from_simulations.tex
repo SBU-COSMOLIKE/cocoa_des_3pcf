@@ -21,7 +21,7 @@
 \begin{center}
 {\LARGE Learning a covariance from simulations\par}
 \vspace{0.5em}
-{\large The Friedrich--Eifler precision expansion and Rafael's DES shear maps\par}
+{\large The Friedrich--Eifler precision expansion and the downloaded DES shear maps\par}
 \vspace{0.5em}
 22 November 2026
 \end{center}
@@ -44,7 +44,7 @@ Simulated surveys contain some of these effects, but estimating a large
 matrix from a finite set is noisy. Friedrich and Eifler~\cite{pme} proposed
 expanding the \emph{inverse covariance} around an analytic model and learning
 the correction from simulations. This note derives that idea before asking
-how Rafael Gomes's downloaded shear maps could supply the measurements.
+how the downloaded DES shear maps could supply the measurements.
 Improvement means more reliable uncertainties; it need not mean smaller ones.
 
 \paragraph{A route through the mathematics.}
@@ -78,7 +78,7 @@ transformations are unfamiliar. Then follow four worked calculations:
  observable adds no, modest or substantial parameter information.
 \end{enumerate}
 After these calculations, read the repeated-noise derivation in Section 7.
-It explains which quantities Rafael's files could estimate and why several
+It explains which quantities the downloaded files could estimate and why several
 files from one sky cannot simply be counted as several independent skies.
 The later physical and validation sections then explain what must match
 before a precision correction is useful for a DES forecast.
@@ -260,7 +260,7 @@ as Map3, not as a third independent shear component.
 Let $\boldsymbol d$ be a column of $p$ measured numbers. Its entries include
 $\xi_+$ and $\xi_-$, the two usual shear correlation functions, and Map3,
 with their specified angular bins and source-redshift combinations. In
-Rafael's methods setup, 400 two-point entries and 80 aperture entries give
+the methods-paper setup, 400 two-point entries and 80 aperture entries give
 480 entries before further selections~\cite{gomes}. This count describes that
 setup, not an obligation to use every row here. Changing a scale cut changes
 the vector and therefore changes the covariance we must estimate.
@@ -463,14 +463,16 @@ measurement is a nonlinear operation and changes the random variables.
 
 \section{What is in the downloaded folder}
 \paragraph{Confirmed information.}
-Rafael's message identifies the files as CosmoGrid shear maps at HEALPix
+The producer identifies the files as CosmoGrid shear maps at HEALPix
 resolution $N_{\rm side}=512$. They contain only pixels where the DES
 footprint is nonzero; the accompanying \texttt{indices\_512.npy} lists these sky
 pixels. Two files, with labels \texttt{run\_0000}, \texttt{ncut0} and
 \texttt{nreal0} or \texttt{nreal1}, have shape $(4,2,369190)$ and double
 precision entries. Each file contains 23,628,288 bytes including its header.
-The first 4,096 pixels in each slot were finite. This small check establishes
-neither completeness of the download nor its scientific calibration.
+The first 4,096 pixels in each slot were finite. The settled inventory of the
+full download is recorded in the map guide, \nolinkurl{MAPS_README.md},
+beside this note. This small check establishes neither completeness of the
+download nor its scientific calibration.
 
 \paragraph{Array positions are not sky coordinates.}
 The likely first two axes are four source-redshift bins and two shear
@@ -487,15 +489,17 @@ HEALPix divides the sphere into $12N_{\rm side}^2$ equal-area pixels. For 512
 this is 3,145,728 pixels. There are two index orderings, RING and NESTED,
 with the same valid integer range but different coordinate assignments.
 The array format does not identify the ordering or coordinate frame.
-A producer declaration would establish these directly; an independent
-footprint comparison supplies geometric evidence. The viewing notebook uses \texttt{astropy\_healpix.HEALPix} to compare these choices. The supplied \texttt{indices\_512.npy} has 369,190 unique integer entries,
+The producer has confirmed RING ordering (23 November 2026); the independent
+footprint comparison below supplies geometric evidence of the same
+conclusion. The viewing notebook uses \texttt{astropy\_healpix.HEALPix} to compare these choices. The supplied \texttt{indices\_512.npy} has 369,190 unique integer entries,
 matching the map axis. Comparing both orderings recovers the recognizable
 DES footprint only for RING. Its longitude spans $-61.17$ to $99.40$ degrees
 when wrapped at 180 degrees, and its latitude spans $-67.84$ to $5.45$ degrees.
 NESTED instead produces disconnected patterns across all longitudes.
-We use RING and equatorial coordinates for the previews on this geometric
-evidence, consistent with the footprint in the DES Y3 shape-catalog
-paper~\cite{gatti}. This does not determine the shear-component signs or basis.
+We use RING and equatorial coordinates for the previews, producer-confirmed
+and consistent with this geometric evidence and with the footprint in the
+DES Y3 shape-catalog paper~\cite{gatti}. This does not determine the
+shear-component signs or basis.
 
 \paragraph{A preview is not a measurement.}
 The viewing notebook samples at most 30,000 retained positions from each of
@@ -2339,7 +2343,7 @@ Gaussian/lognormal experiments. The symbolic derivation script is beside
 this note. Its fourth-order identity concerns independent Gaussian samples;
 the alternative concerns independent measurement vectors. Neither proves
 that 15,997 map files constitute 15,997 independent realizations. The
-all-file numerical comparison for Rafael remains a comparison under its
+all-file numerical comparison in the companion note remains a comparison under its
 explicitly stated count and reference conventions, not a claim that the
 archive satisfies the assumptions of these theorems.
 
@@ -2582,13 +2586,16 @@ automatic improvement over a lower-order estimate at fixed sample size.
 \section{Repeated noise is useful, but it is not a new sky}
 \paragraph{Three labels need three meanings.}
 The filenames contain \texttt{run}, \texttt{ncut} and \texttt{nreal}.
-They suggest parent sky, footprint cut and noise realization; Rafael's
-message confirms the pixel selection, not this interpretation. His methods
-paper describes 199 parent skies and four DES footprints per sky, giving
-796 mocks~\cite{gomes}. That description alone does not identify every
-relationship in this new archive. Obtain its parent IDs and noise-generation
-conventions before assigning a statistical degree of freedom. Keep all
-children of one parent together when splitting training and validation.
+The producer has confirmed their meanings: \texttt{run} names a parent
+sky, \texttt{ncut} one of four DES footprint cutouts of that sky, and
+\texttt{nreal} a repeated noise realization on the same sky and cutout.
+The methods paper describes 199 parent skies and four DES footprints per
+sky, giving 796 mocks~\cite{gomes}, built from realization zero only;
+the cutouts were counted as independent survey realizations, and this
+project follows that counting. The local download has one extra parent
+label whose mapping onto the published selection is still needed. Keep
+all children of one parent together when splitting training and
+validation.
 
 \subsection{Two sources of randomness, two different averages}
 \paragraph{Label a parent sky and its noise draws separately.}
@@ -2836,7 +2843,7 @@ sky variance instead:
  4.45-\frac9{20}=4.
 \end{equation}
 These numbers illustrate the two different targets. They are not a
-measurement of the noise and cosmic-variance split in Rafael's maps.
+measurement of the noise and cosmic-variance split in the downloaded maps.
 
 \paragraph{Why the twenty files do not become twenty independent skies.}
 Two different noise draws on one parent share the same $u_s$. Their
@@ -2958,11 +2965,14 @@ Interchanging the two operations would invalidate its interpretation.
 \paragraph{Footprint cuts require another check.}
 Different cuts from one parent can share large-scale structure even without
 pixel overlap. Averaging them changes the effective observed footprint.
-A conservative first reference set uses one preselected cut and one
-preselected noise draw per independent parent. Using more of the files
-requires checking their correlations or deriving an estimator that accounts
-for those correlations. Parent-level resampling is useful for an uncertainty
-study, but does not turn the children of one parent into independent skies.
+Under the released covariance's construction, the four cutouts of a parent
+count as independent survey realizations, while repeated noise draws of
+one cutout do not. A conservative first reference set may still use one
+preselected cut and one preselected noise draw per independent parent;
+that stated pilot convention discards information and is not the
+project's counting rule. Parent-level resampling is useful for an
+uncertainty study, but does not turn repeated noise draws into
+independent skies.
 
 \section{The measurement must match before the covariance can match}
 \paragraph{Pixel size is a physical smoothing scale.}
@@ -2993,7 +3003,9 @@ by itself validate all these contributions or the covariance's cosmology
 dependence. Confirm which ingredients are simulated, which are modeled
 analytically and which are neglected. The current full-filter gravitational
 covariance implementation is not already a matched finite-triangle TATT
-covariance for this download. Correcting a matrix cannot repair a wrong
+covariance for this download; the project therefore refuses the compiled
+Map3 and joint covariance outright and computes only the two-point block.
+Correcting a matrix cannot repair a wrong
 mean model or supply a physical effect absent from both model and simulations.
 
 
@@ -3056,7 +3068,11 @@ particular, the halo-abundance response is not a complete super-sample
 calculation. The present physical model is gravitational lensing with
 its declared noise model; it does not include all nonlinear intrinsic-
 alignment covariance contributions. The project covariance README and
-core covariance guide describe those choices. PME must be validated against
+core covariance guide describe those choices. Because the compiled
+three-point kernels keep the all-triangle full-filter convention while the
+likelihood mean uses the measured finite side bins, the project's
+covariance driver refuses Map3 and joint rows and produces only the
+two-point block. PME must be validated against
 a model with matching assumptions, not used to silently rename it as an
 exact survey covariance.
 
@@ -3453,9 +3469,11 @@ For the primary precision test, each run supplies only cut zero and
 realization zero. Assigning run IDs modulo three gives sixteen parents for
 reference calibration, sixteen for correction estimation, and sixteen for
 validation. This rule was fixed before the precision comparison. All
-additional descendants retain their parent's group. The interpretation
-requires the run labels to identify independent parent skies; that metadata
-has not been established merely by reading filenames.
+additional descendants retain their parent's group. The run labels are
+producer-confirmed parent skies. Under the released-covariance counting,
+each (run, cut) cutout is itself an independent realization, so
+restricting to cut zero and realization zero is a stated conservative
+convention of this pilot, not the project's counting rule.
 
 \paragraph{Explain what is analytic in this pilot.}
 The Gaussian reference uses the covariance of aperture values, denoted
@@ -3493,7 +3511,9 @@ CosmoLike covariance, including required connected and survey-scale terms,
 with its calibration budget counted separately.
 
 \paragraph{The small pilot does not validate a precision correction.}
-After mean subtraction, sixteen correction vectors give rank at most
+This 48-file pilot is superseded: the completed pass uses all 200 primary
+run labels and is summarized in the map notebook and the companion
+comparison note. After mean subtraction, sixteen correction vectors give rank at most
 fifteen for the sixteen-row covariance. This rank deficiency does not stop
 PME, which inverts only its model. However, the estimated first-order
 precision has minimum dimensionless eigenvalue approximately $-1.2291$.
@@ -3503,29 +3523,26 @@ All three are unsuitable for Gaussian likelihood weighting. They are
 reported unchanged; no negative eigenvalue is removed.
 
 \paragraph{A near-correct average cannot rescue wrong directions.}
-For the Gaussian reference, the untouched validation covariance gives
-\begin{equation}
- \frac{\operatorname{tr}(\Psi_{\rm model}\widehat C_{\rm val})}{16}
- \simeq 1.0449.
-\end{equation}
-That single average is close to one. Nevertheless, covariance directions
+For the Gaussian reference, the untouched validation covariance gives a
+per-row trace close to one. Nevertheless, covariance directions
 and their estimated corrections can be wrong, as the negative precision
 eigenvalues show. Sixteen validation parents also give a noisy test of
 sixteen directions. The notebook reports a leave-one-parent-out uncertainty
 on this trace and keeps it distinct from model-calibration uncertainty.
 A larger file count must not be substituted for more independent parents.
 
-\paragraph{Repeated files reveal a metadata question.}
+\paragraph{Repeated files record noise redraws, not new skies.}
 With four repeated draws per parent, the ratio of within-parent variance
 to restored single-survey variance ranges approximately from 0.85 to 1.10
 across these rows. Ratios slightly above one are possible in finite samples;
 the estimated sky component is a difference of covariances and need not
 be positive. A bounded raw-pixel comparison also finds weak correlations
-between different realization labels. These observations motivate checking
-whether the files contain signal plus noise, noise only, or a different
-randomization across realization labels. They do not establish which of
-those possibilities is correct. This uncertainty prevents a physical
-interpretation of the component split at present.
+between different realization labels. The producer has since confirmed
+that realization labels are repeated noise draws on the same sky and
+cutout. The weak cross-draw signal is therefore a measurement diagnostic
+to understand under that confirmed provenance --- for example through the
+noise model's correlations --- not an open identification of what the
+files contain.
 
 \paragraph{What the first pass teaches us to do next.}
 The map stream and correction algebra work, but the first small experiment
@@ -3593,12 +3610,13 @@ covariances would silently choose a different two-point uncertainty, even
 before losing the cross block. Our comparison uses the joint file throughout.
 The FITS header of that file records \texttt{NSIM=500}; the selected paired
 upstream configuration records \texttt{covariance\_realizations=796}.
-We retain both facts and leave the downloaded files unchanged. The number
-that enters a finite-simulation likelihood needs its production history;
-a plausible filename is not enough to resolve the discrepancy.
+We leave the downloaded files unchanged. The header is a
+producer-confirmed typo from an older file version: the released
+covariance used 796 mocks, and 796 is the number to record for a
+finite-simulation likelihood.
 
 \paragraph{A common simulation family is useful without being independent.}
-If Rafael's downloaded maps supplied that released covariance, matching
+If the downloaded maps supplied that released covariance, matching
 measurements would let us check row ordering, normalization, noise treatment
 and the effects of resolution. Agreement would then be a consistency test
 between two processing routes. It would not be independent evidence that a
@@ -3850,7 +3868,7 @@ measurement. A pair of independent skies has zero ensemble correlation if
 their mean shear is zero. Comparing these three measurements therefore tests
 the proposed shared-sky interpretation without relying on raw pixel variance.
 
-\paragraph{The completed cross test changes our working interpretation.}
+\paragraph{The completed cross test, read against the confirmed provenance.}
 Eight same-run pairs compare realization zero with realization one. At the
 first selected angular bin, their cross-correlation is approximately
 \begin{equation}
@@ -3863,11 +3881,13 @@ The auto-correlation of those same primary maps is
 These are standard errors across eight run groups. The other angular bins show the same separation.
 Cross-correlating two copies of one map recovers its auto-correlation,
 and a different-map cross test agrees with direct pair counting on the
-2,048-pixel subset. Under independent, uncorrelated pixel noise, the measured
-files therefore challenge the fixed, aligned sky interpretation of
-\texttt{nreal}. They do not identify what is actually randomized. In
-particular, the within-run variation measured earlier cannot yet be named
-a shape-noise covariance.
+2,048-pixel subset. The producer has since confirmed repeated noise draws
+on fixed skies. Under independent, uncorrelated pixel noise this measured
+absence of a same-run cross signal is therefore a diagnostic to understand
+within that confirmed provenance --- for example through the noise
+model's correlations --- not an open identification of what is
+randomized. The within-run variation measured earlier still cannot be
+named a shape-noise covariance without that understanding.
 
 \paragraph{A separate note records this comparison for discussion.}
 The companion \href{../covariance_comparison/covariance_comparison.pdf}
@@ -3883,7 +3903,7 @@ an explicit switch repeats the bounded measurements with the local maps.
 \paragraph{A separate note builds and tests the maps.}
 The companion \href{../gptg_simulations/gptg_simulations.pdf}{map-generation
 note} explains the point-transformed Gaussian method of Zhong et al., our
-initial calibration to Rafael's maps, added pixel noise and the aperture
+initial calibration to the downloaded maps, added pixel noise and the aperture
 measurements. Its notebook and scripts save the maps and reproduce the
 bounded comparisons. The pilot contains 64 generated maps. Its covariance
 is not yet validated against the N-body ensemble; its value here is to
@@ -3917,7 +3937,7 @@ so those two questions cannot be confused.
 \input{fixed_two_point_block}
 
 \clearpage
-\section{Can Kunhao maps improve a second correction using Rafael's maps?}
+\section{Can Kunhao maps improve a second correction using the supplied maps?}
 \label{sec:two-stage-pme}
 
 \paragraph{The proposal, stated as a statistical question.}
@@ -4369,7 +4389,8 @@ Combining the last two terms and dividing by matrix dimension yields
 \end{equation}
 For $p=400$, $q=80$ and $N=200$, an ordinary sample covariance has
 $\nu=199$ and this RMS is $0.859$. The disjoint-pair estimator has
-$m=100$ independent outer products and gives $1.212$ instead. These
+$m=100$ independent outer products; substituting $m$ for $\nu$ in the
+same expression gives $1.212$ instead. These
 numbers describe a raw first-order full-matrix norm, before fixed-block
 reconstruction; they are \emph{not} errors on cosmological parameters.
 They demonstrate why reference closeness alone cannot suppress the noise
@@ -4409,17 +4430,20 @@ statistical specification rather than a new numerical clipping rule.
 
 \paragraph{The audited local files.}
 The current point-transformation parameters and noise amplitudes inherit a
-fit to Rafael runs 0000--0031, cut 0, realization 0, recorded in
+fit to supplied runs 0000--0031, cut 0, realization 0, recorded in
 \nolinkurl{tests/gptg_pilot/calibration.yaml}. The current physical calibration
 in \nolinkurl{chains/gptg_physical_l4096/calibration.yaml} inherits those
 parameters; that generated package is not a new independent calibration. Supplying a new
 theory power spectrum through multipole 4096 does not remove this
 dependence. The local directory contains 200 run labels and 15997 files;
 the methods paper~\cite{gomes} describes 199 parent skies and 796 footprints. The
-mapping of those inventories needs the producer's record. Multiple cuts
-or noise draws of one parent are not additional independent gravitational
-universes. A count of files must not become a covariance degrees-of-freedom
-count.
+run labels are producer-confirmed parent skies; what still needs the
+producer's record is the mapping of the one extra local parent label onto
+the published 199-parent selection. For this calibration-overlap argument,
+multiple cuts or noise draws of one parent are not additional independent
+gravitational universes, even though the released covariance counts the
+four cutouts as independent survey realizations. A count of files must not
+become a covariance degrees-of-freedom count.
 
 \paragraph{A fitted scalar reference exposes the error.}
 Suppose the true variance is one, and we fit the cheap model variance to
@@ -4443,7 +4467,9 @@ fit the reference and to correct it.
 
 \paragraph{A simple initial design does not require three expensive groups.}
 Freeze the current calibration and use the remaining parent labels for
-correction, after parent identity is confirmed. With the local inventory
+correction; the labels are producer-confirmed parents, with only the extra
+label's mapping and the paper's exact parent selection still to be
+obtained. With the local inventory
 this leaves 168 labels outside the original fit. All eligible correction
 parents can enter one ensemble; no separate calibration/correction/validation
 thirds are required. The abundant synthetic ensemble supports method
@@ -4533,8 +4559,9 @@ It uses a weight fixed in advance, not an optimized or universal weight.
 The known-$A$ control helps the Gaussian PME2 case modestly but worsens
 the skewed RMS after nonlinear reconstruction. A smaller number of failed
 positive-definiteness checks is not evidence of smaller total error.
-The notebook also reports medians and 95th percentiles: for the skewed
-known-$A$ control these are 0.4222 and 0.5068, despite its RMS of 0.8199.
+The notebook also reports distribution summaries: for the skewed
+known-$A$ control the printed 95th percentile is 0.5068, despite its RMS
+of 0.8199.
 Rare near-singular reconstructions dominate that RMS. With only 128
 repetitions these are illustrative measurements, not precise population
 rankings of the tails.
@@ -4554,10 +4581,15 @@ explains why that larger test can be harder even with perfect $A$.
 
 \subsection{What the existing maps can and cannot establish}
 
-\paragraph{The current real-map measurements do not yet match the target.}
-The downloaded Rafael ensemble has coarse sixteen-entry aperture-moment
-diagnostics and a small four-bin pair comparison, not a completed matching
-480-entry measurement ensemble. The saved full-vector checkpoints belong
+\paragraph{The current real-map measurements and the downloaded vectors.}
+The downloaded simulation products now include, besides the coarse
+sixteen-entry aperture-moment diagnostics and the small four-bin pair
+comparison, a matching measurement ensemble: 400 measured joint vectors in
+the released 480-row order (200 $\xi_+$, 200 $\xi_-$ and 80 Map3
+entries), the four cutouts of each of 100 CosmoGrid skies measured with
+the paper estimator at NSIDE 1024, pinned by the committed manifest and
+described in the map guide. They are 400 of the released covariance's 796
+mocks. The saved full-vector checkpoints belong
 to the old GPTG experiment. Their mixed-source cubic rows have the
 documented coincident-pixel issue; the validated auto-source subset avoids
 that issue. The low-resolution empty small-angle pair bins are another
@@ -4568,16 +4600,18 @@ For the audited large-scale subset of 140 pair entries and four auto-source
 three-point entries, the 1878 completed GPTG maps give same-data precision
 discrepancies of approximately 12.02 percent for the Gaussian starting
 reference and 8.34, 8.15 and 8.51 percent for second, fourth and sixth
-orders. This is agreement with a noisy, fixed-$A$ direct comparison using
+orders, recorded as 0.1202130, 0.0833501, 0.0814551 and 0.0851231 in
+\nolinkurl{tests/gptg_pilot/physical_calibration_validation.txt}. This is agreement with a noisy, fixed-$A$ direct comparison using
 the same maps, not error against known population truth. It demonstrates
 some improvement on that subset, no sixth-order advantage, and no
-sub-percent certification. It is not a second correction using Rafael's
-maps. The separate GPTG note records the estimator and scale selections.
+sub-percent certification. It is not a second correction using the
+supplied N-body maps. The separate GPTG note records the estimator and
+scale selections.
 
 \paragraph{Match the physics and the measurement before comparing models.}
 Both ensembles must describe the same source distributions, angular bins,
 triangle cuts, source triples, shear conventions, weights, noise,
-footprint and pixel response. The local Rafael maps are NSIDE512; the
+footprint and pixel response. The local downloaded maps are NSIDE512; the
 published construction~\cite{gomes} uses NSIDE1024 catalog-position noise and pixel
 averaging, while the proposed GPTG production is NSIDE2048 with a specified
 band limit and pixel-noise prescription. The present local maps cannot
@@ -4598,8 +4632,9 @@ restricting covariance corrections need not compress the data. Record
 conditional eigenmodes, positivity failures, likelihood quadratic forms,
 Fisher errors and interval coverage. Then repeat the full calibration and
 correction with intentional training overlap. Only after those tests
-should matching Rafael measurements decide which residual structure can
-be learned reliably from the available independent parents.
+should the matching downloaded measurements --- the 400-vector
+paper-estimator ensemble now in hand --- decide which residual structure
+can be learned reliably from the available independent parents.
 
 \paragraph{The decision supported by this study.}
 Use the Kunhao ensemble to build and test a useful covariance reference.
