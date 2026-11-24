@@ -2716,14 +2716,16 @@ GomesData}) were measured from the DES Y3 shape catalogue:
     values (the notebook does this arithmetic in its Section~6).
   \item The side bins are $20$ logarithmic bins from $0.5$ to $80$
     arcmin.  The result was converted from the multipole form to the
-    SAS form of Section~\ref{sec:natural}.
+    SAS form of Section~\ref{sec:natural} with opening-angle bins of
+    width $0.05$ radians, which slices $(0, \pi)$ into $63$ bins
+    (Section~\ref{sec:conventions}).
   \item The scale cut keeps the $9$ side bins whose lower edge is at
     least $8$ arcmin.
   \item The aperture moments use the four equal radii of
     Eq.~\eqref{eq:radii} and all $20$ source-bin triplets
     (Eq.~\eqref{eq:twenty}): $80$ rows.
-  \item The statistic is measured from the catalogue directly, so
-    the likelihood applies no pixel window.
+  \item The statistic is measured from the catalogue directly, so no
+    pixel window is involved (Section~\ref{sec:conventions}).
 \end{itemize}
 
 \paragraph{Why a multipole estimator.}
@@ -2751,24 +2753,6 @@ pieces, $\Delta\ln d = \ln(160)/20 \approx 0.2538$, and each edge is
 $e^{0.2538} \approx 1.289$ times the previous one, so each bin is
 about $29$ percent wider than the one before.  The notebook
 computes the same number from the likelihood keys (its Section~5).
-
-\paragraph{Summary of Sections~\ref{sec:finite}
-and~\ref{sec:likelihood}.}
-\begin{itemize}
-  \item The finite-SAS sum and the full-filter integral are
-    different estimators; the kernel-weight coverage of the measured
-    side range falls from $78$ percent at $R = 7$ arcmin to about
-    $1$ percent at $R = 40$ arcmin, where the kernel peaks beyond
-    the $80$ arcmin edge.
-  \item Because the compiled analytic covariance describes the
-    full-filter estimator, the project refuses analytic Map3
-    covariance rows and reads a simulation covariance built from
-    the same finite-SAS estimator.
-  \item The likelihood's transform plan reproduces the
-    measurement's bins, cut and angle grid from five yaml keys, and
-    its multipole caps are numerical knobs with three measurement
-    conventions still tracked as open.
-\end{itemize}
 
 \subsection{What the likelihood computes}
 \label{sec:likelihoodcalc}
@@ -2807,16 +2791,155 @@ the $80$ Map3 rows; the notebook wrappers expose the same numbers as
 names of Table~\ref{tab:fid} (\texttt{As\us 1e9},
 \texttt{omegam}, \texttt{DES\us A1\us 1}, \ldots).
 
-\paragraph{What is still open.}
-Three measurement conventions are open questions: the number of
-opening-angle bins used in the conversion from multipoles to SAS is
-not specified in the released files; the representative side length
-assigned to each logarithmic bin is not specified either; and the
-theory's multipole truncation (the likelihood's
-\texttt{map\us mmax: 20} against the measurement's $201$ multipole
-values) has no recorded convergence target.  The project README's
-estimator FAQ and
-\texttt{tests/studies/estimator\us conventions.md} track them.
+\subsection{Reproducing the measurement, convention by convention}
+\label{sec:conventions}
+
+A likelihood reproduces a measurement only if it adopts every
+convention of the estimator, not just its physics.  Five such
+conventions matter for the Map3 rows, plus one about the covariance.
+This subsection states each in plain words, says why it changes the
+prediction, and records what the measurement did and what the
+likelihood does.
+
+Every likelihood statement below is read from
+\texttt{likelihood/joint\us shear.yaml},
+\texttt{likelihood/\us cosmolike\us prototype\us base.py} or the
+core transform interface, and every number is printed by the
+companion notebook (its Section~6).
+
+\paragraph{The route and its bins.}
+The measurement accumulated the correlations in $201$ angular
+harmonics (TreeCorr 5.1.1 LogMultipole, cutoff $n = 100$) on the
+$20$ logarithmic side bins, then resummed the harmonics into
+opening-angle bins of width $0.05$ radians -- the estimator's
+\texttt{toSAS} conversion, the finite harmonic sum of
+Eq.~\eqref{eq:msum} carried out on measured coefficients.  Slicing
+$(0, \pi)$ into cells of that width needs
+$\lceil \pi/0.05 \rceil = 63$ bins, and the scale cut keeps the
+$9$ side bins at or above $8$ arcmin.
+
+The likelihood mirrors all three numbers: \texttt{phi\us bins: 63}
+with the transform nodes at the cell centres of $(0, \pi)$, and the
+same $9$ kept bins (Section~\ref{sec:likelihoodcalc}).  Bins are
+part of the statistic's definition: a prediction on different cells
+would be a different binned estimator, not a better version of the
+same one.
+
+\paragraph{The side length inside a bin.}
+A logarithmic bin collects triangles whose sides span the whole
+interval from one edge to the next, but the kernels and the measure
+of Eq.~\eqref{eq:measure} are evaluated at \emph{one}
+representative side per bin.  The measurement's released pipeline
+multiplies each lower edge by an empirically tuned factor; the
+likelihood's transform plan defaults to the geometric centre of the
+bin (the \texttt{geometric} rule of the core transform interface).
+Example~10.2 shows that the two agree to seven digits -- and how
+much a third natural choice would differ.
+
+\paragraph{Example 10.2 (the representative side).}
+For $\Delta\ln d = 0.2538$, the geometric centre sits at the
+factor
+\begin{equation}
+  f_{\rm geo} \;=\; e^{\Delta\ln d\,/2} \;=\; 1.1353
+  \label{eq:fgeo}
+\end{equation}
+on the lower edge, while averaging the side over the bin with the
+pair-count measure $\theta\,d\theta$ gives the area-weighted mean
+\begin{equation}
+  f_{\rm area}
+  \;=\; \frac{2}{3}\,
+  \frac{e^{3\Delta\ln d} - 1}{e^{2\Delta\ln d} - 1}
+  \;=\; 1.1505 ,
+  \label{eq:farea}
+\end{equation}
+$1.3$ percent larger (all three numbers printed by the notebook,
+its Section~6).  The released pipeline's factor is
+$f_{\rm area} - 0.015226$, which lands within $2\times 10^{-7}$
+of $f_{\rm geo}$: the empirical correction brings the
+area-weighted mean back to the geometric centre.  The choice
+matters because the factor rescales \emph{every} side coherently
+-- the kernels and the $s^2|t|^2$ measure all shift together, much
+as if every aperture radius moved by the same fraction.
+
+\paragraph{Both side orderings.}
+The SAS bin $(d_2, d_3, \phi)$ and its swap $(d_3, d_2, \phi)$
+are different binned configurations: exchanging which side is
+called first permutes the triangle's vertices, which permutes the
+natural components and, for unequal radii, the kernel's radius
+assignments.  The measurement's aperture integral therefore sums
+both orderings ($r_1 \le r_2$ and $r_1 \ge r_2$ in the
+estimator's bookkeeping), and the likelihood does the same by
+construction: its grid holds every ordered side pair,
+$9 \times 9 \times 63 = 5103$ triangles per source triplet
+(notebook Section~6).
+
+\paragraph{The pixel window.}
+A map-based measurement reads the shear from pixels, and a pixel
+averages the field over its own area, suppressing structure near
+the pixel scale; in Fourier space that is one multiplicative window
+per Fourier leg.  Only the map-based simulation measurements of
+this project involve such a window.  The DES Y3 data statistic is
+built from the galaxy catalogue directly -- no pixels, no window --
+and the likelihood accordingly applies none (the core supports an
+optional pixel window precisely for the simulation studies).
+
+\paragraph{The multipole truncation.}
+The measurement's own theory pipeline kept harmonics up to
+$n = 100$, with $n = 50$ giving much the same; the likelihood uses
+\texttt{map\us mmax: 20}.  The companion notebook settles the
+difference by evaluating the Map3 rows at the fiducial point with
+caps $20$, $50$ and $100$ (its Section~6): the largest relative
+change of any row between $20$ and $100$ is $2.1\times 10^{-10}$,
+worth $6\times 10^{-18}$ units of $\chi^2$ with the joint
+covariance, and between $50$ and $100$ it is
+$1.4\times 10^{-14}$.  The smooth E-mode prediction converges at
+far fewer harmonics than the noisy estimator needs to carry.
+
+\paragraph{The covariance's simulation count.}
+All released covariances -- the joint $\xi_\pm$/Map3 matrix and
+the Map3-only matrix, a block of it -- average $796$ simulated
+measurements: the four DES-footprint cutouts of each of $199$
+full-sky simulations, $4 \times 199 = 796$ (notebook Section~6).
+The \texttt{NSIM} headers of the released files ($500$ in the
+joint and observed files, $400$ in the simulated Map3 file) are
+recording typos; the project's \texttt{data/README.md} documents
+$796$ as the count to use.
+
+The distinction behind that count matters for any simulation
+covariance.  A covariance estimate improves only with
+\emph{independent} realizations: its noise falls as the inverse
+square root of their number, and the standard debiasing of its
+inverse depends on that number explicitly.  Four cutouts of one
+full-sky simulation see different patches of sky, so they count;
+repeated noise realizations of \emph{one} cutout share the
+underlying signal, resample only the shape noise, and must not be
+counted as new simulations.
+
+The archived measurement configuration and the full comparison
+against the released pipeline are documented in the project's
+estimator guide and
+\texttt{tests/studies/estimator\us conventions.md}.
+
+\paragraph{Summary of Sections~\ref{sec:finite}
+and~\ref{sec:likelihood}.}
+\begin{itemize}
+  \item The finite-SAS sum and the full-filter integral are
+    different estimators; the kernel-weight coverage of the measured
+    side range falls from $78$ percent at $R = 7$ arcmin to about
+    $1$ percent at $R = 40$ arcmin, where the kernel peaks beyond
+    the $80$ arcmin edge.
+  \item Because the compiled analytic covariance describes the
+    full-filter estimator, the project refuses analytic Map3
+    covariance rows and reads a simulation covariance built from
+    the same finite-SAS estimator -- $796$ independent simulated
+    measurements.
+  \item The likelihood's transform plan reproduces the
+    measurement's bins, cut and angle grid from five yaml keys, and
+    each estimator convention it mirrors -- bins, representative
+    sides, orderings, window, truncation -- is spelled out in
+    Section~\ref{sec:conventions}, with the truncation's effect
+    measured by the notebook.
+\end{itemize}
 \section{Intrinsic alignments in the aperture moment}
 \label{sec:ia}
 
@@ -4074,7 +4197,9 @@ integrator} and
 \href{https://github.com/rchgomes/desy6-3pcf}{desy6-3pcf}; the
 aperture kernels follow Jarvis, Bernstein \& Jain~\cite{JBJ} and
 Schneider, Kilbinger \& Lombardi~\cite{SKL}, with TreeCorr's
-centroid/SAS convention by Mike Jarvis.
+centroid/SAS convention by Mike Jarvis.  The measurement
+conventions of Section~\ref{sec:conventions} were confirmed by the
+measurement's author, R.~Gomes.
 
 \appendix
 
