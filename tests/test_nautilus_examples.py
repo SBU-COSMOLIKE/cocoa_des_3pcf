@@ -83,7 +83,7 @@ def test_joint_likelihood_initializes_without_generating_covariance(number):
     likelihood.close()
 
 
-@pytest.mark.parametrize("number", [1, 2, 3, 4])
+@pytest.mark.parametrize("number", [1, 2, 3, 4, 5])
 def test_evaluate_mcmc_and_nautilus_use_the_same_science(number):
     """Changing samplers must preserve data, theory, parameters and priors."""
     reference = yaml.safe_load(

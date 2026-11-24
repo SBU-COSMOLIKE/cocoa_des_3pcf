@@ -1,0 +1,316 @@
+# Case 5 matches EXAMPLE_NAUTILUS5.yaml: the DES Y3 setup of the published analysis
+# where the project allows it (des_y3_joint5.dataset): the simulated measurement,
+# the Y3 xi scale cuts and the Percival likelihood with 796 simulations.
+# CAMB and the matter bispectrum are separate Cobaya theory blocks.
+timing: true
+debug: false
+stop_at_error: true
+likelihood:
+  des_3pcf.joint_shear:
+    data_file: des_y3_joint5.dataset
+    # Uncomment with the BACCO theory block and its five parameters.
+    # external_baryon_response: true
+params:
+  # Optional BACCO feedback: uncomment these five log10 coordinates together
+  # with the theory block and external_baryon_response in this file.
+  # These are fixed example values; sampling needs priors inside the emulator
+  # domain, including Omega_cold, Omega_b and sigma8_cold (see the theory guide).
+  # M_c_baccoemu: 14.0
+  # eta_baccoemu: -0.3
+  # beta_baccoemu: -0.22
+  # M1_z0_cen_baccoemu: 10.5
+  # theta_inn_baccoemu: -0.86
+  As_1e9:
+    prior:
+      min: 0.5
+      max: 5
+    ref:
+      dist: norm
+      loc: 2.1
+      scale: 0.2
+    proposal: 0.2
+    latex: 10^9 A_\mathrm{s}
+    drop: true
+    renames: A
+  ns:
+    prior:
+      min: 0.87
+      max: 1.07
+    ref:
+      dist: norm
+      loc: 0.96605
+      scale: 0.015
+    proposal: 0.015
+    latex: n_\mathrm{s}
+  H0:
+    prior:
+      min: 55
+      max: 91
+    ref:
+      dist: norm
+      loc: 67.32
+      scale: 3
+    proposal: 3
+    latex: H_0
+  omegab:
+    prior:
+      min: 0.03
+      max: 0.07
+    ref:
+      dist: norm
+      loc: 0.0495
+      scale: 0.004
+    proposal: 0.004
+    latex: \Omega_\mathrm{b}
+    drop: true
+  omegam:
+    prior:
+      min: 0.2
+      max: 0.5
+    ref:
+      dist: norm
+      loc: 0.316
+      scale: 0.015
+    proposal: 0.015
+    latex: \Omega_\mathrm{m}
+    drop: true
+  # Flat LCDM with fixed neutrino mass: the des_3pcf model differs from
+  # lsst_y1 here (w, wa and mnu are fixed; nnu is stated explicitly).
+  w: -1.0
+  wa: 0.0
+  mnu: 0.06
+  nnu: 3.046
+  tau:
+    value: 0.0697186
+    latex: \tau_\mathrm{reio}
+  # ---------------------------------------------------------------------------------------
+  # ------------------------------------- DERIVED PARAMETERS ------------------------------
+  # ---------------------------------------------------------------------------------------
+  # WARNING: DO NOT REMOVE omegabh2/omegach2/omegamh2/wa/As/ FROM DERIVED PARAMETERS
+  # SEE: github.com/CosmoLike/cocoa#warning-warning-warning-weak-lensing-yaml-files-in-cobaya-
+  # ---------------------------------------------------------------------------------------
+  As:
+    value: 'lambda As_1e9: 1e-9 * As_1e9'
+    latex: A_\mathrm{s}
+  omegabh2:
+    value: 'lambda omegab, H0: omegab*(H0/100)**2'
+    latex: \Omega_\mathrm{b} h^2
+  omegach2:
+    value: 'lambda omegam, omegab, mnu, H0: (omegam-omegab)*(H0/100)**2-(mnu*(3.046/3)**0.75)/94.0708'
+    latex: \Omega_\mathrm{c} h^2
+  omegal:
+    latex: \Omega_\Lambda
+  omegamh2:
+    derived: 'lambda omegam, H0: omegam*(H0/100)**2'
+    latex: \Omega_\mathrm{m} h^2
+  sigma8:
+    latex: \sigma_8
+  s8h5:
+    derived: 'lambda sigma8, H0: sigma8*(H0*1e-2)**(-0.5)'
+    latex: \sigma_8/h^{0.5}
+  s8omegamp5:
+    derived: 'lambda sigma8, omegam: sigma8*omegam**0.5'
+    latex: \sigma_8 \Omega_\mathrm{m}^{0.5}
+  s8omegamp25:
+    derived: 'lambda sigma8, omegam: sigma8*omegam**0.25'
+    latex: \sigma_8 \Omega_\mathrm{m}^{0.25}
+  age:
+    latex: '{\rm{Age}}/\mathrm{Gyr}'
+  rdrag:
+    latex: r_\mathrm{drag}
+  yheused:
+    latex: Y_P^\mathrm{BBN}
+  omegan2:
+    latex: \Omega_\mathrm{\\nu} h^2
+  omegan:
+    derived: 'lambda omegan2, H0: omegan2/((H0/100)**2)'
+    latex: \Omega_\mathrm{\\nu}
+  # ------------------------------------------------------------------------
+  # Nuisance parameters, listed explicitly so the example does not depend
+  # on defaults that may change (likelihood/params_source.yaml).
+  # ------------------------------------------------------------------------
+  # WL photo-z errors
+  DES_DZ_S1:
+    prior:
+      dist: truncnorm
+      a: -5.555555555555556
+      b: 5.555555555555556
+      loc: 0.0
+      scale: 0.018
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.018
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^1
+  DES_DZ_S2:
+    prior:
+      dist: truncnorm
+      a: -6.666666666666667
+      b: 6.666666666666667
+      loc: 0.0
+      scale: 0.015
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.015
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^2
+  DES_DZ_S3:
+    prior:
+      dist: truncnorm
+      a: -9.090909090909092
+      b: 9.090909090909092
+      loc: 0.0
+      scale: 0.011
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.011
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^3
+  DES_DZ_S4:
+    prior:
+      dist: truncnorm
+      a: -5.88235294117647
+      b: 5.88235294117647
+      loc: 0.0
+      scale: 0.017
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.017
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^4
+  # Intrinsic alignment
+  DES_A1_1:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: -0.33
+      scale: 0.5
+    proposal: 0.5
+    latex: A_\mathrm{1-IA,DES}^1
+  DES_A1_2:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: 2.81
+      scale: 0.5
+    proposal: 0.5
+    latex: \eta_\mathrm{1-IA,DES}
+  # NLA: the tidal-torquing and density-weighting terms are off.
+  DES_A2_1: 0.0
+  DES_A2_2: 0.0
+  DES_BTA_1: 0.0
+  # Shear calibration parameters
+  DES_M1:
+    prior:
+      dist: truncnorm
+      a: -10.296703296703297
+      b: 11.68131868131868
+      loc: -0.0063
+      scale: 0.0091
+    ref:
+      dist: norm
+      loc: -0.0063
+      scale: 0.0091
+    proposal: 0.004
+    latex: m_\mathrm{DES}^1
+  DES_M2:
+    prior:
+      dist: truncnorm
+      a: -10.282051282051283
+      b: 15.35897435897436
+      loc: -0.0198
+      scale: 0.0078
+    ref:
+      dist: norm
+      loc: -0.0198
+      scale: 0.0078
+    proposal: 0.004
+    latex: m_\mathrm{DES}^2
+  DES_M3:
+    prior:
+      dist: truncnorm
+      a: -9.98684210526316
+      b: 16.32894736842105
+      loc: -0.0241
+      scale: 0.0076
+    ref:
+      dist: norm
+      loc: -0.0241
+      scale: 0.0076
+    proposal: 0.004
+    latex: m_\mathrm{DES}^3
+  DES_M4:
+    prior:
+      dist: truncnorm
+      a: -8.302631578947368
+      b: 18.013157894736846
+      loc: -0.0369
+      scale: 0.0076
+    ref:
+      dist: norm
+      loc: -0.0369
+      scale: 0.0076
+    proposal: 0.004
+    latex: m_\mathrm{DES}^4
+sampler:
+  evaluate:
+    override:
+      omegam: 0.289
+      omegab: 0.0463
+      H0: 72.2
+      ns: 0.959
+      As_1e9: 1.8520355901334418
+      DES_A1_1: -0.33
+      DES_A1_2: 2.81
+      DES_M1: -0.0063
+      DES_M2: -0.0198
+      DES_M3: -0.0241
+      DES_M4: -0.0369
+      DES_DZ_S1: 0
+      DES_DZ_S2: 0
+      DES_DZ_S3: 0
+      DES_DZ_S4: 0
+theory:
+  camb:
+    path: ./external_modules/code/CAMB
+    stop_at_error: true
+    use_renames: true
+    extra_args:
+      halofit_version: takahashi
+      dark_energy_model: ppf
+      num_massive_neutrinos: 3
+      neutrino_hierarchy: degenerate
+      kmax: 5.0
+      k_per_logint: 0
+      WantCls: false
+  # BiHalofit supplies the gravity-only matter bispectrum B_DMO.
+  bihalofit: {}
+  # Optional baryonic feedback: keep BiHalofit and uncomment this block,
+  # the five BACCO parameters, and external_baryon_response in the likelihood.
+  # BACCO supplies ratios: P_hydro = R_P * P_DMO and B_hydro = R_B * B_DMO.
+  # It does not supply an absolute B. Do not also apply the power-only bfmt.
+  # Both blocks read the YAML's CAMB result; neither runs a private CAMB.
+  # The neutrino conversion and continuation below are model assumptions.
+  # The fixed simulation covariance and quadratic IA retain their DMO model.
+  # bacco_bispectrum:
+  #   response_settings:
+  #     neutrino_model: coherent_linear_neutrinos
+  #     low_k_anchor: 0.02      # h/Mpc; low-k responses approach unity.
+  #     high_k_anchor: 10.0     # h/Mpc; rescale triangles beyond this anchor.
+  #     high_k_mode: shape_preserving
+  #     high_z_mode: hold      # Hold the z=3 response above the training range.
+  #     nz: 17                 # Coarse response grid, separate from CAMB sampling.
+  #     nk: 97
+  #     nu: 33
+  #     nv: 9
+  #     boost: 2               # Native cubic preparation, then linear reads.
+  #   zmax: 3.1                # Must cover the likelihood redshift grid.
+  #   kmax_boltzmann: 5.0      # Actual CAMB transfer limit, in 1/Mpc.
