@@ -196,19 +196,20 @@ plus cold dark matter). It uses fixed neutrino mass 0.06 eV. This small
 check precedes any random-cosmology accuracy comparison, because replacing
 cold matter by total matter would change the physical model.
 
-Select the candidate code checkout:
+**Step :one:**: select the candidate code checkout.
 
 ```bash
 export EMULATOR_CODE_DIR=/path/to/emulators_code
 ```
 
-Select its model-data checkout:
+**Step :two:**: select its model-data checkout.
 
 ```bash
 export EMULATOR_DATA_DIR=/path/to/emulators_data_lcdm
 ```
 
-Run from activated Cocoa:
+**Step :three:**: run from activated Cocoa. This small support check
+uses one thread for each numerical library.
 
 ```bash
 python projects/des_3pcf/tests/check_matter_emulator_support.py
