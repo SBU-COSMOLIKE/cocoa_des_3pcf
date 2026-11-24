@@ -4,7 +4,8 @@ ci.init_joint_data replaces the whole joint state: data, covariance,
 selected rows, compression, the Cholesky factor and the finite-simulation
 settings. Dataset A, then a dataset B that differs in every one of these
 (size, selected rows, compression shape, mock count), then A again must
-give exactly what a fresh interpreter gives for A alone.
+give exactly what a fresh interpreter gives for A alone. A refused
+dataset must leave no dataset at all, not the previous one.
 """
 
 import json
@@ -12,6 +13,7 @@ import subprocess
 import sys
 
 import numpy as np
+import pytest
 
 
 # Each dataset is built from a seed, so the child interpreter rebuilds the
@@ -71,3 +73,34 @@ def test_dataset_sequence_matches_a_fresh_interpreter(compiled):
                             capture_output=True, text=True, check=True, timeout=120)
     fresh = json.loads(result.stdout.strip().splitlines()[-1])
     assert fresh == first
+
+
+def test_refused_dataset_leaves_no_dataset(compiled):
+    """After a refused init_joint_data, nothing can be scored.
+
+    A caller that catches the refusal must not go on scoring predictions
+    against the dataset installed before it.
+    """
+    namespace = {}
+    exec(DATASETS, namespace)
+    dataset = namespace["dataset"]
+
+    # Step 1: a valid dataset that scores.
+    compiled.init_joint_data(**dataset("A"))
+    prediction = np.zeros(dataset("A")["data"].size)
+    assert np.isfinite(compiled.compute_joint_chi2(prediction=prediction))
+
+    # Step 2: a refused dataset: one entry between two selected rows
+    # breaks the symmetry of the selected covariance.
+    refused = dataset("B")
+    first, second = refused["indices"][:2]
+    refused["covariance"] = refused["covariance"].copy()
+    refused["covariance"][first, second] += 0.5
+    with pytest.raises(ValueError, match="not symmetric"):
+        compiled.init_joint_data(**refused)
+
+    # Step 3: neither the old nor the refused dataset is active.
+    with pytest.raises(ValueError, match="Initialize joint data"):
+        compiled.compute_joint_chi2(prediction=prediction)
+    with pytest.raises(ValueError):
+        compiled.get_joint_exponent()
