@@ -87,15 +87,15 @@ longer sections.
     galaxy images).  Both are random fields, described by their
     statistical moments (Sections~\ref{sec:fields}
     and~\ref{sec:lensing}).
-  \item The aperture mass $\Map(R)$ is the convergence averaged inside
-    a circle of radius $R$ with a weight that integrates to zero -- a
-    compensated filter.  That one property makes it blind to any
+  \item The aperture mass $\Map(R)$ is the convergence averaged with a circular weight of scale $R$ that
+    integrates to zero -- a compensated filter. The Gaussian-family
+    weight used here has decaying tails, rather than a hard edge at $R$.  That one property makes it blind to any
     constant mass sheet, measurable from galaxy shapes alone, and a
     clean separator of the lensing-like E~pattern from the B~pattern
     that lensing does not produce (Section~\ref{sec:aperture}).
   \item Its variance $\langle\Map^2\rangle$ reads the convergence
-    power spectrum through a narrow window of multipoles around
-    $\ell \approx \sqrt{2}/R$; its third moment
+    power spectrum through a broad band of modes selected by the filter;
+    the filter window itself peaks at $\ell=\sqrt{2}/R$. Its third moment
     $\langle\Map^3\rangle$ reads the convergence bispectrum, the
     lowest-order statistic that is zero for a Gaussian field
     (Sections~\ref{sec:map2} and~\ref{sec:map3}).
@@ -106,7 +106,7 @@ longer sections.
     integrated with known kernels, reproduce
     $\langle\Map^3\rangle$ (Section~\ref{sec:threepcf}).
   \item Integrating only over the finitely many measured triangle bins
-    defines a slightly different estimator than the infinite filter
+    defines a different estimator from the infinite filter
     integral.  That difference is why the project refuses to produce
     an analytic Map3 covariance: the compiled covariance describes the
     full-filter estimator, not the finite one
@@ -145,8 +145,11 @@ project's own wrappers,
 wrappers.py}.
 
 \paragraph{How to read this note.}
-The note is long because it assumes little and shows every step.  A
-first pass can take the short route:
+The note develops both the physical interpretation and the calculation.
+A reader interested first in the observable can follow the route below,
+then return to the statistical and alignment derivations. This separates
+the first encounter with the aperture mass from the details needed to
+implement or test it:
 \begin{enumerate}
   \item Section~\ref{sec:aperture} up to
     Eq.~\eqref{eq:uhat}: what the aperture mass is, why the
@@ -190,9 +193,11 @@ new material.
 \section{Fiducial model and parameter values}
 \label{sec:fiducial}
 
-This section freezes the point at which every prediction of this note
-and its companion notebook is evaluated, so the note does not depend
-on files that may drift.
+The examples need a specified cosmology and nuisance-parameter point.
+We record those choices here so that later numerical values have an
+identifiable meaning. The conceptual derivations do not depend on these
+particular values; on a first reading, the tables can be consulted when
+a figure or a numerical comparison calls for them.
 
 \paragraph{The cosmology.}
 The fiducial point is the \texttt{override} block -- the entries that
@@ -299,8 +304,9 @@ can be moved by naming its yaml key,
 \texttt{nw.map3(As\us 1e9 = 1.9)}.  The companion notebook's
 expensive cells cache their results under the project's
 \texttt{chains/} folder and refuse to reuse a cache whose recorded
-settings differ, so a rerun is cheap and never silently
-inconsistent.
+settings differ, so a repeated calculation can reuse compatible saved results. The
+notebook's recorded settings and the displayed fiducial values should
+still be checked when comparing outputs from different revisions.
 \section{Random fields on the sky}
 \label{sec:fields}
 
@@ -534,9 +540,11 @@ density is unchanged under flipping the sign of all variables at
 once, while the product $xyz$ flips sign.
 
 A Gaussian \emph{field} is one whose values at any set of points are
-jointly Gaussian; its three-point function therefore vanishes
-identically.  This is the key fact of this note: \textbf{any measured
-third moment is a direct detection of non-Gaussianity}.
+jointly Gaussian; its ensemble three-point function therefore vanishes.
+A finite survey estimate can still fluctuate away from zero. A nonzero
+measurement is evidence for non-Gaussianity only after its sampling
+uncertainty and observational contaminants have been accounted for.
+The toy-map comparison below illustrates that distinction explicitly.
 
 The primordial fluctuations were very close to Gaussian; gravity made
 them non-Gaussian, because collapse is not symmetric -- overdense
@@ -620,12 +628,20 @@ nonvanishing order.  Terms with three linear factors vanish; terms
 with one quadratic and two linear factors survive, and there are
 three of them (the quadratic factor can sit on any leg):
 \begin{equation}
-  \bigl\langle \delta\,\delta\,\delta \bigr\rangle
-  \;\simeq\;
-  3\,\bigl\langle \delta^{(2)}\,\delta^{(1)}\,\delta^{(1)}
-  \bigr\rangle .
+\begin{split}
+ \langle\delta_1\delta_2\delta_3\rangle \simeq{}&
+ \langle\delta_1^{(2)}\delta_2^{(1)}\delta_3^{(1)}\rangle\\
+ &+\langle\delta_1^{(1)}\delta_2^{(2)}\delta_3^{(1)}\rangle\\
+ &+\langle\delta_1^{(1)}\delta_2^{(1)}\delta_3^{(2)}\rangle .
+\end{split}
   \label{eq:treeidea}
 \end{equation}
+The subscripts identify the three positions or external modes. Each
+term has two linear factors and one quadratic factor, but their numerical
+values need not agree on a general triangle. Only in a configuration
+where the three placements are equivalent can this sum be written as
+three times one term; the Fourier result below keeps them as cyclic
+permutations.
 
 \emph{Step 2.}  The surviving average contains \emph{four} linear
 Gaussian factors (two inside $\delta^{(2)}$, two outside).  Wick's
@@ -689,31 +705,94 @@ Eq.~\eqref{eq:btree} depends on the shape of the triangle.
 \end{itemize}
 
 \paragraph{Example 3.1 (conditional spread).}
-The toy pair of Eq.~\eqref{eq:toyxy} splits into the part of $y$
-that $x$ predicts plus independent scatter:
-$y = 0.8\,x + \epsilon$ with $\langle x\epsilon\rangle = 0$.
-Taking $\langle xy\rangle$ of the decomposition gives
-$0.8 = 0.8\langle x^2\rangle + \langle x\epsilon\rangle = 0.8$,
-consistent, and taking $\langle y^2\rangle$ gives
-$1 = 0.8^2\langle x^2\rangle + \langle\epsilon^2\rangle$, so
-$\langle\epsilon^2\rangle = 1 - 0.64 = 0.36$.  At fixed $x$ the only
-scatter left is $\epsilon$'s, of standard deviation
-$\sqrt{0.36} = 0.6$ -- the shrunken spread quoted in
-Section~\ref{sec:ensemble}.
+The tilted cloud in the two-variable example separates into a predictable
+part and a remaining fluctuation. Define that fluctuation explicitly:
+\begin{equation}
+  \epsilon=y-0.8x, \qquad y=0.8x+\epsilon.
+\end{equation}
+The coefficient $0.8$ is chosen to remove the correlation with $x$.
+Multiplying by $x$ and averaging verifies this choice:
+\begin{equation}
+  \langle x\epsilon\rangle
+  =\langle xy\rangle-0.8\langle x^2\rangle
+  =0.8-0.8=0.
+\end{equation}
+Because $x$ and $y$ are jointly Gaussian, $x$ and their linear
+combination $\epsilon$ are also jointly Gaussian. In this case zero
+covariance implies independence. That implication would not follow for
+arbitrary non-Gaussian variables.
+
+To find the remaining variance, square the definition before averaging.
+Keeping the cross term is necessary:
+\begin{equation}
+ \langle\epsilon^2\rangle
+ =\langle y^2\rangle-1.6\langle xy\rangle+0.64\langle x^2\rangle
+ =1-1.28+0.64=0.36.
+\end{equation}
+At fixed $x$, the predictable part $0.8x$ is just a constant. The scatter
+of $y$ is therefore the scatter of $\epsilon$, with standard deviation
+$\sqrt{0.36}=0.6$, rather than the original unit standard deviation.
+This is what correlation buys us: knowledge of one quantity reduces
+uncertainty about the other without fixing it exactly.
 
 \paragraph{Example 3.2 (the bispectrum delta).}
-The four steps of Section~\ref{sec:power}, run once more with three
-fields, produce Eq.~\eqref{eq:bispecdef}.  Inserting the
-transform~\eqref{eq:fourier} three times turns the left side into a
-triple position integral; homogeneity writes the three-point
-function as a function of $\btheta_1 - \btheta_3$ and
-$\btheta_2 - \btheta_3$ alone; changing variables to these two
-separations and $\btheta_3$ makes the $\btheta_3$ integral exactly
-$(2\pi)^2\delta_{\rm D}(\bell_1 + \bell_2 + \bell_3)$; and the two
-separation integrals define the coefficient of the delta, which
-isotropy reduces to a function of the three side lengths.
+The triangle constraint in Fourier space follows from translations of a
+three-point configuration. Define the two separations from its third
+vertex and name the real-space correlation:
+\begin{equation}
+ \boldsymbol{u}=\btheta_1-\btheta_3,\qquad
+ \boldsymbol{v}=\btheta_2-\btheta_3,\qquad
+ \zeta(\boldsymbol{u},\boldsymbol{v})
+ =\langle\kappa(\btheta_1)\kappa(\btheta_2)\kappa(\btheta_3)\rangle.
+\end{equation}
+Homogeneity is the statement that $\zeta$ has no remaining dependence
+on $\btheta_3$. Substituting $\btheta_1=\boldsymbol{u}+\btheta_3$
+and $\btheta_2=\boldsymbol{v}+\btheta_3$ into the three Fourier phases
+gives the factorization
+\begin{equation}
+\begin{split}
+ &e^{-i(\bell_1\cdot\btheta_1+\bell_2\cdot\btheta_2+
+              \bell_3\cdot\btheta_3)}\\
+ &\qquad=e^{-i(\bell_1\cdot\boldsymbol{u}+
+                  \bell_2\cdot\boldsymbol{v})}
+          e^{-i(\bell_1+\bell_2+\bell_3)\cdot\btheta_3}.
+\end{split}
+\end{equation}
+The change of variables has unit Jacobian. The integral over the
+absolute position thus separates from the integrals over shape:
+\begin{equation}
+ \int d^2\theta_3\;
+ e^{-i(\bell_1+\bell_2+\bell_3)\cdot\btheta_3}
+ =(2\pi)^2\delta_{\rm D}(\bell_1+\bell_2+\bell_3).
+\end{equation}
+The remaining coefficient is the transform of $\zeta$ over its two
+separations:
+\begin{equation}
+ B_\kappa=
+ \int d^2u\,d^2v\;\zeta(\boldsymbol{u},\boldsymbol{v})
+ e^{-i(\bell_1\cdot\boldsymbol{u}+\bell_2\cdot\boldsymbol{v})}.
+\end{equation}
+Isotropy removes an overall orientation, and for the parity-even scalar
+statistics used here the three side lengths label the result. We have
+therefore obtained both pieces of Eq.~\eqref{eq:bispecdef}: a delta that
+closes the triangle and a bispectrum that weights its shape and size.
+
 \section{Convergence and shear}
 \label{sec:lensing}
+
+The statistical language of the previous section does not yet tell us
+which field a galaxy survey measures. To make that connection, we now
+follow light from a distant galaxy through the intervening matter. The
+result has a scalar part, convergence, whose statistics are relatively
+simple to predict, and a directional part, shear, which galaxy shapes
+estimate. Establishing the relation between these two parts will let us
+calculate with convergence while measuring with shear.
+
+Throughout this section we use a spatially flat background, small angles
+and the leading weak-lensing approximation, evaluating deflections along
+unperturbed light paths. These assumptions are what permit a scalar
+lensing potential to describe the distortion. Statements below about a
+pure E-mode lensing signal refer to this approximation.
 
 \subsection{Lensing in two fields}
 \label{sec:kappa}
@@ -733,16 +812,26 @@ sight~\cite{GomesTATT}:
   \kappa_a(\btheta)
   \;=\; \frac{3\Omega_{\rm m} H_0^2}{2 c^2}
   \int_0^{\infty} d\chi\;
-  q_a(\chi)\,
+  \chi\,q_a(\chi)\,
   \frac{\delta_{\rm m}\bigl(\chi\btheta, \chi;\, z(\chi)\bigr)}
        {a(\chi)} ,
   \label{eq:kappadef}
 \end{equation}
-where $\chi$ is the comoving distance and $a(\chi) = 1/(1+z)$ the
-scale factor.  The prefactor comes from Poisson's equation, which
-converts a density contrast into a gravitational potential; its size,
-$\Omega_{\rm m} H_0^2/c^2$, is why lensing measures the matter
-density.
+Here $\chi$ is the comoving distance and $a(\chi)=1/(1+z)$ is
+the scale factor; the subscript $a$ labels a source population and must
+not be confused with this scale factor. The factor of $\chi$ multiplying
+$q_a$ is required by the lensing geometry. With the dimensionless
+$q_a$ defined below, the integral has units of length squared, cancelling
+the inverse-length-squared prefactor and leaving dimensionless convergence.
+This convention agrees with the full window $W_a$ introduced in
+Eq.~\eqref{eq:window} and with the power- and bispectrum projections.
+
+The prefactor comes from Poisson's equation, which converts density
+contrast into gravitational potential. The convergence therefore depends
+both on the amount of matter, through this prefactor, and on its spatial
+fluctuations inside the integral. Changing the source population changes
+which distances receive the largest weight, rather than changing the
+underlying foreground density field.
 
 \paragraph{The lensing efficiency.}
 The weight
@@ -752,15 +841,29 @@ The weight
   p_a(\chi')\, \frac{\chi' - \chi}{\chi'}
   \label{eq:qdef}
 \end{equation}
-is the \emph{lensing efficiency} of source sample $a$, whose
-redshift distribution $p_a$ is normalized to unit integral.  It reads
+is the \emph{lensing efficiency} of source sample $a$. Here
+$p_a(\chi)$ is the probability density per unit comoving distance,
+not per unit redshift. To distinguish the two representations, write
+$n_a(z)$ for the redshift density. Their normalization and conversion are
+\begin{equation}
+  \int_0^\infty p_a(\chi)\,d\chi=1,
+  \qquad \int_0^\infty n_a(z)\,dz=1,
+  \qquad p_a(\chi)=n_a\bigl(z(\chi)\bigr)\frac{dz}{d\chi}.
+  \label{eq:sourcedensityunits}
+\end{equation}
+Thus $p_a$ has inverse-length units while $q_a$ is dimensionless.
+This distinction will matter when the intrinsic-alignment response is
+added to the lensing window.  It reads
 as follows: a lens at distance $\chi$ deflects only sources behind
 it, so the integral runs over $\chi' > \chi$; and the geometric
 factor $(\chi' - \chi)/\chi'$ is the lever arm of the deflection, zero
 when the lens sits on the source and largest when the lens is far in
 front.
 
-A lens roughly halfway to the source deflects most effectively.
+For a single source plane, the distance factor in the full weight is
+$\chi(\chi_s-\chi)/\chi_s$, which peaks halfway to the source
+if we hold the scale-factor and density factors fixed. The efficiency
+$q_a$ alone does not have that peak: it decreases from one to zero.
 \emph{Tomography} means splitting the sources into samples by
 estimated redshift -- four bins for DES Y3 -- so that each
 $\kappa_a$ probes a different stretch of the line of sight.
@@ -794,6 +897,13 @@ the bookkeeping of three-point shear statistics.
 
 \subsection{One potential behind both fields}
 \label{sec:potential}
+
+Convergence and shear were introduced as different distortions of an
+image, but gravity does not supply two unrelated fields. Both distortions
+come from how the same deflection changes across the image. Taking
+second derivatives of one potential makes this connection explicit;
+Fourier transforming those derivatives will then reduce it to a simple
+phase relation.
 
 \paragraph{The lensing potential.}
 Both $\kappa$ and $\gamma$ are second derivatives of a single lensing
@@ -860,6 +970,13 @@ Section~\ref{sec:aperture} shows that simulated map.
 
 \subsection{E and B modes}
 \label{sec:eb}
+
+The phase relation just derived answers a further question: can every
+possible pattern of galaxy shapes be made by the scalar lensing
+potential? The answer is no. Removing the wavevector's spin-2 phase
+separates the pattern produced by that potential from a second,
+independent pattern. We call these E and B, and will construct aperture
+statistics that select them separately under complete angular coverage.
 
 \paragraph{The two patterns.}
 Equation~\eqref{eq:gammakappa} produces a particular polarization
@@ -949,6 +1066,20 @@ Eq.~\eqref{eq:ringidentity} sees a constant shear not at all, which
 is why aperture statistics are blind to it.
 \section{The aperture mass}
 \label{sec:aperture}
+
+We now have a field that theory predicts and a related field that shapes
+measure. A cosmological data vector cannot retain a separate value at
+every sky position, so the next task is to choose a useful weighted
+average. The aperture mass compares the convergence near a chosen
+position with that in a surrounding region. This comparison removes a
+constant background and selects angular structure near a chosen scale.
+
+There are three questions to answer in order: what weight performs this
+comparison, what Fourier modes survive it, and how can the same number be
+obtained from shear? The last question is essential for measurement,
+because a galaxy catalogue provides noisy shapes rather than direct
+samples of convergence. The derivation of the shear weight below connects
+this observational fact to the filter's compensation condition.
 
 \subsection{A compensated filter}
 \label{sec:filter}
@@ -1058,6 +1189,13 @@ Sections~2 and~3).
 
 \subsection{The Fourier window}
 \label{sec:window}
+
+Compensation tells us that a constant field disappears, but does not yet
+say what happens to structures with a finite angular size. A single
+Fourier wave supplies a useful test: filtering multiplies its amplitude
+by a number that depends on its wavelength. Finding that number for all
+wavelengths gives the Fourier window and explains what changing the
+aperture radius actually measures.
 
 \paragraph{Filtering is multiplication.}
 Insert the Fourier expansion~\eqref{eq:fourier} into
@@ -1327,10 +1465,15 @@ $\bar\kappa_<$ term exchange the order of the two radial integrals
   \int_t^\infty d\theta\; \frac{2\,\Qfil(\theta)}{\theta} .
   \label{eq:exchange}
 \end{equation}
-The exchange is legitimate because $F \to 0$ makes the inner
-integral converge; for a filter that is not compensated it diverges
-logarithmically, which is where compensation becomes necessary and
-not just convenient.
+For the decaying Gaussian filter and a regular field, these integrals
+converge and the exchange is valid. Compensation also makes $F$ vanish
+at large radius, so the resulting $Q$ remains localized. It would be
+incorrect to infer that the inner integral necessarily diverges without
+compensation: a constant limiting $F$ would give $Q\propto\theta^{-2}$.
+The more basic obstruction is the unobservable constant convergence.
+A noncompensated $U$ responds to that constant while shear does not, so
+a shear-only reconstruction would need an additional boundary or
+mass-sheet assumption.
 
 \emph{Step 4.}  Work out the inner integral by substituting
 Eq.~\eqref{eq:qdeffromu} and integrating the $F$ term by parts
@@ -1400,6 +1543,13 @@ geometry of $\gamma_t$, not in the sign of $Q$.
 \subsection{The B-mode partner, and the complex aperture mass}
 \label{sec:mperp}
 
+The shear expression has so far used only the tangential component. The
+cross component is measured from the same galaxies, so it would be
+wasteful to discard it without asking what it represents. Applying the
+same radial weight to that component gives a second aperture statistic.
+Combining the two in one complex number is convenient because the
+three-point functions will themselves have complex components.
+
 \paragraph{The partner statistic.}
 Replace $\gamma_t$ by the cross component $\gamma_\times$ in
 Eq.~\eqref{eq:qrelation} and the result, called $\Mx$, filters the
@@ -1459,26 +1609,57 @@ tangential ring pattern of Figure~\ref{fig:ebpatterns}, falling as
 the inverse square of the radius.
 
 \paragraph{Example 5.3 (the $Q$ filter is not compensated).}
-Unlike the compensated $U$, the Gaussian shear
-weight~\eqref{eq:qfil} integrates to one.  In polar form, with
-$a = 1/(2R^2)$ and the Gaussian moments of
-Eq.~\eqref{eq:gaussmoments},
-$\int d^2\theta\, \Qfil = \frac{1}{2R^4}\int_0^\infty
-d\theta\,\theta^3 e^{-a\theta^2} = \frac{1}{2R^4}\cdot\frac{1}{2a^2}
-= \frac{1}{2R^4}\cdot 2R^4 = 1$.  There is no contradiction with
-Eq.~\eqref{eq:compensated}: the mass-sheet blindness of the $Q$ form
-lives in $\gamma_t$ itself, which vanishes for a constant
-convergence (Eq.~\eqref{eq:ringidentity} with
-$\bar\kappa_< = \bar\kappa$), not in the sign structure of the
-weight.
+Compensation belongs to the convergence filter $U$. It does not require
+the shear filter $Q$ to have a positive core and a negative rim, because
+the tangential projection already contains a directional comparison.
+For the Gaussian $Q$, write the integral in polar coordinates:
+\begin{equation}
+ \int d^2\theta\;Q_R(\theta)
+ =\frac{1}{2R^4}\int_0^\infty d\theta\;
+          \theta^3 e^{-\theta^2/(2R^2)}.
+\end{equation}
+The second Gaussian moment in Eq.~\eqref{eq:gaussmoments}, with
+$a=1/(2R^2)$, evaluates the remaining integral:
+\begin{equation}
+ \int_0^\infty d\theta\;\theta^3 e^{-a\theta^2}
+ =\frac{1}{2a^2}=2R^4.
+\end{equation}
+Substituting this value gives a unit integral, not a zero integral:
+\begin{equation}
+ \int d^2\theta\;Q_R(\theta)=\frac{2R^4}{2R^4}=1.
+\end{equation}
+There is no conflict with mass-sheet blindness. A constant convergence
+has equal disc and ring means, so Eq.~\eqref{eq:ringidentity} gives zero
+tangential shear before $Q$ is applied. The same observable can therefore
+use a compensated scalar weight in its convergence representation and
+a nonnegative weight in its shear representation.
+
 \section{The second moment}
 \label{sec:map2}
+
+An aperture value is a number measured at one location on one sky. Its
+value changes when we move the aperture or draw another realization of
+the density field; a cosmological prediction concerns the distribution
+of those values. We begin with their variance, which describes their
+typical squared size. This is also a useful rehearsal for the third
+moment: the filter is the same, and only the number of fields inside the
+ensemble average will change.
+
+The order of the examples matters. First we derive the variance for an
+arbitrary power spectrum. Then a constant spectrum gives an integral we
+can solve explicitly, and random galaxy ellipticities give that example
+a physical interpretation. Finally we connect the aperture variance to
+$\xi_\pm$, the two-point observables used in the joint likelihood.
 
 \subsection{The variance of the filtered field}
 \label{sec:map2deriv}
 
 \paragraph{The derivation, in four steps.}
-The simplest statistic of $\Map$ is its variance at one radius.
+For a zero-mean convergence field, the aperture mean is also zero
+because filtering is linear. The first nontrivial ensemble statistic is
+then the variance at one radius. We compute it by averaging the product
+of two filtered fields, keeping the two Fourier integration variables
+distinct until the power-spectrum delta relates them.
 
 \emph{Step 1.}  Square the Fourier form~\eqref{eq:mapfourier} (two
 independent integration variables $\bell_1, \bell_2$) and take the
@@ -1518,15 +1699,21 @@ spectrum enters: by Eq.~\eqref{eq:ebdef} a B-mode contribution to
 $\gamma$ never reaches $\Map$ (it reaches $\Mx$, whose variance obeys
 the same formula with $P^B_\kappa$).
 
-Because $\Uhat^2$ is a narrow bump around $\ell = \sqrt{2}/R$, the
-variance is essentially the E-mode power at that multipole: scanning
-$R$ scans the spectrum.
+The window suppresses both very small and very large $\ell R$, so
+changing $R$ changes which modes contribute most. The variance is still
+an integral over a band, not a measurement at its window peak. Its actual
+weight includes $\ell\,P_\kappa^E(\ell)$ per unit $d\ell$, or
+$\ell^2P_\kappa^E(\ell)$ per unit $d\ln\ell$, which shifts the dominant
+contribution relative to the peak of $\Uhat$ alone.
 
 \subsection{A worked example: white noise}
 \label{sec:whitenoise}
 
-Let the convergence be pure white noise,
-$P^E_\kappa(\ell) = A$ with $A$ constant.
+A constant spectrum provides a useful first check because it leaves
+only the filter dependence inside the integral. Set
+$P^E_\kappa(\ell)=A$, with $A$ independent of multipole. We can then
+see explicitly how the averaging area, controlled by $R$, reduces the
+variance without also having to model a changing cosmological spectrum.
 
 \emph{Step 1.}  Substitute $x = \ell R$ in Eq.~\eqref{eq:map2}:
 \begin{equation}
@@ -1650,13 +1837,15 @@ variance.
 \end{figure}
 
 \subsection{The companion statistic: the shear correlations
-  $\xi_\pm$}
+  \texorpdfstring{$\xi_\pm$}{xi plus and minus}}
 \label{sec:xipm}
 
-The other $400$ rows of the data vector (Section~\ref{sec:fiducial})
-are the shear two-point correlations, and their structure previews,
-one order down, everything Section~\ref{sec:threepcf} does at third
-order.  They are worth two paragraphs here.
+The joint data vector uses $\xi_\pm$ for its two-point information,
+rather than the aperture variance derived above. Both describe second
+moments of the same shear field, but with different angular weights.
+Following their construction also prepares us for the three-point case:
+we must project each shear relative to a geometric direction before
+forming rotationally defined correlations.
 
 \paragraph{Two correlations from one spin-2 field.}
 Correlate the tangential and cross components
@@ -1677,31 +1866,35 @@ combinations, conventionally
 \end{equation}
 
 \paragraph{Their Fourier form.}
-Expressing both through the E and B spectra gives~\cite{GomesTATT}
+The two correlations differ in how the shear projection phases combine.
+In $\xi_+$ the phases cancel, leaving the circular plane-wave average
+$J_0$ encountered for a scalar field. Its spectrum contains both E and B
+power with the same sign:
 \begin{equation}
-  \xi_+(\theta)
-  = \int_0^\infty \frac{d\ell\,\ell}{2\pi}\,
-  J_0(\ell\theta)\,
-  \bigl[P^E_\kappa(\ell) + P^B_\kappa(\ell)\bigr],
-  \qquad
-  \xi_-(\theta)
-  = \int_0^\infty \frac{d\ell\,\ell}{2\pi}\,
-  J_4(\ell\theta)\,
-  \bigl[P^E_\kappa(\ell) - P^B_\kappa(\ell)\bigr].
-  \label{eq:xipm}
+ \xi_+(\theta)=\int_0^\infty\frac{d\ell\,\ell}{2\pi}
+ J_0(\ell\theta)\bigl[P_\kappa^E(\ell)+P_\kappa^B(\ell)\bigr].
+ \label{eq:xipmplus}
 \end{equation}
-In $\xi_+$ the two projection phases of the shears cancel, leaving
-the order-zero Bessel average of Eq.~\eqref{eq:xifromp}; in
-$\xi_-$ they add to four units of angular phase, which is where the
-order-four Bessel function $J_4$ comes from
-(Appendix~\ref{app:bessel}).  The same mechanism -- spin-2 phases
-setting Bessel orders -- returns with three units shifted,
-$J_{M-3}$, in the three-point transform of
-Section~\ref{sec:multipole}.
+In $\xi_-$ the two spin-2 phases add instead. Four units of angular
+phase give the Bessel function $J_4$, and the B spectrum enters with the
+opposite sign:
+\begin{equation}
+ \xi_-(\theta)=\int_0^\infty\frac{d\ell\,\ell}{2\pi}
+ J_4(\ell\theta)\bigl[P_\kappa^E(\ell)-P_\kappa^B(\ell)\bigr].
+ \label{eq:xipm}
+\end{equation}
+These expressions use the same E/B spectra defined earlier~\cite{GomesTATT}.
+Neither $\xi_+$ nor $\xi_-$ alone isolates E from B; their different
+kernels are part of the reason they are both retained. The three-point
+transform will repeat this mechanism with three shear phases and a
+triangle opening angle, producing the shifted Bessel orders explained
+in Section~\ref{sec:multipole}.
 
-Unlike the aperture mass, $\xi_\pm$ mix E and B; they compensate
-with simplicity and with sensitivity to large-scale power that the
-band-pass windows discard.  The joint likelihood scores both.
+The aperture variance and $\xi_\pm$ thus reorganize two-point information
+in different ways. The Gaussian aperture filter suppresses very long
+wavelengths, whereas the correlation functions retain sensitivity to them.
+The joint likelihood uses the correlation functions as its two-point
+rows and the finite-triangle aperture moments as its three-point rows.
 
 \paragraph{Summary of this section.}
 \begin{itemize}
@@ -1735,11 +1928,26 @@ the four measurement radii into multipoles.  One arcminute is
 $\pi/(180\cdot 60) \approx 2.909\times 10^{-4}$ radians, so
 $R = 7, 14, 25, 40$ arcmin give
 $\ell \approx 695,\ 347,\ 194,\ 122$: the aperture statistic reads
-the spectrum across roughly half a decade and a half of angular
-frequency.
+a range of characteristic multipoles spanning a factor of about $5.7$.
+Each radius nevertheless integrates a range of modes; these peak values
+are useful landmarks, not sharp angular-frequency cuts.
 
 \section{The third moment}
 \label{sec:map3}
+
+The second moment described how large the filtered fluctuations are, but
+not whether large positive and negative fluctuations occur symmetrically.
+The third moment supplies that information: cubing a positive fluctuation
+keeps its sign, whereas cubing a negative one keeps the opposite sign.
+An ensemble with exact sign symmetry has cancellation between the two.
+Nonlinear evolution can break that symmetry and leave a nonzero average.
+
+We will repeat the variance derivation with three factors, then connect
+the required sky bispectrum to the three-dimensional matter model. A toy
+map will make the sign asymmetry visible, and tomography will explain why
+one mathematical statistic becomes many rows in the data vector. The
+full-filter expression obtained here is the starting point for the later
+finite-triangle measurement, not yet its complete estimator definition.
 
 \subsection{The full-filter formula}
 \label{sec:fullfilter}
@@ -1841,6 +2049,14 @@ dependence.
 \subsection{The Limber projection}
 \label{sec:limber}
 
+The aperture formula needs a bispectrum on the sky, whereas a matter
+model supplies correlations in three-dimensional space. A foreground
+structure affects several source populations at once, with a strength
+set by each population's lensing window. Projection combines those
+weights with the matter bispectrum. The Limber approximation makes this
+combination tractable by replacing correlations across different radial
+distances with a local contribution at one distance.
+
 \paragraph{The idea.}
 The convergence bispectrum of three source samples follows from the
 line-of-sight integral~\eqref{eq:kappadef}.  Multiplying three
@@ -1887,13 +2103,19 @@ source samples~\cite{GomesTATT},
   P_{\rm m}\!\left(\frac{\ell}{\chi};\, z(\chi)\right),
   \label{eq:limber2pt}
 \end{equation}
-with the window $W_a$ of Eq.~\eqref{eq:window} below: one window per
-leg, one factor $1/\chi$ per leg to convert the angular into the
-transverse wavenumber, and the three-dimensional matter spectrum
-evaluated at $k = \ell/\chi$.  Dimensions: $d\chi\, W^2 \chi^{-2}
-P_{\rm m}$ carries $L\cdot L^{-2}\cdot L^{-2}\cdot L^{3} = 1$.  This
-is the formula behind the $\xi_\pm$ rows of the data vector, through
-Eq.~\eqref{eq:xipm}.
+Here $W_a$ is the full lensing window defined in
+Eq.~\eqref{eq:window}. There is one window for each field, and the
+spectrum is evaluated at the transverse wavenumber $k=\ell/\chi$.
+The distance denominator comes from the Fourier projection measure,
+not from assigning one inverse distance to each field by inspection.
+We check that accounting below for both orders. The corresponding units
+are
+\begin{equation}
+ [d\chi\,W_aW_b\,\chi^{-2}P_{\rm m}]
+ =L\,L^{-2}\,L^{-2}\,L^3=1.
+\end{equation}
+The dimensionless projected spectrum then supplies the $\xi_\pm$
+integrals of Eqs.~\eqref{eq:xipmplus} and~\eqref{eq:xipm}.
 
 \paragraph{The result.}
 The same three ingredients applied to the cube of
@@ -1915,14 +2137,25 @@ with the lensing window
   \frac{\chi}{a(\chi)}\, q_i(\chi) ,
   \label{eq:window}
 \end{equation}
-which has units of inverse length.  The powers of $\chi$ do the
-unit bookkeeping: one $\chi$ per leg converts the angular to the
-transverse wavenumber, and one more pair comes from the transverse
-Fourier measure.
-
-A quick dimensional check: $d\chi\, W^3 \chi^{-4} B_{\rm m}$ carries
-$L \cdot L^{-3} \cdot L^{-4} \cdot L^{6} = 1$, dimensionless, as a
-correlation of the dimensionless $\kappa$ must be.  The three
+which has units of inverse length. To understand the different distance
+powers at second and third order, set the transverse physical coordinate
+to $\boldsymbol{x}_\perp=\chi\btheta$. Each angular transform then has
+$d^2\theta=d^2x_\perp/\chi^2$. For $n$ fields, these measures contribute
+$\chi^{-2n}$ before the common transverse delta is converted back to
+angular wavevectors. At the single distance selected by Limber,
+\begin{equation}
+ \delta_{\rm D}^{(2)}\!\left(\frac{\bell_1+\cdots+\bell_n}{\chi}\right)
+ =\chi^2\delta_{\rm D}^{(2)}(\bell_1+\cdots+\bell_n).
+\end{equation}
+The resulting factor is $\chi^{-2n+2}$: $\chi^{-2}$ for two fields
+and $\chi^{-4}$ for three. This explains why multiplying three windows
+does not merely replace the square in the power-spectrum formula by a
+cube. The bispectrum units provide a separate check:
+\begin{equation}
+ [d\chi\,W_iW_jW_k\,\chi^{-4}B_{\rm m}]
+ =L\,L^{-3}\,L^{-4}\,L^6=1.
+\end{equation}
+The projected third moment is therefore dimensionless, as required.  The three
 windows appear because the same foreground structure lenses all
 three source samples; with three different samples $(i,j,k)$ the
 statistic is \emph{tomographic}.
@@ -1959,27 +2192,60 @@ Example~7.1 below shows why the sign comes out positive for
 positive $\alpha$.
 
 \paragraph{Example 7.1 (the toy's skewness).}
-The one-variable version of the toy field is a zero-mean Gaussian
-$g$ with variance $\sigma^2$, promoted to
-$x = g + \alpha(g^2 - \sigma^2)$; its third moment at first order
-in $\alpha$ shows the whole mechanism.
-
-\emph{Step 1.}  Expanding the cube,
-$\langle x^3\rangle = \langle g^3\rangle + 3\alpha\langle g^2(g^2 -
-\sigma^2)\rangle + O(\alpha^2)$, and the first term vanishes (odd
-Gaussian moment).
-
-\emph{Step 2.}  The surviving average needs
-$\langle g^4\rangle = 3\sigma^4$ (Wick,
-Eq.~\eqref{eq:pairrule}), so
-$\langle g^2(g^2-\sigma^2)\rangle = 3\sigma^4 - \sigma^4 =
-2\sigma^4$ and $\langle x^3\rangle = 6\alpha\sigma^4$: positive for
-positive $\alpha$, and proportional to two powers of the variance --
-the same ``kernel times two spectra'' structure as
-Eq.~\eqref{eq:btree}.
+The one-variable toy makes the mechanism visible without a Fourier
+transform. Let $g$ be Gaussian with mean zero and variance $\sigma^2$,
+and define
+\begin{equation}
+ h=g^2-\sigma^2,\qquad x=g+\alpha h.
+\end{equation}
+Subtracting $\sigma^2$ ensures $\langle h\rangle=0$, so
+$\langle x\rangle=0$ as well. The cubic expansion has four terms:
+\begin{equation}
+ x^3=g^3+3\alpha g^2h+3\alpha^2gh^2+\alpha^3h^3.
+\end{equation}
+The first term averages to zero because it is odd in $g$. The term
+$gh^2$ is also odd, so there is no second-order contribution in $\alpha$.
+The leading surviving expectation can be evaluated without guessing:
+\begin{equation}
+ \langle g^2h\rangle
+ =\langle g^4\rangle-\sigma^2\langle g^2\rangle
+ =3\sigma^4-\sigma^4=2\sigma^4.
+\end{equation}
+For small $\alpha$, this gives
+\begin{equation}
+ \langle x^3\rangle=6\alpha\sigma^4+O(\alpha^3).
+ \label{eq:toyskewleading}
+\end{equation}
+We can also compute the remainder. Expanding $h^3$ and using the Gaussian
+sixth moment $\langle g^6\rangle=15\sigma^6$ yields
+\begin{equation}
+\begin{split}
+ \langle h^3\rangle
+ &=\langle g^6\rangle-3\sigma^2\langle g^4\rangle
+       +3\sigma^4\langle g^2\rangle-\sigma^6\\
+ &=(15-9+3-1)\sigma^6=8\sigma^6.
+\end{split}
+\end{equation}
+Thus the exact one-variable result is
+\begin{equation}
+ \langle x^3\rangle=6\alpha\sigma^4+8\alpha^3\sigma^6.
+\end{equation}
+Positive $\alpha$ enhances the positive tail and gives positive skewness.
+The leading term contains two factors of the variance, illustrating the
+same Gaussian pairing mechanism that produces two power spectra in a
+tree-level bispectrum. Filtering a spatial field introduces additional
+integrals, so this one-variable coefficient is an explanation of the
+mechanism, not a replacement for the aperture prediction.
 
 \subsection{Counting the tomographic triplets}
 \label{sec:counting}
+
+The toy calculation used a single field. In the survey, sorting galaxies
+by estimated redshift gives several fields that trace overlapping
+foreground structures. We can multiply aperture values from the same
+source bin or from different bins, so we must count these choices before
+assembling a data vector. This counting concerns source labels; it is
+separate from the many triangle shapes integrated to produce each row.
 
 \paragraph{Unordered triples with repetition.}
 $\langle M_i M_j M_k\rangle$ is symmetric under reordering its three
@@ -2039,9 +2305,25 @@ representative triplets.
 The same count for a five-bin tomography shows how fast the data
 vector grows: $\binom{5+3-1}{3} = \binom{7}{3} = 35$ triplets, so
 with four radii a five-bin survey would carry
-$35 \times 4 = 140$ Map3 rows.
+$35 \times 4 = 140$ Map3 rows. This growth occurs before changing the
+number of triangle bins used internally. Increasing tomography therefore
+increases the number of observables even at fixed angular resolution.
 \section{The real-space route: the shear three-point function}
 \label{sec:threepcf}
+
+The full-filter integral has given us a compact theory prediction, and
+the toy maps showed its meaning. A survey catalogue raises a different
+problem: the sky contains holes, boundaries and nonuniform galaxy
+sampling. We therefore need an estimator that handles the available
+galaxy configurations explicitly. The route used here first measures
+shear correlations on triangles and only afterward combines them into
+aperture moments.
+
+This introduces geometry before it introduces new physics. The matter
+bispectrum remains the input, but shear orientations must now be referred
+to each triangle, and the triangle correlations must be assigned the
+right integration weights. Keeping these two operations separate will
+help us distinguish a projection convention from a physical prediction.
 
 \subsection{Why correlation functions, not maps}
 \label{sec:whycorr}
@@ -2052,9 +2334,12 @@ building a convergence map and placing filter integrals on it forces
 every mask, hole and ragged survey edge into the statistic, because
 the filter of Eq.~\eqref{eq:ufil} extends to infinity.
 
-Correlation functions do not have this problem.  A correlation is
-estimated from pairs or triples of galaxies that both exist, so
-missing area removes statistics but adds no bias~\cite{JBJ}.
+Correlation estimators handle missing area through the available pairs
+or triples and their normalization~\cite{JBJ}. For a fixed selection
+independent of the shear signal, with correctly handled weights, this
+avoids treating an unobserved pixel as zero shear. It does not make a
+survey immune to selection effects or eliminate the influence of the
+mask on bin averages and covariance.
 
 The strategy of the DES analysis -- and of this project's
 likelihood -- is therefore: measure (or predict) the shear
@@ -2066,8 +2351,10 @@ average over galaxy triples: every triple whose separations fall in
 a triangle bin contributes the product of its three (projected)
 ellipticities, weighted by the galaxies' measurement weights, and
 the bin's correlation estimate is that sum divided by the sum of
-weights.  Missing area only removes triples from the sum; it never
-biases the average, which is the property the map route lacks.
+weights.  Missing area changes which triples enter and how many are available.
+Under the selection assumptions just stated, the normalized estimator
+measures their weighted bin average. The theory must match that average,
+and its uncertainty still depends on the survey geometry.
 Section~\ref{sec:measurement} describes the multipole shortcut that
 makes this count feasible.
 
@@ -2103,7 +2390,8 @@ defined.)  Figure~\ref{fig:trianglegeo} draws the labelling.
 \paragraph{The projection problem.}
 A three-point average of shears, such as
 $\langle \gamma(\btheta_1)\gamma(\btheta_2)\gamma(\btheta_3)\rangle$,
-is not yet meaningful: each $\gamma$ carries the spin-2 phase of
+is well defined in specified axes, but is not yet a function of triangle
+shape alone: each $\gamma$ carries the spin-2 phase of
 Eq.~\eqref{eq:spin2}, so the raw average depends on the coordinate
 axes.
 
@@ -2118,12 +2406,19 @@ means multiplying by $e^{-2i\beta}$, the spin-2 rule once more.
 \subsection{Four natural components, no more}
 \label{sec:gammadef}
 
+Once the reference directions are fixed, each vertex supplies two real
+shear components. Multiplying three such pairs of components produces
+eight real correlations. Complex notation organizes those eight numbers
+into four functions without discarding information. The following
+construction explains which four functions are needed, so the later
+kernel integral need not be accepted as an unexplained list of symbols.
+
 \paragraph{The definition.}
 Each of the three projected shears is complex, so products can
 conjugate any subset of them.  Schneider \&
 Lombardi~\cite{SchneiderLombardi} showed that exactly four
-combinations transform cleanly -- a rotation of the whole triangle
-multiplies each by a phase, without mixing them -- and called them
+combinations transform under changes of the local projection directions
+by individual phases, without mixing with one another, and called them
 the \emph{natural components}:
 \begin{equation}
   \Gamma_0 = \bigl\langle g_1 g_2 g_3 \bigr\rangle, \quad
@@ -2133,7 +2428,11 @@ the \emph{natural components}:
   \label{eq:gammas}
 \end{equation}
 each a complex function of the triangle $(d_2, d_3, \phi)$ and of
-the ordered source-bin labels of the three vertices.
+the ordered source-bin labels of the three vertices. When the triangle
+and its centroid reference directions rotate together, the projected
+components are invariant: the coordinate phase is cancelled by the
+reference-direction phase. This is distinct from changing the projection
+convention at fixed triangle.
 
 \paragraph{Why exactly four.}
 Conjugating a subset of the three legs gives $2^3 = 8$ candidate
@@ -2162,8 +2461,11 @@ order, and the sign conventions must all be stated.
 The likelihood predicts the $\Gamma_\mu$ from the bispectrum by the
 multipole method of Sugiyama, Gomes \& Jarvis~\cite{fastnc},
 implemented in
-\texttt{cosmolike\us core/cosmolike/3pcf/transform\us 3pcf.c}.  The
-chain has four stages, each a standard tool.
+\texttt{cosmolike\us core/cosmolike/3pcf/transform\us 3pcf.c}.  The calculation has five stages. The first two organize angular
+dependence, the next two evaluate radial transforms, and the last one
+returns to the triangle coordinates needed by the aperture sum. The
+purpose of this organization is to handle repeated oscillatory integrals
+without changing the physical bispectrum supplied to the calculation.
 
 \paragraph{Stage 1: expand the shape dependence.}
 At fixed side lengths $(\ell_1, \ell_2)$, the projected bispectrum
@@ -2284,6 +2586,13 @@ triangle sides always move together.
 \subsection{From triangles to the aperture moment}
 \label{sec:sasintegral}
 
+At this point the theory can predict four complex correlations for each
+triangle. Our data vector, however, contains aperture moments rather than
+all those correlations. The next operation is a weighted integration of
+the triangle correlations. Its weights depend on the filter radii and
+triangle geometry, while the correlations contain the cosmology; this
+separation is why the same weights can be reused at many parameter points.
+
 \paragraph{The structure of the kernel integral.}
 Jarvis, Bernstein \& Jain~\cite{JBJ} (equal radii) and Schneider,
 Kilbinger \& Lombardi~\cite{SKL} (general radii) carried out the
@@ -2334,10 +2643,12 @@ $\Gamma_\mu T_\mu$ -- and every moment built from them -- are
 unchanged as long as components and kernels sit in the same frame.
 In Eqs.~\eqref{eq:m3jbj}--\eqref{eq:t1} the $\Gamma_\mu$ are the
 first-side components; the conversion to the centroid components of
-Eq.~\eqref{eq:gammas} multiplies $\Gamma_0$ by
-$e^{2i(\varphi_1 + \varphi_2 + \varphi_3)}$, with $\varphi_a$ the
-polar angle of the offset $r_a$, and the centroid-frame kernels are
-written out after Eq.~\eqref{eq:t1}.
+Eq.~\eqref{eq:gammas} multiplies the first-side $\Gamma_0$ by
+$e^{-2i(\varphi_1+\varphi_2+\varphi_3)}$, with $\varphi_a$ the
+polar angle of the offset $r_a$. Its paired kernel must carry the inverse
+phase, $e^{+2i(\varphi_1+\varphi_2+\varphi_3)}$, so their product is
+unchanged. The centroid-frame kernels are written out after
+Eq.~\eqref{eq:t1}.
 
 \paragraph{The equal-radius kernels.}
 For equal radii the result of~\cite{JBJ} is
@@ -2443,9 +2754,35 @@ one the likelihood uses is
 \end{equation}
 where the three single-conjugate terms are the three placements of
 the conjugated leg, each pairing one $\Gamma_\mu$ with its $T_\mu$.
-The factor $1/4$ comes from solving for $\Map^3$ among the four
-combinations.  The companions are the imaginary and differenced
-combinations, and each has its own physical meaning~\cite{SKL}:
+The factor $1/4$ can be checked directly before any ensemble average
+or triangle integration. Write $M_a=E_a+iB_a$, with $E_a$ and $B_a$ the
+real aperture values on leg $a$, and temporarily abbreviate
+\begin{equation}
+ A=E_1E_2E_3,\quad X=E_1B_2B_3,\quad
+ Y=B_1E_2B_3,\quad Z=B_1B_2E_3.
+\end{equation}
+Only products with zero or two factors of $i$ contribute to a real part.
+For the unconjugated product, each pair of $i$ factors gives a minus sign:
+\begin{equation}
+ {\rm Re}(M_1M_2M_3)=A-X-Y-Z.
+\end{equation}
+Conjugating the first leg changes the sign of its $B_1$ term, so precisely
+the two products containing $B_1$ change sign:
+\begin{equation}
+ {\rm Re}(M_1^*M_2M_3)=A-X+Y+Z.
+\end{equation}
+The same operation on the second and third legs gives the other two rows:
+\begin{equation}
+\begin{aligned}
+ {\rm Re}(M_1M_2^*M_3)&=A+X-Y+Z,\\
+ {\rm Re}(M_1M_2M_3^*)&=A+X+Y-Z.
+\end{aligned}
+\end{equation}
+Adding these four rows cancels $X$, $Y$ and $Z$ separately and leaves
+$4A$. Dividing by four and taking the ensemble average proves the first
+line of Eq.~\eqref{eq:map3sas}, including when the legs have different
+source labels. The companions follow from other sums and differences,
+and have distinct interpretations~\cite{SKL}:
 \begin{itemize}
   \item $\langle \Map^3\rangle$ is the cosmological signal, the
     skewness of the E-mode convergence;
@@ -2490,6 +2827,14 @@ either way.
 \subsection{The discrete sum the code evaluates}
 \label{sec:gridsum}
 
+The preceding kernels describe a continuous integral, but a catalogue
+measurement supplies averages in bins. To connect the two, we need both
+a representative correlation for each bin and the area in configuration
+space that the bin represents. The factors of side length in this area
+are not optional normalization choices: leaving one out changes which
+triangles receive the greatest weight. We derive the measure before
+collecting it into the numerical weights.
+
 \paragraph{The bin measure, derived.}
 On the measured grid the integral~\eqref{eq:map3sas} becomes a sum
 over the SAS bins.  The measure follows in three short steps.
@@ -2505,15 +2850,19 @@ angle grid is linear with width $\Delta\phi$.
 \emph{Step 3.}  Collect the factors of Eq.~\eqref{eq:map3sas} for
 one bin:
 \begin{equation}
-  \frac{s\,ds}{R_1^2}\,\frac{|t|\,d|t|\,d\phi}{2\pi R_1^2}
+  \frac{d_2\,\mathrm{d}d_2}{R_1^2}
+  \frac{d_3\,\mathrm{d}d_3\,\mathrm{d}\phi}{2\pi R_1^2}
   \;\longrightarrow\;
-  \frac{s^2\, |t|^2}{2\pi}\,
-  (\Delta\ln d)^2\, \Delta\phi ,
-  \qquad
-  s = \frac{d_2}{R_1}, \quad |t| = \frac{d_3}{R_1} ,
+  \frac{d_2^2d_3^2}{2\pi R_1^4}
+  (\Delta\ln d)^2\,\Delta\phi
+  =\frac{s^2|t|^2}{2\pi}(\Delta\ln d)^2\,\Delta\phi .
   \label{eq:measure}
 \end{equation}
-dimensionless because the sides are measured in units of $R_1$.
+Here the variables on the left are angular side lengths, while
+$s=d_2/R_1$ and $|t|=d_3/R_1$ on the right are dimensionless.
+The four powers of side length arise from two polar Jacobians and two
+changes to logarithmic coordinates. They cancel the four powers of the
+filter radius, as required for a dimensionless aperture moment.
 
 \paragraph{Precomputed weights, one dot product.}
 The code of \texttt{aperture\us 3pcf.c} precomputes, for each radius
@@ -2538,10 +2887,11 @@ triplet,
 \end{equation}
 where $b$ runs over the kept triangle bins.  There is no complex
 conjugation in this product, and the factor $1/4$ is already inside
-the weights.  This sum -- Eq.~\eqref{eq:gridsum} over the measured
-bins -- is precisely what both the DES measurement pipeline and the
-\texttt{des\us 3pcf} likelihood compute; they share the estimator by
-construction.
+the weights.  This is the form of the contraction used by the measurement and the
+likelihood. Matching its value additionally requires matching bin
+averages, representative sides, component conventions and truncations.
+Section~\ref{sec:conventions} describes those checks; the existence of a
+weighted sum alone does not establish exact estimator agreement.
 
 \paragraph{Summary of this section.}
 \begin{itemize}
@@ -2565,17 +2915,31 @@ construction.
 \end{itemize}
 
 \paragraph{Example 8.1 (offsets of an equilateral triangle).}
-For an equilateral triangle with $s = 1$ and
-$t = e^{i\pi/3}$, the three offsets of
-Eq.~\eqref{eq:offsets} all have the same length $1/\sqrt{3}$.
-Directly, $r_1 = (1 + e^{i\pi/3})/3$ has
-$|r_1|^2 = (1 + \cos\frac{\pi}{3})^2/9 + \sin^2\frac{\pi}{3}/9 =
-(2.25 + 0.75)/9 = 1/3$; likewise
-$r_2 = (e^{i\pi/3} - 2)/3$ has
-$|r_2|^2 = (\cos\frac{\pi}{3} - 2)^2/9
-+ \sin^2\frac{\pi}{3}/9 = (2.25 + 0.75)/9 = 1/3$; and
-$r_3 = -r_1 - r_2$ closes the sum with the same length, as the
-symmetry of the equilateral triangle demands.
+Choose an equilateral triangle of unit side length in the dimensionless
+coordinates used by the kernels. Its two side variables are
+\begin{equation}
+ s=1,\qquad t=e^{i\pi/3}=\frac12+i\frac{\sqrt3}{2}.
+\end{equation}
+Substitute these numbers into the three offsets of
+Eq.~\eqref{eq:offsets}. Keeping their real and imaginary parts separate
+makes their directions visible:
+\begin{equation}
+ r_1=\frac12+i\frac{\sqrt3}{6},\qquad
+ r_2=-\frac12+i\frac{\sqrt3}{6},\qquad
+ r_3=-i\frac{\sqrt3}{3}.
+\end{equation}
+They sum to zero, as offsets from vertices to their centroid must. The
+squared length of a complex number is the sum of the squares of its real
+and imaginary parts, so
+\begin{equation}
+ |r_1|^2=\frac14+\frac{3}{36}=\frac13,\qquad
+ |r_2|^2=\frac14+\frac{3}{36}=\frac13,\qquad
+ |r_3|^2=\frac{3}{9}=\frac13.
+\end{equation}
+All three lengths are $1/\sqrt3$, consistent with equilateral symmetry.
+Their phases are different, however. The following example uses both
+facts to show why the same aperture kernel has different signs in two
+projection frames without changing the measured statistic.
 
 \paragraph{Example 8.2 (the kernel on that triangle).}
 The same triangle makes both frames of the first kernel explicit.
@@ -2611,6 +2975,14 @@ components it multiplies.
 \section{Finite triangles versus the full filter}
 \label{sec:finite}
 
+Replacing an integral by a sum makes two distinct changes possible.
+One is numerical: approximate an integral on a fixed domain with finitely
+many bins. The other is observational: exclude configurations that were
+not measured or were removed by a scale cut. Refining the bins can improve
+the first approximation while leaving the second change untouched. This
+section separates them because the predicted mean and its covariance
+must refer to the same retained configurations.
+
 \paragraph{Two different estimators.}
 Equation~\eqref{eq:map3sas} integrates over \emph{all} triangles:
 sides from zero to infinity, every opening angle.
@@ -2627,9 +2999,12 @@ well-defined) number than the infinite integral, and the two must
 not be mixed in one analysis without quantifying their difference.
 
 For the same reason the exact E/B separation of
-Section~\ref{sec:mperp} holds only for the full integral: finite
-triangle coverage can mix a little of the B~pattern into the
-E-selected sum, even when the underlying field is pure E.
+Section~\ref{sec:mperp} need not survive the restricted integral.
+An underlying E-only field can produce a nonzero value of a nominal
+B diagnostic, and an underlying B contribution can enter an
+E-selected statistic. These are failures of separation by the restricted
+estimator, not production of a physical B field by cutting triangles.
+Their magnitude has to be measured; it is not guaranteed to be small.
 
 \paragraph{Which triangles the data keep.}
 Figure~\ref{fig:coverage} shows the side plane of the SAS grid: the
@@ -2701,6 +3076,15 @@ LogMultipole measurement behind the DES Y3 vectors.
 
 \section{The DES Y3 measurement and the likelihood}
 \label{sec:likelihood}
+
+We can now connect the mathematical estimator to the released DES
+measurement. The theory has specified what a triangle correlation and
+its aperture weight mean; the measurement specifies the bins, angle
+representation and cuts to which those definitions are applied. These
+choices are part of the observable, so agreement in cosmology alone is
+not enough to reproduce a data vector. We first describe the measurement,
+then identify its counterparts in the likelihood and the remaining
+numerical checks.
 
 \subsection{What was measured}
 \label{sec:measurement}
@@ -2909,11 +3293,14 @@ The distinction behind that count matters for any simulation
 covariance.  A covariance estimate improves only with
 \emph{independent} realizations: its noise falls as the inverse
 square root of their number, and the standard debiasing of its
-inverse depends on that number explicitly.  Four cutouts of one
-full-sky simulation see different patches of sky, so they count;
-repeated noise realizations of \emph{one} cutout share the
-underlying signal, resample only the shape noise, and must not be
-counted as new simulations.
+inverse depends on that number explicitly.  Rafael reports four independent DES cutouts per parent and confirms
+that the released covariance used $796$ measurements, with one noise
+realization per cutout. The file count and the number of independent
+parent lightcones are nevertheless different provenance facts. Distinct
+sky footprints do not, by themselves, prove absence of shared long-mode
+correlations; statistical formulas that assume independent mocks retain
+that assumption. Repeated noise realizations of \emph{one} cutout
+certainly share its signal and cannot be counted as new independent skies.
 
 The archived measurement configuration and the full comparison
 against the released pipeline are documented in the project's
@@ -2931,8 +3318,8 @@ and~\ref{sec:likelihood}.}
   \item Because the compiled analytic covariance describes the
     full-filter estimator, the project refuses analytic Map3
     covariance rows and reads a simulation covariance built from
-    the same finite-SAS estimator -- $796$ independent simulated
-    measurements.
+    the same finite-SAS estimator -- $796$ mock measurements from $199$
+    parent lightcones, with the independence assumption stated above.
   \item The likelihood's transform plan reproduces the
     measurement's bins, cut and angle grid from five yaml keys, and
     each estimator convention it mirrors -- bins, representative
@@ -2943,8 +3330,9 @@ and~\ref{sec:likelihood}.}
 \section{Intrinsic alignments in the aperture moment}
 \label{sec:ia}
 
-Everything so far assumed that a galaxy's measured shape is pure
-lensing.  It is not: galaxies form inside the large-scale tidal
+The signal model so far has included lensing, with independent shape
+noise discussed separately. Real galaxies also have correlated intrinsic
+shapes: galaxies form inside the large-scale tidal
 field, and their intrinsic shapes can align with it.  This section
 rebuilds the theory of that contamination for the three-point
 signal -- the tidal alignment and tidal torquing (TATT) model for the
@@ -2979,6 +3367,13 @@ by the source distribution itself.
 
 \subsection{The tidal field}
 \label{sec:tidal}
+
+The intrinsic term needs a physical source. A uniform gravitational
+acceleration moves a galaxy without giving its material a preferred
+relative distortion, whereas differences in acceleration across the
+galaxy can stretch it. Those differences are described by second
+spatial derivatives of the potential. Removing their isotropic part
+isolates the directional distortion to which a shape can respond.
 
 \paragraph{From the potential to a trace-free tensor.}
 Around a forming galaxy, expand the gravitational potential $\Phi$
@@ -3025,6 +3420,14 @@ deflection.
 \subsection{Eight placements}
 \label{sec:placements}
 
+Before choosing an alignment model, we can determine where its signal
+will appear in a three-point statistic. Each of the three galaxy shapes
+contains a gravitational and an intrinsic contribution. Expanding their
+product labels the possible origins of a term; it does not yet specify
+how a galaxy responds to its tidal environment. We will call the former
+choices placements and the latter choices operators, so that the two
+kinds of labels do not become interchangeable later.
+
 \paragraph{Expanding the product.}
 Insert Eq.~\eqref{eq:gsum} into a three-point average and expand --
 plain algebra, the same as expanding $(G + I)^3$ while keeping track
@@ -3064,6 +3467,14 @@ intrinsic legs; the core README tabulates the mapping.)
 \subsection{NLA: the linear response}
 \label{sec:nla}
 
+The eight placements can be predicted once we specify the intrinsic
+response on a leg. Begin with the simplest possibility: the intrinsic
+shape is proportional to the local tidal field. After its E projection,
+this makes the shape proportional to the same density field that sources
+lensing. The different location of the shape response is then expressed
+by a different radial weight, which is why NLA admits a compact kernel
+replacement.
+
 \paragraph{One coefficient.}
 The simplest model takes the intrinsic shear linear in the tidal
 field (tidal alignment), with the nonlinear matter field inserted --
@@ -3086,23 +3497,36 @@ are used throughout the project, and the companion notebook prints
 the alignment record the likelihood actually uses (its Section~7).
 
 \paragraph{One kernel trick.}
-Because this intrinsic shear is proportional to the same matter
-field that sources the lensing, every statistic of
-Section~\ref{sec:map3} absorbs NLA by one replacement in the lensing
-efficiency~\cite{GomesTATT}:
+Because the intrinsic E response is proportional to the matter field,
+NLA can be included by replacing the full lensing window. To see this,
+write the projected linear intrinsic contribution on its own:
 \begin{equation}
-  q_a(\chi)
-  \;\longrightarrow\;
-  q_a(\chi) + f_{\rm IA}\bigl(z(\chi)\bigr)\,
-  p_a(\chi)\, \frac{dz}{d\chi} .
+  I_a(\btheta)=\int d\chi\;
+  p_a(\chi)\,f_{\rm IA}\bigl(z(\chi)\bigr)\,
+  \delta_{\rm m}\bigl(\chi\btheta,\chi;z(\chi)\bigr).
+  \label{eq:intrinsicprojection}
+\end{equation}
+The source density selects where the galaxies are, and the dimensionless
+coefficient sets their response to the local density mode. Lensing has
+the same projected form with weight $W_a$. Adding the two fields therefore
+amounts to adding their weights:
+\begin{equation}
+  W_a(\chi)\;\longrightarrow\;
+  W_a^{\rm eff}(\chi)=W_a(\chi)
+  + f_{\rm IA}\bigl(z(\chi)\bigr)\,p_a(\chi).
   \label{eq:nlakernel}
 \end{equation}
-The replacement reads as follows.  A lensing leg weights matter at
-distance $\chi$ by the efficiency $q_a$; an intrinsic leg instead
-selects galaxies \emph{at} that distance, so its weight is the
-source density itself, $p_a$, times the response coefficient
-$f_{\rm IA}$; the Jacobian $dz/d\chi$ converts the redshift-space
-density into a density per distance.
+Both terms have inverse-length units. If the input is instead $n_a(z)$,
+Eq.~\eqref{eq:sourcedensityunits} supplies the single factor $dz/d\chi$;
+it must not be applied again to $p_a(\chi)$. Adding this intrinsic term
+directly to the dimensionless $q_a$ would mix quantities with different
+units and omit the lensing prefactors.
+
+For example, multiplying three effective windows produces first the
+$W_iW_jW_k$ lensing term, then terms with one, two and three factors of
+$f_{\rm IA}p$. These are exactly the eight placements already enumerated.
+Their different radial overlap is retained automatically even though
+one compact product represents the whole sum.
 
 Nothing else changes: the bispectrum model is untouched, and all
 eight placements of Eq.~\eqref{eq:placements} are generated at once
@@ -3114,10 +3538,19 @@ galaxies, which is quadratic in the tidal field.
 \subsection{TATT: the expansion to second order}
 \label{sec:tatt}
 
+NLA supplies a useful baseline, but a galaxy's response need not be
+linear in its environment. Observing shapes at galaxy positions also
+weights that response by a density-dependent sampling probability.
+TATT keeps specified quadratic operators to describe these additional
+contributions. Unlike the linear term, they couple two density modes,
+so we will have to compute new bispectrum terms rather than only change
+a radial window.
+
 \paragraph{The model.}
-TATT~\cite{Blazek} expands the three-dimensional intrinsic shape
-tensor in powers of the tidal field, keeping every term to second
-order:
+The TATT model used here~\cite{Blazek} retains the following
+linear and quadratic responses of the three-dimensional shape tensor.
+This is a specified operator set; the velocity-shear extension discussed
+later is not included in this displayed model:
 \begin{equation}
   \gamma^{\rm I}_{ij}
   \;=\;
@@ -3351,6 +3784,13 @@ checks.
 \subsection{E and B amplitudes of a shape field}
 \label{sec:iaprojection}
 
+The kernels just constructed describe a three-dimensional tensor. A
+shape observation retains only the distortion in the sky plane, so we
+must specify how tensor components become the two components of shear.
+After that projection we can refer the shear to its own wavevector to
+define E and B. These are two separate operations: choosing the sky plane
+and choosing axes within that plane.
+
 \paragraph{From a tensor to a complex shear.}
 A symmetric sky-plane tensor $T_{ij}$ distorts images exactly like
 the lensing distortion of Eq.~\eqref{eq:potential}, so it is packed
@@ -3542,9 +3982,20 @@ $k_{1x}k_{2x} - k_{1y}k_{2y} = a(c-a) + b^2$.  Meanwhile
   \;=\; a^2 (c-a)^2 - b^4 ,
   \label{eq:lemma2}
 \end{equation}
-where the last step expands
-$k_1^2 = a^2 + b^2$, $k_2^2 = (c-a)^2 + b^2$ and cancels the four
-mixed terms.  Therefore, whenever
+For clarity, the numerator before division by two expands as
+\begin{equation}
+\begin{split}
+ &(a^2-b^2)\bigl[(c-a)^2+b^2\bigr]
+ +\bigl[(c-a)^2-b^2\bigr](a^2+b^2)\\
+ &=a^2(c-a)^2+a^2b^2-b^2(c-a)^2-b^4\\
+ &\quad+a^2(c-a)^2+b^2(c-a)^2-a^2b^2-b^4\\
+ &=2a^2(c-a)^2-2b^4.
+\end{split}
+\end{equation}
+The $a^2b^2$ terms cancel each other, as do the $b^2(c-a)^2$ terms.
+Dividing the remaining expression by two gives the right-hand side of
+Eq.~\eqref{eq:lemma2}, identical to Eq.~\eqref{eq:lemma1}.
+Therefore, whenever
 $\bk_1 + \bk_2$ lies along the $x$ axis,
 \begin{equation}
   \mathcal{A} \;=\; \frac{\Sigma_+}{2} .
@@ -3554,10 +4005,19 @@ The companion notebook verifies this identity on thousands of random
 closed triangles (its Section~8).
 
 \paragraph{Step 6: assemble.}
-Substituting Eq.~\eqref{eq:closureidentity} into
-Eq.~\eqref{eq:projtorque} collapses the torque projection to
-$E[K^{(2)}_{C_2}] = C_2\,\Sigma_+/12$, and with the Wick factor $2$
-the complete bispectrum reads
+The identity now removes one of the two apparent shape factors from
+the torque contribution. Substituting it into
+Eq.~\eqref{eq:projtorque} gives
+\begin{equation}
+ E[K^{(2)}_{C_2}]
+ =\frac{C_2}{2}\left(\frac{\Sigma_+}{2}-\frac{\Sigma_+}{3}\right)
+ =\frac{C_2}{2}\frac{\Sigma_+}{6}
+ =\frac{C_2\Sigma_+}{12}.
+\end{equation}
+Wick's two cross-pairings multiply this projection by two. The density
+term already carries the factor $C_{1\delta}\Sigma_+/2$ from
+Eq.~\eqref{eq:bddeden}; adding both to the linear-response contribution
+gives the complete expression in the source normalization:
 \begin{equation}
   B_{\delta\delta E}(\bk_1,\bk_2,\bk_3)
   \;=\;
@@ -3653,7 +4113,8 @@ low-level alignment routine returns seven all-E and twelve single-B
 components) but do not enter the likelihood's mean, which uses E
 modes only (Section~\ref{sec:iatotal}).
 
-\subsection{Two and three shape legs: $B_{\delta EE}$ and $B_{EEE}$}
+\subsection{Two and three shape legs:
+  \texorpdfstring{$B_{\delta EE}$ and $B_{EEE}$}{density--E--E and E--E--E}}
 \label{sec:bdeetrans}
 
 \paragraph{The pattern.}
@@ -3795,6 +4256,13 @@ two-point level, not a derived result~\cite{GomesTATT}.
 \subsection{Projection, and the eight-term aperture moment}
 \label{sec:iatotal}
 
+The preceding bispectra are local, three-dimensional correlations at one
+redshift. They cannot yet be compared with the aperture data. We now
+return to the projection of Section~\ref{sec:limber}, replacing a lensing
+window by a source window whenever a leg is intrinsic. This step restores
+the observational distinction between a galaxy being distorted by matter
+in front of it and its own shape responding to matter at its location.
+
 \paragraph{Two radial kernels per leg.}
 Each three-dimensional bispectrum is projected onto the sky exactly
 as in Eq.~\eqref{eq:limber}, with one difference per leg: a lensing
@@ -3863,6 +4331,14 @@ of the core README).
 
 \subsection{The operator split the code computes}
 \label{sec:operatorsplit}
+
+A total prediction can agree with an expectation even when individual
+terms cancel for the wrong reason. To interpret the result, we therefore
+resolve it in both labels introduced above: which galaxies carry an
+intrinsic contribution, and which operator generated that contribution.
+The resulting table is a diagnostic of the specified model, not a set of
+separately measured data vectors. Its entries must sum back to the same
+observable used by the likelihood.
 
 \paragraph{The diagnostic.}
 The project's diagnostic call, \texttt{nw.map3\us components()},
@@ -3958,9 +4434,13 @@ Eqs.~\eqref{eq:bdde} and~\eqref{eq:bdee} make that plausible: the
 residual terms carry explicit shape factors ($\Sigma_+$, $U$, $V$,
 $W$, $T$) that the NLA kernel replacement does not have.
 
-Second, for alignment parameters of order unity the NLA and TATT
-predictions of the aperture skewness differ at about the ten percent
-level.
+Second, the source study reports differences around ten percent between
+NLA and TATT aperture predictions for the parameter choices it examines.
+This is a comparison of complete models at specified points, not a
+universal fractional size for each quadratic operator. The smaller
+operator contributions quoted above belong to this note's particular
+fiducial point and weighting; they do not establish that quadratic
+alignments are negligible throughout the allowed parameter range.
 
 Third, the higher-order terms can push the two- and three-point
 signals in \emph{opposite} directions -- damping $\xi_\pm$ while
@@ -4118,7 +4598,10 @@ contributes ten percent.  The resolution is that the two operators
 enter at different orders of the signal.  The linear alignment
 rides the full matter bispectrum through the kernel
 shift~\eqref{eq:nlakernel}: its size relative to gravity is set by
-$f_{\rm IA}\, p_a / q_a$, of order ten percent here.  Density
+the dimensionless ratio $f_{\rm IA}p_a/W_a$ inside the radial
+integral, together with the overlap of the source and lensing weights.
+The reported ten-percent change is a result of the full projection at
+this fiducial point, not a universal value of that local ratio.  Density
 weighting exists only in the residual tree-level terms of
 Eq.~\eqref{eq:bdde}, which carry
 $C_{1\delta}\, \Sigma_+\, P P$ against the much larger nonlinear
@@ -4127,6 +4610,14 @@ further small factors.  A coefficient of order one multiplies a
 structurally small term.
 \section{Limits and pointers}
 \label{sec:limits}
+
+We have followed the observable from a density field to a finite sum of
+shear correlations, including the additional terms from intrinsic
+alignments. It is useful now to separate definitions from approximations.
+The filter and retained triangle bins define the observable; the matter
+and alignment prescriptions predict it; finite transform grids approximate
+that prediction. Improving a numerical grid does not remove a modelling
+assumption or restore triangles excluded from the measurement.
 
 \paragraph{The whole chain, in ten steps.}
 Everything this note built fits in one list, from parameters to the
@@ -4172,10 +4663,11 @@ What this note does not cover, and where it lives instead:
     the role of the joint covariance with $\xi_\pm$, NLA against
     TATT -- is the subject of the intrinsic-alignment note,
     \texttt{notes/intrinsic\us alignments}, and its notebook.
-  \item The simulation covariance that the examples read (synthetic
-    DES-footprint maps, TreeCorr measurement of the same finite-SAS
-    estimator) is derived in \texttt{notes/gptg\us simulations} and
-    \texttt{notes/covariance\us from\us simulations}.
+  \item The examples read the released DES simulation covariance. The
+    separate GPTG generator in \texttt{notes/gptg\us simulations} is a
+    controlled model for covariance experiments, not the source of that
+    released matrix. \texttt{notes/covariance\us from\us simulations}
+    explains how simulated measurements estimate and correct covariances.
   \item Baryonic feedback on the bispectrum (BiHalofit responses,
     BACCO) is derived in \texttt{notes/baryonic\us feedback}.
   \item The estimator conventions still open with the measurement's
@@ -4205,6 +4697,13 @@ measurement's author, R.~Gomes.
 
 \section{Complex numbers and rotations}
 \label{app:complex}
+
+The main text uses complex numbers to describe orientations, not to
+introduce a new physical degree of freedom. This appendix starts with
+ordinary planar rotations and then shows why shear carries twice the
+rotation angle. That distinction explains the phases in the natural
+components and prevents a change of axes from being mistaken for a change
+in the measured signal.
 
 \paragraph{Multiplication rotates.}
 A complex number $z = x + i y$ is a point of the plane; in polar
@@ -4319,6 +4818,12 @@ Section~\ref{sec:qform}.
 \section{Fourier analysis in two dimensions}
 \label{app:fourier}
 
+Fourier analysis changes how we describe the same field: positions are
+replaced by wave amplitudes. For this note, its practical value is that
+filtering and differentiation become simple multiplications. We develop
+the normalization from a finite box so the factors of area and $2\pi$
+used in the power spectrum and bispectrum have a visible origin.
+
 \paragraph{From a box to the plane.}
 On a periodic square of side $L$, any field is a Fourier
 \emph{series} over the discrete waves
@@ -4413,6 +4918,12 @@ spectrum.
 \section{Bessel functions}
 \label{app:bessel}
 
+A plane wave has a preferred direction, while the aperture filter is
+circular. Averaging that wave over directions produces a Bessel function.
+This is why Bessel integrals appear even when the starting calculation
+contains only ordinary exponentials. We begin with the circular average,
+then use its series to evaluate the Gaussian filter transform explicitly.
+
 \paragraph{The circular average of a plane wave.}
 The Bessel function of order zero is defined here by
 \begin{equation}
@@ -4422,8 +4933,9 @@ The Bessel function of order zero is defined here by
   \label{eq:j0def}
 \end{equation}
 the average of a plane wave of amplitude one over all directions.
-The imaginary part vanishes by the symmetry
-$\varphi \to 2\pi - \varphi$, so $J_0$ is real.  It generalizes the
+The imaginary part cancels between directions separated by $\pi$:
+$\cos(\varphi+\pi)=-\cos\varphi$, so the two exponentials are complex
+conjugates. Their sum is real, and consequently $J_0$ is real.  It generalizes the
 cosine to two dimensions: $J_0(0) = 1$, it oscillates with slowly
 shrinking amplitude, and for large $x$ it behaves as
 $\sqrt{2/\pi x}\,\cos(x - \pi/4)$.
@@ -4491,8 +5003,12 @@ the triangle kernels~\eqref{eq:t0} come out in closed form.
 \section{Legendre polynomials and logarithmic Fourier transforms}
 \label{app:legendre}
 
-The transform of Section~\ref{sec:multipole} rests on two numerical
-tools that deserve a plain statement.
+The transform of Section~\ref{sec:multipole} separates two kinds of
+variation. Legendre polynomials describe the angular shape dependence,
+while logarithmic Fourier transforms handle the radial integrals across
+many scales. These tools answer different questions: how to represent a
+function of triangle shape, and how to integrate its oscillatory radial
+transform efficiently. We introduce them in that order.
 
 \paragraph{Legendre polynomials.}
 The Legendre polynomials are the sequence
@@ -4571,6 +5087,13 @@ explicit choices for code comparisons.
 
 \section{Probability: moments, cumulants and Wick's rule}
 \label{app:probability}
+
+An ensemble moment is an average of products, whereas a connected moment
+removes specified contributions from lower-order averages. Confusing
+these quantities can lead to treating a Gaussian fourth moment as zero,
+or to forgetting the pair products that generate a tree-level bispectrum.
+The examples below build the distinction using ordinary random variables
+before applying the same operations to field values.
 
 \paragraph{Moments.}
 For a random variable $x$ with density $p(x)$, the $n$-th moment is
@@ -4680,6 +5203,13 @@ $(g^2, g^2)$ appears with $\rho = 1$.
 
 \section{Statistical homogeneity and isotropy}
 \label{app:homiso}
+
+A statistical symmetry concerns an ensemble, not the appearance of one
+realization. A single map contains peaks and voids at particular locations;
+homogeneity does not erase them. It says that translating the observation
+region does not change the probability law. We use that statement, and its
+rotational counterpart, to count the arguments needed by a correlation
+function and to explain the Fourier-space delta functions.
 
 \paragraph{Counting the surviving arguments.}
 A two-point function of a field on the plane starts with four real
