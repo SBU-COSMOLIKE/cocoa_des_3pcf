@@ -29,6 +29,10 @@ def test_stable_inverse_keeps_the_constrained_direction():
     with pytest.raises(ValueError, match="nonnegative"):
         cnu.stable_inverse(np.diag([1.0, -1.0]), 1.0e-12)
 
+    # Neither is a positive diagonal with a negative eigenvalue (-1 and 3).
+    with pytest.raises(ValueError, match="negative eigenvalue"):
+        cnu.stable_inverse(np.array([[1.0, 2.0], [2.0, 1.0]]), 1.0e-12)
+
 
 def test_cache_record_keeps_every_checksum():
     """Two inputs named mask.txt keep both checksums; a unique name stays short."""
