@@ -64,3 +64,21 @@ def test_get_fom_refuses_a_fisher_that_is_not_positive_definite():
     bad = np.diag([4.0, 9.0, -1.0])
     with pytest.raises(ValueError, match="not positive definite"):
         cnu.get_FoM(i=0, j=1, F=bad)
+
+
+def test_old_record_with_a_now_shared_name_is_refused():
+    """An old bare-name record cannot vouch for several same-named inputs.
+
+    Records written before shared names were kept stored one checksum per
+    name. If two inputs now share that name, the other checksum at write
+    time is unknown, so the record must count as different even when both
+    current checksums equal the stored one.
+    """
+    from cosmolike_notebook_utils.caches import _file_differences
+
+    old = {"mask.txt": "h"}
+    current = {"lsst/data_files/mask.txt": "h", "desi/data_files/mask.txt": "h"}
+    assert _file_differences(old, current)
+    # A name that still belongs to one input compares as before.
+    assert not _file_differences({"x.txt": "h"}, {"x.txt": "h"})
+    assert _file_differences({"x.txt": "h"}, {"x.txt": "g"})
