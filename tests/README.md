@@ -257,3 +257,34 @@ The cold table is handed to the core, but the active shear/Map3 mean does
 not depend on the halo variance that consumes it. These numbers do not
 validate substituting total power in a halo covariance or in another
 observable that actively uses the cold field.
+
+## Official hybrid-emulator test
+
+The E5 test follows LSST Y1: fifty random cosmologies drawn from the
+numbered example, restricted to 0.2 < Omega_m < 0.5, fixed mnu=0.06 eV,
+and 10^9 A_s <= 3.5. Both routes use plain mead2020 and CAMB background
+quantities. The candidate supplies total power and approximate linear cold
+power through the explicit Eisenstein-Hu option. It uses the installed
+emulator code and data; environment overrides are the same as LSST Y1.
+
+```bash
+python -m pytest -s projects/des_3pcf/tests/data_vector/test_emul2.py
+```
+
+Each invocation creates a separate `chains/hybrid_emulator_tests/` directory.
+The statistic is the direct vector difference contracted with the fixed
+precision, with no data-residual linear term. The Fisher calculation uses
+CAMB derivatives at two step sizes and marginalizes the sampled nuisance
+parameters with their Gaussian prior curvature and hard bounds. Its figure
+uses the approved error thresholds 0.2, 0.5 and 1, the project title and the
+3.5 amplitude cap. These contours describe a centered local forecast,
+not a fit to the observed posterior. Accuracy exceedances are recorded;
+incomplete numerical comparisons or a failed Fisher calculation fail E5.
+
+Example 1 supplies the observed joint xi/Map3 vector, its scale cuts,
+MOPED compression and simulation covariance. The native selection is
+applied after evaluating and re-scoring the full prediction; the precision
+is the inverse of that selected covariance. The Fisher overlay uses the
+Gaussian fixed-covariance approximation, not the curvature of the Percival
+finite-simulation likelihood. BiHalofit consumes the selected provider power;
+CAMB still supplies the background and sigma8(z) used for growth.

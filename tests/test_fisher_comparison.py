@@ -88,3 +88,50 @@ def test_rank_failure_is_reported_separately_for_each_experiment():
     with pytest.raises(ValueError, match="both xi and Map3"):
         compare_information(derivatives=np.eye(2), names=["a", "b"],
                             kind=["xip", "xim"], covariance=np.eye(2))
+
+
+def test_official_emulator_fisher_compresses_after_scoring(tmp_path):
+    """The survey scores full rows, but derivatives use the compressed metric.
+
+    A two-row prediction is compressed into its weighted sum. The analytic
+    derivative of that sum is seven, so its unit-covariance information is
+    49. Passing selected rows back to the full-vector likelihood would fail.
+    """
+    from types import SimpleNamespace
+    from cocoa_testing import compute_matter_emulator_fisher
+
+    class LinearSurvey:
+        def __init__(self):
+            self.prior = SimpleNamespace(external={})
+            self.parameterization = SimpleNamespace(
+                sampled_params=lambda: {"As_1e9": None},
+            )
+
+        def logposterior(self, params_values, cached=False):
+            self.last_datavector = np.array([1.0, 3.0]) * params_values["As_1e9"]
+            return SimpleNamespace(
+                loglike=self.compute_logp(datavector=self.last_datavector),
+            )
+
+        def compute_logp(self, datavector):
+            assert datavector.shape == (2,)
+            return -0.5 * (datavector[0] + 2.0 * datavector[1])**2
+
+    def select_vector(vector):
+        return np.array([vector[0] + 2.0 * vector[1]])
+
+    model = LinearSurvey()
+    compute_matter_emulator_fisher(
+        model=model,
+        likelihood=model,
+        center={"As_1e9": 0.0},
+        precision=np.eye(1),
+        params={"As_1e9": {"prior": {"min": -1.0, "max": 1.0}}},
+        output=tmp_path,
+        select_vector=select_vector,
+        sample_power=12,
+        min_effective=100,
+    )
+    record = np.load(tmp_path / "fisher.npz")
+    np.testing.assert_allclose(record["derivatives_fine"], [[7.0]])
+    np.testing.assert_allclose(record["fisher_fine"], [[49.0]])
