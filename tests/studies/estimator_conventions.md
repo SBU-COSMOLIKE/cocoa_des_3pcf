@@ -147,18 +147,53 @@ measurements, cut mask or within-bin weights.
 The sign conversion belongs to the product packed by that script alone;
 the unblinded packing script applies no sign change.
 
-Rafael states the Y3 measurement used TreeCorr 5.1.1's LogMultipole
-method on the 20-bin side bank from 0.5 to 80 arcmin, with multipole
-cutoff 100 (201 multipole values), converted the result to SAS form, and
-then kept the 9 side bins whose lower edge is at least 8 arcmin; the
-measurement scripts are stored at NERSC and are not in the pinned
-repositories. Still open with him: the opening-angle bin count and range
-after the SAS conversion, the representative side length used for each
-bin, whether the theory applied the same multipole truncation, and
-whether the NSIDE 1024 pixel window entered the catalogue comparison or
-only the map-based simulations. The emulator training geometry and the
-original TreeCorr output and configuration remain the missing sources
-for the within-bin weighting conventions.
+The Y3 measurement used TreeCorr 5.1.1's LogMultipole method on the
+20-bin side bank from 0.5 to 80 arcmin, with multipole cutoff 100 (201
+multipole values), converted the result to SAS form, and then kept the
+9 side bins whose lower edge is at least 8 arcmin; the measurement
+scripts are stored at NERSC and are not in the pinned repositories. The
+measurement's author confirmed the conventions the pinned sources leave
+open (private communication, 2026-11-23):
+
+- The SAS conversion used TreeCorr's `toSAS()` with
+  `phi_bin_size = 0.05`, which covers $`[0, \pi]`$ with 63 opening-angle
+  bins. The measurement's SAS binning is therefore the 63-bin layout
+  with centres $`(j+1/2)\pi/63`$, matching the likelihood's
+  `phi_bins: 63`.
+- Each side enters at its geometric bin centre, the lower edge times
+  $`e^{\Delta/2}`$. At the measured $`\Delta = 0.253758`$ the archived
+  empirical factor $`f_{\rm Y3}`$ displayed above is 1.1352797 while
+  $`e^{\Delta/2} = 1.1352796`$, so the two rules give essentially the
+  same sides. The aperture plan's default side rule is `geometric` (core
+  `transform_interface.cpp`) and `likelihood/joint_shear.yaml` does not
+  override it.
+- The aperture integral is fastnc's, which builds on TreeCorr's
+  calculation, summed over both orderings of the two sides,
+  $`r_1 \le r_2`$ and $`r_1 \ge r_2`$. The likelihood's transform plan
+  integrates over all ordered side pairs: its triangle grid is the full
+  product of the kept side bank with itself.
+- The theory kept three-point multipoles up to $`n = 100`$, and
+  $`n = 50`$ would likely give much the same. The likelihood default
+  `map_mmax: 20` is checked against 100 by
+  `tests/test_map_multipole_truncation.py`, which evaluates the
+  EXAMPLE_EVALUATE1 fiducial at both cutoffs, prints the measured
+  differences and bounds the relative Map3 change below $`10^{-8}`$ and
+  the covariance-weighted distance $`d^{\mathsf T} C^{-1} d`$ of the
+  change $`d`$ below $`10^{-12}`$.
+- The NSIDE 1024 HEALPix pixel window entered only the map-based
+  simulations; the theory for the catalogue measurement has none, and
+  the likelihood applies none. The pixel-window comparison is in
+  `EXAMPLE_COMPARE_CODES.ipynb`.
+- All released covariances used 796 simulations; the smaller NSIM header
+  values are typos recorded in `data/README.md`. The four cutouts of one
+  sky are independent; noise realizations of one cutout are not.
+- The 400 local vectors of `chains/rafael/datavector_2pt3pt` are stored
+  in the released row order and may be the first simulation input of the
+  covariance tests.
+
+The emulator training geometry and the original TreeCorr output and
+configuration remain the missing sources for the catalogue's within-bin
+weighting conventions.
 
 ## Checking agreement with the published estimator <a name="checks"></a>
 

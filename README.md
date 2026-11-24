@@ -715,15 +715,48 @@ rows. Matching those counts does not match the published estimator, and
 exact published inference also needs the original compression, scale cuts,
 priors and finite-simulation likelihood.
 
-Rafael Gomes measured the Y3 Map3 with TreeCorr 5.1.1's LogMultipole
-method (multipole cutoff 100, so 201 multipole values) on 20 logarithmic
-side bins from 0.5 to 80 arcmin, converted the result to SAS form and
-kept the 9 side bins whose lower edge is at least 8 arcmin. The
-likelihood integrates its Map3 prediction over those same 9 bins
-([likelihood/joint_shear.yaml](likelihood/joint_shear.yaml)). Still open
-with him: the opening-angle bins after the SAS conversion, the
-representative side length per bin, the theory's multipole truncation and
-the pixel window; his measurement scripts are at NERSC.
+The Y3 Map3 was measured with TreeCorr 5.1.1's LogMultipole method on 20
+logarithmic side bins from 0.5 to 80 arcmin and converted to
+side-angle-side (SAS) form: a SAS bin names a triangle by one bin for
+each of two side lengths plus one opening-angle bin, a slice of the
+angle between those two sides on $`[0, \pi]`$. The scale cut kept the 9
+side bins whose lower edge is at least 8 arcmin, and the likelihood
+integrates its Map3 prediction over those same 9 bins
+([likelihood/joint_shear.yaml](likelihood/joint_shear.yaml)).
+
+The conventions below fix where inside each bin the prediction is
+evaluated, so a different choice for any of them moves the predicted
+rows (confirmed by the measurement's author, R. Gomes):
+
+- The SAS conversion used TreeCorr's `toSAS()` with
+  `phi_bin_size = 0.05`, which covers $`[0, \pi]`$ with 63 opening-angle
+  bins. The likelihood uses `phi_bins: 63`, evaluated at the bin centres
+  on $`[0, \pi]`$.
+- Each side enters at its geometric bin centre, the lower edge times
+  $`e^{\Delta/2}`$ for log bin width $`\Delta`$. This is the aperture
+  plan's default side rule, and the likelihood does not override it.
+- The aperture integral (fastnc, building on TreeCorr's calculation)
+  sums over both orderings of the two sides, $`r_1 \le r_2`$ and
+  $`r_1 \ge r_2`$; the likelihood's plan integrates over all ordered
+  side pairs.
+- The theory kept three-point multipoles up to $`n = 100`$: the
+  correlation is expanded as a Fourier series in the opening angle, and
+  the cutoff $`n`$ is the largest order kept. The likelihood default
+  `map_mmax: 20` is converged against that cutoff:
+  [tests/test_map_multipole_truncation.py](tests/test_map_multipole_truncation.py)
+  evaluates the fiducial at 20
+  and at 100 and bounds the relative Map3 change below $`10^{-8}`$ and
+  the covariance-weighted distance $`d^{\mathsf T} C^{-1} d`$ of the
+  change $`d`$ below $`10^{-12}`$.
+- The HEALPix pixel window entered only the simulations; the theory for
+  the DES Y3 catalogue measurement has none, and the likelihood applies
+  none. The pixel-window comparison is in
+  [EXAMPLE_COMPARE_CODES.ipynb](EXAMPLE_COMPARE_CODES.ipynb).
+- All released covariances used 796 simulations; the smaller `NSIM`
+  header values in the released files are typos
+  ([data/README.md](data/README.md)).
+
+The measurement scripts are stored at NERSC.
 
 The [estimator study](tests/studies/estimator_conventions.md) records the
 measurement conventions and the remaining Map3 cross-covariance sign
