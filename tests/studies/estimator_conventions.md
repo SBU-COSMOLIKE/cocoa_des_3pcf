@@ -46,7 +46,7 @@ producer.
 The measurement's angular bins are settled: the SAS conversion used
 `toSAS(phi_bin_size=0.05)`, which gives 63 equal bins covering the
 interval from 0 to $`\pi`$ with centers $`(j+1/2)\pi/63`$, the layout the
-likelihood uses (see [the confirmed conventions](#confirmed) below). The
+likelihood uses (see [the confirmed conventions](#measurements) below). The
 paper's two printed endpoint numbers are not those centers. The archived
 theory configuration instead activates 100 angular samples between
 0.01570796 and 3.12588469, with its former 63-sample line commented out;
