@@ -44,11 +44,11 @@ two-/three-point cross terms.
 
 | Case | Data | IA model | Likelihood | Rows kept | Dataset and example files |
 |---|---|---|---|---|---|
-| 1 | Observed (unblinded) Y3 measurements | NLA | Percival, 796 simulations, `parameter_count = 15` | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
+| 1 | Observed (unblinded) Y3 measurements | NLA | [Percival](#percival), 796 simulations, `parameter_count = 15` | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
 | 2 | Synthetic NLA fiducial mean | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint2_sim.dataset`; `EXAMPLE_EVALUATE2.yaml`, `EXAMPLE_MCMC2.yaml`, `EXAMPLE_NAUTILUS2.yaml`/`.py` |
 | 3 | Synthetic TATT fiducial mean | TATT | Fixed Gaussian | All 480 rows | `des_y3_joint3_sim.dataset`; `EXAMPLE_EVALUATE3.yaml`, `EXAMPLE_MCMC3.yaml`, `EXAMPLE_NAUTILUS3.yaml`/`.py` |
 | 4 | Observed (unblinded) Y3 measurements | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint4.dataset`; `EXAMPLE_EVALUATE4.yaml`, `EXAMPLE_MCMC4.yaml`, `EXAMPLE_NAUTILUS4.yaml`/`.py` |
-| 5 | Synthetic TATT fiducial mean | TATT | Percival with an independent-pilot MOPED compression | All 480 rows enter the compression | `des_y3_joint5_sim.dataset`; `EXAMPLE_EVALUATE5.yaml`, `EXAMPLE_MCMC5.yaml`, `EXAMPLE_NAUTILUS5.yaml`/`.py` |
+| 5 | Synthetic TATT fiducial mean | TATT | [Percival](#percival) with an independent-pilot MOPED compression | All 480 rows enter the compression | `des_y3_joint5_sim.dataset`; `EXAMPLE_EVALUATE5.yaml`, `EXAMPLE_MCMC5.yaml`, `EXAMPLE_NAUTILUS5.yaml`/`.py` |
 
 Case 2 is the first example to run: its synthetic data were generated at
 the example's own fiducial point, so one evaluation checks the
@@ -63,6 +63,46 @@ likelihood under compression and first needs
 ([compression FAQ](#compression)). For power-only feedback on the
 two-point rows, `des_y3_xi2_sim.dataset` keeps only the 400 $`\xi`$ rows
 ([baryonic feedback](#feedback)).
+
+## What "fixed Gaussian" and "Percival" mean <a name="percival"></a>
+
+The covariance of every case is estimated from $`N_s = 796`$ simulations,
+so it is not known exactly. A **fixed Gaussian** (cases 2-4) ignores that:
+it uses $`\ln L = -\chi^2/2`$ with the covariance treated as exact. That is
+fine for demonstrations, but its error bars come out too small, because
+the inverse of a noisy covariance is biased high (the Hartlap correction)
+and the noise also scatters the inferred parameters (the Dodelson-Schneider
+effect).
+
+**Percival** (cases 1 and 5) is the likelihood of
+[Percival et al. 2022](https://arxiv.org/abs/2108.10402), which the
+published DES Y3 analysis used. It replaces the Gaussian by a
+t-distribution that accounts for the finite number of simulations:
+
+```math
+\ln L = -\frac{m}{2}\,\ln\!\left(1+\frac{\chi^2}{N_s-1}\right),\qquad
+m = n_p + 2 + \frac{N_s - 1 + B\,(n_d - n_p)}{1 + B\,(n_d - n_p)},\qquad
+B = \frac{N_s - n_d - 2}{(N_s - n_d - 1)(N_s - n_d - 4)},
+```
+
+with $`n_d`$ the number of data points and $`n_p`$ the number of sampled
+parameters. The exponent $`m`$ is chosen so that the credible intervals
+have the right frequentist coverage; both corrections above are built in,
+so no separate Hartlap factor is applied.
+
+For case 1, $`N_s = 796`$, $`n_d = 307`$ (the rows kept by the scale cuts)
+and $`n_p = 15`$ give $`m \approx 514`$. Near the best fit this acts like a
+Gaussian with the covariance inflated by about $`(N_s-1)/m \approx 1.5`$;
+far from it the tails are heavier. Because $`m`$ depends on $`n_p`$,
+`parameter_count` must equal the number of sampled parameters: it
+changes the shape of the likelihood, not only its normalization. After
+`ci.init_joint_data`, `ci.get_joint_exponent()` prints $`m`$.
+
+The published analysis also compresses the cut $`\xi`$ block to 16 MOPED
+modes, so $`n_d = 96`$ and the inflation is much smaller. Case 1 does
+this once that matrix is set as `compression_file`. The dataset keys are
+`mock_count` ($`N_s`$, 0 for the fixed Gaussian) and `parameter_count`
+($`n_p`$).
 
 # Reading path through the examples <a name="reading_path"></a>
 
