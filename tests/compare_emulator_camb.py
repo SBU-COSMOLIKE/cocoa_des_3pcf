@@ -62,7 +62,21 @@ def get_precision():
     This is a fixed-covariance Gaussian Fisher diagnostic; the numbered
     example's Percival likelihood is still used to verify each saved mean.
     """
-    return np.linalg.inv(ci.get_joint_covariance())
+    from cosmolike_notebook_utils.fisher import symmetric_matrix
+
+    covariance = symmetric_matrix(ci.get_joint_covariance(), name="Joint covariance")
+    # Xi and Map3 carry very different units. Remove those units before
+    # solving; otherwise raw inversion can amplify floating-point asymmetry.
+    diagonal = np.diag(covariance)
+    if np.any(diagonal <= 0.0):
+        raise ValueError("Joint covariance must have positive diagonal entries.")
+    scale = np.sqrt(diagonal)
+    correlation = covariance / np.outer(scale, scale)
+    factor = np.linalg.cholesky(correlation)
+    inverse_factor = np.linalg.solve(factor, np.eye(len(factor)))
+    # If R=L L^T, then R^{-1}=L^{-T} L^{-1}. This Gram product computes
+    # both triangles from the same factors and preserves their symmetry.
+    return (inverse_factor.T @ inverse_factor) / np.outer(scale, scale)
 
 
 if __name__ == "__main__":

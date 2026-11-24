@@ -74,5 +74,37 @@ class TestHybridEmulator(unittest.TestCase):
         )
 
 
+class TestJointMetric(unittest.TestCase):
+    """A change of xi/Map3 units must not spoil the inverse covariance."""
+
+    def test_equilibrated_precision(self):
+        from pathlib import Path
+        import runpy
+        from unittest.mock import patch
+        import numpy as np
+
+        project = Path(__file__).resolve().parents[2]
+        driver = runpy.run_path(str(project / "tests/compare_emulator_camb.py"))
+        factor = np.array([[1., 0., 0.], [.7, 1., 0.], [.4, -.3, 1.]])
+        scale = np.array([1e-12, 1e-6, 1.])
+        covariance = (factor @ factor.T) * np.outer(scale, scale)
+        with patch.object(driver["ci"], "get_joint_covariance", return_value=covariance):
+            precision = driver["get_precision"]()
+        np.testing.assert_array_equal(precision, precision.T)
+        whitened_metric = precision * np.outer(scale, scale)
+        np.testing.assert_allclose((factor @ factor.T) @ whitened_metric,
+                                   np.eye(3), atol=2e-15)
+        vector = np.array([.2, -.4, .8])
+        expected = np.sum(np.linalg.solve(factor, vector)**2)
+        actual = (vector * scale) @ precision @ (vector * scale)
+        self.assertAlmostEqual(actual, expected, places=14)
+
+        # A genuinely asymmetric covariance still fails the normal check.
+        covariance[0, 1] *= 1.1
+        with patch.object(driver["ci"], "get_joint_covariance", return_value=covariance):
+            with self.assertRaisesRegex(ValueError, "asymmetric"):
+                driver["get_precision"]()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
