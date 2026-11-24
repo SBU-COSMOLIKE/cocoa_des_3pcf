@@ -258,6 +258,12 @@ not depend on the halo variance that consumes it. These numbers do not
 validate substituting total power in a halo covariance or in another
 observable that actively uses the cold field.
 
+Applying the emulator's three-species Eisenstein-Hu ratio to these saved
+CAMB total spectra gives maximum fractional cold-power residuals of
+0.000300, 0.000324 and 0.000249 at the same three cosmologies, over the
+saved k=0.0001--5 1/Mpc and z=0,0.5,1,2 samples. This checks the field
+conversion even though this example's mean barely responds to that field.
+
 ## Official hybrid-emulator test
 
 The E5 test follows LSST Y1: fifty random cosmologies drawn from the
