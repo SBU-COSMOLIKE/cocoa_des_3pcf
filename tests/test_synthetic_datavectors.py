@@ -16,9 +16,13 @@ import pytest
 PROJECT = Path(__file__).resolve().parents[1]
 COCOA = PROJECT.parents[1]
 
-# chi2 of the vector against itself. Case 3 reproduces it to 1e-27; the
-# TATT path differs between processes at the 1e-11 level (FFT plans), so
-# the bound sits far above that and far below any analysis-relevant size.
+# chi2 of the vector against itself. Case 3 reproduces it to 1e-27. The
+# TATT case differs between processes at the 1e-11 level: CAMB's linear
+# P(k, z) changes in the last digits (about 1e-14) from one process to the
+# next, and the FAST-PT one-loop IA tables magnify that change where their
+# values are far below their peak (high and low k). The thread count plays
+# no part. The bound sits far above that and far below any size that
+# matters for an analysis.
 CHI2_BOUND = 1.0e-8
 
 

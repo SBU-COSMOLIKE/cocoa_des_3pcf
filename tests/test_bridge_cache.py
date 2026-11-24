@@ -647,3 +647,48 @@ def test_simultaneous_python_builds_share_one_owned_model(compiled):
         right = second.result(timeout=60)
     assert left is right
     assert core.model_generation() == before + 1
+
+
+# A second consumer of threepcf_bridge_refresh takes the refresh that
+# model_from_core needs. With no model cached yet, model_from_core must then
+# refuse instead of handing out an empty owner. The refusal ends the
+# process, so the sequence runs in a child interpreter.
+SECOND_CONSUMER = """
+import ctypes
+import sys
+sys.path[:0] = [{tests!r}, {data_vector!r}]
+import numpy as np
+import cosmolike_des_3pcf_interface as compiled
+from test_bridge_cache import install_state
+from data_vector.test_feedback import paired_input
+
+core = install_state(compiled=compiled, supplied=True)
+response = dict(paired_input().native)
+core.set_feedback(feedback=response, amplitude=0.8)
+count = sum(response[name].size for name in
+            ("z", "logk", "logu", "v", "log_power", "log_bispectrum"))
+helper = ctypes.CDLL({helper!r})
+pointer = ctypes.POINTER(ctypes.c_double)
+helper.resubmit_feedback_view.argtypes = [ctypes.c_int, ctypes.c_int, pointer]
+helper.resubmit_feedback_view.restype = ctypes.c_int
+output = np.empty(count)
+status = helper.resubmit_feedback_view(3, count, output.ctypes.data_as(pointer))
+# flush: the native refusal ends the process without flushing Python.
+print("helper status", status, flush=True)
+core.model_from_core()
+print("model built")
+"""
+
+
+def test_second_refresh_consumer_is_refused(alias_helper):
+    """model_from_core stops when another caller consumed its refresh."""
+    program = SECOND_CONSUMER.format(
+        tests=str(PROJECT / "tests"), data_vector=str(PROJECT / "tests/data_vector"),
+        helper=alias_helper._name)
+    result = subprocess.run(args=[sys.executable, "-B", "-c", program],
+                            capture_output=True, text=True, check=False, timeout=120)
+    output = result.stdout + result.stderr
+    assert "helper status 0" in output, output
+    assert 0 != result.returncode, output
+    assert "model built" not in output
+    assert "only threepcf_bridge_refresh consumer" in output, output
