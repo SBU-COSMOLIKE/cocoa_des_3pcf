@@ -30,14 +30,20 @@ power through its existing setter. Linear TATT power and the fixed covariance
 stay unchanged. No BACCO module is imported by this likelihood. See
 [the commented setup in example 1](../EXAMPLE_EVALUATE1.yaml).
 
-`joint_shear.py` selects the probe. `_cosmolike_prototype_base.py` follows
+`joint_shear.py` selects the probe. `survey.py` holds the survey readers:
+the functions that read the measurement tables, the joint covariance and
+the source distributions named by the `.dataset`, used by `initialize` and
+by notebooks that need the raw rows. `_cosmolike_prototype_base.py` follows
 LSST Y1: `initialize` reads the dataset and configures the native library;
 `get_requirements` requests theory products; `set_cosmo_related` and
 `set_source_related` supply cosmology and nuisance inputs;
 `internal_get_datavector` assembles xi+/xi-/Map3; `compute_logp` calls the
 native joint likelihood. Both probes use this project's compiled module.
 The source reconstruction, finite-triangle cuts and within-bin xi
-averaging remain explicit scientific choices in `joint_shear.yaml`.
+averaging remain explicit scientific choices in `joint_shear.yaml`, as are
+the Map3 side bins of the measurement (`theta_min_arcmin`,
+`theta_max_arcmin`, `ntheta`) and the scale cut `theta_lower_cut_arcmin`
+that selects the side bins entering the Map3 rows.
 
 The `.dataset` uses the usual `key = value` format. It names local source,
 measurement and covariance files, plus an optional mask and compression.

@@ -29,6 +29,12 @@ codes only the full-filter estimator; selecting measured triangles
 changes the estimator whose fluctuations the covariance describes, so a
 Map3 covariance is refused until a finite-SAS covariance exists. The
 driver and the adapter both state this refusal before any numerical work.
+The one published test of an analytic covariance against this estimator
+family is
+[Linke et al. 2023, Section 5.2.2](https://www.aanda.org/articles/aa/full_html/2023/04/aa45652-22/aa45652-22.html#S9),
+made with TreeCorr's earlier `ruv` triangle binning; no analytic
+covariance has been tested against the LogMultipole measurement behind
+the DES Y3 vectors.
 
 The halo prescription treats the input as one clustering matter fluid.
 `neutrino_model="massless"` therefore refuses a positive neutrino mass.

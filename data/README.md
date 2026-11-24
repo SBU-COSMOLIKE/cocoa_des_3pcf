@@ -17,7 +17,8 @@ the examples. Every input names its origin:
 | `upstream_y3_observed/`: observed unblinded DES Y3 $`\xi_\pm`$ and Map3 vectors, the same covariance and nine configurations | Same repository and commit; manifest [y3_observed_manifest.yaml](y3_observed_manifest.yaml) | [DES Y3 third-order shear results](https://arxiv.org/abs/2508.14018) |
 | `upstream_healpix/pixel_window_n1024.fits`: scalar HEALPix pixel window at NSIDE 1024 | [healpy-data](https://github.com/healpy/healpy-data) at the commit and URL in [pixel_window_manifest.yaml](pixel_window_manifest.yaml) | [HEALPix, Górski et al. 2005](https://arxiv.org/abs/astro-ph/0409513) |
 | `demonstration/`: the processed source distribution, two fixed synthetic data vectors and the xi-only row mask | Produced in this project from the `upstream_y3/` inputs ([demonstration source processing](#sources)) | |
-| `chains/rafael/maps_cov_512_v2/` (local, never committed): CosmoGrid DES Y3 shear maps at NSIDE 512 | Supplied by Rafael Gomes; described in the [map download guide](../notes/covariance_from_simulations/MAPS_README.md) | [Methods paper](https://arxiv.org/abs/2503.03964); [CosmoGrid](https://arxiv.org/abs/2209.04662) |
+| `chains/rafael/datavector_2pt3pt/` (local, never committed): 400 measured joint $`\xi_\pm`$/Map3 vectors (`.npy`, in the released row order) and their FITS files (all bin and scale information), the four independent DES cutouts of each of 100 CosmoGrid skies at NSIDE 1024 | Supplied by Rafael Gomes on the group's server; manifest [rafael_datavector_2pt3pt.sha256](rafael_datavector_2pt3pt.sha256); downloaded by [scripts/download_rafael_sims.sh](../scripts/download_rafael_sims.sh) | [Methods paper](https://arxiv.org/abs/2503.03964); [CosmoGrid](https://arxiv.org/abs/2209.04662) |
+| `chains/rafael/maps_cov_512_v2/` (local, never committed): CosmoGrid DES Y3 shear maps at NSIDE 512 with repeated noise realizations | Supplied by Rafael Gomes on the group's server; manifest [rafael_maps_cov_512_v2.sha256](rafael_maps_cov_512_v2.sha256); downloaded by the same script and described in the [map download guide](../notes/covariance_from_simulations/MAPS_README.md) | [Methods paper](https://arxiv.org/abs/2503.03964); [CosmoGrid](https://arxiv.org/abs/2209.04662) |
 
 The manifests record the source commit, the Git blob hash and the byte
 length of every copied file, and the upstream INI files document the
@@ -38,6 +39,24 @@ An optional directory argument
 (`bash scripts/download_y3_data.sh /some/dir`) downloads the set
 somewhere else for inspection.
 
+**Step :two:**: Rafael Gomes' simulation products download separately,
+because of their size, into the ignored `chains/rafael/`. From
+`projects/des_3pcf`, choose `datavector_2pt3pt` (800 files, 21 MB),
+`maps_cov_512_v2` (15,999 files, 378 GB) or `all`:
+
+```bash
+bash scripts/download_rafael_sims.sh datavector_2pt3pt
+```
+
+The script checks every file against the committed manifests named in the
+table and keeps it only when its SHA-256 matches, so an interrupted
+download can simply be restarted. The released joint covariance in
+`upstream_y3/` came from these simulations: Rafael confirms it used 796
+mocks, the four cutouts of each of 199 CosmoGrid skies, and that an
+`NSIM=500` header in an older release of the covariance file is a typo.
+The pinned Map3 file's COVMAT header reads `NSIM=400`; Rafael has been
+asked about that value.
+
 The released simulated vectors and the observed measurements are different
 scientific inputs. They belong in `data/`; predictions saved to detect a
 change in our calculation belong in `tests/`. Neither input establishes
@@ -57,8 +76,9 @@ The released files retain their original names and contents.
 The observed vectors are the Dark Energy Survey collaboration's Y3
 measurement, built on its Y3 shape catalogue; credit the collaboration
 and cite the [third-order shear results](https://arxiv.org/abs/2508.14018)
-when using them. The simulated vectors, the 796-simulation covariance and
-the local shear maps come from CosmoGrid-based DES Y3 simulations
+when using them. The simulated vectors, the 796-mock covariance, the measured
+simulation vectors and the local shear maps come from CosmoGrid-based
+DES Y3 simulations
 ([Kacprzak et al.](https://arxiv.org/abs/2209.04662)). The pixel window
 is the official HEALPix table distributed with healpy
 ([Górski et al. 2005](https://arxiv.org/abs/astro-ph/0409513)).

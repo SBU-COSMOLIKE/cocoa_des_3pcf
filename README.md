@@ -224,7 +224,11 @@ its budget can have `converged: false`.
 Two optional feedback routes exist. Both keep BiHalofit enabled: it
 supplies the absolute gravity-only bispectrum $`B_{\rm DMO}`$, and CAMB
 supplies the common cosmology. The physics is derived in the
-[feedback note](notes/baryonic_feedback/baryonic_feedback.pdf).
+[feedback note](notes/baryonic_feedback/baryonic_feedback.pdf). The
+published DES Y3 analysis handled baryons with scale cuts, while the DES
+Y6 prescription applies BACCO responses, implemented in the `tatt` branch
+of [fastnc](https://github.com/git-sunao/fastnc), which this project
+cites and never runs.
 
 **Paired BACCO responses on the joint vector.** BACCO supplies the paired
 ratios $`R_P=P_{\rm hydro}/P_{\rm DMO}`$ and
@@ -709,6 +713,16 @@ The included Y3 products have 200 $`\xi_+`$, 200 $`\xi_-`$ and 80 Map3
 rows. Matching those counts does not match the published estimator, and
 exact published inference also needs the original compression, scale cuts,
 priors and finite-simulation likelihood.
+
+Rafael Gomes measured the Y3 Map3 with TreeCorr 5.1.1's LogMultipole
+method (multipole cutoff 100, so 201 multipole values) on 20 logarithmic
+side bins from 0.5 to 80 arcmin, converted the result to SAS form and
+kept the 9 side bins whose lower edge is at least 8 arcmin. The
+likelihood integrates its Map3 prediction over those same 9 bins
+([likelihood/joint_shear.yaml](likelihood/joint_shear.yaml)). Still open
+with him: the opening-angle bins after the SAS conversion, the
+representative side length per bin, the theory's multipole truncation and
+the pixel window; his measurement scripts are at NERSC.
 
 The [estimator study](tests/studies/estimator_conventions.md) records the
 measurement conventions and the remaining Map3 cross-covariance sign

@@ -30,16 +30,18 @@ t_j=0.5\,e^{j\Delta},\quad j=0,\ldots,20,
 
 where the final value is the upper edge and the preceding values are
 lower edges. A low-side cut selects a subset of this bank; it does not
-build ten new logarithmic bins beginning at exactly 8 arcmin. The current
-demonstration does the latter, and the retired TATT configuration
-(`configs/des_y3_tatt_demo_fisher.yaml`, kept in Git history) labels that
-choice an approximation. A direct comparison follows from this: keep a
-numerically checked physical model fixed, replace only the radial bin
-bank by the original 20-bin construction and its kept subset, and record
-the resulting 80-row change. The comparison states its selection rule for
-the surviving bins (lower edge, representative separation, or a rule on
-the raw triangles), because the paper's approximate cut leaves that rule
-open.
+build ten new logarithmic bins beginning at exactly 8 arcmin. The
+likelihood integrates its Map3 prediction over the measured bank:
+`likelihood/joint_shear.yaml` declares the 20 bins from 0.5 to 80 arcmin
+(`theta_min_arcmin`, `theta_max_arcmin`, `ntheta`) and the cut
+`theta_lower_cut_arcmin: 8`, which keeps the 9 bins with lower edges from
+8.151 to 62.070 arcmin at log width 0.25376, matching the pinned
+`config/3pt.ini`. The former ten-bin demonstration bank and the retired
+TATT configuration that labels it an approximation
+(`configs/des_y3_tatt_demo_fisher.yaml`) remain in Git history. The cut's
+selection rule for the surviving bins (lower edge, representative
+separation, or a rule on the raw triangles) remains a question for the
+producer.
 
 One angular detail stays unresolved. Sixty-three equal bins covering the
 interval from 0 to $`\pi`$ have centers $`(j+1/2)\pi/63`$, and those are
@@ -143,10 +145,20 @@ measurements, cut mask or within-bin weights.
 [CosmoGrid packing, lines 30–47](https://github.com/rchgomes/3pcf_integrator/blob/d6098d326dcb03bc750adcc9627119f52d928944/script/make_cosmogrid_meas_dv.py#L30)
 
 The sign conversion belongs to the product packed by that script alone;
-the unblinded packing script applies no sign change. The external
-measurement producer, the emulator training geometry and the original
-TreeCorr output and configuration remain the specific missing sources
-for the kept-bin and weighting conventions.
+the unblinded packing script applies no sign change.
+
+Rafael states the Y3 measurement used TreeCorr 5.1.1's LogMultipole
+method on the 20-bin side bank from 0.5 to 80 arcmin, with multipole
+cutoff 100 (201 multipole values), converted the result to SAS form, and
+then kept the 9 side bins whose lower edge is at least 8 arcmin; the
+measurement scripts are stored at NERSC and are not in the pinned
+repositories. Still open with him: the opening-angle bin count and range
+after the SAS conversion, the representative side length used for each
+bin, whether the theory applied the same multipole truncation, and
+whether the NSIDE 1024 pixel window entered the catalogue comparison or
+only the map-based simulations. The emulator training geometry and the
+original TreeCorr output and configuration remain the missing sources
+for the within-bin weighting conventions.
 
 ## Checking agreement with the published estimator <a name="checks"></a>
 
@@ -155,8 +167,9 @@ The comparisons build on each other in this order:
 1. The source, projection and derivative numerical checks run without
    changing the estimator; they answer whether the stated calculation is
    stable, not whether it is the published estimator.
-2. The original radial bank and the ten-bin approximation are compared
-   at one fixed physical point, with the angle convention and
+2. The likelihood's integration uses the original radial bank and its
+   kept subset; the former ten-bin approximation remains in Git history
+   for a fixed-point comparison with the angle convention and
    representative-side rule unchanged.
 3. At fixed edges, the geometric midpoint, the analytic area mean and
    the named Y3 empirical correction are compared; the angular choices

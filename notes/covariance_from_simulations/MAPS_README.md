@@ -4,15 +4,36 @@
 support the covariance work associated with [Gomes et al.](https://arxiv.org/abs/2503.03964)
 and [his analysis code](https://github.com/rchgomes/3pcf_integrator).
 The local inventory settled at 15,997 map files on 21 November 2026. Every
-present map was measured by the coarse diagnostic, but producer completeness
-and checksums remain unverified. Three combinations of the observed labels
-are absent: run 168/cut 2/draws 7 and 19, and run 168/cut 3/draw 19.
-There are 200 distinct run labels in this download. Rafael confirmed on
-23 November 2026 that the paper used 199 parent simulations and only
-`nreal0`; the download also contains repeated noise realizations. Its extra
-parent label still needs to be mapped to the published selection.
+present map was measured by the coarse diagnostic. Three combinations of the
+observed labels are absent: run 168/cut 2/draws 7 and 19, and run 168/cut
+3/draw 19. There are 200 distinct run labels in this download. Rafael
+confirmed on 23 November 2026 that the paper used 199 parent simulations and
+only `nreal0`; the download also contains repeated noise realizations. Its
+extra parent label still needs to be mapped to the published selection.
 
-The map archive is now at `chains/rafael/maps_cov_512_v2/`, beside
+Both simulation folders are on the group's server, pinned by committed
+SHA-256 manifests:
+[data/rafael_maps_cov_512_v2.sha256](../../data/rafael_maps_cov_512_v2.sha256)
+lists 15,999 files (378 GB: the 15,997 maps plus `indices_512.npy` and
+`missing.txt`), and
+[data/rafael_datavector_2pt3pt.sha256](../../data/rafael_datavector_2pt3pt.sha256)
+lists 800 files (21 MB). The manifests pin the redistributed copies; Rafael
+supplied no checksums of his own.
+
+**Step :one:**: from `projects/des_3pcf`, download one folder or both into
+`chains/rafael/`:
+
+```bash
+bash scripts/download_rafael_sims.sh maps_cov_512_v2
+```
+
+The first argument `datavector_2pt3pt` selects the measured vectors instead,
+and `all` selects both folders. The script keeps a file only after its
+SHA-256 matches the manifest, skips files already present with the right
+hash, and stops on an existing mismatched file, so an interrupted download
+can simply be restarted.
+
+The map archive is at `chains/rafael/maps_cov_512_v2/`, beside
 `chains/rafael/datavector_2pt3pt/`. The notebook reads the maps from that
 location; no map copies are needed.
 
@@ -129,26 +150,31 @@ inside each file; NSIDE 512 comes from Rafael's description and the folder.
 The `_v2` in the folder name is a release label, not a noise realization.
 We have not been given a change record explaining that release revision.
 
-Two files differing only in `nreal` are expected to share the parent sky and
-cut, while changing the realization draw. Two files differing only in `ncut`
-are expected to select different patches from the same parent. Rafael has now confirmed these label meanings. Retain all three labels in
-measured-vector records and
-keep the entire `run` group together in training/validation splits. In
-particular, never pass the number of files as the independent-sky count.
+Two files differing only in `nreal` share the parent sky and cutout while
+changing the noise draw. Two files differing only in `ncut` select different
+cutouts of the same parent. Rafael confirmed these label meanings. Retain
+all three labels in measured-vector records and count each cutout (one
+`run`, `ncut` pair) once: following Rafael's construction, the four cutouts
+of a parent sky are independent survey realizations, while repeated `nreal`
+draws of one cutout are not. In particular, never pass the number of files
+as the realization count.
 
 ## A file is not an independent Universe
 
-The filename table records Rafael's confirmed interpretation. If several files
-share a density realization and differ only in galaxy shape noise, they
-cannot be counted as new independent realizations of cosmic structure.
-Keep all descendants of a parent simulation together when assigning training
-and validation sets. Do not average different footprints and call that one
-DES survey; this changes the measurement whose covariance is being estimated.
+The filename table records Rafael's confirmed interpretation. Files that
+share a cutout and differ only in `nreal` (galaxy shape noise on the same
+sky) are not new independent realizations of cosmic structure; the paper
+used `nreal0` alone. The four `ncut` cutouts of one parent sky do count as
+independent realizations: Rafael built the released covariance that way
+(796 mocks = 199 parents x 4 cutouts), and this project follows his choice.
+Do not average different footprints and call that one DES survey; this
+changes the measurement whose covariance is being estimated.
 
-Rafael confirmed the labels and RING ordering, and can supply noiseless
-convergence and shear maps. Still obtain the exact parent selection, cosmology,
-coordinate basis, source-bin distributions, shape-noise prescription, shear signs,
-footprint weights and pixel occupancies, and checksums or expected file sizes.
+Rafael confirmed the labels and RING ordering, and noiseless convergence and
+shear maps can be generated from CosmoGrid or from GowerSt2 (DES Y6). Still
+obtain the exact parent selection, cosmology, coordinate basis, source-bin
+distributions, shape-noise prescription, shear signs, footprint weights and
+pixel occupancies.
 If different cuts use different pixel lists, obtain that mapping too.
 The download can be used for bounded previews while these details arrive;
 a survey covariance requires them.
@@ -170,10 +196,14 @@ resolution and estimator matching are tested, the maps can teach and test
 the covariance workflow, but do not establish a matched published likelihood.
 
 The separate `chains/rafael/datavector_2pt3pt/` download contains the
-NSIDE1024 paper-estimator measurements for 100 parents and four cutouts
-each: 400 matched NPY/FITS pairs. These are not the coarse moments measured
-by the pilot below. All pairs contain 200 xi-plus, 200 xi-minus and 80 Map3
-entries; the NPY ordering agrees exactly with the FITS columns.
+NSIDE 1024 paper-estimator measurements: 400 matched NPY/FITS pairs, the
+four independent DES cutouts of each of 100 fiducial CosmoGrid simulations.
+Each `.npy` holds one joint vector in the released data-vector row order
+(200 xi-plus, 200 xi-minus and 80 Map3 entries), and its `.fits` carries
+all bin and scale information; the NPY ordering agrees exactly with the
+FITS columns. The paper covariance used 199 simulations (796 mocks =
+199 x 4 cutouts); Rafael retains only these first 400 vectors. They are not
+the coarse moments measured by the pilot below.
 
 The [PME notebook](../../EXAMPLE_COVARIANCE_PME.ipynb) explains how simulations
 can correct an analytic precision matrix. The [introductory notes](../covariance_from_simulations/covariance_from_simulations.pdf)
@@ -253,9 +283,13 @@ python projects/des_3pcf/scripts/measure_covariance_xip.py --runs 32
 The comparison is conditional on equal pixel weights and the specified
 shear basis, and it does not remove the 512-versus-1024 resolution difference.
 If the released covariance shares these parent skies, it is not independent
-validation. Rafael confirmed that its `NSIM=500` header is a stale typo: the covariance
-used 796 mocks from 199 parent simulations. Preserve the original FITS file
-and record 796 as the producer-confirmed count in analysis metadata.
+validation. Rafael confirmed that an `NSIM=500` header value is a typo from
+an older version of the file: the covariance used 796 mocks, the four
+cutouts of each of 199 parent simulations. The COVMAT header of the pinned
+`sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits` reads
+`NSIM=400`; Rafael has been asked which file carries the 500. Preserve the
+original FITS files and record 796 as the producer-confirmed count in
+analysis metadata.
 The Map3 block is identical to the standalone Map3 file, but the standalone
 two-point covariance differs from the joint file's two-point block. Use the
 joint reference consistently; do not splice the two products together.
