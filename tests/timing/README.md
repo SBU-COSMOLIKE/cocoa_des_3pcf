@@ -39,7 +39,7 @@ so use a quiet machine.
 
 ```bash
 python projects/des_3pcf/tests/benchmark_scaling.py \
-  --yaml projects/des_3pcf/EXAMPLE_EVALUATE1.yaml \
+  --yaml projects/des_3pcf/EXAMPLE_EVALUATE2.yaml \
   --output projects/des_3pcf/chains/benchmark_scaling/nla \
   --threads 1 4 8
 ```
@@ -48,7 +48,7 @@ python projects/des_3pcf/tests/benchmark_scaling.py \
 
 ```bash
 python projects/des_3pcf/tests/benchmark_scaling.py \
-  --yaml projects/des_3pcf/EXAMPLE_EVALUATE2.yaml \
+  --yaml projects/des_3pcf/EXAMPLE_EVALUATE3.yaml \
   --output projects/des_3pcf/chains/benchmark_scaling/tatt \
   --threads 1 4 8
 ```

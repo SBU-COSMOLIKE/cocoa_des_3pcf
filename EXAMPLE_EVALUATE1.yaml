@@ -1,5 +1,6 @@
-# Case 1 matches EXAMPLE_NAUTILUS1.yaml: same data, priors and simulation covariance.
-# Case 4 requires chains/independent_pilot_compression.npz.
+# Case 1 matches EXAMPLE_NAUTILUS1.yaml: the observed DES Y3 data with the setup of
+# the published analysis where the project allows it (des_y3_joint1.dataset): the
+# Y3 xi scale cuts and the Percival likelihood with 796 simulations.
 timing: true
 debug: false
 stop_at_error: true

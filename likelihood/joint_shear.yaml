@@ -1,6 +1,6 @@
 # Numerical settings for the joint shear projection. Theory is selected in the example YAML.
 path: null
-data_file: des_y3_joint1.dataset
+data_file: des_y3_joint2_sim.dataset
 # False: gravity-only P and B. True: request paired R_P/R_B from a theory block.
 external_baryon_response: false
 # True: apply the power-only bfmt R_P to the xi rows; every Map3 row must be masked.
@@ -28,10 +28,10 @@ source_interpolation: pchip_midpoint
 source_padding: zero_at_measured_edges
 # Map3 side bins of the DES Y3 measurement (Gomes et al.): 20 log bins from
 # 0.5 to 80 arcmin; the scale cut keeps those with lower edge >= 8 arcmin.
-theta_min_arcmin: 0.5
-theta_max_arcmin: 80.0
-ntheta: 20
-theta_lower_cut_arcmin: 8.0
+sas_theta_min_arcmin: 0.5
+sas_theta_max_arcmin: 80.0
+sas_ntheta: 20
+sas_theta_lower_cut_arcmin: 8.0
 phi_bins: 63
 map_ell_min: 0.01
 map_ell_max: 100000

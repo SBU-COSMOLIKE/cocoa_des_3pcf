@@ -1,6 +1,6 @@
 """Check the DES Y3 xi scale-cut mask against its source.
 
-data/y3_xi_scale_cut_mask.txt holds one 0/1 flag per row of the joint data
+data/des_y3_xi_scale_cut.mask holds one 'index flag' line per row of the joint data
 vector (200 xi+, 200 xi-, then 80 Map3), in the likelihood's row order. Its
 xi flags come from the DES Y3 cosmic-shear scale cuts of the CosmoSIS
 standard library (data/upstream_cosmosis/des-y3-scale-cuts.ini): a row is
@@ -36,6 +36,8 @@ def test_mask_follows_the_y3_cosmic_shear_cuts():
 
     # Step 3: all Map3 rows follow, then compare with the shipped mask.
     flags += [1] * 80
-    shipped = np.loadtxt(DATA / "y3_xi_scale_cut_mask.txt", dtype=int)
+    shipped = np.loadtxt(DATA / "des_y3_xi_scale_cut.mask")
+    np.testing.assert_array_equal(shipped[:, 0], np.arange(480))
+    shipped = shipped[:, 1].astype(int)
     np.testing.assert_array_equal(shipped, flags)
     assert 227 == int(np.sum(shipped[:400]))

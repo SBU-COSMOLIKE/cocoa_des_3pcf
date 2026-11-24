@@ -16,12 +16,13 @@ Terms used in this file:
                  source bin triple and aperture filter scale).
   rows         = the labeled row table of the data vector (one label, row
                  kind "xip"/"xim"/"map3", bin indices and angle per entry),
-                 read by read_survey from the measurement files.
+                 rebuilt by survey_rows from the .dataset geometry keys.
   mask         = one 0/1 flag per data-vector entry; entries flagged 0 (scale
                  cuts) are excluded from the chi2.
-  .dataset     = small text file with one "key = value" line per setting: the
-                 measurement, covariance, mask and n(z) file names and the
-                 source bin count.
+  .dataset     = small text file with one "key = value" line per setting, as
+                 in lsst_y1: the ASCII data vector, covariance, mask and n(z)
+                 files of data/ and the row geometry (source_ntomo, n_theta,
+                 theta_min_arcmin, theta_max_arcmin, map3_radii_arcmin).
   compression  = an optional fixed matrix T that multiplies data and theory
                  (and the covariance by T on the left and T transpose on the
                  right) so the chi2 runs over a few linear modes instead of
@@ -71,13 +72,16 @@ sys.path.insert(0, str(CORE))
 # state. ci.production is its Python production layer (the Map3 transform
 # plan and physics model built on the same compiled kernels).
 import cosmolike_des_3pcf_interface as ci
-# survey = likelihood/survey.py, the readers of the measurement, the
-# covariance and the source n(z), imported relative to this package.
+# survey = likelihood/survey.py: the row geometry and the readers of the
+# ASCII data vector, covariance and source n(z), imported relative to this
+# package.
 from .survey import (
-    read_survey,
-    read_joint_covariance,
-    read_source_distributions,
+    ARCMIN_TO_RADIAN,
+    read_covariance,
+    read_sources,
+    read_vector,
     reconstructed_sources,
+    survey_rows,
 )
 
 # Prefix of every nuisance-parameter name this likelihood reads from Cobaya,
@@ -122,10 +126,11 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                          of its fitted n(z) representation
       source_interpolation, source_padding = n(z) reconstruction method and
                          its behavior outside the measured redshift range
-      theta_min_arcmin, theta_max_arcmin, ntheta = the log-spaced side
-                         bins of the Map3 measurement's three-point
-                         function (DES Y3: 20 bins from 0.5 to 80 arcmin)
-      theta_lower_cut_arcmin = the measurement's scale cut: only side bins
+      sas_theta_min_arcmin, sas_theta_max_arcmin, sas_ntheta = the
+                         log-spaced side bins of the side-angle-side (SAS)
+                         three-point function behind the Map3 measurement
+                         (DES Y3: 20 bins from 0.5 to 80 arcmin)
+      sas_theta_lower_cut_arcmin = the measurement's scale cut: only side bins
                          whose lower edge is at least this value enter
                          the Map3 rows (DES Y3: 8 arcmin, 9 bins kept)
       phi_bins         = azimuthal node count of the aperture transform
@@ -187,29 +192,36 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         ini = IniFile(str(directory / self.data_file))
         self.probe = probe
         self.source_ntomo = ini.int("source_ntomo")
-        self.rows = read_survey(
-            two_point_path=ini.relativeFileName("two_point_file"),
-            aperture_path=ini.relativeFileName("aperture_file"),
-            nbin=self.source_ntomo,
-        )
-        covariance = read_joint_covariance(
-            path=ini.relativeFileName("cov_file"),
-            rows=self.rows,
-        )
 
-        # The scored vector defaults to the measured rows themselves; an
-        # optional data_file key replaces it (for example with a synthetic
-        # vector) while keeping the measured covariance and row layout.
-        data = self.rows.values
-        if ini.string("data_file", ""):
-            data = np.loadtxt(fname=ini.relativeFileName("data_file"))
+        # Row geometry, as in lsst_y1: the xi rows are every source pair and
+        # n_theta log bins between theta_min_arcmin and theta_max_arcmin;
+        # the Map3 rows every source triplet and aperture radius.
+        self.ntheta = ini.int("n_theta")
+        self.theta_min_arcmin = ini.float("theta_min_arcmin")
+        self.theta_max_arcmin = ini.float("theta_max_arcmin")
+        self.map3_radii_arcmin = np.array(
+            [float(value) for value in ini.string("map3_radii_arcmin").split()])
+        self.rows = survey_rows(
+            nbin=self.source_ntomo,
+            aperture_radii=self.map3_radii_arcmin * ARCMIN_TO_RADIAN,
+            xi_edges=np.geomspace(self.theta_min_arcmin, self.theta_max_arcmin,
+                                  self.ntheta + 1) * ARCMIN_TO_RADIAN,
+        )
+        size = self.rows.kind.size
+
+        # The ASCII inputs of data/ (scripts/convert_desy3_fits.py writes
+        # them from the released FITS files): the scored data vector and
+        # the covariance.
+        data = read_vector(path=ini.relativeFileName("data_file"), size=size)
+        self.rows.values = data.copy()
+        covariance = read_covariance(path=ini.relativeFileName("cov_file"), size=size)
 
         # Without a mask_file key every row enters the chi2; with one, the
         # rows flagged 1 are kept and the rows flagged 0 are cut.
-        indices = np.arange(self.rows.values.size, dtype=np.int64)
+        indices = np.arange(size, dtype=np.int64)
         if ini.string("mask_file", ""):
-            mask = np.loadtxt(fname=ini.relativeFileName("mask_file"))
-            if mask.shape != data.shape or not np.all((mask == 0) | (mask == 1)):
+            mask = read_vector(path=ini.relativeFileName("mask_file"), size=size)
+            if not np.all((mask == 0) | (mask == 1)):
                 raise ValueError("The mask must have one 0/1 value per data row.")
             indices = np.flatnonzero(mask)
 
@@ -363,23 +375,24 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         # Measured source distributions. The call returns a four-value
         # tuple, in this order: the measured redshift grid, the n(z) curve
         # of every bin [nbin, nz], and the lower and upper edges of the
-        # measured redshift cells. set_source_related reconstructs shifted
-        # n(z) from these at every sampled point.
+        # measured redshift cells (z -+ nz_source_bin_width / 2).
+        # set_source_related reconstructs shifted n(z) from these at every
+        # sampled point.
         # ------------------------------------------------------------------
         (self.source_native_z, self.source_native,
-         self.source_native_low, self.source_native_high) = read_source_distributions(
+         self.source_native_low, self.source_native_high) = read_sources(
             path=ini.relativeFileName("nz_source_file"),
             nbin=self.source_ntomo,
-            with_edges=True,
+            bin_width=ini.float("nz_source_bin_width"),
         )
 
         # ------------------------------------------------------------------
         # The Map3 aperture engine: the fixed transform plan that turns the
         # physics model of set_source_related into the Map3 rows. It
         # integrates the shear three-point function over the same
-        # side-angle-side (SAS) bins as the measurement: ntheta log bins
-        # between theta_min and theta_max, of which the scale cut keeps
-        # those whose lower edge is at least theta_lower_cut_arcmin. The
+        # side-angle-side (SAS) bins as the measurement: sas_ntheta log bins
+        # between sas_theta_min and sas_theta_max, of which the scale cut
+        # keeps those whose lower edge is at least sas_theta_lower_cut_arcmin. The
         # kept lower edges (radians, pi / (180 * 60) per arcmin) and the
         # common log width dlnt are stored for notebooks that rebuild the
         # plan on a subset of rows. The aperture filter radii come from the
@@ -388,15 +401,15 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         self.map_indices = np.flatnonzero(self.rows.kind == "map3")
         self.xi_indices = np.flatnonzero(self.rows.kind != "map3")
         edges = np.exp(np.linspace(
-            start=np.log(self.theta_min_arcmin),
-            stop=np.log(self.theta_max_arcmin),
-            num=self.ntheta + 1,
+            start=np.log(self.sas_theta_min_arcmin),
+            stop=np.log(self.sas_theta_max_arcmin),
+            num=self.sas_ntheta + 1,
         ))
-        kept = edges[:-1][edges[:-1] >= self.theta_lower_cut_arcmin]
+        kept = edges[:-1][edges[:-1] >= self.sas_theta_lower_cut_arcmin]
         if 0 == kept.size:
             raise ValueError(
-                f"No side bin has a lower edge >= theta_lower_cut_arcmin = "
-                f"{self.theta_lower_cut_arcmin}; the bins end at {edges[-1]}.")
+                f"No side bin has a lower edge >= sas_theta_lower_cut_arcmin = "
+                f"{self.sas_theta_lower_cut_arcmin}; the bins end at {edges[-1]}.")
         self.theta_lower = kept * np.pi / (180.0 * 60.0)
         self.dlnt = float(np.log(edges[1] / edges[0]))
         dphi = np.pi / self.phi_bins

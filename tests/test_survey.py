@@ -1,16 +1,24 @@
-"""Survey labels, angular units, and quadrature checks on small arrays.
+"""Survey labels, angular units, ASCII inputs and quadrature on small arrays.
 
-The synthetic FITS file deliberately uses unequal radii and unsorted
-source labels. Their association must survive reading: sorting just the
-labels would change the physical statistic while leaving its length
-unchanged. No external measurement or survey-size calculation is needed.
+The FITS readers live in scripts/convert_desy3_fits.py, the only code that
+opens the released FITS files. Its synthetic FITS file deliberately uses
+unequal radii and unsorted source labels. Their association must survive
+reading: sorting just the labels would change the physical statistic while
+leaving its length unchanged. The ASCII files it writes must reach the
+likelihood's readers (likelihood/survey.py) bit for bit.
 """
 
 import numpy as np
 import pytest
 from astropy.io import fits
 
-from cobaya.likelihoods.des_3pcf.survey import read_survey, read_joint_covariance, ARCMIN_TO_RADIAN
+import sys
+from pathlib import Path
+
+from cobaya.likelihoods.des_3pcf.survey import ARCMIN_TO_RADIAN, read_covariance, read_vector
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import convert_desy3_fits as convert  # noqa: E402
 from cosmolike_des_3pcf_interface import quadrature, shape_noise, xi_bin_weights
 from cosmolike_des_3pcf_interface import aligned_fft_grid
 
@@ -44,19 +52,48 @@ def test_unequal_aperture_labels_and_covariance_order(tmp_path):
     covariance.header["STRT_0"] = 0
     path = tmp_path / "map3.fits"
     fits.HDUList([fits.PrimaryHDU(), table, covariance]).writeto(fileobj=path)
-    rows = read_survey(two_point_path=None, aperture_path=path, nbin=3)
-    np.testing.assert_array_equal(rows.bins[0], [2, 0, 1])
-    np.testing.assert_allclose(
-        rows.angles[0], np.array([3.0, 5.0, 10.0]) * ARCMIN_TO_RADIAN,
-    )
-    matrix = read_joint_covariance(path=path, rows=rows)
+    with fits.open(path) as hdus:
+        hdu = hdus["map3"]
+        bins = np.column_stack([convert._bin_column(hdu.data, name, 3)
+                                for name in ("BIN1", "BIN2", "BIN3")])
+        angles = np.column_stack([convert._angle_column(hdu, name)
+                                  for name in ("THETA1", "THETA2", "THETA3")])
+    kind = np.array(["map3", "map3"])
+    np.testing.assert_array_equal(bins[0], [2, 0, 1])
+    np.testing.assert_allclose(angles[0], np.array([3.0, 5.0, 10.0]) * ARCMIN_TO_RADIAN)
+    matrix = convert.read_covariance(path, kind)
     np.testing.assert_array_equal(matrix, [[4.0, 1.0], [1.0, 9.0]])
     covariance.header["NAME_0"] = "xip"
     fits.HDUList([fits.PrimaryHDU(), table, covariance]).writeto(
         fileobj=path, overwrite=True,
     )
     with pytest.raises(ValueError, match="must be map3"):
-        read_joint_covariance(path=path, rows=rows)
+        convert.read_covariance(path, kind)
+
+
+def test_ascii_inputs_round_trip_bitwise(tmp_path):
+    """The converter's ASCII files reach the likelihood's readers bit for bit."""
+    # Step 1: an awkward vector and a positive definite matrix.
+    rng = np.random.default_rng(20261124)
+    values = rng.normal(size=5) * 1.0e-7
+    root = rng.normal(size=(5, 5))
+    matrix = root @ root.T + 5.0 * np.eye(5)
+
+    # Step 2: write with the converter, read with the likelihood's readers.
+    convert.write_vector(tmp_path / "v.datavector", values)
+    convert.write_covariance(tmp_path / "c.cov", matrix)
+    np.testing.assert_array_equal(read_vector(tmp_path / "v.datavector", 5).view(np.uint64),
+                                  values.view(np.uint64))
+    read = read_covariance(tmp_path / "c.cov", 5)
+    np.testing.assert_array_equal(read.view(np.uint64), matrix.view(np.uint64))
+
+    # Step 3: a missing upper-triangle entry or a wrong length is refused.
+    lines = (tmp_path / "c.cov").read_text().splitlines(keepends=True)
+    (tmp_path / "short.cov").write_text("".join(lines[:-1]))
+    with pytest.raises(ValueError, match="exactly once"):
+        read_covariance(tmp_path / "short.cov", 5)
+    with pytest.raises(ValueError, match="index value"):
+        read_vector(tmp_path / "v.datavector", 6)
 
 
 def test_log_quadrature_measure_and_shape_noise():

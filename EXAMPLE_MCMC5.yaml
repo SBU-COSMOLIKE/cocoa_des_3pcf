@@ -1,12 +1,13 @@
-# Case 5 matches EXAMPLE_NAUTILUS5.yaml: the DES Y3 setup of the published analysis
-# where the project allows it (des_y3_joint5.dataset): the simulated measurement,
-# the Y3 xi scale cuts and the Percival likelihood with 796 simulations.
+# Case 5 matches EXAMPLE_NAUTILUS5.yaml: same data, priors and simulation covariance.
+# Case 5 requires chains/independent_pilot_compression.npz.
+# Proposal learning and convergence controls follow LSST Y1.
+# Cobaya measures speeds for this joint model; no LSST blocking is assumed.
 timing: true
 debug: false
 stop_at_error: true
 likelihood:
   des_3pcf.joint_shear:
-    data_file: des_y3_joint5.dataset
+    data_file: des_y3_joint5_sim.dataset
     # Uncomment with the BACCO theory block and its five parameters.
     # external_baryon_response: true
 params:
@@ -202,10 +203,36 @@ params:
       scale: 0.5
     proposal: 0.5
     latex: \eta_\mathrm{1-IA,DES}
-  # NLA: the tidal-torquing and density-weighting terms are off.
-  DES_A2_1: 0.0
-  DES_A2_2: 0.0
-  DES_BTA_1: 0.0
+  DES_A2_1:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: 0.65
+      scale: 0.5
+    proposal: 0.5
+    latex: A_\mathrm{2-IA,DES}^1
+  DES_A2_2:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: 1.69
+      scale: 0.5
+    proposal: 0.5
+    latex: \eta_\mathrm{2-IA,DES}
+  DES_BTA_1:
+    prior:
+      min: 0.0
+      max: 2.0
+    ref:
+      dist: norm
+      loc: 0.91
+      scale: 0.15
+    proposal: 0.1
+    latex: b_\mathrm{TA-IA,DES}
   # Shear calibration parameters
   DES_M1:
     prior:

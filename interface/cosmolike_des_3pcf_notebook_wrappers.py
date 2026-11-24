@@ -7,7 +7,7 @@ them at any parameter point, so a notebook imports them instead of
 redefining them (EXAMPLE_IA_COMPONENTS does):
 
     import cosmolike_des_3pcf_notebook_wrappers as nw
-    nw.configure()                      # EXAMPLE_EVALUATE1.yaml, one thread
+    nw.configure()                      # EXAMPLE_EVALUATE2.yaml, one thread
     theta, xi_plus, xi_minus = nw.xi()  # at the project fiducial
     radii, triplets, map3 = nw.map3(As_1e9=2.0)
     nw.get_chi2(omegam=0.31)
@@ -32,7 +32,7 @@ Two layers of state matter here:
   its point (Cobaya's cache is bypassed), so no call depends on which
   function ran before it.
 - The project fiducial point is the sampler.evaluate.override point of
-  EXAMPLE_EVALUATE1.yaml, read once when the module is imported into the
+  EXAMPLE_EVALUATE2.yaml, read once when the module is imported into the
   plain constants below (omegam, As_1e9, M, ...). The functions use them
   as default argument values, which Python evaluates once, at import:
   assigning nw.omegam = 0.31 later does not change the defaults; pass
@@ -76,9 +76,9 @@ RADIAN_TO_ARCMIN = 180.0 * 60.0 / np.pi
 
 
 # ----------------------------------------------------------------------
-# The project fiducial point (EXAMPLE_EVALUATE1.yaml, sampler.evaluate).
+# The project fiducial point (EXAMPLE_EVALUATE2.yaml, sampler.evaluate).
 # ----------------------------------------------------------------------
-_FIDUCIAL = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE1.yaml"))
+_FIDUCIAL = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE2.yaml"))
 _OVERRIDE = _FIDUCIAL["sampler"]["evaluate"]["override"]
 
 omegam = _OVERRIDE["omegam"]
@@ -101,7 +101,7 @@ SHEAR_PHOTOZ_FID = [_OVERRIDE[f"DES_DZ_S{i}"] for i in range(1, 5)]
 _STATE = {"model": None, "yaml": None}
 
 
-def configure(yaml="EXAMPLE_EVALUATE1.yaml", likelihood=None, theory=None,
+def configure(yaml="EXAMPLE_EVALUATE2.yaml", likelihood=None, theory=None,
               params=None, threads=1):
     """Build the Cobaya model that every observable function evaluates.
 
@@ -109,10 +109,10 @@ def configure(yaml="EXAMPLE_EVALUATE1.yaml", likelihood=None, theory=None,
     or the dataset changes (it replaces the previous model).
 
     Arguments:
-      yaml = a numbered example yaml of this project (EXAMPLE_EVALUATE1 is
-        NLA, EXAMPLE_EVALUATE2 TATT; see the README for the others).
+      yaml = a numbered example yaml of this project (EXAMPLE_EVALUATE2 is
+        NLA, EXAMPLE_EVALUATE3 TATT; see the README for the others).
       likelihood = keys that replace the yaml's des_3pcf.joint_shear
-        settings, for example {"data_file": "des_y3_xi1.dataset",
+        settings, for example {"data_file": "des_y3_xi2_sim.dataset",
         "external_baryon_suppression": True}.
       theory = theory blocks to add or replace, {name: options}; None as
         options removes a block (for example {"bfmt": {...}} for baryonic
@@ -405,7 +405,7 @@ def map3_components(triplets, velocity_shear=0.0, omegam=omegam,
     weighted and tidal-torquing IA terms; the velocity-shear term) times
     eight placements, which say which of the three legs carry an
     intrinsic shape (GGG = all three lensed, ..., III = all three
-    intrinsic). Configure a TATT yaml (EXAMPLE_EVALUATE2) so every IA
+    intrinsic). Configure a TATT yaml (EXAMPLE_EVALUATE3) so every IA
     operator has a nonzero amplitude.
 
     The projection is repeated once per operator and placement, so this

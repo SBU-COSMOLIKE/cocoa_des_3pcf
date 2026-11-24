@@ -1,20 +1,22 @@
-# Joint DES Y3-shaped inference with a fixed Gaussian covariance.
-# The synthetic data vector is generated from this exact mean at the declared initial point. The external simulated values are used only for row labels and the paired covariance.
-# All 400 xi and 80 Map3 rows are retained. Small-scale baryonic contamination, exact finite-SAS estimator agreement and connected IA covariance changes are not validated by this demonstration.
-# The likelihood is a normalized fixed Gaussian with the complete joint cross-covariance. It applies no Hartlap, Percival or PME correction and no MOPED compression.
-# Source clipping and normalization follow the explicitly recorded demonstration source file. These processed curves are not a calibrated replacement for the published source model.
-# Uniform cosmological and IA ranges below are demonstration priors. In particular 10^9 A_s is sampled uniformly (sigma8 is derived), unlike a uniform S8 prior in the published inference.
-# Gaussian source-calibration widths and means follow 2503.03964 Table 3; finite bounds explicitly truncate and renormalize each Gaussian prior.
-# Flat dark energy w=-1, wa=0 and mnu=0.06 eV are fixed. Ct and the bispectrum-only feedback fb remain fixed at zero.
-# A short --check evaluates the fiducial probability; it does not establish numerical convergence or a converged posterior.
+# Case 1: the DES Y3 joint xi/Map3 analysis on the observed (unblinded) data, matched to the published setup where the project allows it.
+# xi rows follow the DES Y3 cosmic-shear scale cuts (upstream_cosmosis/des-y3-scale-cuts.ini): 227 of 400 xi rows and all 80 Map3 rows enter the chi2.
+# Percival t-likelihood with the 796-simulation covariance and parameter_count 16, the published analysis's sampled count (it also samples mnu).
+# No compression yet: the published analysis compresses the cut xi block to 16 MOPED modes; set compression_file once that matrix is confirmed.
+# For the simulated-analysis check, set data_file = des_y3_sim.datavector (the released simulated measurement at the CosmoGrid cosmology).
+# Source n(z): the recorded demonstration processing of the released nz_source table (0.04 per cent of the bin-1 area clipped).
+# Priors differ from the published analysis by design: 10^9 A_s sampled uniformly (sigma8 derived), mnu = 0.06 fixed.
+# scripts/convert_desy3_fits.py writes every data/ input named here from the released FITS files.
 
-two_point_file = upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits
-aperture_file = upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits
-cov_file = upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits
-nz_source_file = demonstration/y3_demo_sources.fits
-source_ntomo = 4
-data_file = demonstration/y3_nla_synthetic.txt
-mask_file =
+data_file = des_y3_real.datavector
+mask_file = des_y3_xi_scale_cut.mask
 compression_file =
-mock_count = 0
-parameter_count = 0
+mock_count = 796
+parameter_count = 16
+source_ntomo = 4
+n_theta = 20
+theta_min_arcmin = 2.5
+theta_max_arcmin = 250.0
+map3_radii_arcmin = 7.0 14.0 25.0 40.0
+nz_source_file = des_y3_source.nz
+nz_source_bin_width = 0.01
+cov_file = des_y3_joint.cov

@@ -207,7 +207,14 @@ def test_massless_neutrinos(response_model):
     assert np.all(np.isfinite(response["native"]["log_power"]))
 
 
-@pytest.mark.parametrize("number", [1, 2, 3, 4])
+# The dataset of each numbered case (real data plain, simulated or synthetic
+# vectors with the _sim suffix).
+DATASETS = {1: "des_y3_joint1.dataset", 2: "des_y3_joint2_sim.dataset",
+            3: "des_y3_joint3_sim.dataset", 4: "des_y3_joint4.dataset",
+            5: "des_y3_joint5_sim.dataset"}
+
+
+@pytest.mark.parametrize("number", [1, 2, 3, 4, 5])
 def test_numbered_bacco_instructions(number):
     """Uncommenting the taught options preserves matched sampler science."""
     enabled_cases = []
@@ -232,7 +239,7 @@ def test_numbered_bacco_instructions(number):
         assert set(info["theory"]) == {"camb", "bihalofit", "bacco_bispectrum"}
         likelihood = info["likelihood"]["des_3pcf.joint_shear"]
         assert likelihood["external_baryon_response"]
-        assert likelihood["data_file"] == f"des_y3_joint{number}.dataset"
+        assert likelihood["data_file"] == DATASETS[number]
         assert info["params"]["M_c_baccoemu"] == 14.0
         enabled_cases.append(info)
     for case in enabled_cases[1:]:

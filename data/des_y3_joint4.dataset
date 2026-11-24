@@ -1,18 +1,20 @@
-# Synthetic TATT example with explicit independent-pilot compression and Percival likelihood.
-# Teaching configuration; not a reproduction of the published estimator, priors, compression or posterior.
-# Run EXAMPLE_COMPRESSION.ipynb to create the fixed independent-pilot matrix; its historical derivative basis is not a current accuracy validation.
-# Ns=796 and independent Gaussian mocks are explicit approximations. Four footprints from one full sky need an independence assessment.
-# The ordinary supplied sample covariance is used without Hartlap or PME correction. Compression is applied to data, mean and both covariance axes.
-# The baseline synthetic mean uses recorded source clipping. All 480 rows enter before explicit compression; no hidden scale cut is made.
-# Uniform sigma8 and the demonstration priors differ from published inference. Posterior reproduction is not established.
+# Case 4: the observed (unblinded) DES Y3 data with every row kept and the fixed Gaussian covariance.
+# It does not reproduce the published cuts, compression or Percival likelihood (case 1 does, except the compression).
+# All 400 xi and 80 Map3 rows are retained; normalized fixed Gaussian, no Hartlap, Percival or PME correction and no compression.
+# Source n(z): the recorded demonstration processing of the released nz_source table (0.04 per cent of the bin-1 area clipped).
+# Priors differ from the published analysis by design: 10^9 A_s sampled uniformly (sigma8 derived), mnu = 0.06 fixed.
+# scripts/convert_desy3_fits.py writes every data/ input named here from the released FITS files.
 
-two_point_file = upstream_y3/data/dv/sim_2pt-NLA-cosmoCosmogrid-04Nov24.fits
-aperture_file = upstream_y3/data/dv/sim_map3_emu-NLA-cosmoCosmogrid-24FEBRUARY2025_WITH_COV.fits
-cov_file = upstream_y3/data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits
-nz_source_file = demonstration/y3_demo_sources.fits
-source_ntomo = 4
-data_file = demonstration/y3_tatt_synthetic.txt
+data_file = des_y3_real.datavector
 mask_file =
-compression_file = ../chains/independent_pilot_compression.npz
-mock_count = 796
-parameter_count = 18
+compression_file =
+mock_count = 0
+parameter_count = 0
+source_ntomo = 4
+n_theta = 20
+theta_min_arcmin = 2.5
+theta_max_arcmin = 250.0
+map3_radii_arcmin = 7.0 14.0 25.0 40.0
+nz_source_file = des_y3_source.nz
+nz_source_bin_width = 0.01
+cov_file = des_y3_joint.cov

@@ -10,12 +10,12 @@ import numpy as np
 import pytest
 
 from cosmolike_des_3pcf_interface.production import TransformPlan
-from cobaya.likelihoods.des_3pcf.survey import forecast_rows
+from cobaya.likelihoods.des_3pcf.survey import survey_rows
 
 
 def engine(compiled, side_keep=None, rule="geometric", offset=0.):
     """Prepare three radial bins and one aperture at inexpensive angular order."""
-    rows = forecast_rows(nbin=1, aperture_radii=[.003], xi_edges=None)
+    rows = survey_rows(nbin=1, aperture_radii=[.003], xi_edges=None)
     return TransformPlan.for_aperture(
         bins=np.ascontiguousarray(rows.bins, dtype=np.int32),
         filters=np.ascontiguousarray(rows.angles),

@@ -151,7 +151,7 @@ def main(argv=None):
         folder = Path(likelihood.path)
     dataset = IniFile(str(folder/likelihood.data_file))
     files = {"evaluate_yaml": args.input.resolve()}
-    for key in ("two_point_file", "aperture_file", "nz_source_file"):
+    for key in ("data_file", "cov_file", "nz_source_file"):
         files[key] = Path(dataset.relativeFileName(key)).resolve()
     files["dataset"] = (folder/likelihood.data_file).resolve()
     named = {}

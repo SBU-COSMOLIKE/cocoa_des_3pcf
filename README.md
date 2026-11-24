@@ -1,17 +1,19 @@
 # Table of contents <a name="table_of_contents"></a>
 
 1. [The DES Y3 joint two- and three-point data vector](#purpose)
-2. [Reading path through the examples](#reading_path)
-3. [Running Cosmolike projects (Basic instructions)](#running_cosmolike_projects)
-4. [Running Nautilus](#sampling)
-5. [Baryonic feedback](#feedback)
-6. [Running Fisher](#fisher)
-7. [Unit tests](#unit_tests)
-8. [Computing covariances](#computing_covariances)
-9. [Generating and measuring the covariance maps](#covariance_maps)
-10. [Exploring notebooks](#notebooks)
-11. [Acknowledgements](#acknowledgements)
-12. [Appendix](#appendix)
+2. [The five examples](#examples)
+3. [Reading path through the examples](#reading_path)
+4. [Running Cosmolike projects (Basic instructions)](#running_cosmolike_projects)
+5. [Running Nautilus](#sampling)
+6. [Running on an HPC cluster](#hpc)
+7. [Baryonic feedback](#feedback)
+8. [Running Fisher](#fisher)
+9. [Unit tests](#unit_tests)
+10. [Computing covariances](#computing_covariances)
+11. [Generating and measuring the covariance maps](#covariance_maps)
+12. [Exploring notebooks](#notebooks)
+13. [Acknowledgements](#acknowledgements)
+14. [Appendix](#appendix)
 
 # The DES Y3 joint two- and three-point data vector <a name="purpose"></a>
 
@@ -30,27 +32,59 @@ selection, priors and covariance treatment
 [fast-modeling paper](https://arxiv.org/abs/2407.01798) and the
 [Y3 methods paper](https://arxiv.org/abs/2503.03964).
 
+# The five examples <a name="examples"></a>
+
+Each case number selects one analysis. `EXAMPLE_EVALUATE<n>.yaml`,
+`EXAMPLE_MCMC<n>.yaml`, `EXAMPLE_NAUTILUS<n>.yaml` and
+`EXAMPLE_NAUTILUS<n>.py` share the data, covariance, theory and priors of
+case `n`; only the sampler changes. A `_sim` suffix on a dataset name
+marks inputs built on simulated or synthetic vectors. All five cases read
+the supplied simulation-estimated joint covariance, including its
+two-/three-point cross terms.
+
+| Case | Data | IA model | Likelihood | Rows kept | Dataset and example files |
+|---|---|---|---|---|---|
+| 1 | Observed (unblinded) Y3 measurements | NLA | Percival, 796 simulations, `parameter_count = 16` | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
+| 2 | Synthetic NLA fiducial mean | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint2_sim.dataset`; `EXAMPLE_EVALUATE2.yaml`, `EXAMPLE_MCMC2.yaml`, `EXAMPLE_NAUTILUS2.yaml`/`.py` |
+| 3 | Synthetic TATT fiducial mean | TATT | Fixed Gaussian | All 480 rows | `des_y3_joint3_sim.dataset`; `EXAMPLE_EVALUATE3.yaml`, `EXAMPLE_MCMC3.yaml`, `EXAMPLE_NAUTILUS3.yaml`/`.py` |
+| 4 | Observed (unblinded) Y3 measurements | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint4.dataset`; `EXAMPLE_EVALUATE4.yaml`, `EXAMPLE_MCMC4.yaml`, `EXAMPLE_NAUTILUS4.yaml`/`.py` |
+| 5 | Synthetic TATT fiducial mean | TATT | Percival with an independent-pilot MOPED compression | All 480 rows enter the compression | `des_y3_joint5_sim.dataset`; `EXAMPLE_EVALUATE5.yaml`, `EXAMPLE_MCMC5.yaml`, `EXAMPLE_NAUTILUS5.yaml`/`.py` |
+
+Case 2 is the first example to run: its synthetic data were generated at
+the example's own fiducial point, so one evaluation checks the
+installation, and [EXAMPLE_EVALUATE2.ipynb](EXAMPLE_EVALUATE2.ipynb) is
+its notebook. Case 3 repeats it with TATT, and case 4 scores the observed
+data with every row kept and the fixed Gaussian. Case 1 reruns the
+published DES Y3 analysis where the project allows it
+([published rerun](#published_rerun)); case 5 demonstrates the Percival
+likelihood under compression and first needs
+`chains/independent_pilot_compression.npz` from
+[EXAMPLE_COMPRESSION.ipynb](EXAMPLE_COMPRESSION.ipynb)
+([compression FAQ](#compression)). For power-only feedback on the
+two-point rows, `des_y3_xi2_sim.dataset` keeps only the 400 $`\xi`$ rows
+([baryonic feedback](#feedback)).
+
 # Reading path through the examples <a name="reading_path"></a>
 
-Start with one evaluation of `EXAMPLE_EVALUATE1.yaml`
+Start with one evaluation of `EXAMPLE_EVALUATE2.yaml`
 ([basic instructions](#running_cosmolike_projects)): it checks the
 installation that every later example uses.
 
 ```mermaid
 flowchart TB
-  A["EXAMPLE_EVALUATE1.yaml: first evaluation"] --> B["EXAMPLE_EVALUATE1.ipynb: joint vector and Fisher"]
+  A["EXAMPLE_EVALUATE2.yaml: first evaluation"] --> B["EXAMPLE_EVALUATE2.ipynb: joint vector and Fisher"]
   B --> C["EXAMPLE_FISHER_IA / _ACCURACY / _BACCO notebooks: Fisher studies"]
   C --> D["notes/: the teaching notes behind each study"]
-  A --> E["EXAMPLE_MCMC1-4.yaml: chains"]
-  E --> F["EXAMPLE_NAUTILUS1-4.py: nested sampling"]
+  A --> E["EXAMPLE_MCMC1-5.yaml: chains"]
+  E --> F["EXAMPLE_NAUTILUS1-5.py: nested sampling"]
   A --> G["EXAMPLE_EVALUATE_COVARIANCE.yaml: analytic covariance"]
   G --> H["covariance/compute_covariance.py: production covariance"]
   A --> I["EXAMPLE_COVARIANCE_PME / _MAPS notebooks: simulation covariance"]
   I --> J["Map generation and TreeCorr measurement on the HPC"]
 ```
 
-- The numbered evaluate, MCMC and Nautilus examples share the four cases of
-  the [case table](#running_cosmolike_projects); only the sampler changes.
+- The numbered evaluate, MCMC and Nautilus examples share the five cases
+  ([the five examples](#examples)); only the sampler changes.
 - The Fisher notebooks and their teaching notes live under `notes/`
   ([exploring notebooks](#notebooks)).
 - The analytic covariance needs the optional covariance build
@@ -86,25 +120,12 @@ From `Cocoa/Readme` instructions:
 >
 >      source ./projects/des_3pcf/scripts/compile_des_3pcf.sh
 
-The numbered examples share four cases. `EXAMPLE_EVALUATE1-4.yaml`,
-`EXAMPLE_MCMC1-4.yaml` and the four Nautilus launchers with their YAMLs
-select the same data, covariance, theory and priors for each number; only
-sampler settings and output prefixes differ.
-
-| Case number | IA modeling | Fitted data | Likelihood |
-|---|---|---|---|
-| 1 | NLA | Synthetic fiducial mean | Fixed Gaussian |
-| 2 | TATT | Synthetic fiducial mean | Fixed Gaussian |
-| 3 | NLA | Released observed Y3 measurements | Fixed Gaussian |
-| 4 | TATT | Synthetic mean with independently trained compression | Percival |
-
-All four read the supplied simulation-estimated joint covariance, including
-its two-/three-point cross terms. Cases 1-3 treat that matrix as fixed;
-case 4 uses the finite-simulation Percival likelihood and first needs the
-compression matrix from `EXAMPLE_COMPRESSION.ipynb`
-([compression FAQ](#compression)). The likelihood's `omp_threads` key in
-`likelihood/joint_shear.yaml` sets the OpenMP workers of each likelihood
-evaluation (the examples ship 1).
+The numbered examples are the five cases of
+[the five examples](#examples): the evaluate, MCMC and Nautilus files of
+the same number select the same data, covariance, theory and priors, and
+only sampler settings and output prefixes differ. The likelihood's
+`omp_threads` key in `likelihood/joint_shear.yaml` sets the OpenMP
+workers of each likelihood evaluation (the examples ship 1).
 
 To run the example
 
@@ -130,7 +151,7 @@ and
         export OMP_PLACES=cores; export OMP_DYNAMIC=FALSE; \
         export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
 
-**Step :three:**: run `cobaya-run` on the first example following the commands below.
+**Step :three:**: run `cobaya-run` on case 2 following the commands below.
 
 > [!Warning]
 > (Linux only) In some HPC nodes, `numa` can cause you problems. If that is
@@ -143,12 +164,12 @@ and
         "${CONDA_PREFIX}"/bin/mpirun -n 1 --oversubscribe --mca pml ob1 --mca btl vader,tcp,self \
           --bind-to core:overload-allowed --report-bindings \
           --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
-          cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE1.yaml -f
+          cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE2.yaml -f
 
   - macOS (arm)
 
         mpirun -n 1 --oversubscribe \
-          cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE1.yaml -f
+          cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE2.yaml -f
 
 - **MCMC (Metropolis-Hastings Algorithm)**:
 
@@ -157,21 +178,22 @@ and
         "${CONDA_PREFIX}"/bin/mpirun -n 4 --oversubscribe --mca pml ob1 --mca btl vader,tcp,self \
           --bind-to core:overload-allowed --report-bindings \
           --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
-          cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC1.yaml -f
+          cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC2.yaml -f
 
   - macOS (arm)
 
         mpirun -n 4 --oversubscribe \
-          cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC1.yaml -f
+          cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC2.yaml -f
 
-Replace the number 1 with 2, 3 or 4 to select another case. Each YAML
+Replace the number 2 with 1, 3, 4 or 5 to select another case
+([the five examples](#examples)). Each YAML
 writes to its own `chains/` prefix. The theory blocks run CAMB and the
 BiHalofit matter bispectrum through Cobaya ([theory FAQ](#theory)); no
 separate theory-table preparation command exists.
 
 # Running Nautilus <a name="sampling"></a>
 
-The four launchers follow `lsst_y1/EXAMPLE_EMUL2_NAUTILUS1.py`: they import
+The five launchers follow `lsst_y1/EXAMPLE_EMUL2_NAUTILUS1.py`: they import
 `run` from the core's `cocoa_hybrid_sampling` and pass the project and
 example number. This project sets `hybrid=False`, so every rank evaluates
 the physical theory. One MPI rank coordinates the Nautilus pool; the
@@ -182,7 +204,7 @@ remaining ranks evaluate separate models.
 check the fiducial without sampling.
 
 ```bash
-python ./projects/des_3pcf/EXAMPLE_NAUTILUS1.py --check
+python ./projects/des_3pcf/EXAMPLE_NAUTILUS2.py --check
 ```
 
 **Step :two:**: sample with an explicit budget.
@@ -197,12 +219,12 @@ python ./projects/des_3pcf/EXAMPLE_NAUTILUS1.py --check
         --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0 \
         --bind-to core:overload-allowed --report-bindings \
         --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
-        python ./projects/des_3pcf/EXAMPLE_NAUTILUS1.py --nlive 1000 --neff 10000 --maxfeval 100000
+        python ./projects/des_3pcf/EXAMPLE_NAUTILUS2.py --nlive 1000 --neff 10000 --maxfeval 100000
 
 - macOS (arm)
 
       mpirun -n 12 --oversubscribe \
-        python ./projects/des_3pcf/EXAMPLE_NAUTILUS1.py --nlive 1000 --neff 10000 --maxfeval 100000
+        python ./projects/des_3pcf/EXAMPLE_NAUTILUS2.py --nlive 1000 --neff 10000 --maxfeval 100000
 
 The rank counts are example allocations, matching the main README's
 Nautilus examples; size them to the machine. Launcher options, one per
@@ -218,6 +240,143 @@ Outputs are GetDist `.1.txt` rows and `.paramnames`, an HDF5 checkpoint,
 and a YAML record with the evidence and convergence status. Existing
 records and chains are refused, as in the LSST driver; a run that reaches
 its budget can have `converged: false`.
+
+# Running on an HPC cluster <a name="hpc"></a>
+
+Three words name the moving parts. A **node** is one physical computer of
+the cluster. An **MPI rank** is one running copy of the program; ranks
+exchange messages and can sit on different nodes. Cobaya MCMC runs one
+chain per rank, and the Nautilus pool reserves one rank as coordinator.
+An **OpenMP thread** is a worker inside one rank, sharing that rank's
+memory: `OMP_NUM_THREADS` sets how many cores each rank uses for one
+likelihood evaluation.
+
+> [!NOTE]
+> **Running on more than one node.**
+>
+> 1. **Network interface.** TCP must use an interface routable between compute
+>    nodes. A common exclusion list is
+>    `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0`; adapt it to the cluster.
+>    Keep `ib0` if routable IP-over-InfiniBand is the intended network. These
+>    examples exchange parameter vectors and scalar scores, so communication
+>    volume is small; actual scaling still depends on the machine.
+> 2. **Environment.** Remote ranks need the same Cocoa paths and libraries:
+>    `ROOTDIR`, `PATH`, `LD_LIBRARY_PATH`, `PYTHONPATH`, `CONDA_PREFIX`, OpenMP
+>    and BLAS settings, and `CLIK_PATH`/`CLIK_DATA`/`CLIK_PLUGIN` when used.
+>    Slurm normally exports the submitting environment (`--export=ALL`).
+>    Explicit `-x` options also forward these variables with SSH launchers.
+>    Activate Cocoa before launching; build/download flags do not replace
+>    runtime paths. All nodes must see the same files at the same paths.
+> 3. **Slurm geometry.** Keep `ntasks-per-node × cpus-per-task` within the
+>    allocated physical cores per node. Set `OMP_NUM_THREADS` to
+>    `SLURM_CPUS_PER_TASK` and use `--map-by numa:pe=${OMP_NUM_THREADS}`.
+>    The minimization, profile and Nautilus pool reserves one MPI rank as
+>    coordinator; the remaining ranks evaluate the model.
+
+The submission file below holds the Slurm directives, the Cocoa
+activation and the launch in one place, following the project's
+`scripts/EXAMPLE_GPTG_*_UOFA.sbatch` files. Its `mpirun` line repeats the
+Linux flags of the [basic instructions](#running_cosmolike_projects) plus
+the multi-node forwarding options of the note above. The `--account`,
+`--partition`, `--time` and node directives are site policy and are
+always edited.
+
+**Step :one:**: save the batch script below (the case-1 MCMC: four
+chains, one rank each, eight OpenMP threads per rank on one node) and
+submit it with `sbatch` from the activated Cocoa directory. Replace `-f`
+(start fresh) with `-r` to resume a chain stopped by the wall-time limit.
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=D3PCF_MCMC1
+#SBATCH --output=D3PCF_MCMC1-%j.out
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=8
+#SBATCH --time=48:00:00
+#SBATCH --partition=standard
+#SBATCH --account=change_me
+#SBATCH --export=ALL
+
+cd "${SLURM_SUBMIT_DIR:?Submit from the Cocoa directory}" || exit 1
+# Prefer activating Cocoa before sbatch so this job inherits its environment.
+if [ -z "${ROOTDIR:-}" ]; then
+    source "$(conda info --base)/etc/profile.d/conda.sh" || exit 1
+    conda activate cocoa || exit 1
+    source start_cocoa.sh || exit 1
+fi
+
+export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK}"; export OMP_PROC_BIND=close; \
+export OMP_PLACES=cores; export OMP_DYNAMIC=FALSE; \
+export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
+
+"${CONDA_PREFIX}"/bin/mpirun -n "${SLURM_NTASKS}" --oversubscribe \
+  --mca pml ob1 --mca btl vader,tcp,self \
+  -x PATH -x LD_LIBRARY_PATH -x PYTHONPATH -x CONDA_PREFIX -x ROOTDIR \
+  -x OMP_NUM_THREADS -x OMP_PROC_BIND -x OMP_PLACES -x OMP_DYNAMIC \
+  -x OPENBLAS_NUM_THREADS -x MKL_NUM_THREADS --mca mpi_yield_when_idle 1 \
+  --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0 \
+  --bind-to core:overload-allowed --report-bindings \
+  --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
+  cobaya-run ./projects/des_3pcf/EXAMPLE_MCMC1.yaml -f
+```
+
+**Step :two:**: for the case-1 Nautilus run, keep the same file and
+change the geometry and the launch line. One rank coordinates the pool
+and every other rank evaluates a separate model, so more ranks shorten
+the run; size the geometry to the machine.
+
+```bash
+#SBATCH --job-name=D3PCF_NAUTILUS1
+#SBATCH --output=D3PCF_NAUTILUS1-%j.out
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=24
+#SBATCH --cpus-per-task=4
+```
+
+and, in place of the `cobaya-run` line,
+
+```bash
+  python ./projects/des_3pcf/EXAMPLE_NAUTILUS1.py --nlive 1000 --neff 10000 --maxfeval 100000
+```
+
+## Rerunning the published DES Y3 analysis <a name="published_rerun"></a>
+
+Case 1 scores the observed (unblinded) DES Y3 data with the published
+setup where the project allows it: the Y3 cosmic-shear $`\xi_\pm`$ scale
+cuts (227 of 400 $`\xi`$ rows, all 80 Map3 rows) and the Percival
+likelihood with `mock_count = 796` and `parameter_count = 16`
+(`data/des_y3_joint1.dataset`).
+
+**Step :one:**: evaluate the fiducial once, with the thread setup of the
+[basic instructions](#running_cosmolike_projects):
+
+    "${CONDA_PREFIX}"/bin/mpirun -n 1 --oversubscribe --mca pml ob1 --mca btl vader,tcp,self \
+      --bind-to core:overload-allowed --report-bindings \
+      --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
+      cobaya-run ./projects/des_3pcf/EXAMPLE_EVALUATE1.yaml -f
+
+**Step :two:**: sample on the cluster with the case-1 MCMC or Nautilus
+batch script above.
+
+The remaining differences from the published analysis:
+
+- **Compression.** `compression_file` in `des_y3_joint1.dataset` stays
+  empty until the published 16-mode MOPED matrix is confirmed; the
+  published analysis compresses the cut $`\xi`$ block to 16 modes.
+- **Priors (by design).** $`10^9 A_\mathrm{s}`$ is sampled with
+  lsst_y1's prior and $`\sigma_8`$ is derived, against the published
+  uniform $`S_8`$ prior; $`m_\nu`$ is fixed at 0.06 eV, against the
+  published sampled $`m_\nu`$.
+- **Bispectrum.** Exact BiHalofit, against the published neural-network
+  emulator.
+- **Sampler.** Cobaya MCMC and Nautilus, against the published
+  MultiNest.
+
+For the simulated-analysis check, copy `data/des_y3_joint1.dataset` and
+set `data_file = des_y3_sim.datavector` in the copy: the released
+simulated measurement at the CosmoGrid cosmology then replaces the
+observed data under the same cuts and likelihood.
 
 # Baryonic feedback <a name="feedback"></a>
 
@@ -235,7 +394,7 @@ ratios $`R_P=P_{\rm hydro}/P_{\rm DMO}`$ and
 $`R_B=B_{\rm hydro}/B_{\rm DMO}`$ from compatible simulations; a power
 response alone does not determine the bispectrum response.
 
-**Step :one:**: in [EXAMPLE_EVALUATE1.yaml](EXAMPLE_EVALUATE1.yaml),
+**Step :one:**: in [EXAMPLE_EVALUATE2.yaml](EXAMPLE_EVALUATE2.yaml),
 uncomment the `bacco_bispectrum` theory block.
 
 **Step :two:**: uncomment `external_baryon_response: true` in the
@@ -250,7 +409,7 @@ likelihood block and the five commented `*_baccoemu` parameters.
 
 **Power-only suppression on the two-point rows.** The power-only feedback
 models of the `bfmt` theory block supply no bispectrum response, so they
-apply only to a xi-only selection: set `data_file: des_y3_xi1.dataset` and
+apply only to a xi-only selection: set `data_file: des_y3_xi2_sim.dataset` and
 `external_baryon_suppression: true` in the likelihood block, and add the
 `bfmt` theory block with its model choice and parameters
 (`external_modules/code/baryon_suppression/README.md` lists them). The
@@ -265,14 +424,14 @@ compares the installed power-only scenarios of
 
 # Running Fisher <a name="fisher"></a>
 
-[EXAMPLE_EVALUATE1.ipynb](EXAMPLE_EVALUATE1.ipynb) shows the ordinary
+[EXAMPLE_EVALUATE2.ipynb](EXAMPLE_EVALUATE2.ipynb) shows the ordinary
 workflow: evaluate the numbered Cobaya model, differentiate its data
 vector, and call the shared Fisher functions of
 `cosmolike_core/cosmolike_notebook_utils/` (section "Fisher"). Derivatives
 and matrices are saved under `chains/`. The IA, accuracy and BACCO
 notebooks ([exploring notebooks](#notebooks)) follow the same calling
 pattern on their own questions; their unmasked, uncompressed rows match
-numbered cases 1 and 2.
+numbered cases 2 and 3.
 
 # Unit tests <a name="unit_tests"></a> <a name="tests"></a>
 
@@ -531,26 +690,8 @@ python projects/des_y3/covariance/compute_covariance.py projects/des_y3/EXAMPLE_
 ```
 
 > [!NOTE]
-> **Running on more than one node.**
->
-> 1. **Network interface.** TCP must use an interface routable between compute
->    nodes. A common exclusion list is
->    `--mca btl_tcp_if_exclude lo,docker0,virbr0,ib0`; adapt it to the cluster.
->    Keep `ib0` if routable IP-over-InfiniBand is the intended network. These
->    examples exchange parameter vectors and scalar scores, so communication
->    volume is small; actual scaling still depends on the machine.
-> 2. **Environment.** Remote ranks need the same Cocoa paths and libraries:
->    `ROOTDIR`, `PATH`, `LD_LIBRARY_PATH`, `PYTHONPATH`, `CONDA_PREFIX`, OpenMP
->    and BLAS settings, and `CLIK_PATH`/`CLIK_DATA`/`CLIK_PLUGIN` when used.
->    Slurm normally exports the submitting environment (`--export=ALL`).
->    Explicit `-x` options also forward these variables with SSH launchers.
->    Activate Cocoa before launching; build/download flags do not replace
->    runtime paths. All nodes must see the same files at the same paths.
-> 3. **Slurm geometry.** Keep `ntasks-per-node × cpus-per-task` within the
->    allocated physical cores per node. Set `OMP_NUM_THREADS` to
->    `SLURM_CPUS_PER_TASK` and use `--map-by numa:pe=${OMP_NUM_THREADS}`.
->    The minimization, profile and Nautilus pool reserves one MPI rank as
->    coordinator; the remaining ranks evaluate the model.
+> The multi-node note of the [HPC section](#hpc) (network interface,
+> environment, Slurm geometry) applies to these jobs as well.
 
 Measured precision, timing and completeness evidence for the generator and
 the measurement lives under `tests/gptg_pilot/`; the
@@ -606,7 +747,7 @@ kernel after recompiling.
 
 | Notebook | Question addressed |
 |---|---|
-| [EXAMPLE_EVALUATE1.ipynb](EXAMPLE_EVALUATE1.ipynb) | What does one joint evaluation return, and how does its Fisher forecast follow? |
+| [EXAMPLE_EVALUATE2.ipynb](EXAMPLE_EVALUATE2.ipynb) | What does one joint evaluation return, and how does its Fisher forecast follow? |
 | [IA notebook](notes/intrinsic_alignments/EXAMPLE_FISHER_IA.ipynb) and [teaching note](notes/intrinsic_alignments/intrinsic_alignments.pdf) | How do NLA/TATT responses and joint Fisher constraints compare? |
 | [Aperture-mass notebook](notes/aperture_mass_statistic/aperture_mass_statistic.ipynb) and [teaching note](notes/aperture_mass_statistic/aperture_mass_statistic.pdf) | What is the third-order aperture mass, and how are the 80 Map3 rows computed? |
 | [EXAMPLE_FISHER_ACCURACY.ipynb](EXAMPLE_FISHER_ACCURACY.ipynb) | Which sampling controls and derivative steps stabilize the forecast? |
@@ -659,7 +800,7 @@ preserves source revisions and license notices.
 
 | Location | Contents |
 |---|---|
-| `data/` | Released measurements, source distributions, covariance matrices, pixel window and their provenance |
+| `data/` | The released FITS products, the ASCII inputs the likelihood reads, the pixel window and their provenance |
 | `chains/` | Generated predictions, derivatives, compression matrices, figures and sampler results; ignored by Git |
 | `tests/` | Reference predictions and recorded numerical comparisons |
 | `likelihood/` | The Cobaya likelihood `des_3pcf.joint_shear`, its survey readers and YAML defaults |
@@ -668,9 +809,11 @@ preserves source revisions and license notices.
 | `scripts/` | The compile script and the map-generation and TreeCorr production programs |
 
 The inputs are committed; `scripts/download_y3_data.sh` re-downloads the
-DES Y3 files from their public source and checks their recorded hashes.
-The [input guide](data/README.md) identifies the included files, their
-provenance records and the processed demonstration source.
+DES Y3 files from their public source and checks their recorded hashes,
+and `scripts/convert_desy3_fits.py` rebuilds the ASCII likelihood inputs
+from the released FITS files. The [input guide](data/README.md)
+identifies the included files, their formats, their provenance records
+and the processed demonstration source.
 
 ## FAQ: How does the theory interface supply the bispectrum? <a name="theory"></a>
 
@@ -701,7 +844,7 @@ $`T`$ fixed; changing it during inference changes the statistic.
 [EXAMPLE_COMPRESSION.ipynb](EXAMPLE_COMPRESSION.ipynb) compares xi-only,
 conditional-xi and full-joint choices and writes the matrices to `chains/`.
 
-Case 4 reads `chains/independent_pilot_compression.npz`. Its Percival
+Case 5 reads `chains/independent_pilot_compression.npz`. Its Percival
 likelihood assumes a sample covariance from independent Gaussian mocks,
 independent data and an independently trained compression; it is not a
 Hartlap-rescaled Gaussian and must not be combined with that correction.

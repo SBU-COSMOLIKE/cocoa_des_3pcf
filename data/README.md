@@ -1,9 +1,10 @@
 # Input data and generated calculations
 
 1. [Input files and their sources](#inputs)
-2. [Acknowledgements](#acknowledgements)
-3. [Generated calculations](#generated)
-4. [Demonstration source processing](#sources)
+2. [The ASCII likelihood inputs](#ascii)
+3. [Acknowledgements](#acknowledgements)
+4. [Generated calculations](#generated)
+5. [Demonstration source processing](#sources)
 
 ## Input files and their sources <a name="inputs"></a>
 
@@ -16,8 +17,8 @@ the examples. Every input names its origin:
 | `upstream_y3/`: simulated DES Y3 $`\xi_\pm`$ and Map3 vectors at the CosmoGrid cosmology, the joint covariance from 796 mocks (four cutouts of each of 199 CosmoGrid skies), and nine CosmoSIS configurations | [3pcf_integrator](https://github.com/rchgomes/3pcf_integrator) at commit `d6098d326dcb03bc750adcc9627119f52d928944`; manifest [y3_reference_manifest.yaml](y3_reference_manifest.yaml) | [Methods paper](https://arxiv.org/abs/2503.03964); simulations from [CosmoGrid](https://arxiv.org/abs/2209.04662) |
 | `upstream_y3_observed/`: observed unblinded DES Y3 $`\xi_\pm`$ and Map3 vectors, the same covariance and nine configurations | Same repository and commit; manifest [y3_observed_manifest.yaml](y3_observed_manifest.yaml) | [DES Y3 third-order shear results](https://arxiv.org/abs/2508.14018) |
 | `upstream_healpix/pixel_window_n1024.fits`: scalar HEALPix pixel window at NSIDE 1024 | [healpy-data](https://github.com/healpy/healpy-data) at the commit and URL in [pixel_window_manifest.yaml](pixel_window_manifest.yaml) | [HEALPix, Górski et al. 2005](https://arxiv.org/abs/astro-ph/0409513) |
-| `upstream_cosmosis/des-y3-scale-cuts.ini` and `y3_xi_scale_cut_mask.txt`: the DES Y3 cosmic-shear $`\xi_\pm`$ scale cuts and the 0/1 row mask built from them (227 of 400 $`\xi`$ rows, all 80 Map3 rows), used by `des_y3_joint5.dataset` | [cosmosis-standard-library](https://github.com/cosmosis-developers/cosmosis-standard-library/blob/a1dfcdac225ab184fa0acefed88064887a9ef07c/examples/des-y3-scale-cuts.ini) at commit a1dfcda (SHA-256 92b5f050…6a14); the mask is rebuilt and checked by [tests/test_y3_scale_cut_mask.py](../tests/test_y3_scale_cut_mask.py) | [DES Y3 cosmic shear, Secco et al. 2022](https://arxiv.org/abs/2105.13544) |
-| `demonstration/`: the processed source distribution, two fixed synthetic data vectors and the xi-only row mask | Produced in this project from the `upstream_y3/` inputs ([demonstration source processing](#sources)) | |
+| `upstream_cosmosis/des-y3-scale-cuts.ini`: the DES Y3 cosmic-shear $`\xi_\pm`$ scale cuts, from which `scripts/convert_desy3_fits.py` builds `des_y3_xi_scale_cut.mask` (227 of 400 $`\xi`$ rows, all 80 Map3 rows), used by `des_y3_joint1.dataset` | [cosmosis-standard-library](https://github.com/cosmosis-developers/cosmosis-standard-library/blob/a1dfcdac225ab184fa0acefed88064887a9ef07c/examples/des-y3-scale-cuts.ini) at commit a1dfcda (SHA-256 92b5f050…6a14); the mask is rebuilt and checked by [tests/test_y3_scale_cut_mask.py](../tests/test_y3_scale_cut_mask.py) | [DES Y3 cosmic shear, Secco et al. 2022](https://arxiv.org/abs/2105.13544) |
+| `demonstration/`: the processed source distribution and the two fixed synthetic fiducial vectors | Produced in this project from the `upstream_y3/` inputs ([demonstration source processing](#sources)) | |
 | `chains/rafael/datavector_2pt3pt/` (local, never committed): 400 measured joint $`\xi_\pm`$/Map3 vectors (`.npy`, in the released row order) and their FITS files (all bin and scale information), the four independent DES cutouts of each of 100 CosmoGrid skies at NSIDE 1024 | Supplied by Rafael Gomes on the group's server; manifest [rafael_datavector_2pt3pt.sha256](rafael_datavector_2pt3pt.sha256); downloaded by [scripts/download_rafael_sims.sh](../scripts/download_rafael_sims.sh) | [Methods paper](https://arxiv.org/abs/2503.03964); [CosmoGrid](https://arxiv.org/abs/2209.04662) |
 | `chains/rafael/maps_cov_512_v2/` (local, never committed): CosmoGrid DES Y3 shear maps at NSIDE 512 with repeated noise realizations | Supplied by Rafael Gomes on the group's server; manifest [rafael_maps_cov_512_v2.sha256](rafael_maps_cov_512_v2.sha256); downloaded by the same script and described in the [map download guide](../notes/covariance_from_simulations/MAPS_README.md) | [Methods paper](https://arxiv.org/abs/2503.03964); [CosmoGrid](https://arxiv.org/abs/2209.04662) |
 
@@ -28,6 +29,11 @@ source analysis; they are not scripts that this project executes.
 24 DES Y3 files: it downloads each from the pinned commit and checks its
 hash against the manifests. A present file with the right hash is left
 alone; a mismatching file stops the script and is never overwritten.
+[scripts/convert_desy3_fits.py](../scripts/convert_desy3_fits.py) is the
+bridge from these FITS sources to the likelihood: it writes the ASCII
+inputs the `.dataset` files name
+([the ASCII likelihood inputs](#ascii)) and leaves the upstream files
+unchanged.
 
 **Step :one:**: to recreate or verify the DES Y3 inputs (11.7 MB in
 total), run from `projects/des_3pcf`:
@@ -66,11 +72,52 @@ The released simulated vectors and the observed measurements are different
 scientific inputs. They belong in `data/`; predictions saved to detect a
 change in our calculation belong in `tests/`. Neither input establishes
 that this port matches the published estimator, cuts or likelihood. See
-[the case table](../README.md#running_cosmolike_projects) for the examples' choices and
+[the five examples](../README.md#examples) for the examples' choices and
 [the paper comparison](../README.md#estimator) for the remaining differences.
 The full simulation realizations are not included, and the released
 covariance does not replace the simulations needed to calibrate a
 covariance correction.
+
+## The ASCII likelihood inputs <a name="ascii"></a>
+
+The likelihood reads only plain-text files in `data/`, in the lsst_y1
+formats; it never opens a FITS file.
+[scripts/convert_desy3_fits.py](../scripts/convert_desy3_fits.py) writes
+every one of them: the measurements and the covariance from the released
+FITS files above, the scale-cut mask from the CosmoSIS INI file, and the
+synthetic vectors from their `demonstration/` text files.
+
+| ASCII input | Format (one line per entry) | Contents |
+|---|---|---|
+| `des_y3_real.datavector` | `index value` | The observed (unblinded) joint vector: 400 $`\xi_\pm`$ rows, then 80 Map3 rows |
+| `des_y3_sim.datavector` | `index value` | The released simulated joint vector at the CosmoGrid cosmology |
+| `des_y3_nla_synthetic.datavector` | `index value` | This project's fixed synthetic NLA fiducial mean |
+| `des_y3_tatt_synthetic.datavector` | `index value` | The matching synthetic TATT fiducial mean |
+| `des_y3_joint.cov` | `i j value` (upper triangle) | The 796-simulation joint covariance |
+| `des_y3_xi_scale_cut.mask` | `index value` (0 or 1) | The DES Y3 cosmic-shear scale cuts: 227 of 400 $`\xi`$ rows and all 80 Map3 rows kept |
+| `des_y3_xi_only.mask` | `index value` (0 or 1) | All 400 $`\xi`$ rows kept and every Map3 row cut, for power-only feedback |
+| `des_y3_source.nz` | `z n1 n2 n3 n4` | The processed source distributions; each line is one histogram cell of width `nz_source_bin_width = 0.01` centred on `z` |
+
+The ASCII files store no row geometry. Each `.dataset` file states it
+with lsst_y1's key names (`source_ntomo`, `n_theta`, `theta_min_arcmin`,
+`theta_max_arcmin`) plus `map3_radii_arcmin`, and the likelihood rebuilds
+the rows from those keys. The Map3 side bins are stated in
+[likelihood/joint_shear.yaml](../likelihood/joint_shear.yaml)
+(`sas_theta_min_arcmin`, `sas_theta_max_arcmin`, `sas_ntheta`,
+`sas_theta_lower_cut_arcmin`). Before writing anything, the converter
+checks that the FITS rows equal the rows rebuilt from the keys, and
+[tests/test_y3_scale_cut_mask.py](../tests/test_y3_scale_cut_mask.py)
+rebuilds the scale-cut mask from `upstream_cosmosis/des-y3-scale-cuts.ini`.
+
+The committed ASCII files already match the committed FITS files, so the
+examples run without any conversion step.
+
+**Step :one:**: to rewrite the ASCII inputs after an upstream FITS file
+changes (a few seconds), run from `projects/des_3pcf`:
+
+```bash
+python scripts/convert_desy3_fits.py
+```
 
 ## Acknowledgements <a name="acknowledgements"></a>
 
@@ -97,10 +144,10 @@ ignored `chains/` directory by the notebooks that explain them.
 
 | Generated file | How to create it |
 |---|---|
-| `chains/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) including its direct TATT derivative calculation; the case-4 datasets read this matrix |
+| `chains/independent_pilot_compression.npz` | Run [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) including its direct TATT derivative calculation; the case-5 dataset `des_y3_joint5_sim.dataset` reads this matrix |
 | `chains/conditional_xi_compression.npz` | Run the conditional-xi section of [EXAMPLE_COMPRESSION.ipynb](../EXAMPLE_COMPRESSION.ipynb) |
 | `chains/joint_feedback/` | Run [EXAMPLE_JOINT_FEEDBACK.ipynb](../EXAMPLE_JOINT_FEEDBACK.ipynb) |
-| `chains/EXAMPLE_EVALUATE1_fisher.npz` | Run the Fisher section of [EXAMPLE_EVALUATE1.ipynb](../EXAMPLE_EVALUATE1.ipynb) |
+| `chains/EXAMPLE_EVALUATE2_fisher.npz` | Run the Fisher section of [EXAMPLE_EVALUATE2.ipynb](../EXAMPLE_EVALUATE2.ipynb) |
 
 The compression matrix is trained from the chosen derivatives using an
 independent teaching covariance; it is not the published compression.
@@ -121,7 +168,7 @@ occurred; consumers resolve the included file from their YAML
 configuration and check its hash.
 
 Reproduce the processing in the source-distribution section of
-[EXAMPLE_EVALUATE1.ipynb](../EXAMPLE_EVALUATE1.ipynb). After its setup cell,
+[EXAMPLE_EVALUATE2.ipynb](../EXAMPLE_EVALUATE2.ipynb). After its setup cell,
 you can jump directly to that section without running a cosmology or Fisher
 calculation. It shows clipping, the removed area and normalization, and
 checks that the resulting samples exactly match the included file;
@@ -133,5 +180,7 @@ input in `data/`. Changing the source model of an inference requires changing
 The other demonstration files are this project's own:
 `y3_nla_synthetic.txt` and `y3_tatt_synthetic.txt` are fixed synthetic
 fiducial mean vectors whose headers state their fiducial point and IA
-convention, and `y3_xi_rows_mask.txt` is the xi-only row mask that
-`des_y3_xi1.dataset` reads to cut the Map3 rows.
+convention. The converter copies them into
+`des_y3_nla_synthetic.datavector` and `des_y3_tatt_synthetic.datavector`,
+the files the `_sim` datasets read
+([the ASCII likelihood inputs](#ascii)).

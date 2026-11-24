@@ -27,7 +27,7 @@ def main():
                         default=PROJECT / "chains/cobaya_joint_check.txt")
     args = parser.parse_args()
     records = []
-    for number, mode in ((1, "NLA"), (2, "TATT")):
+    for number, mode in ((2, "NLA"), (3, "TATT")):
         info = yaml.safe_load(
             (PROJECT / f"EXAMPLE_NAUTILUS{number}.yaml").read_text(),
         )

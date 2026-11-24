@@ -2,7 +2,7 @@
 
 interface/cosmolike_des_3pcf_notebook_wrappers.py computes xi, Map3, the
 joint data vector and chi2 at any parameter point through the Cobaya model
-of a numbered example. These checks run EXAMPLE_EVALUATE1 (NLA) three
+of a numbered example. These checks run EXAMPLE_EVALUATE2 (NLA) three
 times: the arrays of xi and map3 must hold exactly the values of the
 joint vector, a change of A_s must reach every Map3 entry, chi2 must
 be the compiled joint chi2 of that vector, and a value for a parameter
@@ -19,7 +19,7 @@ import cosmolike_des_3pcf_notebook_wrappers as nw
 
 def test_observables_hold_the_joint_vector_and_follow_parameters():
     """xi and map3 rearrange the data vector; A_s changes Map3; chi2 matches."""
-    nw.configure(yaml="EXAMPLE_EVALUATE1.yaml", threads=2)
+    nw.configure(yaml="EXAMPLE_EVALUATE2.yaml", threads=2)
 
     labels, values = nw.datavector()
     theta, xi_plus, xi_minus = nw.xi()
@@ -44,7 +44,7 @@ def test_observables_hold_the_joint_vector_and_follow_parameters():
     chi2 = nw.get_chi2()
     assert chi2 == float(ci.compute_joint_chi2(prediction=values))
 
-    # EXAMPLE_EVALUATE1 fixes DES_A2_1 = 0 (NLA); another value cannot be
+    # EXAMPLE_EVALUATE2 fixes DES_A2_1 = 0 (NLA); another value cannot be
     # honoured.
     with pytest.raises(ValueError, match="fixes it"):
         nw.datavector(A2=[0.5, 0.0])

@@ -1,35 +1,24 @@
-"""Read survey rows without changing their source-bin or radius association.
+"""Describe the survey rows and read the ASCII inputs of the likelihood.
 
 The joint vector is ordered as xi_plus, xi_minus, then third-order
 aperture moments. A row of the latter carries three source labels and
 three filter radii: permuting labels without the corresponding radii
-would define a different observable. This reader preserves every file
-row and requires covariance block labels to agree with that order.
+would define a different observable.
 
-DES Y3 and Y6 use separate files and selections. File names are not used
-to infer a release, likelihood prescription or nuisance prior. Measured
-values can be used for comparisons, while Fisher calculations use the
-same row definitions to evaluate model derivatives.
-
-The files themselves come from Rafael Gomes' public repository
-github.com/rchgomes/3pcf_integrator at commit d6098d3, copied under
-data/upstream_y3/ (simulated vectors at the CosmoGrid cosmology) and
-data/upstream_y3_observed/ (the observed, unblinded measurements): the
-xi and Map3 measurement tables, the joint covariance and the nz_source
-table. scripts/download_y3_data.sh names every file and downloads it
-again from that commit, checking each against the git hash recorded in
-data/y3_reference_manifest.yaml and data/y3_observed_manifest.yaml.
-The likelihood's initialize reads them once, through read_survey,
-read_joint_covariance and read_source_distributions, and a
-notebook that needs the raw rows calls the same functions on the same
-dataset entries.
+The inputs follow lsst_y1. The .dataset file names ASCII files in data/:
+data_file and mask_file ("index value" per line), cov_file ("i j value"
+per line, upper triangle) and nz_source_file ("z n1 ... n4" per line).
+The row geometry is not in those files: survey_rows rebuilds it from the
+.dataset keys (source_ntomo, n_theta, theta_min_arcmin, theta_max_arcmin,
+map3_radii_arcmin), as lsst_y1 does. scripts/convert_desy3_fits.py writes
+the ASCII files from the released DES Y3 FITS files in data/upstream_y3/
+and data/upstream_y3_observed/ and checks that their rows equal those
+rebuilt rows; no likelihood code opens a FITS file.
 """
 
-from pathlib import Path
+from itertools import combinations_with_replacement
 
 import numpy as np
-from astropy.io import fits
-from itertools import combinations_with_replacement
 
 from cosmolike_notebook_utils.fisher import symmetric_matrix
 
@@ -48,7 +37,7 @@ class SurveyRows:
       values = [nrow] observed dimensionless shear correlations/moments.
       labels = unique strings identifying rows independently of their values.
     Returns:
-      a record; construction through read_survey validates and owns its arrays.
+      a record that owns copies of its arrays.
     """
 
     def __init__(self, kind, bins, angles, values, labels):
@@ -97,306 +86,97 @@ class SurveyRows:
         )
 
 
-def _columns(table, names, extension):
-    """Check that an observable table contains its documented columns.
+def read_vector(path, size):
+    """Read an "index value" file: a data vector or a 0/1 mask.
 
     Arguments:
-      table = FITS binary-table data.
-      names = required case-sensitive column names.
-      extension = table name included in an error.
+      path = ASCII file with one "index value" pair per line.
+      size = expected number of lines (the number of survey rows).
     Returns:
-      nothing when all required columns are present.
+      values[size], in index order.
     Raises:
-      ValueError listing a missing column.
+      ValueError when the indices are not 0, 1, ..., size-1 in order or a
+      value is not finite.
     """
-    for name in names:
-        if name not in table.names:
-            raise ValueError(
-                f"{extension} lacks {name}; supply a labeled measurement table."
-            )
+    table = np.loadtxt(path, ndmin=2)
+    if (table.shape != (size, 2) or not np.array_equal(table[:, 0], np.arange(size))
+            or not np.all(np.isfinite(table[:, 1]))):
+        raise ValueError(f"{path} must hold {size} lines 'index value', indices 0..{size - 1}.")
+    return table[:, 1].copy()
 
 
-def _angle_column(hdu, name, assumed_unit):
-    """Convert an angular column after checking its declared unit.
+def read_covariance(path, size):
+    """Read an "i j value" covariance file (upper triangle, i <= j).
 
     Arguments:
-      hdu = FITS binary table containing name.
-      name = angular column name.
-      assumed_unit = explicit convention used only when TUNIT is absent.
+      path = ASCII file; each line gives one entry and its mirror (j, i).
+      size = number of survey rows.
     Returns:
-      owned float64 column in radians.
+      the symmetric, positive definite [size, size] matrix.
     Raises:
-      ValueError for an unsupported unit or nonpositive/nonfinite angle.
+      ValueError for indices outside 0..size-1, a missing or repeated entry
+      of the upper triangle, or a matrix that is not positive definite.
     """
-    unit = hdu.columns[name].unit
-    if unit is None or unit == "":
-        unit = assumed_unit
-    factors = {"arcmin": ARCMIN_TO_RADIAN, "rad": 1.0, "deg": np.pi / 180.0}
-    if unit not in factors:
-        raise ValueError(f"{hdu.name}.{name} unit {unit!r} must be arcmin, rad or deg.")
-    values = np.asarray(hdu.data[name], dtype=np.float64) * factors[unit]
-    if not np.all(np.isfinite(values)) or np.any(values <= 0.0):
-        raise ValueError(f"{hdu.name}.{name} requires positive finite angles.")
-    return values
+    table = np.loadtxt(path, ndmin=2)
+    if table.shape[1] != 3:
+        raise ValueError(f"{path} must hold lines 'i j value'.")
+    i = table[:, 0].astype(np.int64)
+    j = table[:, 1].astype(np.int64)
+    upper = np.minimum(i, j) * size + np.maximum(i, j)
+    if (np.any(i != table[:, 0]) or np.any(j != table[:, 1]) or np.any(i < 0)
+            or np.any(j < 0) or np.any(i >= size) or np.any(j >= size)
+            or np.unique(upper).size != upper.size or upper.size != size * (size + 1) // 2):
+        raise ValueError(f"{path} must give every entry i <= j < {size} exactly once.")
+    matrix = np.zeros((size, size))
+    matrix[i, j] = table[:, 2]
+    matrix[j, i] = table[:, 2]
+    return symmetric_matrix(matrix, name="Joint covariance", positive=True)
 
 
-def _bin_column(table, name, nbin):
-    """Convert FITS one-based source labels to checked zero-based integers.
+def read_sources(path, nbin, bin_width):
+    """Read the source n(z) file "z n1 ... n_nbin" of histogram cells.
+
+    Each line is a redshift cell of width bin_width centred on z, so its
+    edges are z -+ bin_width / 2. The cell values are kept as given; no
+    hidden renormalization.
 
     Arguments:
-      table = FITS data containing integer-like bin labels.
-      name = column name, such as BIN1.
-      nbin = number of available source distributions.
+      path = ASCII n(z) file.
+      nbin = number of source bins (columns after z).
+      bin_width = redshift width of every cell (dataset key nz_source_bin_width).
     Returns:
-      owned int32 column in the interval [0,nbin).
+      z[nz], sources[nbin, nz], low[nz] and high[nz] (the cell edges).
     Raises:
-      ValueError for fractional, missing or out-of-range source labels.
+      ValueError for a wrong column count, z not increasing or negative,
+      or a negative or nonfinite n(z) value.
     """
-    values = np.asarray(table[name])
-    if (not np.all(np.isfinite(values)) or np.any(values != np.floor(values))
-            or np.any(values < 1) or np.any(values > nbin)):
-        raise ValueError(f"{name} must contain integer source labels from 1 to {nbin}.")
-    return np.asarray(values - 1, dtype=np.int32)
-
-
-def read_survey(two_point_path, aperture_path, nbin, assumed_angle_unit="arcmin"):
-    """Read the full xi± and aperture measurement rows in joint order.
-
-    The likelihood's initialize calls this once with the dataset's
-    two_point_file and aperture_file: the released DES Y3 FITS
-    measurement tables bundled under data/ (module docstring). A
-    notebook that needs the raw measured rows calls it the same way.
-    Either input can be None for a single-probe calculation. Angular bin
-    edges are required for xi: evaluating a Bessel function at the center
-    is not the same as averaging the estimator over its angular bin.
-
-    Arguments:
-      two_point_path = optional FITS file with xip and xim extensions.
-      aperture_path = optional FITS file with map3 extension.
-      nbin = positive number of source bins.
-      assumed_angle_unit = explicit unit for columns lacking FITS TUNIT.
-    Returns:
-      SurveyRows ordered xip, xim, map3, retaining order within each block.
-    Raises:
-      ValueError for absent inputs, malformed columns or duplicate row labels.
-      OSError when a file cannot be opened.
-    """
-    if (two_point_path is None and aperture_path is None) or nbin < 1:
+    table = np.loadtxt(path, ndmin=2)
+    z = table[:, 0].copy()
+    sources = np.ascontiguousarray(table[:, 1:].T)
+    if (table.shape[1] != nbin + 1 or z.size < 2 or np.any(np.diff(z) <= 0.0)
+            or np.any(z < 0.0) or not np.all(np.isfinite(table))
+            or np.any(sources < 0.0) or not bin_width > 0.0):
         raise ValueError(
-            "Supply at least one survey file and a positive source-bin count."
-        )
-    kinds = []
-    bin_blocks = []
-    angle_blocks = []
-    value_blocks = []
-    labels = []
-    inputs = []
-    if two_point_path is not None:
-        inputs.append((two_point_path, ("xip", "xim")))
-    if aperture_path is not None:
-        inputs.append((aperture_path, ("map3",)))
-    for path, extensions in inputs:
-        with fits.open(Path(path), memmap=False) as hdus:
-            for name in extensions:
-                hdu = hdus[name]
-                table = hdu.data
-
-                # Required columns per row kind: every table carries two
-                # source bins and a value; a Map3 table adds the third
-                # source bin and its three filter radii, a xi table its
-                # angular bin edges and quoted centre.
-                required = ["BIN1", "BIN2", "VALUE"]
-                if name == "map3":
-                    required.extend(["BIN3", "THETA1", "THETA2", "THETA3"])
-                    angle_names = ("THETA1", "THETA2", "THETA3")
-                else:
-                    required.extend(["ANGLEMIN", "ANGLEMAX", "ANG"])
-                    angle_names = ("ANGLEMIN", "ANGLEMAX", "ANG")
-                _columns(table=table, names=required, extension=name)
-
-                # Source bins: the FITS labels are one-based, and
-                # _bin_column checks and converts them to the zero-based
-                # convention of the compiled code. The third column
-                # stays -1 for xi rows, which have only a source pair.
-                bins = np.full((len(table), 3), fill_value=-1, dtype=np.int32)
-                bins[:, 0] = _bin_column(table=table, name="BIN1", nbin=nbin)
-                bins[:, 1] = _bin_column(table=table, name="BIN2", nbin=nbin)
-                if name == "map3":
-                    bins[:, 2] = _bin_column(table=table, name="BIN3", nbin=nbin)
-
-                # Angles: every column is converted to radians, the unit
-                # of every compiled angular calculation; _angle_column
-                # reads the declared FITS unit first.
-                angles = np.empty((len(table), 3), dtype=np.float64)
-                for column, angle_name in enumerate(angle_names):
-                    angles[:, column] = _angle_column(
-                        hdu=hdu, name=angle_name, assumed_unit=assumed_angle_unit,
-                    )
-
-                # A valid xi angular bin has lower < upper and its
-                # quoted centre inside the bin; a centre outside its own
-                # bin means the edge and centre columns were paired
-                # wrongly in the file.
-                if name != "map3" and (
-                    np.any(angles[:, 0] >= angles[:, 1])
-                    or np.any(angles[:, 2] < angles[:, 0])
-                    or np.any(angles[:, 2] > angles[:, 1])
-                ):
-                    raise ValueError(
-                        f"{name} requires lower<upper and center inside each bin."
-                    )
-                values = np.asarray(table["VALUE"], dtype=np.float64)
-                if not np.all(np.isfinite(values)):
-                    raise ValueError(f"{name}.VALUE must be finite.")
-
-                # Row labels: the kind, the source bins and the exact
-                # bits of each angle. float.hex() writes the full binary
-                # value, so a regenerated or reordered file that changes
-                # an angle even in its last digit produces a different
-                # label and is caught; a rounded decimal string would
-                # let such a change pass.
-                for row in range(len(table)):
-                    parts = [name]
-                    for bin_value in bins[row]:
-                        parts.append(str(int(bin_value)))
-                    for angle in angles[row]:
-                        parts.append(float(angle).hex())
-                    labels.append(":".join(parts))
-                kinds.append(np.full(len(table), fill_value=name, dtype="U4"))
-                bin_blocks.append(bins)
-                angle_blocks.append(angles)
-                value_blocks.append(values.copy())
-
-    # Two equal labels would mean the same observable row appears twice,
-    # making any match against a covariance ambiguous.
-    if len(set(labels)) != len(labels):
-        raise ValueError("Measurement file contains duplicate observable rows.")
-    return SurveyRows(
-        kind=np.concatenate(kinds),
-        bins=np.concatenate(bin_blocks),
-        angles=np.concatenate(angle_blocks),
-        values=np.concatenate(value_blocks),
-        labels=np.asarray(labels),
-    )
+            f"{path} must hold 'z n1 ... n{nbin}' with increasing z >= 0 and n(z) >= 0.")
+    return z, sources, z - 0.5 * bin_width, z + 0.5 * bin_width
 
 
-def read_joint_covariance(path, rows):
-    """Read COVMAT only when its full block labels match the measurement order.
+def survey_rows(nbin, aperture_radii, xi_edges=None):
+    """Define the survey rows from their geometry.
 
-    The FITS convention records NAME_i and STRT_i for each block. Matrix
-    shape alone cannot distinguish a covariance ordered (map3,xi) from one
-    ordered (xi,map3). The labels therefore remain mandatory even for a
-    square matrix with the expected number of rows.
-
-    Arguments:
-      path = FITS file containing the joint COVMAT image.
-      rows = unselected SurveyRows in that file's block order.
-    Returns:
-      owned, symmetric, positive definite full covariance.
-    Raises:
-      ValueError for missing/mismatched block metadata or matrix dimensions.
-    """
-    # Compress rows.kind into contiguous runs: one (block name, starting
-    # row) pair per run of equal kinds, which is exactly what the FITS
-    # convention stores in the COVMAT header as NAME_i / STRT_i.
-    expected = []
-    previous = None
-    for index, kind in enumerate(rows.kind):
-        if kind != previous:
-            expected.append((str(kind), index))
-            previous = kind
-    with fits.open(Path(path), memmap=False) as hdus:
-        image = hdus["COVMAT"]
-        for index, (name, start) in enumerate(expected):
-            observed_name = str(image.header.get(f"NAME_{index}", "")).lower()
-            observed_start = image.header.get(f"STRT_{index}")
-            if observed_name != name or observed_start != start:
-                raise ValueError(
-                    f"Covariance block {index} must be {name} starting at {start}."
-                )
-        # A header block beyond the expected ones would mean the matrix
-        # covers observables this measurement does not contain.
-        if f"NAME_{len(expected)}" in image.header:
-            raise ValueError(
-                "Covariance contains extra blocks absent from the supplied rows."
-            )
-        matrix = symmetric_matrix(image.data, name="Joint covariance", positive=True)
-    if matrix.shape != (rows.values.size, rows.values.size):
-        raise ValueError(
-            "Joint covariance size differs from the full measurement row count."
-        )
-    return matrix
-
-
-def read_source_distributions(path, nbin, extension="nz_source", with_edges=False):
-    """Read source n(z) midpoint values from a two-point FITS file.
-
-    The likelihood's initialize reads the dataset's nz_source_file
-    through this once; the returned curves are the native inputs that
-    reconstructed_sources shifts at every sampled point. This function
-    preserves the supplied midpoint-curve convention.
-    Histogram reconstruction is a different numerical choice and must
-    be made explicitly before passing densities to the C model.
-
-    Arguments:
-      path = FITS file containing the named source extension.
-      nbin = number of BIN columns to read.
-      extension = FITS table with Z_MID and BIN1,...,BINnbin.
-      with_edges = also return the supplied Z_LOW/Z_HIGH, without inferring
-          edges or interpreting cell heights as integrated probabilities.
-    Returns:
-      z[nz] and sources[nbin,nz], with no hidden renormalization.
-      If with_edges is True, append native_low[nz] and native_high[nz].
-    Raises:
-      ValueError for missing columns, nonfinite/negative densities or bad z order.
-    """
-    with fits.open(Path(path), memmap=False) as hdus:
-        table = hdus[extension].data
-        names = ["Z_MID"]
-        for index in range(nbin):
-            names.append(f"BIN{index + 1}")
-        if with_edges:
-            names.extend(("Z_LOW", "Z_HIGH"))
-        _columns(table=table, names=names, extension=extension)
-        z = np.array(table["Z_MID"], dtype=np.float64, copy=True)
-        sources = np.empty((nbin, z.size), dtype=np.float64)
-        for index in range(nbin):
-            sources[index] = table[f"BIN{index + 1}"]
-        if with_edges:
-            low = np.array(table["Z_LOW"], dtype=np.float64, copy=True)
-            high = np.array(table["Z_HIGH"], dtype=np.float64, copy=True)
-    if (z.size < 2 or np.any(np.diff(z) <= 0.0) or np.any(z < 0.0)
-            or not np.all(np.isfinite(z)) or not np.all(np.isfinite(sources))
-            or np.any(sources < 0.0)):
-        raise ValueError(
-            "Source curves require increasing finite z and nonnegative n(z)."
-        )
-    if with_edges:
-        return z, sources, low, high
-    return z, sources
-
-
-def forecast_rows(nbin, aperture_radii, xi_edges=None):
-    """Define a synthetic forecast vector without requiring measured values.
-
-    The synthetic rows drive the accuracy, quadrature and geometry tests
-    (tests/test_accuracy.py, tests/test_quadrature.py,
-    tests/test_estimator_geometry.py), which need row definitions at
-    chosen angles without any measurement file. No production
-    calculation reads them, so there is no forecast pipeline to look
-    for behind this function.
-
-    Equal-radius aperture moments are ordered by source triplet, then
-    radius. Optional xi± rows include every source pair and angular bin.
-    The stored zeros mark the absence of observations; they are never used
-    as model predictions or fitted data in the Fisher calculation.
+    The likelihood builds its rows here from the .dataset keys, as lsst_y1
+    does: every source pair and angular bin for xi+ and xi-, then every
+    source triplet and aperture radius for Map3 (equal radii, ordered by
+    triplet, then radius). scripts/convert_desy3_fits.py checks that the
+    released FITS rows are exactly these. Tests call it at chosen angles.
+    The values are zeros; the likelihood fills them from data_file.
 
     Arguments:
       nbin = positive source-bin count.
       aperture_radii = positive aperture radii in radians, possibly empty.
       xi_edges = optional increasing angular bin edges in radians.
     Returns:
-      SurveyRows with explicit labels and zero placeholder observations.
+      SurveyRows with explicit labels and zero values.
     Raises:
       ValueError for invalid counts/angles or an empty overall vector.
     """

@@ -29,7 +29,7 @@ def test_driver_records_boundaries_recomputation_and_agreement(tmp_path):
     """Two points, one and two threads: every check of the driver passes."""
     result = subprocess.run(
         args=[sys.executable, "-B", str(PROJECT / "tests/benchmark_scaling.py"),
-              "--yaml", str(PROJECT / "EXAMPLE_EVALUATE1.yaml"),
+              "--yaml", str(PROJECT / "EXAMPLE_EVALUATE2.yaml"),
               "--output", str(tmp_path), "--threads", "1", "2",
               "--npoints", "2"],
         cwd=COCOA, capture_output=True, text=True, check=False, timeout=900,

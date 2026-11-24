@@ -4,7 +4,7 @@ import numpy as np
 from numpy.polynomial.legendre import leggauss
 import pytest
 
-from cobaya.likelihoods.des_3pcf.survey import forecast_rows
+from cobaya.likelihoods.des_3pcf.survey import survey_rows
 from cosmolike_des_3pcf_interface import quadrature
 
 
@@ -43,7 +43,7 @@ def test_logarithmic_rule_includes_one_jacobian():
 
 def test_xi_quadrature_changes_and_restores_without_retained_state(compiled):
     """The native integral consumes each supplied grid, including A/B/A edits."""
-    rows = forecast_rows(nbin=2, aperture_radii=[], xi_edges=[0.001, 0.002])
+    rows = survey_rows(nbin=2, aperture_radii=[], xi_edges=[0.001, 0.002])
     ell = np.array([30.0, 100.0, 500.0])
     weights = np.array([20.0, 80.0, 300.0])
     theta, theta_weight = compiled.xi_bin_weights(

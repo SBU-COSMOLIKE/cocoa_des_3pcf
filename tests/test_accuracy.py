@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from cosmolike_des_3pcf_interface import covariance_inputs
-from cobaya.likelihoods.des_3pcf.survey import forecast_rows
+from cobaya.likelihoods.des_3pcf.survey import survey_rows
 
 
 import cosmolike_des_3pcf_interface as ci
@@ -78,7 +78,7 @@ def test_bad_boost_refused_before_preparation(value):
 
 def test_covariance_controls_refine_only_declared_integrals():
     """Mass-only refinement must not alter ell nodes, source labels or bin edges."""
-    rows = forecast_rows(nbin=2, aperture_radii=[0.003], xi_edges=[0.001, 0.002])
+    rows = survey_rows(nbin=2, aperture_radii=[0.003], xi_edges=[0.001, 0.002])
     grids = {}
     for name in ("ell", "window_ell", "phi", "radius", "k", "mass"):
         grids[name] = {"lower": 0.1, "upper": 2.0, "count": 3}
@@ -109,7 +109,7 @@ def test_covariance_controls_refine_only_declared_integrals():
 
 def test_measured_pair_weights_cannot_be_silently_resampled():
     """A numerical boost cannot invent catalogue pair weights at new angles."""
-    rows = forecast_rows(nbin=2, aperture_radii=[], xi_edges=[0.001, 0.002])
+    rows = survey_rows(nbin=2, aperture_radii=[], xi_edges=[0.001, 0.002])
     grids = {}
     for name in ("ell", "window_ell", "phi", "radius", "k", "mass"):
         grids[name] = {"lower": 0.1, "upper": 2.0, "count": 3}

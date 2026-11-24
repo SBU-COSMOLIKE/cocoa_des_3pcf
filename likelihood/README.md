@@ -12,7 +12,7 @@ theory:
   bihalofit: {}
 likelihood:
   des_3pcf.joint_shear:
-    data_file: des_y3_joint1.dataset
+    data_file: des_y3_joint2_sim.dataset
 ```
 
 The complete examples also specify cosmological parameters, nuisance
@@ -28,12 +28,17 @@ $`P_H=R_P P_D`$ and $`B_H=R_B B_D`$. The three-point model retains DMO power
 for quadratic IA; the two-point core receives the once-corrected nonlinear
 power through its existing setter. Linear TATT power and the fixed covariance
 stay unchanged. No BACCO module is imported by this likelihood. See
-[the commented setup in example 1](../EXAMPLE_EVALUATE1.yaml).
+[the commented setup in example 2](../EXAMPLE_EVALUATE2.yaml).
 
 `joint_shear.py` selects the probe. `survey.py` holds the survey readers:
-the functions that read the measurement tables, the joint covariance and
-the source distributions named by the `.dataset`, read once by
-`initialize` (and by the survey tests). `_cosmolike_prototype_base.py` follows
+the functions that read the ASCII data vector, covariance, mask and
+source distributions named by the `.dataset`, read once by `initialize`
+(and by the survey tests), and `survey_rows`, which rebuilds the row
+geometry from the dataset keys. The likelihood opens no FITS file: the
+FITS readers for the released DES Y3 products live in
+`scripts/convert_desy3_fits.py`, the script that writes those ASCII
+inputs ([input guide](../data/README.md)).
+`_cosmolike_prototype_base.py` follows
 LSST Y1: `initialize` reads the dataset and configures the native library;
 `get_requirements` requests theory products; `set_cosmo_related` and
 `set_source_related` supply cosmology and nuisance inputs;
@@ -41,8 +46,8 @@ LSST Y1: `initialize` reads the dataset and configures the native library;
 native joint likelihood. Both probes use this project's compiled module.
 The source reconstruction, finite-triangle cuts and within-bin xi
 averaging remain explicit scientific choices in `joint_shear.yaml`, as are
-the Map3 side bins of the measurement (`theta_min_arcmin`,
-`theta_max_arcmin`, `ntheta`) and the scale cut `theta_lower_cut_arcmin`
+the Map3 side bins of the measurement (`sas_theta_min_arcmin`,
+`sas_theta_max_arcmin`, `sas_ntheta`) and the scale cut `sas_theta_lower_cut_arcmin`
 that selects the side bins entering the Map3 rows.
 
 The `.dataset` uses the usual `key = value` format. It names local source,
@@ -58,8 +63,9 @@ adds priors. With `mock_count > 0`, it instead evaluates the normalized
 Percival density. This assumes a raw sample covariance from independent
 Gaussian mocks, independent data, and any compression trained independently
 of that covariance. The supplied footprint mocks do not by themselves
-establish all of those assumptions. Example 4 requires a separately
-prepared pilot compression and is a methodological demonstration.
+establish all of those assumptions. Example 1 uses this density with the
+published mock count; example 5 adds a separately prepared pilot
+compression and is a methodological demonstration.
 
 `compression.py` constructs optional fixed linear transformations for the
 compression study. The production likelihood reads its saved matrix and
@@ -71,7 +77,7 @@ not required for a joint forecast.
 Run from the activated Cocoa directory:
 
 ```bash
-cobaya-run projects/des_3pcf/EXAMPLE_EVALUATE1.yaml
+cobaya-run projects/des_3pcf/EXAMPLE_EVALUATE2.yaml
 ```
 
 See the [project README](../README.md) for data provenance, Nautilus examples

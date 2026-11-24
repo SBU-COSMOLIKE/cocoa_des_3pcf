@@ -1,3 +1,6 @@
+# Case 1 matches EXAMPLE_NAUTILUS1.yaml: the observed DES Y3 data with the setup of
+# the published analysis where the project allows it (des_y3_joint1.dataset): the
+# Y3 xi scale cuts and the Percival likelihood with 796 simulations.
 # CAMB and the matter bispectrum are separate Cobaya theory blocks.
 timing: true
 debug: false

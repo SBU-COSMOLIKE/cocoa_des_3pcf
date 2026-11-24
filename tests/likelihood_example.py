@@ -115,7 +115,7 @@ def fields(mapping, allowed, required, name):
     if unknown or missing:
         raise ValueError(
             f"{name}: unknown fields {sorted(unknown)}, missing {sorted(missing)}; "
-            "use the fields in EXAMPLE_NAUTILUS1.yaml."
+            "use the fields in EXAMPLE_NAUTILUS2.yaml."
         )
 
 def prior_distributions(priors):

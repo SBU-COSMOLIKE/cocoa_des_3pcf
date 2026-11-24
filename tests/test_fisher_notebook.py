@@ -3,29 +3,43 @@
 from pathlib import Path
 import numpy as np
 import pytest
-from astropy.io import fits
 from getdist import IniFile
 from cobaya.yaml import yaml_load_file
 
 PROJECT = Path(__file__).resolve().parents[1]
 
 
-@pytest.mark.parametrize("number", [1, 2])
+@pytest.mark.parametrize("number", [2, 3])
 def test_numbered_covariance_keeps_all_rows_and_the_cross_block(number):
-    """Read the actual numbered YAML and dataset, without initializing theory."""
+    """Read the numbered YAML and its ASCII dataset, without initializing theory.
+
+    Cases 2 and 3 (the synthetic NLA and TATT vectors) keep every row and
+    the full joint covariance, including its xi-Map3 cross block.
+    """
+    from cobaya.likelihoods.des_3pcf.survey import (
+        ARCMIN_TO_RADIAN, read_covariance, survey_rows)
+
+    # Step 1: the dataset named by the example yaml.
     info = yaml_load_file(str(PROJECT / f"EXAMPLE_EVALUATE{number}.yaml"))
     dataset = info["likelihood"]["des_3pcf.joint_shear"]["data_file"]
     inputs = IniFile(str(PROJECT / "data" / dataset))
-    covariance = fits.getdata(inputs.relativeFileName("cov_file"))
-    assert covariance.shape == (480, 480)
-    assert np.any(covariance[:400, 400:] != 0.)
     assert inputs.string("mask_file") == ""
     assert inputs.string("compression_file") == ""
-    two = inputs.relativeFileName("two_point_file")
-    three = inputs.relativeFileName("aperture_file")
-    assert len(fits.getdata(two, extname="xip")) == 200
-    assert len(fits.getdata(two, extname="xim")) == 200
-    assert len(fits.getdata(three, extname="map3")) == 80
+
+    # Step 2: the rows its geometry keys define: 200 xi+, 200 xi-, 80 Map3.
+    radii = [float(value) for value in inputs.string("map3_radii_arcmin").split()]
+    rows = survey_rows(
+        nbin=inputs.int("source_ntomo"),
+        aperture_radii=np.asarray(radii) * ARCMIN_TO_RADIAN,
+        xi_edges=np.geomspace(inputs.float("theta_min_arcmin"),
+                              inputs.float("theta_max_arcmin"),
+                              inputs.int("n_theta") + 1) * ARCMIN_TO_RADIAN,
+    )
+    assert [int(np.sum(rows.kind == kind)) for kind in ("xip", "xim", "map3")] == [200, 200, 80]
+
+    # Step 3: the ASCII covariance covers all 480 rows, cross block included.
+    covariance = read_covariance(path=inputs.relativeFileName("cov_file"), size=480)
+    assert np.any(covariance[:400, 400:] != 0.)
     # These Gaussian widths are read by the numbered likelihood; their
     # truncation bounds are not extra Gaussian Fisher information.
     assert info["params"]["DES_DZ_S3"]["prior"]["scale"] == .011

@@ -1,6 +1,6 @@
 """Check the Cobaya feedback-scenario route and the installed paired BACCO API.
 
-The scenario route builds Cobaya models of EXAMPLE_EVALUATE1.yaml on the
+The scenario route builds Cobaya models of EXAMPLE_EVALUATE2.yaml on the
 xi-only dataset with the bfmt block and the likelihood key
 external_baryon_suppression (see EXAMPLE_FEEDBACK_SCENARIOS.ipynb).
 The checks concentrate on mistakes that can produce plausible curves: a
@@ -29,7 +29,7 @@ COCOA = PROJECT.parents[1]
 
 
 def example_information():
-    """Load EXAMPLE_EVALUATE1.yaml as the notebook does, with an absolute CAMB path.
+    """Load EXAMPLE_EVALUATE2.yaml as the notebook does, with an absolute CAMB path.
 
     Returns:
       (information, point): the Cobaya input without sampler and output,
@@ -37,7 +37,7 @@ def example_information():
     """
     from cobaya.yaml import yaml_load_file
 
-    information = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE1.yaml"))
+    information = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE2.yaml"))
     point = dict(information["sampler"]["evaluate"]["override"])
     information.pop("sampler")
     information.pop("output")
@@ -93,7 +93,7 @@ def test_scenario_information_switches_power_only_feedback():
         information=information, scenario=scenario, theory_options=options,
     )
     likelihood = changed["likelihood"][wrapper.LIKELIHOOD]
-    assert likelihood["data_file"] == "des_y3_xi1.dataset"
+    assert likelihood["data_file"] == "des_y3_xi2_sim.dataset"
     assert likelihood["external_baryon_suppression"] is True
     assert changed["theory"]["bfmt"]["baryon_model"] == 3
     assert changed["params"]["jet_frac_flamingo"] == 0.0

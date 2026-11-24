@@ -28,14 +28,17 @@ PROJECT = Path(__file__).resolve().parents[1]
     "EXAMPLE_EVALUATE2.yaml",
     "EXAMPLE_EVALUATE3.yaml",
     "EXAMPLE_EVALUATE4.yaml",
+    "EXAMPLE_EVALUATE5.yaml",
     "EXAMPLE_MCMC1.yaml",
     "EXAMPLE_MCMC2.yaml",
     "EXAMPLE_MCMC3.yaml",
     "EXAMPLE_MCMC4.yaml",
+    "EXAMPLE_MCMC5.yaml",
     "EXAMPLE_NAUTILUS1.yaml",
     "EXAMPLE_NAUTILUS2.yaml",
     "EXAMPLE_NAUTILUS3.yaml",
     "EXAMPLE_NAUTILUS4.yaml",
+    "EXAMPLE_NAUTILUS5.yaml",
 ])
 def test_cobaya_loads_project_likelihood_defaults(example):
     """Resolve the installed likelihood and its defaults without a prediction.
@@ -56,7 +59,14 @@ def test_cobaya_loads_project_likelihood_defaults(example):
     assert (PROJECT / "data" / data_file).is_file()
 
 
-@pytest.mark.parametrize("number", [1, 2, 3])
+# The dataset of each numbered case (real data plain, simulated or synthetic
+# vectors with the _sim suffix).
+DATASETS = {1: "des_y3_joint1.dataset", 2: "des_y3_joint2_sim.dataset",
+            3: "des_y3_joint3_sim.dataset", 4: "des_y3_joint4.dataset",
+            5: "des_y3_joint5_sim.dataset"}
+
+
+@pytest.mark.parametrize("number", [1, 2, 3, 4])
 def test_joint_likelihood_initializes_without_generating_covariance(number):
     """Prepare real measurement rows through the installed Cobaya class.
 
@@ -64,12 +74,13 @@ def test_joint_likelihood_initializes_without_generating_covariance(number):
     initialization needs quadrature and xi-bin weights even when the
     covariance generator is excluded from the build. It reads the supplied
     covariance; it never computes a cosmology or a new covariance matrix.
-    Case 4 needs an independently trained compression file and is separate.
+    Case 5 needs an independently trained compression file and is separate.
+    Case 1 keeps 307 rows after the DES Y3 xi scale cuts; the others all 480.
     """
     from cobaya.likelihoods.des_3pcf.joint_shear import joint_shear
     import cosmolike_des_3pcf_interface as ci
 
-    likelihood = joint_shear(info={"data_file": f"des_y3_joint{number}.dataset"})
+    likelihood = joint_shear(info={"data_file": DATASETS[number]})
     assert likelihood.xi_theta.shape == (400, 32)
     np.testing.assert_allclose(
         actual=np.sum(likelihood.xi_weight, axis=1),
@@ -79,7 +90,7 @@ def test_joint_likelihood_initializes_without_generating_covariance(number):
     assert callable(ci.shear_power_rows)
     assert callable(ci.production.xi_from_power)
     assert callable(ci.notebook.xi_from_power)
-    assert ci.get_joint_data().size == 480
+    assert ci.get_joint_data().size == (307 if number == 1 else 480)
     likelihood.close()
 
 
@@ -183,9 +194,9 @@ def test_hybrid_default_keeps_emulator_restrictions(analytic_configuration):
         load_model(filename=analytic_configuration)
 
 
-@pytest.mark.parametrize("number", [1, 2, 3, 4])
+@pytest.mark.parametrize("number", [1, 2, 3, 4, 5])
 def test_each_launcher_uses_shared_check(number, analytic_configuration, tmp_path):
-    """All four launchers accept the LSST options and leave no chain on --check."""
+    """All five launchers accept the LSST options and leave no chain on --check."""
     result = run_example(
         number=number, configuration=analytic_configuration,
         root=tmp_path, options=["--check"],

@@ -9,7 +9,7 @@ Terms used in this file:
 
 The published DES Y3 measurement and its theory kept multipoles up to
 n = 100; the likelihood default is map_mmax = 20. This test runs
-EXAMPLE_EVALUATE1 (CAMB, the bispectrum block and the joint xi + Map3
+EXAMPLE_EVALUATE2 (CAMB, the bispectrum block and the joint xi + Map3
 likelihood) at its fiducial point once per cutoff and bounds the
 difference two ways: the largest relative change of a Map3 row, and the
 covariance-weighted distance d^T C^-1 d of the full-vector change d
@@ -39,7 +39,7 @@ DISTANCE_BOUND = 1.0e-12
 
 
 def evaluate_with_cutoff(mmax):
-    """Evaluate EXAMPLE_EVALUATE1 at its fiducial with one map_mmax.
+    """Evaluate EXAMPLE_EVALUATE2 at its fiducial with one map_mmax.
 
     Arguments:
       mmax = the opening-angle multipole cutoff handed to the likelihood
@@ -56,7 +56,7 @@ def evaluate_with_cutoff(mmax):
 
     import cosmolike_des_3pcf_interface as ci
 
-    info = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE1.yaml"))
+    info = yaml_load_file(str(PROJECT / "EXAMPLE_EVALUATE2.yaml"))
     point = dict(info["sampler"]["evaluate"]["override"])
     info.pop("sampler")
     info.pop("output")

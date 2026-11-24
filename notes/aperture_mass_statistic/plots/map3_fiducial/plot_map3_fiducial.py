@@ -1,6 +1,6 @@
 """Redraw map3_fiducial.pdf from data.json: the third-order
 aperture-mass prediction of the des_3pcf likelihood at the fiducial
-point of EXAMPLE_EVALUATE1.yaml.
+point of EXAMPLE_EVALUATE2.yaml.
 
 One panel: Map3 against the filter radius R (the four measured radii),
 one curve per drawn source-bin triplet, with the values multiplied by

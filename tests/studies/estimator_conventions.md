@@ -33,8 +33,8 @@ lower edges. A low-side cut selects a subset of this bank; it does not
 build ten new logarithmic bins beginning at exactly 8 arcmin. The
 likelihood integrates its Map3 prediction over the measured bank:
 `likelihood/joint_shear.yaml` declares the 20 bins from 0.5 to 80 arcmin
-(`theta_min_arcmin`, `theta_max_arcmin`, `ntheta`) and the cut
-`theta_lower_cut_arcmin: 8`, which keeps the 9 bins with lower edges from
+(`sas_theta_min_arcmin`, `sas_theta_max_arcmin`, `sas_ntheta`) and the cut
+`sas_theta_lower_cut_arcmin: 8`, which keeps the 9 bins with lower edges from
 8.151 to 62.070 arcmin at log width 0.25376, matching the pinned
 `config/3pt.ini`. The former ten-bin demonstration bank and the retired
 TATT configuration that labels it an approximation
@@ -179,7 +179,7 @@ open (private communication, 2026-11-23):
   $`n = 50`$ would likely give much the same. The likelihood default
   `map_mmax: 20` is checked against 100 by
   `tests/test_map_multipole_truncation.py`, which evaluates the
-  EXAMPLE_EVALUATE1 fiducial at both cutoffs, prints the measured
+  EXAMPLE_EVALUATE2 fiducial at both cutoffs, prints the measured
   differences and bounds the relative Map3 change below $`10^{-8}`$ and
   the covariance-weighted distance $`d^{\mathsf T} C^{-1} d`$ of the
   change $`d`$ below $`10^{-12}`$.

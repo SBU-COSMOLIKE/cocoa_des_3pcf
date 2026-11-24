@@ -273,9 +273,12 @@ def test_measured_edge_padding_keeps_an_endpoint_spike_inside_its_support():
 
 
 def test_native_edges_survive_the_source_reader(tmp_path):
-    """Keep actual supplied cell edges, including the zero observer cell."""
-    from astropy.io import fits
-    from cobaya.likelihoods.des_3pcf.survey import read_source_distributions
+    """Keep the supplied cells, including the zero observer cell.
+
+    The ASCII n(z) file holds "z n1 n2" per line; each line is a cell of
+    width nz_source_bin_width centred on z, so its edges are z -+ width/2.
+    """
+    from cobaya.likelihoods.des_3pcf.survey import read_sources
 
     tables, _, metadata = source_tables(count=65)
     native_z = np.concatenate((np.zeros(1), tables["source_native_z"]))
@@ -283,19 +286,13 @@ def test_native_edges_survive_the_source_reader(tmp_path):
     tables["source_native"] = np.column_stack((np.zeros(2), tables["source_native"]))
     low = native_z - 0.025
     high = native_z + 0.025
-    columns = [
-        fits.Column(name="Z_MID", format="D", array=native_z),
-        fits.Column(name="Z_LOW", format="D", array=low),
-        fits.Column(name="Z_HIGH", format="D", array=high),
-    ]
-    for index, values in enumerate(tables["source_native"]):
-        columns.append(fits.Column(name=f"BIN{index + 1}", format="D", array=values))
-    path = tmp_path / "sources.fits"
-    source_hdu = fits.BinTableHDU.from_columns(columns, name="nz_source")
-    fits.HDUList([fits.PrimaryHDU(), source_hdu]).writeto(path)
-    z, native, supplied_low, supplied_high = read_source_distributions(
-        path=path, nbin=2, with_edges=True,
-    )
+    path = tmp_path / "sources.nz"
+    lines = []
+    for index in range(native_z.size):
+        row = (native_z[index], *tables["source_native"][:, index])
+        lines.append(" ".join(repr(float(value)) for value in row) + "\n")
+    path.write_text("".join(lines))
+    z, native, supplied_low, supplied_high = read_sources(path=path, nbin=2, bin_width=0.05)
     assert_bits(z, native_z)
     assert_bits(native, tables["source_native"])
     assert_bits(supplied_low, low)

@@ -1,5 +1,5 @@
 # Fixed synthetic xi+/xi-/Map3 input; CosmoLike IA convention.
-# Fiducial parameters are the ref values in EXAMPLE_NAUTILUS1.yaml.
+# Fiducial parameters are the ref values in EXAMPLE_NAUTILUS2.yaml.
 # Generated before the Cobaya-provider refactor; not observed DES data.
 8.86012476917075554e-06
 7.48887553229539868e-06
