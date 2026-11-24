@@ -76,8 +76,8 @@ averages, the bispectrum, spin-2 fields, Bessel functions -- is
 introduced where it first appears, and six primer appendices
 (\ref{app:complex}--\ref{app:homiso}) collect the background tools in
 a self-contained form.  Derivations are carried out step by step, with
-each intermediate line shown, and a few exercises with solutions close
-the longer sections.
+each intermediate line shown, and short worked examples close the
+longer sections.
 
 \paragraph{The answer, in one list.}
 \begin{enumerate}
@@ -183,9 +183,9 @@ spells out what homogeneity and isotropy allow.  Each can be read on
 its own before the section that uses it.
 
 Each of the longer sections ends with a short summary list and, where
-practice helps, one or two exercises whose solutions follow
-immediately.  The exercises are small: they rehearse a step of the
-text with different numbers, never new material.
+a concrete case helps, one or two worked examples.  The examples are
+small: they run a step of the text through different numbers, never
+new material.
 
 \section{Fiducial model and parameter values}
 \label{sec:fiducial}
@@ -360,8 +360,8 @@ field appears.  Let $x$ and $y$ be zero-mean Gaussian variables with
 \end{equation}
 Draw many pairs and scatter them: the cloud is a tilted ellipse, and
 knowing $x$ shrinks the spread of $y$ from $1$ to
-$\sqrt{1 - 0.8^2} = 0.6$ (Exercise~\ref{ex:conditional} derives this
-number).  A field's $\xi(\theta)$ is exactly this
+$\sqrt{1 - 0.8^2} = 0.6$ (Example~3.1 at the end of this section
+derives this number).  A field's $\xi(\theta)$ is exactly this
 $\langle xy\rangle$, with $x = \kappa$ at one point and $y = \kappa$
 at a point a distance $\theta$ away.
 
@@ -561,8 +561,8 @@ Wick.  For four zero-mean jointly Gaussian variables,
 sum over all ways of splitting the four factors into pairs, and
 replace each pair by its two-point average.
 
-Check it on one variable: the three pairings of $\langle x^4\rangle$
-are all $\sigma^2 \cdot \sigma^2$, so
+On one variable the rule is quickly confirmed: the three pairings of
+$\langle x^4\rangle$ are all $\sigma^2 \cdot \sigma^2$, so
 $\langle x^4\rangle = 3\sigma^4$, which is the known fourth moment of
 a Gaussian.  Appendix~\ref{app:probability} verifies this by direct
 integration and sketches why the pairing rule holds in general.  The
@@ -583,8 +583,8 @@ bispectrum $B_\kappa$:
   \label{eq:bispecdef}
 \end{equation}
 The derivation is the same four steps as for
-Eq.~\eqref{eq:powerdef}, with one more field inserted; the exercise
-at the end of this section asks for it.
+Eq.~\eqref{eq:powerdef}, with one more field inserted;
+Example~3.2 at the end of this section carries it out.
 
 The delta again enforces homogeneity: only mode triples whose vectors
 close into a triangle, $\bell_1 + \bell_2 + \bell_3 = 0$, correlate.
@@ -688,33 +688,30 @@ Eq.~\eqref{eq:btree} depends on the shape of the triangle.
     over legs.
 \end{itemize}
 
-\paragraph{Exercise 3.1 (conditional spread).}
-\label{ex:conditional}
-For the toy pair of Eq.~\eqref{eq:toyxy}, write
-$y = 0.8\,x + \epsilon$ and require $\langle x\epsilon\rangle = 0$.
-Show that $\epsilon$ has variance $1 - 0.8^2 = 0.36$, so that at
-fixed $x$ the remaining spread of $y$ is $0.6$.
-
-\emph{Solution.}  Taking $\langle xy\rangle$ of the decomposition
-gives $0.8 = 0.8\langle x^2\rangle + \langle x\epsilon\rangle =
-0.8$, consistent, and taking $\langle y^2\rangle$ gives
+\paragraph{Example 3.1 (conditional spread).}
+The toy pair of Eq.~\eqref{eq:toyxy} splits into the part of $y$
+that $x$ predicts plus independent scatter:
+$y = 0.8\,x + \epsilon$ with $\langle x\epsilon\rangle = 0$.
+Taking $\langle xy\rangle$ of the decomposition gives
+$0.8 = 0.8\langle x^2\rangle + \langle x\epsilon\rangle = 0.8$,
+consistent, and taking $\langle y^2\rangle$ gives
 $1 = 0.8^2\langle x^2\rangle + \langle\epsilon^2\rangle$, so
 $\langle\epsilon^2\rangle = 1 - 0.64 = 0.36$.  At fixed $x$ the only
 scatter left is $\epsilon$'s, of standard deviation
-$\sqrt{0.36} = 0.6$.
+$\sqrt{0.36} = 0.6$ -- the shrunken spread quoted in
+Section~\ref{sec:ensemble}.
 
-\paragraph{Exercise 3.2 (the bispectrum delta).}
-Repeat the four steps of Section~\ref{sec:power} for three fields
-and derive Eq.~\eqref{eq:bispecdef}.
-
-\emph{Solution.}  Insert the transform~\eqref{eq:fourier} three
-times; write the three-point function as a function of
-$\btheta_1 - \btheta_3$ and $\btheta_2 - \btheta_3$ (homogeneity);
-change variables to these two separations and $\btheta_3$; the
-$\btheta_3$ integral gives
-$(2\pi)^2\delta_{\rm D}(\bell_1 + \bell_2 + \bell_3)$, and the two
-separation integrals define the (shape-dependent) coefficient, which
-isotropy reduces to a function of the three lengths.
+\paragraph{Example 3.2 (the bispectrum delta).}
+The four steps of Section~\ref{sec:power}, run once more with three
+fields, produce Eq.~\eqref{eq:bispecdef}.  Inserting the
+transform~\eqref{eq:fourier} three times turns the left side into a
+triple position integral; homogeneity writes the three-point
+function as a function of $\btheta_1 - \btheta_3$ and
+$\btheta_2 - \btheta_3$ alone; changing variables to these two
+separations and $\btheta_3$ makes the $\btheta_3$ integral exactly
+$(2\pi)^2\delta_{\rm D}(\bell_1 + \bell_2 + \bell_3)$; and the two
+separation integrals define the coefficient of the delta, which
+isotropy reduces to a function of the three side lengths.
 \section{Convergence and shear}
 \label{sec:lensing}
 
@@ -929,27 +926,23 @@ Figure~\ref{fig:ebpatterns}.
     a B-mode part, which lensing does not produce.
 \end{itemize}
 
-\paragraph{Exercise 4.1 (the efficiency at the lens).}
-Show from Eq.~\eqref{eq:qdef} that $q_a(0)$ equals the mean of
-$1 - \chi/\chi'$ at $\chi = 0$, i.e.\ exactly $1$ times the
-normalization of $p_a$, and that $q_a(\chi) \to 0$ as $\chi$ passes
-beyond all sources.
-
-\emph{Solution.}  At $\chi = 0$ the geometric factor is
+\paragraph{Example 4.1 (the efficiency at its two ends).}
+The two limits of Eq.~\eqref{eq:qdef} fix the shape of every
+efficiency curve.  At $\chi = 0$ the geometric factor is
 $(\chi' - 0)/\chi' = 1$, so $q_a(0) = \int_0^\infty p_a(\chi')
-d\chi' = 1$.  When $\chi$ exceeds every $\chi'$ where
+d\chi' = 1$: the efficiency starts at exactly the normalization of
+the source distribution.  When $\chi$ exceeds every $\chi'$ where
 $p_a(\chi') > 0$, the integration range contains no sources and
 $q_a = 0$: matter behind all the galaxies lenses none of them.
 
-\paragraph{Exercise 4.2 (tangential around the compass).}
-A patch carries the constant shear $\gamma = 0.1$ (a pure
-$\gamma_1$ stretch).  Using Eq.~\eqref{eq:tangential}, find
-$\gamma_t$ at separation directions $\phi_{\btheta} = 0^\circ$,
-$45^\circ$ and $90^\circ$ from a chosen center.
-
-\emph{Solution.}  $\gamma_t = -{\rm Re}\bigl(\gamma\,
-e^{-2i\phi_{\btheta}}\bigr)$ gives $-0.1$, $0$ and $+0.1$: the same
-constant stretch looks radial on one axis, tangential on the
+\paragraph{Example 4.2 (tangential around the compass).}
+A patch carrying the constant shear $\gamma = 0.1$ (a pure
+$\gamma_1$ stretch) shows how the tangential projection depends on
+direction.  Equation~\eqref{eq:tangential} gives
+$\gamma_t = -{\rm Re}\bigl(\gamma\, e^{-2i\phi_{\btheta}}\bigr)$,
+which at separation directions $\phi_{\btheta} = 0^\circ$,
+$45^\circ$ and $90^\circ$ evaluates to $-0.1$, $0$ and $+0.1$: the
+same constant stretch looks radial on one axis, tangential on the
 perpendicular axis, and purely cross-like in between.  Averaged
 around a ring it cancels -- the ring average of
 Eq.~\eqref{eq:ringidentity} sees a constant shear not at all, which
@@ -1321,8 +1314,9 @@ property~\eqref{eq:compensated}), and the candidate shear weight
   \label{eq:qdeffromu}
 \end{equation}
 
-\emph{Step 3.}  Evaluate $2\pi\int\theta\,\Qfil\,\bar\gamma_t$ using
-the ring identity~\eqref{eq:ringidentity}, and in the
+\emph{Step 3.}  The candidate statistic
+$2\pi\int\theta\,\Qfil\,\bar\gamma_t$ opens up under the ring
+identity~\eqref{eq:ringidentity}; in the
 $\bar\kappa_<$ term exchange the order of the two radial integrals
 ($t < \theta$ becomes $\theta > t$):
 \begin{equation}
@@ -1448,35 +1442,30 @@ up).
     $M = \Map + i\Mx$ carries both.
 \end{itemize}
 
-\paragraph{Exercise 5.1 (the window peak).}
-Show that $\Uhat(x) = \tfrac12 x^2 e^{-x^2/2}$ has its maximum at
-$x = \sqrt{2}$ with value $1/e$.
+\paragraph{Example 5.1 (the window peak).}
+The peak of $\Uhat(x) = \tfrac12 x^2 e^{-x^2/2}$ sits where its
+derivative vanishes:
+$d\Uhat/dx = x\, e^{-x^2/2}\,(1 - x^2/2) = 0$ at $x = \sqrt{2}$
+(the $x = 0$ root is the minimum).  There
+$\Uhat = \tfrac12\cdot 2\cdot e^{-1} = 1/e$ -- the peak position and
+value quoted above and printed by the notebook (its Section~2).
 
-\emph{Solution.}  $d\Uhat/dx = x e^{-x^2/2}(1 - x^2/2) = 0$ at
-$x = \sqrt{2}$ (the $x = 0$ root is the minimum).  There
-$\Uhat = \tfrac12\cdot 2\cdot e^{-1} = 1/e$.
-
-\paragraph{Exercise 5.2 (a point mass).}
+\paragraph{Example 5.2 (a point mass).}
 For a point mass, $\bar\kappa(\theta) = 0$ away from the center
 while $\bar\kappa_<(\theta) = \theta_E^2/\theta^2$ for some constant
-$\theta_E$.  Use the ring identity to find
-$\bar\gamma_t(\theta)$.
-
-\emph{Solution.}  Eq.~\eqref{eq:ringidentity} gives
+$\theta_E$.  The ring identity~\eqref{eq:ringidentity} then gives
 $\bar\gamma_t = \theta_E^2/\theta^2 - 0 = \theta_E^2/\theta^2$: the
 tangential ring pattern of Figure~\ref{fig:ebpatterns}, falling as
 the inverse square of the radius.
 
-\paragraph{Exercise 5.3 (the $Q$ filter is not compensated).}
-Show that the Gaussian shear weight~\eqref{eq:qfil} integrates to
-one, $\int d^2\theta\, \Qfil(\theta) = 1$, unlike the compensated
-$U$.
-
-\emph{Solution.}  In polar form, with $a = 1/(2R^2)$,
+\paragraph{Example 5.3 (the $Q$ filter is not compensated).}
+Unlike the compensated $U$, the Gaussian shear
+weight~\eqref{eq:qfil} integrates to one.  In polar form, with
+$a = 1/(2R^2)$ and the Gaussian moments of
+Eq.~\eqref{eq:gaussmoments},
 $\int d^2\theta\, \Qfil = \frac{1}{2R^4}\int_0^\infty
 d\theta\,\theta^3 e^{-a\theta^2} = \frac{1}{2R^4}\cdot\frac{1}{2a^2}
-= \frac{1}{2R^4}\cdot 2R^4 = 1$, using
-Eq.~\eqref{eq:gaussmoments}.  No contradiction with
+= \frac{1}{2R^4}\cdot 2R^4 = 1$.  There is no contradiction with
 Eq.~\eqref{eq:compensated}: the mass-sheet blindness of the $Q$ form
 lives in $\gamma_t$ itself, which vanishes for a constant
 convergence (Eq.~\eqref{eq:ringidentity} with
@@ -1727,29 +1716,22 @@ band-pass windows discard.  The joint likelihood scores both.
     against variances measured on a simulated map.
 \end{itemize}
 
-\paragraph{Exercise 6.1 (mixed radii).}
-Show from the analogue of Eq.~\eqref{eq:map2} that for two radii
-$R_1, R_2$ the covariance
-$\langle \Map(R_1)\Map(R_2)\rangle$ involves the window product
-$\Uhat(\ell R_1)\Uhat(\ell R_2) =
-\tfrac14 \ell^4 R_1^2 R_2^2\, e^{-\ell^2(R_1^2+R_2^2)/2}$, which is
-the equal-radius window of the radius
-$\bar R = \sqrt{(R_1^2+R_2^2)/2}$ times the ratio
-$R_1^2 R_2^2/\bar R^4$.
+\paragraph{Example 6.1 (mixed radii).}
+The analogue of Eq.~\eqref{eq:map2} for two radii $R_1, R_2$
+carries the window product
+$\Uhat(\ell R_1)\,\Uhat(\ell R_2) =
+\tfrac14 \ell^4 R_1^2 R_2^2\, e^{-\ell^2(R_1^2+R_2^2)/2}$.  Direct
+substitution puts the equal-radius window of the average radius
+$\bar R = \sqrt{(R_1^2+R_2^2)/2}$ into exactly the same form, times
+the constant ratio $R_1^2 R_2^2/\bar R^4$: the mixed second moment
+is a rescaled equal-radius variance and carries no information
+beyond the variance scanned in $R$.  (The same is \emph{not} true
+at third order, which is why the generalized third moment of
+Section~\ref{sec:threepcf} has three radius arguments.)
 
-\emph{Solution.}  Both sides are
-$\tfrac14 \ell^4 R_1^2R_2^2 e^{-\ell^2(R_1^2+R_2^2)/2}$ by direct
-substitution; the mixed second moment therefore carries no
-information beyond the equal-radius variance scanned in $R$.  (The
-same is \emph{not} true at third order, which is why the generalized
-third moment of Section~\ref{sec:threepcf} has three radius
-arguments.)
-
-\paragraph{Exercise 6.2 (the probed multipoles).}
-Using the window peak at $\ell = \sqrt{2}/R$ (notebook Section~2),
-find the multipoles the four measurement radii probe.
-
-\emph{Solution.}  One arcminute is
+\paragraph{Example 6.2 (the probed multipoles).}
+The window peak at $\ell = \sqrt{2}/R$ (notebook Section~2) turns
+the four measurement radii into multipoles.  One arcminute is
 $\pi/(180\cdot 60) \approx 2.909\times 10^{-4}$ radians, so
 $R = 7, 14, 25, 40$ arcmin give
 $\ell \approx 695,\ 347,\ 194,\ 122$: the aperture statistic reads
@@ -1973,19 +1955,23 @@ with zero; the toy field's are nonzero at every radius, from $76$
 times the sampling uncertainty at $R = 7$ arcmin to $8.6$ times at
 $R = 40$ arcmin, falling with radius as the window keeps fewer
 modes (Figure~\ref{fig:toymoments}, bottom; notebook Section~3).
-The exercise below shows why the sign comes out positive for
+Example~7.1 below shows why the sign comes out positive for
 positive $\alpha$.
 
-\paragraph{Exercise 7.1 (the toy's skewness).}
-For a zero-mean Gaussian variable $g$ with variance $\sigma^2$, let
-$x = g + \alpha(g^2 - \sigma^2)$.  Compute $\langle x^3\rangle$ to
-first order in $\alpha$.
+\paragraph{Example 7.1 (the toy's skewness).}
+The one-variable version of the toy field is a zero-mean Gaussian
+$g$ with variance $\sigma^2$, promoted to
+$x = g + \alpha(g^2 - \sigma^2)$; its third moment at first order
+in $\alpha$ shows the whole mechanism.
 
-\emph{Solution.}  Expand:
+\emph{Step 1.}  Expanding the cube,
 $\langle x^3\rangle = \langle g^3\rangle + 3\alpha\langle g^2(g^2 -
-\sigma^2)\rangle + O(\alpha^2)$.  The first term vanishes (odd
-moment).  The second needs
-$\langle g^4\rangle = 3\sigma^4$ (Wick, Eq.~\eqref{eq:pairrule}), so
+\sigma^2)\rangle + O(\alpha^2)$, and the first term vanishes (odd
+Gaussian moment).
+
+\emph{Step 2.}  The surviving average needs
+$\langle g^4\rangle = 3\sigma^4$ (Wick,
+Eq.~\eqref{eq:pairrule}), so
 $\langle g^2(g^2-\sigma^2)\rangle = 3\sigma^4 - \sigma^4 =
 2\sigma^4$ and $\langle x^3\rangle = 6\alpha\sigma^4$: positive for
 positive $\alpha$, and proportional to two powers of the variance --
@@ -2049,12 +2035,11 @@ representative triplets.
     radii, $80$ data rows.
 \end{itemize}
 
-\paragraph{Exercise 7.2 (five bins).}
-How many Map3 rows would a five-bin tomography with four radii
-carry?
-
-\emph{Solution.}  $\binom{5+3-1}{3} = \binom{7}{3} = 35$ triplets,
-so $35 \times 4 = 140$ rows.
+\paragraph{Example 7.2 (five bins).}
+The same count for a five-bin tomography shows how fast the data
+vector grows: $\binom{5+3-1}{3} = \binom{7}{3} = 35$ triplets, so
+with four radii a five-bin survey would carry
+$35 \times 4 = 140$ Map3 rows.
 \section{The real-space route: the shear three-point function}
 \label{sec:threepcf}
 
@@ -2533,41 +2518,44 @@ construction.
     sum of Eq.~\eqref{eq:gridsum}.
 \end{itemize}
 
-\paragraph{Exercise 8.1 (offsets of an equilateral triangle).}
+\paragraph{Example 8.1 (offsets of an equilateral triangle).}
 For an equilateral triangle with $s = 1$ and
-$t = e^{i\pi/3}$, show that the three offsets of
-Eq.~\eqref{eq:offsets} all have $|r_a| = 1/\sqrt{3}$.
-
-\emph{Solution.}  $r_1 = (1 + e^{i\pi/3})/3$ has
+$t = e^{i\pi/3}$, the three offsets of
+Eq.~\eqref{eq:offsets} all have the same length $1/\sqrt{3}$.
+Directly, $r_1 = (1 + e^{i\pi/3})/3$ has
 $|r_1|^2 = (1 + \cos\frac{\pi}{3})^2/9 + \sin^2\frac{\pi}{3}/9 =
-(2.25 + 0.75)/9 = 1/3$.  By the symmetry of the equilateral
-triangle the other two offsets have the same length, which can also
-be checked directly:
-$r_2 = (e^{i\pi/3} - 2)/3$, $|r_2|^2 = (\cos\frac{\pi}{3} - 2)^2/9
-+ \sin^2\frac{\pi}{3}/9 = (2.25 + 0.75)/9 = 1/3$, and
-$r_3 = -r_1 - r_2$ closes the sum.
+(2.25 + 0.75)/9 = 1/3$; likewise
+$r_2 = (e^{i\pi/3} - 2)/3$ has
+$|r_2|^2 = (\cos\frac{\pi}{3} - 2)^2/9
++ \sin^2\frac{\pi}{3}/9 = (2.25 + 0.75)/9 = 1/3$; and
+$r_3 = -r_1 - r_2$ closes the sum with the same length, as the
+symmetry of the equilateral triangle demands.
 
-\paragraph{Exercise 8.2 (the kernel on that triangle).}
-Evaluate $T_0$ of Eq.~\eqref{eq:t0} on the same equilateral
-triangle.
+\paragraph{Example 8.2 (the kernel on that triangle).}
+The same triangle makes $T_0$ of Eq.~\eqref{eq:t0} fully explicit.
 
-\emph{Solution.}  The Gaussian exponent needs
-$|r_1|^2 + |r_2|^2 + |r_3|^2 = 1$.  For the polynomial, take moduli
-and phases separately: the moduli give
-$|r_1 r_2 r_3|^2 = (1/3)^3 = 1/27$; the phases of
-$r_1, r_2, r_3$ are $30^\circ$, $150^\circ$ and $-90^\circ$ (each
-offset runs from its vertex to the centroid), summing to
+\emph{Step 1.}  The Gaussian exponent uses
+$|r_1|^2 + |r_2|^2 + |r_3|^2 = 1$ from Example~8.1.
+
+\emph{Step 2.}  For the polynomial, the moduli and phases separate:
+the moduli give $|r_1 r_2 r_3|^2 = (1/3)^3 = 1/27$, and the phases
+of $r_1, r_2, r_3$ are $30^\circ$, $150^\circ$ and $-90^\circ$
+(each offset runs from its vertex to the centroid), summing to
 $90^\circ$, so the conjugated squares contribute the phase
-$e^{-2i\cdot 90^\circ} = -1$.  Hence
-$r_1^{*2} r_2^{*2} r_3^{*2} = -1/27$ and
+$e^{-2i\cdot 90^\circ} = -1$.
+
+\emph{Step 3.}  The polynomial is therefore
+$r_1^{*2} r_2^{*2} r_3^{*2} = -1/27$, and the kernel assembles to
 \begin{equation}
   T_0 \;=\; -\,\frac{-1/27}{24}\; e^{-1/2}
   \;=\; \frac{e^{-1/2}}{648}
-  \;\approx\; 9.4\times 10^{-4} :
+  \;\approx\; 9.4\times 10^{-4} .
   \label{eq:t0equilateral}
 \end{equation}
-real and positive, as the mirror symmetry of the equilateral
-triangle demands (a complex $T_0$ there would pick a handedness).
+
+The value is real and positive, as the mirror symmetry of the
+equilateral triangle demands: a complex $T_0$ there would pick a
+handedness.
 \section{Finite triangles versus the full filter}
 \label{sec:finite}
 
@@ -2701,15 +2689,14 @@ representation twice over: both are harmonic expansions truncated at
 a finite order, and both end in the same weighted triangle sum of
 Eq.~\eqref{eq:gridsum}.
 
-\paragraph{Exercise 10.1 (the logarithmic width).}
-Show that $20$ logarithmic side bins from $0.5$ to $80$ arcmin have
-common width $\Delta\ln d = \ln(160)/20 \approx 0.2538$, so each bin
-is about $29$ percent wider than the one before.
-
-\emph{Solution.}  The full logarithmic span is
+\paragraph{Example 10.1 (the logarithmic width).}
+The $20$ logarithmic side bins from $0.5$ to $80$ arcmin fix the
+width that appears throughout the measure of
+Section~\ref{sec:gridsum}.  The full logarithmic span is
 $\ln(80/0.5) = \ln 160 \approx 5.075$; divided into $20$ equal
-pieces, $\Delta\ln d \approx 0.2538$, and each edge is
-$e^{0.2538} \approx 1.289$ times the previous one.  The notebook
+pieces, $\Delta\ln d = \ln(160)/20 \approx 0.2538$, and each edge is
+$e^{0.2538} \approx 1.289$ times the previous one, so each bin is
+about $29$ percent wider than the one before.  The notebook
 computes the same number from the likelihood keys (its Section~5).
 
 \paragraph{Summary of Sections~\ref{sec:finite}
@@ -3922,45 +3909,42 @@ README records this as an open control.
     gravity while the linear alignment reaches ten percent.
 \end{itemize}
 
-\paragraph{Exercise 11.1 (the equilateral $\Sigma_+$).}
-Verify $\Sigma_+ = -1$ and $\Sigma_\times = 0$ for the equilateral
-triangle with $\bk_3$ along $x$.
-
-\emph{Solution.}  $\hat\bk_1 = (-\tfrac12, \tfrac{\sqrt3}{2})$
+\paragraph{Example 11.1 (the equilateral stretch sums).}
+The equilateral triangle with $\bk_3$ along $x$ fixes the two
+stretch sums used throughout this section.
+$\hat\bk_1 = (-\tfrac12, \tfrac{\sqrt3}{2})$
 gives $\hat k_{1x}^2 - \hat k_{1y}^2 = \tfrac14 - \tfrac34 =
 -\tfrac12$ and $\hat k_{1x}\hat k_{1y} = -\tfrac{\sqrt3}{4}$;
 $\hat\bk_2 = (-\tfrac12, -\tfrac{\sqrt3}{2})$ gives the same
 aligned stretch $-\tfrac12$ and the opposite cross stretch
 $+\tfrac{\sqrt3}{4}$.  Hence $\Sigma_+ = -1$ and
-$\Sigma_\times = 0$.
+$\Sigma_\times = 0$, the values of
+Eq.~\eqref{eq:equilateral} and of the notebook's Section~8.
 
-\paragraph{Exercise 11.2 (who can produce B?).}
-In the placement GGI with the intrinsic leg first order, which
-tree-level terms of the shear three-point function can carry a B
-amplitude on the intrinsic leg?
-
-\emph{Solution.}  None.  A first-order intrinsic leg is pure E
-(Section~\ref{sec:iaprojection}); a B amplitude on that leg
+\paragraph{Example 11.2 (who can produce B).}
+In the placement GGI with the intrinsic leg first order, no
+tree-level term of the shear three-point function can carry a B
+amplitude on the intrinsic leg.  A first-order intrinsic leg is
+pure E (Section~\ref{sec:iaprojection}); a B amplitude on that leg
 requires promoting it to second order, which costs the term its
 only second-order kernel and moves gravity's $F_2$ off the density
 legs.  The surviving B terms are exactly the single-B bispectra of
 Eq.~\eqref{eq:bddb}, with the second-order kernel sitting on the B
 leg itself.
 
-\paragraph{Exercise 11.3 (a large coefficient, a small term).}
+\paragraph{Example 11.3 (a large coefficient, a small term).}
 At the TATT point, $b_{\rm TA} = 0.91$ makes
 $C_{1\delta} = 0.91\, C_1$ comparable to the linear coefficient
-itself.  Why, then, does the density-weighting operator contribute
-only about a tenth of a percent of the gravity term
+itself -- yet the density-weighting operator contributes only about
+a tenth of a percent of the gravity term
 (Section~\ref{sec:operatorsplit}), while the linear alignment
-contributes ten percent?
-
-\emph{Solution.}  The two operators enter at different orders of
-the signal.  The linear alignment rides the full matter bispectrum
-through the kernel shift~\eqref{eq:nlakernel}: its size relative to
-gravity is set by $f_{\rm IA}\, p_a / q_a$, of order ten percent
-here.  Density weighting exists only in the residual tree-level
-terms of Eq.~\eqref{eq:bdde}, which carry
+contributes ten percent.  The resolution is that the two operators
+enter at different orders of the signal.  The linear alignment
+rides the full matter bispectrum through the kernel
+shift~\eqref{eq:nlakernel}: its size relative to gravity is set by
+$f_{\rm IA}\, p_a / q_a$, of order ten percent here.  Density
+weighting exists only in the residual tree-level terms of
+Eq.~\eqref{eq:bdde}, which carry
 $C_{1\delta}\, \Sigma_+\, P P$ against the much larger nonlinear
 bispectrum of the gravity term, and in placements that each cost
 further small factors.  A coefficient of order one multiplies a
@@ -4499,15 +4483,13 @@ $3\sigma^4$, matching the direct integration above.  The companion
 notebook's Gaussian-map skewness check (its Section~3) is
 Eq.~\eqref{eq:wick} at work on $10^5$ correlated variables at once.
 
-\paragraph{Exercise D.1 (a mixed fourth moment).}
+\paragraph{Example D.1 (a mixed fourth moment).}
 For zero-mean jointly Gaussian $x, y$ with
 $\langle x^2\rangle = \langle y^2\rangle = \sigma^2$ and
-$\langle xy\rangle = \rho\,\sigma^2$, compute
-$\langle x^2 y^2\rangle$ with Wick's rule.
-
-\emph{Solution.}  The three pairings of $x, x, y, y$ are
-$\langle x^2\rangle\langle y^2\rangle$ and twice
-$\langle xy\rangle^2$:
+$\langle xy\rangle = \rho\,\sigma^2$, Wick's rule delivers
+$\langle x^2 y^2\rangle$ at sight.  The three pairings of
+$x, x, y, y$ are $\langle x^2\rangle\langle y^2\rangle$ once and
+$\langle xy\rangle^2$ twice:
 \begin{equation}
   \langle x^2 y^2 \rangle
   \;=\; \sigma^4\bigl(1 + 2\rho^2\bigr) .
@@ -4515,7 +4497,7 @@ $\langle xy\rangle^2$:
 \end{equation}
 At $\rho = 1$ this is the single-variable $3\sigma^4$; at
 $\rho = 0$ the moments factorize.  This is the computation behind
-the toy skewness of Exercise~7.1, where the pair
+the toy skewness of Example~7.1, where the pair
 $(g^2, g^2)$ appears with $\rho = 1$.
 
 \section{Statistical homogeneity and isotropy}
