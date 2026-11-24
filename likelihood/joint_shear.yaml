@@ -26,9 +26,12 @@ table_boost: 8
 fit_nz: 33
 source_interpolation: pchip_midpoint
 source_padding: zero_at_measured_edges
-theta_min_arcmin: 8.0
+# Map3 side bins of the DES Y3 measurement (Gomes et al.): 20 log bins from
+# 0.5 to 80 arcmin; the scale cut keeps those with lower edge >= 8 arcmin.
+theta_min_arcmin: 0.5
 theta_max_arcmin: 80.0
-ntheta: 10
+ntheta: 20
+theta_lower_cut_arcmin: 8.0
 phi_bins: 63
 map_ell_min: 0.01
 map_ell_max: 100000

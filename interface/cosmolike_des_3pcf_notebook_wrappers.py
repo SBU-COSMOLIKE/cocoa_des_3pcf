@@ -458,22 +458,17 @@ def map3_components(triplets, velocity_shear=0.0, omegam=omegam,
 
     # ------------------------------------------------------------------
     # The aperture plan of those rows, with the likelihood's settings: the
-    # side bins are log-spaced from theta_min to theta_max (arcmin, here
-    # converted to radians) and the opening angle phi takes the centres
-    # of phi_bins equal cells of [0, pi].
+    # side bins are the likelihood's own (the measurement's bins after its
+    # scale cut, lower edges in radians, log width dlnt) and the opening
+    # angle phi takes the centres of phi_bins equal cells of [0, pi].
     # ------------------------------------------------------------------
-    theta_edges = np.exp(np.linspace(
-        start=np.log(likelihood.theta_min_arcmin),
-        stop=np.log(likelihood.theta_max_arcmin),
-        num=likelihood.ntheta + 1,
-    )) / RADIAN_TO_ARCMIN
     dphi = np.pi / likelihood.phi_bins
     plan = ci.production.TransformPlan.for_aperture(
         bins=np.ascontiguousarray(a=rows.bins, dtype=np.int32),
         filters=np.ascontiguousarray(a=rows.angles),
-        theta_lower=theta_edges[:-1],
+        theta_lower=likelihood.theta_lower,
         phi=(np.arange(likelihood.phi_bins) + 0.5) * dphi,
-        dlnt=float(np.log(theta_edges[1] / theta_edges[0])),
+        dlnt=likelihood.dlnt,
         dphi=dphi,
         ell_min=likelihood.map_ell_min,
         ell_max=likelihood.map_ell_max,

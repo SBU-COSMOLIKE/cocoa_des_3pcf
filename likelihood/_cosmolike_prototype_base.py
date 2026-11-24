@@ -114,8 +114,12 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                          of its fitted n(z) representation
       source_interpolation, source_padding = n(z) reconstruction method and
                          its behavior outside the measured redshift range
-      theta_min_arcmin, theta_max_arcmin, ntheta = the log-spaced angular
-                         bins shared by xi and the aperture filters
+      theta_min_arcmin, theta_max_arcmin, ntheta = the log-spaced side
+                         bins of the Map3 measurement's three-point
+                         function (DES Y3: 20 bins from 0.5 to 80 arcmin)
+      theta_lower_cut_arcmin = the measurement's scale cut: only side bins
+                         whose lower edge is at least this value enter
+                         the Map3 rows (DES Y3: 8 arcmin, 9 bins kept)
       phi_bins         = azimuthal node count of the aperture transform
       map_ell_min, map_ell_max = multipole range of the aperture transform
       minimum_fft_size = smallest FFT length the transform plan may choose
@@ -363,17 +367,30 @@ class _cosmolike_prototype_base(DataSetLikelihood):
 
         # ------------------------------------------------------------------
         # The Map3 aperture engine: the fixed transform plan that turns the
-        # physics model of set_source_related into the Map3 rows. Angles
-        # convert from arcminutes to radians (pi / (180 * 60)); the aperture
-        # filter scales are the log-spaced bin edges shared with xi.
+        # physics model of set_source_related into the Map3 rows. It
+        # integrates the shear three-point function over the same
+        # side-angle-side (SAS) bins as the measurement: ntheta log bins
+        # between theta_min and theta_max, of which the scale cut keeps
+        # those whose lower edge is at least theta_lower_cut_arcmin. The
+        # kept lower edges (radians, pi / (180 * 60) per arcmin) and the
+        # common log width dlnt are stored for notebooks that rebuild the
+        # plan on a subset of rows. The aperture filter radii come from the
+        # measurement file (the Map3 rows' angles).
         # ------------------------------------------------------------------
         self.map_indices = np.flatnonzero(self.rows.kind == "map3")
         self.xi_indices = np.flatnonzero(self.rows.kind != "map3")
-        theta_edges = np.exp(np.linspace(
+        edges = np.exp(np.linspace(
             start=np.log(self.theta_min_arcmin),
             stop=np.log(self.theta_max_arcmin),
             num=self.ntheta + 1,
-        )) * np.pi / (180.0 * 60.0)
+        ))
+        kept = edges[:-1][edges[:-1] >= self.theta_lower_cut_arcmin]
+        if 0 == kept.size:
+            raise ValueError(
+                f"No side bin has a lower edge >= theta_lower_cut_arcmin = "
+                f"{self.theta_lower_cut_arcmin}; the bins end at {edges[-1]}.")
+        self.theta_lower = kept * np.pi / (180.0 * 60.0)
+        self.dlnt = float(np.log(edges[1] / edges[0]))
         dphi = np.pi / self.phi_bins
         map_rows = self.rows.select(indices=self.map_indices)
         self.map_engine = ci.production.TransformPlan.for_aperture(
@@ -382,9 +399,9 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                 dtype=np.int32,
             ),
             filters=np.ascontiguousarray(a=map_rows.angles),
-            theta_lower=theta_edges[:-1],
+            theta_lower=self.theta_lower,
             phi=(np.arange(self.phi_bins) + 0.5) * dphi,
-            dlnt=float(np.log(theta_edges[1] / theta_edges[0])),
+            dlnt=self.dlnt,
             dphi=dphi,
             ell_min=self.map_ell_min,
             ell_max=self.map_ell_max,
