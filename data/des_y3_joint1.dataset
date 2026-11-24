@@ -1,15 +1,15 @@
 # Case 1: the DES Y3 joint xi/Map3 analysis on the observed (unblinded) data, matched to the published setup where the project allows it.
 # xi rows follow the DES Y3 cosmic-shear scale cuts (upstream_cosmosis/des-y3-scale-cuts.ini): 227 of 400 xi rows and all 80 Map3 rows enter the chi2.
 # Percival t-likelihood with the 796-simulation covariance and parameter_count 15, the number of parameters case 1 samples (the published analysis used 16, as it also samples mnu).
-# No compression yet: the published analysis compresses the cut xi block to 16 MOPED modes; set compression_file once that matrix is confirmed.
+# Compression as published: the 227 cut xi rows become the 16 MOPED modes of the upstream matrix (trained on the analytic DES Y3 covariance, independent of the 796 simulations); the 80 Map3 rows stay unchanged, so 96 rows enter the chi2.
 # For the simulated-analysis check, set data_file = des_y3_sim.datavector (the released simulated measurement at the CosmoGrid cosmology).
 # Source n(z): the recorded demonstration processing of the released nz_source table (0.04 per cent of the bin-1 area clipped).
 # Priors differ from the published analysis by design: 10^9 A_s sampled uniformly (sigma8 derived), mnu = 0.06 fixed.
-# scripts/convert_desy3_fits.py writes every data/ input named here from the released FITS files.
+# scripts/convert_desy3_fits.py writes every data/ input named here from the released FITS and MOPED files.
 
 data_file = des_y3_real.datavector
 mask_file = des_y3_xi_scale_cut.mask
-compression_file =
+compression_file = des_y3_moped_compression.npz
 mock_count = 796
 parameter_count = 15
 source_ntomo = 4

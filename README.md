@@ -44,7 +44,7 @@ two-/three-point cross terms.
 
 | Case | Data | IA model | Likelihood | Rows kept | Dataset and example files |
 |---|---|---|---|---|---|
-| 1 | Observed (unblinded) Y3 measurements | NLA | [Percival](#percival), 796 simulations, `parameter_count = 15` | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
+| 1 | Observed (unblinded) Y3 measurements | NLA | [Percival](#percival), 796 simulations, `parameter_count = 15`, published 16-mode MOPED compression of the $`\xi`$ rows | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows; 96 after compression | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
 | 2 | Observed (unblinded) Y3 measurements | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint2.dataset`; `EXAMPLE_EVALUATE2.yaml`, `EXAMPLE_MCMC2.yaml`, `EXAMPLE_NAUTILUS2.yaml`/`.py` |
 | 3 | Synthetic NLA fiducial mean | NLA | Fixed Gaussian | All 480 rows | `des_y3_joint3_sim.dataset`; `EXAMPLE_EVALUATE3.yaml`, `EXAMPLE_MCMC3.yaml`, `EXAMPLE_NAUTILUS3.yaml`/`.py` |
 | 4 | Synthetic TATT fiducial mean | TATT | Fixed Gaussian | All 480 rows | `des_y3_joint4_sim.dataset`; `EXAMPLE_EVALUATE4.yaml`, `EXAMPLE_MCMC4.yaml`, `EXAMPLE_NAUTILUS4.yaml`/`.py` |
@@ -90,19 +90,27 @@ parameters. The exponent $`m`$ is chosen so that the credible intervals
 have the right frequentist coverage; both corrections above are built in,
 so no separate Hartlap factor is applied.
 
-For case 1, $`N_s = 796`$, $`n_d = 307`$ (the rows kept by the scale cuts)
-and $`n_p = 15`$ give $`m \approx 514`$. Near the best fit this acts like a
-Gaussian with the covariance inflated by about $`(N_s-1)/m \approx 1.5`$;
-far from it the tails are heavier. Because $`m`$ depends on $`n_p`$,
+For case 1, $`N_s = 796`$, $`n_d = 96`$ (the 16 MOPED modes of the cut
+$`\xi`$ rows plus the 80 Map3 rows, see below) and $`n_p = 15`$ give
+$`m \approx 729`$. Near the best fit this acts like a Gaussian with the
+covariance inflated by about $`(N_s-1)/m \approx 1.09`$; far from it the
+tails are heavier. Without the compression, $`n_d = 307`$ would give
+$`m \approx 514`$ and an inflation of about 1.5. Because $`m`$ depends on $`n_p`$,
 `parameter_count` must equal the number of sampled parameters: it
 changes the shape of the likelihood, not only its normalization. After
 `ci.init_joint_data`, `ci.get_joint_exponent()` prints $`m`$.
 
-The published analysis also compresses the cut $`\xi`$ block to 16 MOPED
-modes, so $`n_d = 96`$ and the inflation is much smaller. Case 1 does
-this once that matrix is set as `compression_file`. The dataset keys are
-`mock_count` ($`N_s`$, 0 for the fixed Gaussian) and `parameter_count`
-($`n_p`$).
+MOPED (massively optimized parameter estimation) keeps one linear
+combination of the data per parameter: 16 modes replace the 227 cut
+$`\xi`$ rows. Case 1 uses the published matrix
+(`data/upstream_y3_observed/data/moped/moped-moped-compress-2pt.txt`);
+`scripts/convert_desy3_fits.py` turns it into
+`data/des_y3_moped_compression.npz`, which leaves the Map3 rows unchanged.
+The matrix was trained on the analytic DES Y3 covariance, not on the 796
+simulations, so the Percival likelihood may treat it as fixed; the
+likelihood refuses a compression file that records training on the
+simulations. The dataset keys are `mock_count` ($`N_s`$, 0 for the fixed
+Gaussian), `parameter_count` ($`n_p`$) and `compression_file`.
 
 # Reading path through the examples <a name="reading_path"></a>
 
@@ -387,8 +395,9 @@ and, in place of the `cobaya-run` line,
 
 Case 1 scores the observed (unblinded) DES Y3 data with the published
 setup where the project allows it: the Y3 cosmic-shear $`\xi_\pm`$ scale
-cuts (227 of 400 $`\xi`$ rows, all 80 Map3 rows) and the Percival
-likelihood with `mock_count = 796` and `parameter_count = 15`, the 15
+cuts (227 of 400 $`\xi`$ rows, all 80 Map3 rows), the published 16-mode
+MOPED compression of the cut $`\xi`$ rows ([Percival](#percival)), and the
+Percival likelihood with `mock_count = 796` and `parameter_count = 15`, the 15
 parameters case 1 samples (the published analysis used 16, as it also
 samples $`m_\nu`$)
 (`data/des_y3_joint1.dataset`).
@@ -406,9 +415,6 @@ batch script above.
 
 The remaining differences from the published analysis:
 
-- **Compression.** `compression_file` in `des_y3_joint1.dataset` stays
-  empty until the published 16-mode MOPED matrix is confirmed; the
-  published analysis compresses the cut $`\xi`$ block to 16 modes.
 - **Priors (by design).** $`10^9 A_\mathrm{s}`$ is sampled with
   lsst_y1's prior and $`\sigma_8`$ is derived, against the published
   uniform $`S_8`$ prior; $`m_\nu`$ is fixed at 0.06 eV, against the

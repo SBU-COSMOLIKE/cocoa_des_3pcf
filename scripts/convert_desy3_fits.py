@@ -18,6 +18,13 @@ checks that the FITS rows equal those rebuilt rows: the same row kinds and
 source bins in the same order, the same xi bin edges and the same Map3
 filter radii. A FITS file with a different layout is refused.
 
+The published analysis also compresses the 227 cut xi rows to 16 MOPED
+modes. Its matrix is a plain text file of the same upstream commit
+(data/upstream_y3_observed/data/moped/moped-moped-compress-2pt.txt, one
+row per kept xi point and one column per mode). The last step writes the
+case 1 compression from it: the MOPED modes for the xi rows and the
+identity for the Map3 rows, with the row labels the likelihood checks.
+
 Run once from projects/des_3pcf (a few seconds):
 
     python scripts/convert_desy3_fits.py
@@ -36,6 +43,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT / "likelihood"))
 sys.path.insert(0, str(PROJECT.parents[1] / "external_modules/code/cosmolike_core"))
 from survey import ARCMIN_TO_RADIAN, survey_rows  # noqa: E402
+from compression import LinearCompression, load_compression  # noqa: E402
 from cosmolike_notebook_utils.fisher import symmetric_matrix  # noqa: E402
 
 DATA = PROJECT / "data"
@@ -213,6 +221,72 @@ def scale_cut_mask(kind, bins, angles):
     return mask
 
 
+def write_moped_compression(mask):
+    """Write data/des_y3_moped_compression.npz from the published MOPED file.
+
+    The published joint likelihood (python/joint_likelihood.py of the
+    upstream repository) applies block_diag(T, I) to the selected rows:
+    T = the 16 MOPED modes of the 227 kept xi rows, and the identity for
+    the 80 Map3 rows. The MOPED file holds T transposed, [227, 16]. It was
+    trained on the analytic DES Y3 cosmic-shear covariance, not on the 796
+    simulations of the joint covariance, so the finite-simulation
+    likelihood may treat T as fixed (covariance_training_independent).
+
+    Arguments:
+      mask = the 0/1 scale-cut mask of the 480 rows (case 1's mask_file).
+    Raises:
+      ValueError when the file shape differs from the cut rows, or when an
+      existing output differs from the one rebuilt here.
+    """
+    source = OBSERVED / "moped/moped-moped-compress-2pt.txt"
+    modes = np.loadtxt(source).T
+    edges = np.geomspace(THETA_MIN_ARCMIN, THETA_MAX_ARCMIN, N_THETA + 1) * ARCMIN_TO_RADIAN
+    radii = np.asarray(MAP3_RADII_ARCMIN) * ARCMIN_TO_RADIAN
+    rows = survey_rows(nbin=SOURCE_NTOMO, aperture_radii=radii, xi_edges=edges)
+    selected = np.flatnonzero(mask)
+    xi = selected[rows.kind[selected] != "map3"]
+    aperture = selected[rows.kind[selected] == "map3"]
+    if modes.shape != (16, xi.size) or not np.array_equal(selected, np.concatenate((xi, aperture))):
+        raise ValueError("The MOPED file does not match the 227 cut xi rows.")
+
+    # block_diag(T, I): MOPED modes first, then every Map3 row unchanged.
+    matrix = np.zeros((modes.shape[0] + aperture.size, selected.size))
+    matrix[:modes.shape[0], :xi.size] = modes
+    matrix[modes.shape[0]:, xi.size:] = np.eye(aperture.size)
+    names = ["S_8", "omega_m", "h0", "omega_b", "n_s", "mnu", "m1", "m2", "m3", "m4",
+             "bias_1", "bias_2", "bias_3", "bias_4", "a1", "alpha1"]
+    compression = LinearCompression(
+        matrix=matrix,
+        input_labels=rows.labels[selected],
+        output_labels=np.concatenate(([f"moped_{name}" for name in names],
+                                      rows.labels[aperture])),
+        metadata={
+            "source": "github.com/rchgomes/3pcf_integrator",
+            "commit": "d6098d326dcb03bc750adcc9627119f52d928944",
+            "file": "data/moped/moped-moped-compress-2pt.txt",
+            "git_blob_sha1": "ab60986ba020ff3a2e0d2e9202613a4cdfbab734",
+            "layout": "block_diag(MOPED modes of the cut xi rows, identity on Map3)",
+            "training_covariance": "analytic DES Y3 cosmic-shear covariance "
+                                   "(2pt_NG_final_2ptunblind_02_24_21_wnz_covupdate.v2.fits)",
+            "covariance_training_independent": True,
+            "mode_parameters": names,
+        },
+    )
+    destination = DATA / "des_y3_moped_compression.npz"
+    if destination.exists():
+        saved = load_compression(destination)
+        if not (np.array_equal(saved.matrix, compression.matrix)
+                and np.array_equal(saved.input_labels, compression.input_labels)
+                and np.array_equal(saved.output_labels, compression.output_labels)
+                and saved.metadata == compression.metadata):
+            raise ValueError(f"{destination} differs from the rebuilt compression; "
+                             "remove it only if the upstream MOPED file changed.")
+        print("unchanged", destination)
+        return
+    compression.save(destination)
+    print("wrote", destination)
+
+
 def main():
     """Convert every upstream file the datasets use; refuse any mismatch."""
     # Step 1: the observed and the simulated measurements.
@@ -258,6 +332,9 @@ def main():
         lines.append(" ".join(repr(float(v)) for v in (z[index], *sources[:, index])) + "\n")
     (DATA / "des_y3_source.nz").write_text("".join(lines))
     print("wrote data/des_y3_source.nz")
+
+    # Step 5: the case 1 compression (published MOPED on the cut xi rows).
+    write_moped_compression(scale_cut_mask(kind, bins, angles))
 
 
 if __name__ == "__main__":

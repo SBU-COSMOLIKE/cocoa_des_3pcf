@@ -15,7 +15,7 @@ the examples. Every input names its origin:
 | Input | Origin and pinned revision | Paper |
 |---|---|---|
 | `upstream_y3/`: simulated DES Y3 $`\xi_\pm`$ and Map3 vectors at the CosmoGrid cosmology, the joint covariance from 796 mocks (four cutouts of each of 199 CosmoGrid skies), and nine CosmoSIS configurations | [3pcf_integrator](https://github.com/rchgomes/3pcf_integrator) at commit `d6098d326dcb03bc750adcc9627119f52d928944`; manifest [y3_reference_manifest.yaml](y3_reference_manifest.yaml) | [Methods paper](https://arxiv.org/abs/2503.03964); simulations from [CosmoGrid](https://arxiv.org/abs/2209.04662) |
-| `upstream_y3_observed/`: observed unblinded DES Y3 $`\xi_\pm`$ and Map3 vectors, the same covariance and nine configurations | Same repository and commit; manifest [y3_observed_manifest.yaml](y3_observed_manifest.yaml) | [DES Y3 third-order shear results](https://arxiv.org/abs/2508.14018) |
+| `upstream_y3_observed/`: observed unblinded DES Y3 $`\xi_\pm`$ and Map3 vectors, the same covariance, nine configurations and the published 16-mode MOPED matrix of the cut $`\xi`$ rows (trained on the analytic DES Y3 covariance) | Same repository and commit; manifest [y3_observed_manifest.yaml](y3_observed_manifest.yaml) | [DES Y3 third-order shear results](https://arxiv.org/abs/2508.14018) |
 | `upstream_healpix/pixel_window_n1024.fits`: scalar HEALPix pixel window at NSIDE 1024 | [healpy-data](https://github.com/healpy/healpy-data) at the commit and URL in [pixel_window_manifest.yaml](pixel_window_manifest.yaml) | [HEALPix, Górski et al. 2005](https://arxiv.org/abs/astro-ph/0409513) |
 | `upstream_cosmosis/des-y3-scale-cuts.ini`: the DES Y3 cosmic-shear $`\xi_\pm`$ scale cuts, from which `scripts/convert_desy3_fits.py` builds `des_y3_xi_scale_cut.mask` (227 of 400 $`\xi`$ rows, all 80 Map3 rows), used by `des_y3_joint1.dataset` | [cosmosis-standard-library](https://github.com/cosmosis-developers/cosmosis-standard-library/blob/a1dfcdac225ab184fa0acefed88064887a9ef07c/examples/des-y3-scale-cuts.ini) at commit a1dfcda (SHA-256 92b5f050…6a14); the mask is rebuilt and checked by [tests/test_y3_scale_cut_mask.py](../tests/test_y3_scale_cut_mask.py) | [DES Y3 cosmic shear, Secco et al. 2022](https://arxiv.org/abs/2105.13544) |
 | `demonstration/`: the processed source distribution and the two fixed synthetic fiducial vectors | Produced in this project from the `upstream_y3/` inputs ([demonstration source processing](#sources)) | |
@@ -97,6 +97,14 @@ synthetic vectors from their `demonstration/` text files.
 | `des_y3_xi_scale_cut.mask` | `index value` (0 or 1) | The DES Y3 cosmic-shear scale cuts: 227 of 400 $`\xi`$ rows and all 80 Map3 rows kept |
 | `des_y3_xi_only.mask` | `index value` (0 or 1) | All 400 $`\xi`$ rows kept and every Map3 row cut, for power-only feedback |
 | `des_y3_source.nz` | `z n1 n2 n3 n4` | The processed source distributions; each line is one histogram cell of width `nz_source_bin_width = 0.01` centred on `z` |
+
+The case 1 compression is not an ASCII table: `des_y3_moped_compression.npz`
+(the format of `likelihood/compression.py`, as for case 5) holds the matrix,
+the row labels the likelihood checks and the provenance. The script builds it
+from the published MOPED file
+`upstream_y3_observed/data/moped/moped-moped-compress-2pt.txt` (plain text,
+one row per kept $`\xi`$ row and one column per mode): its 16 modes replace
+the 227 cut $`\xi`$ rows, and the 80 Map3 rows pass unchanged.
 
 The ASCII files store no row geometry. Each `.dataset` file states it
 with lsst_y1's key names (`source_ntomo`, `n_theta`, `theta_min_arcmin`,

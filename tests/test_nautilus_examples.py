@@ -75,7 +75,8 @@ def test_joint_likelihood_initializes_without_generating_covariance(number):
     covariance generator is excluded from the build. It reads the supplied
     covariance; it never computes a cosmology or a new covariance matrix.
     Case 5 needs an independently trained compression file and is separate.
-    Case 1 keeps 307 rows after the DES Y3 xi scale cuts; the others all 480.
+    Case 1 keeps 307 rows after the DES Y3 xi scale cuts and compresses them
+    to 96 (16 published MOPED modes plus the 80 Map3 rows); the others keep 480.
     """
     from cobaya.likelihoods.des_3pcf.joint_shear import joint_shear
     import cosmolike_des_3pcf_interface as ci
@@ -90,7 +91,7 @@ def test_joint_likelihood_initializes_without_generating_covariance(number):
     assert callable(ci.shear_power_rows)
     assert callable(ci.production.xi_from_power)
     assert callable(ci.notebook.xi_from_power)
-    assert ci.get_joint_data().size == (307 if number == 1 else 480)
+    assert ci.get_joint_data().size == (96 if number == 1 else 480)
     likelihood.close()
 
 

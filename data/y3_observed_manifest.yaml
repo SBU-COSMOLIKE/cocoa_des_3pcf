@@ -17,6 +17,9 @@ files:
 - path: data/covariance/xip_xim_map3_covariance_8ARCMINCUT_25Feb25.fits
   git_blob_sha1: 963bb0fcb42c00e9b7b47d4a87c99efc00edd688
   bytes: 1848960
+- path: data/moped/moped-moped-compress-2pt.txt
+  git_blob_sha1: ab60986ba020ff3a2e0d2e9202613a4cdfbab734
+  bytes: 83301
 - path: config/3pt.ini
   git_blob_sha1: f0d69f9b8c9488f39b75b5dd0fc026bab2690ed6
   bytes: 3559
