@@ -186,3 +186,38 @@ refinements of the whole estimator. Whether shared smoothing may replace
 the local variance reference is decided by the full-forecast acceptance
 record in
 [studies/shared_variance_validation.md](studies/shared_variance_validation.md).
+
+## Matter-emulator support <a name="matter_emulator_support"></a>
+
+[check_matter_emulator_support.py](check_matter_emulator_support.py) asks the
+candidate Cobaya provider for the two matter fields required by this
+project: total matter (`delta_tot`) and cold matter (`delta_nonu`, baryons
+plus cold dark matter). It uses fixed neutrino mass 0.06 eV. This small
+check precedes any random-cosmology accuracy comparison, because replacing
+cold matter by total matter would change the physical model.
+
+Select the candidate code checkout:
+
+```bash
+export EMULATOR_CODE_DIR=/path/to/emulators_code
+```
+
+Select its model-data checkout:
+
+```bash
+export EMULATOR_DATA_DIR=/path/to/emulators_data_lcdm
+```
+
+Run from activated Cocoa:
+
+```bash
+python projects/des_3pcf/tests/check_matter_emulator_support.py
+```
+
+The result is written to `chains/matter_emulator_prior/support.txt`.
+Exit status 1 means a required field is unavailable; it does not describe
+an accuracy failure. The reviewed candidate supplies finite total-matter
+power but explicitly rejects cold-matter power. Therefore the ordinary
+projects' 50-point CAMB comparison cannot yet be applied to this likelihood
+unchanged. This check supplies no substitute spectrum and runs no maps,
+TreeCorr measurements or forecasts.
