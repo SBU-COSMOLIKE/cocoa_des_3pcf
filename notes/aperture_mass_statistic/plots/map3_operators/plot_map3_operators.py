@@ -42,6 +42,29 @@ matplotlib.rcParams['savefig.format'] = 'pdf'
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+def assert_legend_clear(fig, ax, legend):
+    """Stop if the legend box overlaps any drawn line or marker.
+
+    The figure rules require this check in code: a legend must never
+    touch the data, and a visual check alone does not survive new
+    data.json contents.
+    """
+    fig.canvas.draw()
+    box = legend.get_window_extent()
+    for line in ax.get_lines():
+        points = line.get_xydata()
+        if points.size == 0:
+            continue
+        pixels = ax.transData.transform(points)
+        inside = ((pixels[:, 0] >= box.x0) & (pixels[:, 0] <= box.x1)
+                  & (pixels[:, 1] >= box.y0) & (pixels[:, 1] <= box.y1))
+        if bool(np.any(inside)):
+            raise RuntimeError(
+                'the legend overlaps a drawn curve; move the legend or '
+                'widen the axis range in this script')
+
+
+
 # One style per operator: Okabe-Ito colors, redundant widths, styles
 # and markers, so the curves separate in grayscale too.
 COLORS = ['#0072B2', '#E69F00', '#CC79A7', '#56B4E9']
@@ -74,7 +97,10 @@ top = max(0.0, float(ratios.max()))
 bottom = min(0.0, float(ratios.min()))
 pad = 0.1 * (top - bottom)
 ax.set_ylim(bottom - pad, top + pad)
-ax.legend(frameon=False, fontsize=11, loc=data.get('legend_loc', 'best'))
+legend = ax.legend(frameon=False, fontsize=11,
+                   loc=data.get('legend_loc', 'best'))
+
+assert_legend_clear(fig, ax, legend)
 
 for extension in ('pdf', 'png'):
     fig.savefig(os.path.join(HERE, f'map3_operators.{extension}'),

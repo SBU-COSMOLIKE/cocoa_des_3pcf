@@ -2231,7 +2231,10 @@ correlation in harmonics,
   \label{eq:msum}
 \end{equation}
 is the three-point analogue of a Fourier series in the opening
-angle.
+angle.  The components carried through
+Stages~2--4 sit in the transform's own projection and component
+convention; only Stage~5 rotates them into the centroid convention
+of Section~\ref{sec:gammadef}.
 
 \paragraph{Stage 3: two radial transforms.}
 What remains for each harmonic $M$ is a pair of one-dimensional
@@ -2320,6 +2323,22 @@ Eq.~\eqref{eq:qdef}.)  Their squared lengths feed the Gaussian from
 Step~2, and their phases supply exactly the spin-2 rotations of the
 three legs.
 
+\paragraph{One caution: which projection the formulas use.}
+The closed forms below come from~\cite{JBJ}, whose components are
+projected differently from Eq.~\eqref{eq:gammas}: all three shears
+are rotated toward the direction of the \emph{first side} (taken
+along the $x$ axis), not toward the centroid.  Changing the
+projection multiplies each component by a spin-2 phase and the
+paired kernel by that phase's conjugate, so the products
+$\Gamma_\mu T_\mu$ -- and every moment built from them -- are
+unchanged as long as components and kernels sit in the same frame.
+In Eqs.~\eqref{eq:m3jbj}--\eqref{eq:t1} the $\Gamma_\mu$ are the
+first-side components; the conversion to the centroid components of
+Eq.~\eqref{eq:gammas} multiplies $\Gamma_0$ by
+$e^{2i(\varphi_1 + \varphi_2 + \varphi_3)}$, with $\varphi_a$ the
+polar angle of the offset $r_a$, and the centroid-frame kernels are
+written out after Eq.~\eqref{eq:t1}.
+
 \paragraph{The equal-radius kernels.}
 For equal radii the result of~\cite{JBJ} is
 \begin{equation}
@@ -2338,12 +2357,8 @@ For equal radii the result of~\cite{JBJ} is
   T_1\!\left(\frac{s}{R}, \frac{t}{R}\right),
   \label{eq:m2mjbj}
 \end{equation}
-where the star sits on the vertex that $\Gamma_1$ conjugates.  The
-other two placements of the conjugate pair $\Gamma_2$ with $T_2$
-and $\Gamma_3$ with $T_3$; with one radius and one source sample
-the three are equal integrals after relabeling the vertices, while
-with ordered source bins they are kept separate.
-with the two independent kernels (the offsets now dimensionless, in
+where the star sits on the vertex that $\Gamma_1$ conjugates, with
+the two independent kernels (the offsets now dimensionless, in
 units of $R$)
 \begin{equation}
   T_0(s, t)
@@ -2363,6 +2378,10 @@ units of $R$)
 \end{equation}
 and $T_2$, $T_3$ obtained from $T_1$ by cyclically relabeling the
 offsets (the conjugated vertex moves with the conjugated shear).
+The other two placements of the conjugate pair $\Gamma_2$ with
+$T_2$ and $\Gamma_3$ with $T_3$; with one radius and one source
+sample the three are equal integrals after relabeling the vertices,
+while with ordered source bins they are kept separate.
 
 Every feature of these kernels is readable.  The Gaussian factor
 comes from integrating the three $Q$ filters over the aperture
@@ -2374,6 +2393,31 @@ all three conjugated squares $r_a^{*2}$; $T_1$, pairing with
 $\Gamma_1$ whose first leg is conjugated, carries $r_1^{2}$ in its
 leading term, plus the lower-degree terms that the extra
 conjugation generates in the Gaussian integral.
+
+\paragraph{The centroid-frame kernels the code tabulates.}
+Folding the frame-conversion phase into the kernels instead of the
+components gives the weights that pair with the centroid components
+of Eq.~\eqref{eq:gammas}.  For the first kernel the phase
+$e^{2i(\varphi_1 + \varphi_2 + \varphi_3)}$ cancels the phases of
+the conjugated squares exactly -- each
+$r_a^{*2} = |r_a|^2\, e^{-2i\varphi_a}$ -- and only the moduli and
+the overall sign survive:
+\begin{equation}
+  T_0^{\rm cen}(s, t)
+  \;=\; -\,\frac{|r_1|^2\, |r_2|^2\, |r_3|^2}{24}\;
+  \exp\!\left(-\frac{|r_1|^2 + |r_2|^2 + |r_3|^2}{2}\right),
+  \label{eq:t0cen}
+\end{equation}
+real and negative for every triangle: in this frame the spin
+bookkeeping lives entirely in the component projection, and no
+phase is left for the kernel.  The same conversion turns the
+conjugated-leg kernels into their centroid forms, and with the
+unequal-radius factors of Eq.~\eqref{eq:sklz} these centroid-frame
+weights are exactly what \texttt{aperture\us 3pcf.c} precomputes
+(its \texttt{aperture\us kernel\us 3pcf} helper), so the code's
+contraction of Section~\ref{sec:gridsum} runs with centroid
+components and centroid kernels throughout.
+Example~8.2 evaluates both frames on one triangle.
 
 \paragraph{The four real statistics.}
 Equations~\eqref{eq:m3jbj}--\eqref{eq:m2mjbj} deliver the two
@@ -2511,11 +2555,13 @@ construction.
   \item The code predicts them by a Legendre expansion of the
     bispectrum, geometric couplings, two FFTLog Bessel transforms
     and an angular resummation.
-  \item Integrating the components against the closed-form kernels
-    $T_\mu$ -- Gaussians in the centroid offsets times spin-2 phase
-    polynomials -- returns the aperture moment,
-    Eq.~\eqref{eq:map3sas}; on the finite grid this is the weighted
-    sum of Eq.~\eqref{eq:gridsum}.
+  \item Integrating the components against the matched-frame
+    closed-form kernels $T_\mu$ -- Gaussians in the centroid
+    offsets, carrying spin-2 phase polynomials in the first-side
+    frame and only moduli in the centroid frame the code tabulates
+    -- returns the aperture moment, Eq.~\eqref{eq:map3sas}; on the
+    finite grid this is the weighted sum of
+    Eq.~\eqref{eq:gridsum}.
 \end{itemize}
 
 \paragraph{Example 8.1 (offsets of an equilateral triangle).}
@@ -2532,30 +2578,36 @@ $r_3 = -r_1 - r_2$ closes the sum with the same length, as the
 symmetry of the equilateral triangle demands.
 
 \paragraph{Example 8.2 (the kernel on that triangle).}
-The same triangle makes $T_0$ of Eq.~\eqref{eq:t0} fully explicit.
+The same triangle makes both frames of the first kernel explicit.
 
 \emph{Step 1.}  The Gaussian exponent uses
-$|r_1|^2 + |r_2|^2 + |r_3|^2 = 1$ from Example~8.1.
+$|r_1|^2 + |r_2|^2 + |r_3|^2 = 1$ from Example~8.1, and the moduli
+give $|r_1|^2 |r_2|^2 |r_3|^2 = (1/3)^3 = 1/27$.
 
-\emph{Step 2.}  For the polynomial, the moduli and phases separate:
-the moduli give $|r_1 r_2 r_3|^2 = (1/3)^3 = 1/27$, and the phases
-of $r_1, r_2, r_3$ are $30^\circ$, $150^\circ$ and $-90^\circ$
-(each offset runs from its vertex to the centroid), summing to
-$90^\circ$, so the conjugated squares contribute the phase
-$e^{-2i\cdot 90^\circ} = -1$.
-
-\emph{Step 3.}  The polynomial is therefore
-$r_1^{*2} r_2^{*2} r_3^{*2} = -1/27$, and the kernel assembles to
+\emph{Step 2.}  The centroid-frame kernel of Eq.~\eqref{eq:t0cen}
+needs nothing else:
 \begin{equation}
-  T_0 \;=\; -\,\frac{-1/27}{24}\; e^{-1/2}
-  \;=\; \frac{e^{-1/2}}{648}
-  \;\approx\; 9.4\times 10^{-4} .
+  T_0^{\rm cen} \;=\; -\,\frac{1/27}{24}\; e^{-1/2}
+  \;=\; -\,\frac{e^{-1/2}}{648}
+  \;\approx\; -\,9.4\times 10^{-4} ,
   \label{eq:t0equilateral}
 \end{equation}
+the value the companion notebook also obtains from a transcription
+of the code's kernel formula, sign included (its Section~8).
 
-The value is real and positive, as the mirror symmetry of the
-equilateral triangle demands: a complex $T_0$ there would pick a
-handedness.
+\emph{Step 3.}  The first-side kernel of Eq.~\eqref{eq:t0} adds the
+phases: $r_1, r_2, r_3$ point at $30^\circ$, $150^\circ$ and
+$-90^\circ$ (each offset runs from its vertex to the centroid),
+summing to $90^\circ$, so the conjugated squares contribute
+$e^{-2i\cdot 90^\circ} = -1$ and
+$T_0 = -(-1/27)\, e^{-1/2}/24 = +\,e^{-1/2}/648$.
+
+Both values are real, as the mirror symmetry of the equilateral
+triangle demands: a complex kernel would pick a handedness.  Their
+opposite signs are the frame-conversion phase
+$e^{2i\cdot 90^\circ} = -1$ of this triangle -- a reminder that a
+kernel's sign only means something next to the projection of the
+components it multiplies.
 \section{Finite triangles versus the full filter}
 \label{sec:finite}
 
@@ -2601,7 +2653,8 @@ over the triangles the measured range excludes (its Section~8):
     range, split between both ends;
   \item at $R = 25$ and $R = 40$ arcmin, $75$ and $99$ percent lie
     outside, almost entirely \emph{above} the $80$ arcmin upper
-    edge, because the kernel weight peaks at sides near $3R$.
+    edge, because the kernel weight peaks at sides near $3R$ (the
+    notebook prints the peak side, its Section~8).
 \end{itemize}
 These are statements about the kernel's geometry alone, not about
 the signal: the correlation functions fall steeply with separation,
@@ -3123,7 +3176,7 @@ so
   \bigl(\hat k_{1,i}\hat k_{2,j} + \hat k_{2,i}\hat k_{1,j}\bigr)
   &- \frac{1}{3}
   \bigl(\hat k_{1,i}\hat k_{1,j} + \hat k_{2,i}\hat k_{2,j}\bigr) \\
-  &+ \Bigl(\tfrac{4}{9}
+  &+ \Bigl(\tfrac{2}{9}
   - \tfrac{1}{3}(\hat\bk_1\!\cdot\!\hat\bk_2)^2\Bigr)\delta_{ij}
   \Bigr] .
 \end{split}

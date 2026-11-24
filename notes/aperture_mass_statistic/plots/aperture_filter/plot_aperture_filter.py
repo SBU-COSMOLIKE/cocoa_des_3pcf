@@ -41,11 +41,38 @@ matplotlib.rcParams['savefig.format'] = 'pdf'
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+def assert_legend_clear(fig, ax, legend):
+    """Stop if the legend box overlaps any drawn line or marker.
+
+    The figure rules require this check in code: a legend must never
+    touch the data, and a visual check alone does not survive new
+    data.json contents.
+    """
+    fig.canvas.draw()
+    box = legend.get_window_extent()
+    for line in ax.get_lines():
+        points = line.get_xydata()
+        if points.size == 0:
+            continue
+        pixels = ax.transData.transform(points)
+        inside = ((pixels[:, 0] >= box.x0) & (pixels[:, 0] <= box.x1)
+                  & (pixels[:, 1] >= box.y0) & (pixels[:, 1] <= box.y1))
+        if bool(np.any(inside)):
+            raise RuntimeError(
+                'the legend overlaps a drawn curve; move the legend or '
+                'widen the axis range in this script')
+
+
+
 # The four radii, one style each: Okabe-Ito colors (no red with green),
 # every category encoded redundantly by color, line width and style.
 COLORS = ['#0072B2', '#E69F00', '#CC79A7', '#56B4E9']
-WIDTHS = [2.4, 1.8, 1.3, 0.9]
-STYLES = ['solid', 'dashed', 'dashdot', 'dotted']
+WIDTHS = [2.4, 1.8, 1.3, 1.5]
+# The lightest color (sky blue, the largest radius) gets a wide long
+# dash instead of a thin dotted line, so it stays visible; every
+# category is also marked, so grayscale separates them too.
+STYLES = ['solid', 'dashed', 'dashdot', (0, (5, 1.5))]
+MARKERS = ['o', 's', 'D', '^']
 
 with open(os.path.join(HERE, 'data.json')) as stream:
     data = json.load(stream)
@@ -63,7 +90,9 @@ fig.subplots_adjust(hspace=0.34)
 # outside, integrating to zero (the compensation property).
 for i, radius in enumerate(radii):
     axes[0].plot(theta, u_r2[i], color=COLORS[i], linewidth=WIDTHS[i],
-                 linestyle=STYLES[i], label=rf"$R = {radius:g}'$")
+                 linestyle=STYLES[i], marker=MARKERS[i], markersize=4,
+                 markevery=(15 * i + 8, 75),
+                 label=rf"$R = {radius:g}'$")
 axes[0].axhline(0.0, color='black', linewidth=0.7)
 axes[0].set_xlabel(r'$\theta$ [arcmin]')
 axes[0].set_ylabel(r'$R^2\, U_R(\theta)$')
@@ -73,13 +102,14 @@ axes[0].set_xlim(0.0, float(theta[-1]))
 top = float(u_r2.max())
 bottom = float(u_r2.min())
 axes[0].set_ylim(bottom - 0.1 * (top - bottom), top + 0.1 * (top - bottom))
-axes[0].legend(frameon=False, fontsize=11, loc='upper right')
+legend = axes[0].legend(frameon=False, fontsize=11, loc='upper right')
 
 # Bottom: the Fourier window on a logarithmic multipole axis; the
 # dotted drop lines mark each curve's peak at ell = sqrt(2)/R.
 for i, radius in enumerate(radii):
     axes[1].plot(ell, uhat[i], color=COLORS[i], linewidth=WIDTHS[i],
-                 linestyle=STYLES[i])
+                 linestyle=STYLES[i], marker=MARKERS[i], markersize=4,
+                 markevery=(10 * i + 5, 50))
     peak_ell = data['peak_ell'][i]
     axes[1].plot([peak_ell, peak_ell], [0.0, np.exp(-1.0)],
                  color=COLORS[i], linewidth=0.7, linestyle=':')
@@ -88,6 +118,8 @@ axes[1].set_xlabel(r'$\ell$')
 axes[1].set_ylabel(r'$\widehat{U}(\ell R)$')
 axes[1].set_xlim(float(ell[0]), float(ell[-1]))
 axes[1].set_ylim(0.0, np.exp(-1.0) * 1.1)
+
+assert_legend_clear(fig, axes[0], legend)
 
 for extension in ('pdf', 'png'):
     fig.savefig(os.path.join(HERE, f'aperture_filter.{extension}'),

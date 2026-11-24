@@ -42,6 +42,29 @@ matplotlib.rcParams['savefig.format'] = 'pdf'
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+def assert_legend_clear(fig, ax, legend):
+    """Stop if the legend box overlaps any drawn line or marker.
+
+    The figure rules require this check in code: a legend must never
+    touch the data, and a visual check alone does not survive new
+    data.json contents.
+    """
+    fig.canvas.draw()
+    box = legend.get_window_extent()
+    for line in ax.get_lines():
+        points = line.get_xydata()
+        if points.size == 0:
+            continue
+        pixels = ax.transData.transform(points)
+        inside = ((pixels[:, 0] >= box.x0) & (pixels[:, 0] <= box.x1)
+                  & (pixels[:, 1] >= box.y0) & (pixels[:, 1] <= box.y1))
+        if bool(np.any(inside)):
+            raise RuntimeError(
+                'the legend overlaps a drawn curve; move the legend or '
+                'widen the axis range in this script')
+
+
+
 # Okabe-Ito colors (no red with green); every category also separates
 # by marker and line presence, so grayscale stays readable.
 COLORS = ['#0072B2', '#E69F00', '#CC79A7']
@@ -75,7 +98,8 @@ axes[0].set_xticklabels([f'{radius:g}' for radius in radii])
 axes[0].minorticks_off()
 axes[0].set_xlabel(r'$R$ [arcmin]')
 axes[0].set_ylabel(r'$\langle M_{\mathrm{ap}}^2 \rangle$')
-axes[0].legend(frameon=False, fontsize=11, loc='lower left')
+legend_top = axes[0].legend(frameon=False, fontsize=11,
+                            loc='lower left')
 
 # Bottom: the scaled third moments; offset the two series slightly in
 # radius so the error bars do not overlap.
@@ -100,7 +124,11 @@ values = np.concatenate([skew_gauss + skew_gauss_error,
                          skew_toy - skew_toy_error, [0.0]])
 pad = 0.1 * (values.max() - values.min())
 axes[1].set_ylim(values.min() - pad, values.max() + pad)
-axes[1].legend(frameon=False, fontsize=11, loc='upper right')
+legend_bottom = axes[1].legend(frameon=False, fontsize=11,
+                               loc='upper right')
+
+assert_legend_clear(fig, axes[0], legend_top)
+assert_legend_clear(fig, axes[1], legend_bottom)
 
 for extension in ('pdf', 'png'):
     fig.savefig(os.path.join(HERE, f'toy_moments.{extension}'),
