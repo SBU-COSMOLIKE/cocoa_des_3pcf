@@ -939,8 +939,12 @@ rows (confirmed by the measurement's author, R. Gomes):
   bispectrum expansion matters more: raising `map_lmax` from 20 to the
   published 50 changes Map3 by up to 0.26 % with
   $`d^{\mathsf T} C^{-1} d \approx 10^{-3}`$, adequate for the mean (the
-  same test bounds it); convergence of Fisher derivatives in `map_lmax`
-  is not yet shown.
+  same test bounds it). The Fisher derivatives are converged too:
+  [tests/studies/fisher_lmax_convergence.py](tests/studies/fisher_lmax_convergence.py)
+  recomputes them at `map_lmax = 50` for the NLA and TATT fiducials;
+  every derivative column changes by at most 0.08 % in measurement-error
+  units, every marginalized error by at most 0.5 %, $`\sigma(S_8)`$ by
+  0.06 % and the two figures of merit by at most 0.14 %.
 - The HEALPix pixel window entered only the simulations; the theory for
   the DES Y3 catalogue measurement has none, and the likelihood applies
   none. The pixel-window comparison is in
