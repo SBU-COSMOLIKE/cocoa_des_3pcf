@@ -5,7 +5,9 @@
 3. [Physical tables and angular transforms](#physics)
 4. [The test files](#files)
 5. [Running the checks](#running)
-6. [Appendix](#appendix)
+6. [Hybrid-emulator accuracy test](#hybrid-emulator-accuracy-test)
+7. [FoM convergence](#fom-convergence)
+8. [Appendix](#appendix)
     1. [FAQ: How do the setting-sequence tests compare a notebook with a fresh process?](#state)
     2. [FAQ: Why do grouped SIMD outputs keep identical bits?](#simd)
     3. [FAQ: How are invalid inputs tested?](#refusals)
@@ -138,6 +140,104 @@ environment before Python starts; child processes inherit it.
 
 ```bash
 python -m pytest -q projects/des_3pcf/tests/data_vector
+```
+
+## Hybrid-emulator accuracy test
+
+<!-- hybrid-emulator figure -->
+**Emulator training range**
+
+| Parameter | Range |
+| --- | --- |
+| Total matter density | $0.2<\Omega_m<0.5$ |
+| Primordial amplitude | $1<10^9 A_s\le 3.5$ |
+| Hubble constant | $H_0<85$ km/s/Mpc |
+| Present dark-energy equation of state in CPL | $w_0>-2$ |
+| Physical baryon density | $\Omega_b(H_0/100)^2<0.035$ |
+
+The fixed tables intersect this range with the benchmark priors. CAMB uses
+one massive species with $\sum m_\nu=0.06$ eV. Both model routes evaluate
+the same 50 broad points (open symbols) and 25 focused points (filled symbols).
+The solid and dashed curves show the saved 68% and 95%
+nuisance-marginalized Fisher regions.
+
+CAMB uses `AccuracyBoost: 1.0`, `k_per_logint: 0` and `kmax: 5.0`. The saved
+Fisher contours are approximate. The default-grid FoM changed by 0.20% with
+stencil size. The archived diagnostic only tested the default grid.
+
+![DES 3PCF hybrid-emulator error against CAMB](figures/emulator_precision.png)
+
+Counts use the thresholds 0.2, 0.5, 1 and 4 in that order.
+
+| Case | Broad below threshold (50) | Focused below threshold (25) | Nonfinite broad/focused |
+| --- | --- | --- | --- |
+| DES 3PCF | 39/42/43/45 | 25/25/25/25 | 0/0 |
+
+<!-- end hybrid-emulator figure -->
+
+E5 reads the saved `benchmark.yaml` in [fisher_reference/](../fisher_reference/).
+The benchmark fixes the likelihood, data selection, sampled parameters,
+fiducial and normal numerical controls.
+
+The accuracy test evaluates CAMB and the candidate at the fixed
+[50 broad and 25 focused points](../fisher_reference/) and stores both
+vectors, the covariance-weighted error, and point status. Nuisance inputs are
+held at the evaluate fiducial. Missing CAMB predictions or a comparison
+with no valid vectors fails E5. The E5 adapter treats large prediction errors
+as advisory. The strict standalone command also checks the error threshold.
+
+```bash
+python -m pytest projects/des_3pcf/tests/data_vector/test_emul2.py -k e5
+```
+
+To distribute the numerical comparisons across two MPI ranks with four
+OpenMP threads each, use the same driver directly from activated Cocoa.
+Keep BLAS at one thread and pass `--mpi` so the ranks own different points.
+
+```bash
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  VECLIB_MAXIMUM_THREADS=1 mpirun -n 2 --bind-to none python -m mpi4py \
+  projects/des_3pcf/tests/compare_emulator_camb.py --mpi --advisory
+```
+
+Saved Fisher contours show the bounded 68% and 95% regions of a centered
+CAMB forecast with nuisance parameters marginalized. The saved reference
+records the matrix, priors, fiducial, selection and numerical diagnostics.
+The accuracy run uses the available saved contour for display. Prediction
+errors remain valid when the saved contour is absent or marked unreliable. `--fisher-reference` selects a saved directory, and
+`--no-fisher` omits the display. Candidate networks can be changed using
+`EMULATOR_CODE_DIR` and `EMULATOR_DATA_DIR`.
+
+```bash
+python projects/des_3pcf/tests/compare_emulator_camb.py --plot-only /path/to/run
+```
+
+## FoM convergence
+
+This test estimates how numerical settings affect the Fisher figure of merit
+(FoM), which is proportional to the inverse area of the marginalized
+parameter ellipse. The pair is $w_0,w_a$ for CPL and $10^9 A_s,\Omega_m$
+for ΛCDM. The test builds one full CAMB Fisher matrix at the benchmark
+settings. Fourth differences of its model vectors rank contributions from
+numerical noise.
+The higher-accuracy calculation reevaluates only the selected derivative
+columns. The estimate uses the same baseline Fisher weights at both settings.
+
+Each nonzero fiducial uses `h = 0.025 * abs(fiducial)`, capped as needed
+to keep both `±2h` stencil points within its prior. Zero-centered
+coordinates use their configured absolute step or one tenth of their proposal
+width. The output records the actual steps, numerical settings, measured and
+omitted columns, and the estimated FoM shift. Contributions from omitted
+columns remain unbounded, so the estimate measures sensitivity to the tested
+refinement.
+
+Run from activated Cocoa with two MPI ranks, four OpenMP threads per rank
+and one BLAS thread.
+
+```bash
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  VECLIB_MAXIMUM_THREADS=1 mpirun -n 2 --bind-to none python -m mpi4py \
+  projects/des_3pcf/tests/check_fom_convergence.py --mpi
 ```
 
 ## Appendix <a name="appendix"></a>
