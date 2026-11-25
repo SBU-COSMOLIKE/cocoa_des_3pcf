@@ -144,8 +144,11 @@ python -m pytest -q projects/des_3pcf/tests/data_vector
 
 ## Hybrid-emulator accuracy test
 
-The [CPL benchmark](../fisher_reference/w0wa/) retains the observed joint
-selection and varies both dark-energy coordinates with $w_0+w_a<-0.4$.
+The CPL benchmark retains the observed joint selection and varies both
+dark-energy coordinates with $w_0+w_a<-0.4$. It fixes 50 broad and 25
+focused points. The focused draws use the saved ordinary CAMB Fisher matrix
+for the 96 retained joint 2PCF and Map3 modes.
+[Staged CPL benchmark](../fisher_reference/w0wa/)
 The likelihood requires
 linear cold-matter power. The installed candidate's Eisenstein–Hu provider
 supports that field only at $w_0=-1$ and $w_a=0$, so the CPL comparison

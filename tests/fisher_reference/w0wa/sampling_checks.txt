@@ -1,0 +1,4 @@
+maximum_relative_seed_width_spread=0.0057459564; limit=0.2
+maximum_seed_mean_spread_in_sigma=0.011516807; limit=0.25
+relative_seed_normalization_spread=0.0059721821; limit=0.25
+minimum_effective=200; sampling_valid=True
