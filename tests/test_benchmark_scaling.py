@@ -17,12 +17,28 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 
 PROJECT = Path(__file__).resolve().parents[1]
 COCOA = PROJECT.parents[1]
+
+
+def test_summary_rejects_nonfinite_predictions(tmp_path):
+    """A NaN can evade a simple greater-than comparison at every thread count."""
+    import runpy
+
+    for threads in (1, 2):
+        np.savez(tmp_path / f"threads_{threads}.npz", names=["camb"],
+                 full=[1., 1.], spent=[[0.5], [0.5]], calls=[[1], [1]],
+                 datavector=[[np.nan, 1.], [np.nan, 2.]])
+    summarize = runpy.run_path(str(PROJECT / "tests/benchmark_scaling.py"))["summary"]
+    with pytest.raises(ValueError, match="nonfinite data vectors"):
+        summarize(SimpleNamespace(output=tmp_path, threads=[1, 2], tolerance=1.e-12,
+                                  npoints=2))
 
 
 def test_driver_records_boundaries_recomputation_and_agreement(tmp_path):
