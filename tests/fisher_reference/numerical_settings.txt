@@ -1,0 +1,8 @@
+stage=default_accuracy
+likelihood={'data_file': 'des_y3_joint1.dataset'}
+CAMB={'halofit_version': 'takahashi', 'dark_energy_model': 'ppf', 'num_massive_neutrinos': 1, 'kmax': 5.0, 'k_per_logint': 0, 'WantCls': False}
+FoM relative tolerance=0.01
+Fisher uses the example's physical theory with mnu=0.06 eV.
+CAMB Fisher reference: logL=1702.5952937123755; -2logL=-3405.1905874247509
+This is the declared Fisher fiducial and theory; consult numerical_settings.txt for the runner's choices.
+It need not have zero residual against a synthetic vector made with another prescription.

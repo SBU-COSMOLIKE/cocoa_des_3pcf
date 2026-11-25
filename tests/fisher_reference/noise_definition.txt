@@ -1,0 +1,5 @@
+pair=('As_1e9', 'omegam'); full default Fisher with nuisance priors.
+h: dlnFoM=0.0066580382170570536; ratio=1.00663493585772
+h/2: dlnFoM=0.0028646539883987391; ratio=1.0028604818155815
+Analytic columns:
+Smooth curvature and correlated errors can invalidate the noise interpretation.
