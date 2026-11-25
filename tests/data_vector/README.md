@@ -145,9 +145,14 @@ python -m pytest -q projects/des_3pcf/tests/data_vector
 ## Hybrid-emulator accuracy test
 
 The [CPL benchmark](../fisher_reference/w0wa/) retains the observed joint
-selection and varies both dark-energy coordinates. Its matching Fisher
-reference and comparison are pending. The results below archive the
-comparison with $w_0=-1$ and $w_a=0$.
+selection and varies both dark-energy coordinates. The likelihood requires
+linear cold-matter power. The installed candidate's Eisenstein–Hu provider
+supports that field only at $w_0=-1$ and $w_a=0$, so the CPL comparison
+awaits validated cold-power support.
+
+### Archived ΛCDM comparison
+
+The results and commands below use the archived $w_0=-1$, $w_a=0$ inputs.
 
 <!-- hybrid-emulator figure -->
 **Emulator training range**
@@ -166,9 +171,7 @@ the same 50 broad points (open symbols) and 25 focused points (filled symbols).
 The solid and dashed curves show the saved 68% and 95%
 nuisance-marginalized Fisher regions.
 
-CAMB uses `AccuracyBoost: 1.0`, `k_per_logint: 0` and `kmax: 5.0`. The saved
-Fisher contours are approximate. The default-grid FoM changed by 0.20% with
-stencil size. The archived diagnostic only tested the default grid.
+CAMB uses `AccuracyBoost: 1.0`, `k_per_logint: 0` and `kmax: 5.0`.
 
 ![DES 3PCF hybrid-emulator error against CAMB](figures/emulator_precision.png)
 
@@ -205,13 +208,12 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   projects/des_3pcf/tests/compare_emulator_camb.py --mpi --advisory
 ```
 
-Saved Fisher contours show the bounded 68% and 95% regions of a centered
-CAMB forecast with nuisance parameters marginalized. The saved reference
-records the matrix, priors, fiducial, selection and numerical diagnostics.
-The accuracy run uses the available saved contour for display. Prediction
-errors remain valid when the saved contour is absent or marked unreliable. `--fisher-reference` selects a saved directory, and
-`--no-fisher` omits the display. Candidate networks can be changed using
-`EMULATOR_CODE_DIR` and `EMULATOR_DATA_DIR`.
+The shared plot uses saved 68% and 95% bounded Fisher contours with
+nuisance parameters marginalized. The reference records the matrix, priors,
+fiducial and data selection. Use `--fisher-reference` to select a saved
+reference directory or `--no-fisher` to show only the comparison points.
+Use `EMULATOR_CODE_DIR` and `EMULATOR_DATA_DIR` to select the candidate
+network installation.
 
 ```bash
 python projects/des_3pcf/tests/compare_emulator_camb.py --plot-only /path/to/run
