@@ -66,7 +66,7 @@ if __name__ == "__main__":
                     "param_order": ["As_1e9", "ns", "H0", "omegab", "omegam", "w", "wa"],
                     "fixed_params": {"mnu": 0.06},
                     "cold_power": "eisenstein_hu",
-                    "cold_neutrino_species": 3,
+                    "cold_neutrino_species": 1,
                 },
             },
         },
