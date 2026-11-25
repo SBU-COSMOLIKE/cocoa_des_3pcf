@@ -267,14 +267,22 @@ conversion even though this example's mean barely responds to that field.
 ## Official hybrid-emulator test
 
 <!-- hybrid-emulator figure -->
-The test draws cosmologies with $w_0>-2$, $1<10^9 A_s\leq 3.5$, $H_0<85$ km/s/Mpc and $0.2<\Omega_m<0.5$, with $m_\nu=0.06$ eV.
-The numbered example supplies any tighter priors.
-The figure will appear here when the comparisons are available.
-The official test reads the model settings from [the fixed parameter tables](frozen/emulator_precision/). It evaluates CAMB and the emulator on the same ordered rows each time.
-The initial Fisher selected the focused coordinates; recomputing the contours leaves those coordinates fixed.
+The test uses the numbered example's priors and fixes $m_\nu=0.06$ eV. It draws cosmologies with $w_0>-2$, $1<10^9 A_s\leq 3.5$, $H_0<85$ km/s/Mpc, $0.2<\Omega_m<0.5$, and $\Omega_b(H_0/100)^2<0.035$.
+The open symbols show 50 broad draws. The filled symbols show 25 focused draws from the Fisher distribution under the same cuts.
+The solid and dashed curves enclose the 68% and 95% regions of the nuisance-marginalized Fisher forecast.
+This recorded CAMB reference used AccuracyBoost=3 and k_per_logint=50.
+The plotted contours and focused selection use the saved default-accuracy Fisher. The error measurements used those fixed coordinates.
+The official test evaluates CAMB and the emulator on the same [fixed parameter tables](frozen/emulator_precision/) each time.
 
-After a later run completes the focused sample,
-copy its `fisher/emulator_fisher.png` to `tests/figures/emulator_precision.png` to refresh the published figure.
+![DES 3PCF hybrid-emulator error against CAMB](figures/emulator_precision.png)
+
+Thresholds are 0.2, 0.5, 1 and 4. Failures are counted separately.
+
+| Case | Broad below threshold (50) | Focused below threshold (25) | Nonfinite broad/focused |
+| --- | --- | --- | --- |
+| DES 3PCF | 41/41/42/43 | 25/25/25/25 | 0/0 |
+
+Copy a completed run's `fisher/emulator_fisher.png` to `tests/figures/emulator_precision.png` to refresh this figure.
 <!-- end hybrid-emulator figure -->
 
 The command-line driver can distribute independent cosmologies and Fisher

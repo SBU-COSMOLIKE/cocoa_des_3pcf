@@ -31,6 +31,7 @@ import argparse
 import os
 from pathlib import Path
 import sys
+from tempfile import TemporaryDirectory
 
 # Set thread ownership before NumPy, TensorFlow or the native library loads.
 os.environ["OMP_NUM_THREADS"] = os.environ.get("OMP_NUM_THREADS", "4")
@@ -51,6 +52,7 @@ sys.path.insert(0, str(root / "cobaya"))
 
 import numpy as np
 import cosmolike_des_3pcf_interface as ci
+from cobaya.yaml import yaml_dump, yaml_load_file
 from cocoa_testing import (
     run_matter_emulator_prior_check,
     plot_matter_emulator_fisher,
@@ -147,23 +149,36 @@ if __name__ == "__main__":
         points_file = frozen / "prior_50.txt"
         if local_points is None:
             local_points = frozen / "focused_25.txt"
+    try:
+        threads = int(os.environ["OMP_NUM_THREADS"].split(",", 1)[0])
+        if threads < 1:
+            raise ValueError
+    except ValueError:
+        parser.error("OMP_NUM_THREADS must start with a positive integer")
+    source = (project / args.configuration).resolve()
+    settings = yaml_load_file(str(source))
+    # The likelihood sets the native team size at each evaluation.
+    settings["likelihood"]["des_3pcf.joint_shear"]["omp_threads"] = threads
     os.chdir(root)
-    failed = run_matter_emulator_prior_check(
-        project=project,
-        mpi_comm=mpi_comm,
-        configuration=args.configuration,
-        get_precision=get_precision,
-        select_vector=ci.select_joint_data_vector,
-        use_emulator_switch=False,
-        candidate_extra_args={"cold_power": "eisenstein_hu", "cold_neutrino_species": 1},
-        n_models=args.models,
-        seed=args.seed,
-        limit=args.limit,
-        fisher=not args.no_fisher,
-        output_dir=output_dir,
-        fisher_sample_power=args.fisher_sample_power,
-        points_file=points_file,
-        advisory=args.advisory,
-        local_points_file=local_points,
-    )
+    with TemporaryDirectory(prefix="des_3pcf_emulator_") as scratch:
+        configuration = Path(scratch) / source.name
+        configuration.write_text(yaml_dump(settings))
+        failed = run_matter_emulator_prior_check(
+            project=project,
+            mpi_comm=mpi_comm,
+            configuration=configuration,
+            get_precision=get_precision,
+            select_vector=ci.select_joint_data_vector,
+            use_emulator_switch=False,
+            candidate_extra_args={"cold_power": "eisenstein_hu", "cold_neutrino_species": 1},
+            n_models=args.models,
+            seed=args.seed,
+            limit=args.limit,
+            fisher=not args.no_fisher,
+            output_dir=output_dir,
+            fisher_sample_power=args.fisher_sample_power,
+            points_file=points_file,
+            advisory=args.advisory,
+            local_points_file=local_points,
+        )
     sys.exit(1 if failed else 0)
