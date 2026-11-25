@@ -121,7 +121,9 @@ def main(*, fisher=False):
     benchmark = project / "tests/fisher_reference"
     benchmark_yaml = benchmark / "benchmark.yaml"
     if args.configuration is None:
-        args.configuration = str(benchmark_yaml)
+        # CAMB supplies the cold field for evolving dark energy directly.
+        source = benchmark / "w0wa/benchmark.yaml" if fisher else benchmark_yaml
+        args.configuration = str(source)
     standard_configuration = (project / args.configuration).resolve() == benchmark_yaml
     # Each rank owns its Cobaya model and native state. The shared test
     # distributes different jobs and lets rank zero write combined results.
