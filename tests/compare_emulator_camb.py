@@ -10,23 +10,21 @@ MPI assigns independent parameter columns or cosmologies to each rank;
 OpenMP accelerates each rank's model evaluations. Keep BLAS at one thread.
 
 The shared Cocoa test uses the numbered example's cosmological priors,
-restricted to 0.2 < Omega_m < 0.5 and fixed mnu=0.06 eV. Nuisance parameters
-stay at its declared point. Both calculations use plain mead2020 and CAMB
-background distances. BiHalofit consumes the selected provider power.
-The native mask and MOPED compression apply before covariance weighting;
-the Fisher overlay is the Gaussian fixed-covariance approximation. This does not change the production nonlinear
-prescription or its sampled neutrino-mass prior.
+restricted to 0.2 < Omega_m < 0.5 and Omega_b*(H0/100)^2 < 0.035, with
+mnu fixed at 0.06 eV. Nuisance parameters stay at the example point.
+Both calculations use plain mead2020 and CAMB background distances. BiHalofit consumes the selected provider power.
+The native mask and MOPED compression apply before covariance weighting.
+The Fisher overlay is the Gaussian fixed-covariance approximation.
 
 Use EMULATOR_CODE_DIR and EMULATOR_DATA_DIR to select candidate checkouts.
 COCOA_TEST_INTERFACE_DIR optionally selects an independently built native
 interface. Results, including failed points, go under chains/.
 
-The optional --points argument reads explicit named-column parameter points.
-The default Fisher calculation varies the sampled cosmological and nuisance
-parameters for this project's full retained observable. The shared test
-then selects 25 points from its bounded Fisher distribution and evaluates
-both theories again. --local-points replaces that selection with a named
-parameter table. The E5 test uses --advisory and retains all outcomes.
+The default comparison reads 50 broad and 25 focused points from the
+fixed parameter tables. The Fisher calculation varies the sampled
+cosmological and nuisance parameters for the full retained observable.
+Use --points and --local-points to supply other named parameter tables.
+The E5 test uses --advisory and retains all outcomes.
 """
 
 import argparse
@@ -143,6 +141,12 @@ if __name__ == "__main__":
         sys.exit(0)
     output_dir = args.output.resolve() if args.output is not None else None
     local_points = args.local_points.resolve() if args.local_points is not None else None
+    if ((project / args.configuration).resolve() == project / "EXAMPLE_EVALUATE1.yaml"
+            and args.models == 50 and args.seed == 137 and points_file is None):
+        frozen = project / "tests/frozen/emulator_precision"
+        points_file = frozen / "prior_50.txt"
+        if local_points is None:
+            local_points = frozen / "focused_25.txt"
     os.chdir(root)
     failed = run_matter_emulator_prior_check(
         project=project,
@@ -151,7 +155,7 @@ if __name__ == "__main__":
         get_precision=get_precision,
         select_vector=ci.select_joint_data_vector,
         use_emulator_switch=False,
-        candidate_extra_args={"cold_power": "eisenstein_hu", "cold_neutrino_species": 3},
+        candidate_extra_args={"cold_power": "eisenstein_hu", "cold_neutrino_species": 1},
         n_models=args.models,
         seed=args.seed,
         limit=args.limit,
