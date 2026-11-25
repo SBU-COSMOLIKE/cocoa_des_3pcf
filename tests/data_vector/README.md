@@ -144,19 +144,11 @@ python -m pytest -q projects/des_3pcf/tests/data_vector
 
 ## Hybrid-emulator accuracy test
 
-The CPL benchmark retains the observed joint selection and varies both
-dark-energy coordinates with $w_0+w_a<-0.4$. It fixes 50 broad and 25
-focused points. The focused draws use the saved ordinary CAMB Fisher matrix
-for the 96 retained joint 2PCF and Map3 modes.
-[Staged CPL benchmark](../fisher_reference/w0wa/)
-The likelihood requires
-linear cold-matter power. The installed candidate's Eisenstein–Hu provider
-supports that field only at $w_0=-1$ and $w_a=0$, so the CPL comparison
-awaits validated cold-power support.
-
-### Archived ΛCDM comparison
-
-The results and commands below use the archived $w_0=-1$, $w_a=0$ inputs.
+The observed joint vector contains 16 MOPED shear modes and 80 Map3
+measurements. The likelihood requests linear cold power. For CPL, the
+candidate rescales Eisenstein–Hu growth by the square root of the ratio
+of linear power in the CPL cosmology to its matched ΛCDM cosmology at
+$k=0.05\,\mathrm{Mpc}^{-1}$.
 
 <!-- hybrid-emulator figure -->
 **Emulator training range**
@@ -166,45 +158,55 @@ The results and commands below use the archived $w_0=-1$, $w_a=0$ inputs.
 | Total matter density | $0.2<\Omega_m<0.5$ |
 | Primordial amplitude | $1<10^9 A_s\le 3.5$ |
 | Hubble constant | $H_0<85$ km/s/Mpc |
-| Present dark-energy equation of state in CPL | $w_0>-2$ |
+| Present dark-energy equation of state | $w_0>-2$ |
+| Early-time dark-energy equation of state | $w_0+w_a<-0.4$ |
 | Physical baryon density | $\Omega_b(H_0/100)^2<0.035$ |
 
-The fixed tables intersect this range with the benchmark priors. CAMB uses
-one massive species with $\sum m_\nu=0.06$ eV. Both model routes evaluate
-the same 50 broad points (open symbols) and 25 focused points (filled symbols).
-The solid and dashed curves show the saved 68% and 95%
-nuisance-marginalized Fisher regions.
+The fixed model tables intersect these limits with the project priors.
+3/50 broad and 0/25 focused points extend beyond the common observed
+$n_s$ extrema of the two installed scalers. These are coordinate bounds.
 
-CAMB uses `AccuracyBoost: 1.0`, `k_per_logint: 0` and `kmax: 5.0`.
+CAMB uses one massive neutrino at 0.06 eV, `AccuracyBoost: 1.0`,
+`k_per_logint: 0` and `kmax: 5.0`.
+The broad table provides cosmological and nuisance coordinates. The focused
+table holds nuisances at the benchmark fiducial.
 
-![DES 3PCF hybrid-emulator error against CAMB](figures/emulator_precision.png)
+The comparison scores the squared prediction difference with the joint data
+precision, $E=(d_{\rm emul}-d_{\rm CAMB})^\mathsf{T}C^{-1}(d_{\rm emul}-d_{\rm CAMB})$.
+The plot shows 50 broad draws as open symbols and 25 focused draws as filled
+symbols. Solid and dashed curves enclose 68% and 95% of the saved bounded,
+nuisance-marginalized Fisher distribution.
 
-Counts use the thresholds 0.2, 0.5, 1 and 4 in that order.
+![DES 3PCF - Joint 2PCF + Map³](figures/emulator_precision_w0wa.png)
+
+Counts use the strict thresholds 0.2, 0.5, 1 and 4 in that order.
 
 | Case | Broad below threshold (50) | Focused below threshold (25) | Nonfinite broad/focused |
 | --- | --- | --- | --- |
-| DES 3PCF | 39/42/43/45 | 25/25/25/25 | 0/0 |
+| Joint 2PCF + Map³ | 39/40/42/43 | 25/25/25/25 | 0/0 |
+
+The broad maximum was $E=27417.01$ at draw 43 ($w_0=-0.975$, $w_a=-1.114$,
+$\Omega_m=0.420$). The Map3 rows contributed 99.99% to the sum
+$\sum_j \delta d_j(C^{-1}\delta d)_j$ with the joint precision, which includes
+cross-probe terms. The largest focused error was $E=0.01074$.
 
 <!-- end hybrid-emulator figure -->
 
-E5 reads the saved `benchmark.yaml` in [fisher_reference/](../fisher_reference/).
-The benchmark fixes the likelihood, data selection, sampled parameters,
-fiducial and normal numerical controls.
+The [frozen CPL inputs](../fisher_reference/w0wa/) record both tables, numerical
+settings, mask, priors and ordinary CAMB Fisher geometry. The local run keeps
+[broad results](../../chains/hybrid_emulator_tests/ordinary_accuracy_2x4_20261125-w0pwa_m0p4-w0wa/summary.txt) and [focused results](../../chains/hybrid_emulator_tests/ordinary_accuracy_2x4_20261125-w0pwa_m0p4-w0wa/local/summary.txt),
+including the input settings and both model vectors.
 
-The accuracy test evaluates CAMB and the candidate at the fixed
-[50 broad and 25 focused points](../fisher_reference/) and stores both
-vectors, the covariance-weighted error, and point status. Nuisance inputs are
-held at the evaluate fiducial. Missing CAMB predictions or a comparison
-with no valid vectors fails E5. The E5 adapter treats large prediction errors
-as advisory. The strict standalone command also checks the error threshold.
+E5 treats large prediction errors as advisory. Missing CAMB predictions or
+absence of any valid candidate comparison fail the test. Run from activated
+Cocoa.
 
 ```bash
 python -m pytest projects/des_3pcf/tests/data_vector/test_emul2.py -k e5
 ```
 
-To distribute the numerical comparisons across two MPI ranks with four
-OpenMP threads each, use the same driver directly from activated Cocoa.
-Keep BLAS at one thread and pass `--mpi` so the ranks own different points.
+Use the same comparison driver for MPI, assigning two ranks and four
+OpenMP threads per rank with BLAS at one thread.
 
 ```bash
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
@@ -212,16 +214,9 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   projects/des_3pcf/tests/compare_emulator_camb.py --mpi --advisory
 ```
 
-The shared plot uses saved 68% and 95% bounded Fisher contours with
-nuisance parameters marginalized. The reference records the matrix, priors,
-fiducial and data selection. Use `--fisher-reference` to select a saved
-reference directory or `--no-fisher` to show only the comparison points.
-Use `EMULATOR_CODE_DIR` and `EMULATOR_DATA_DIR` to select the candidate
-network installation.
-
-```bash
-python projects/des_3pcf/tests/compare_emulator_camb.py --plot-only /path/to/run
-```
+Use `--plot-only /path/to/run` to redraw a completed result. The
+[archived ΛCDM figure](figures/emulator_precision.png) and
+[its benchmark inputs](../fisher_reference/) describe the earlier experiment.
 
 ## FoM convergence
 
