@@ -233,9 +233,10 @@ The five-point stencil uses a fixed 2.5% relative step, shortened near prior
 bounds. A zero-centered parameter uses its specified absolute step or one
 tenth of its proposal width. The fourth differences rank the numerical
 sensitivity of the columns. Both higher settings reevaluate the same selected
-columns and use the same full ordinary Fisher weights. Each estimate scales
-the ordinary FoM by the measured numerical correction. Contributions from
-omitted columns and correlated numerical errors remain unknown.
+columns and use the same full ordinary Fisher weights. The reported values
+scale the ordinary FoM by each selected-column noise estimate. Contributions
+from omitted columns, smooth derivative shifts and correlated numerical
+errors remain unknown.
 
 CAMB supplies the cold-matter spectrum for [the saved CPL benchmark](../fisher_reference/w0wa/benchmark.yaml).
 
@@ -246,7 +247,15 @@ $-6.72\%$ shift from replacing four derivative columns at triangle boost
 Smooth derivative changes can affect the FoM even when the numerical
 jitter estimate is small. [Earlier accuracy study](../studies/fisher_accuracy_validation.md)
 
-Numerical results are pending.
+| Case | Setting | CosmoLike boost / integration | CAMB boost / k_per_logint | Map3 triangle boost | Approx. FoM | Change from previous |
+| --- | --- | --- | --- | --- | --- | --- |
+| Joint cosmic shear and Map3 | Ordinary | 1.0 / 0 | 1.0 / 0 | 1 | 0.063233813 | — |
+| Joint cosmic shear and Map3 | Refined | 1.0 / 0 | 1.0 / 0 | 1.25 | 0.063234053 | +0.000380302% |
+| Joint cosmic shear and Map3 | Confirmation | 1.0 / 0 | 1.0 / 0 | 1.5 | 0.063234705 | +0.00103094% |
+
+**Selected columns in both higher settings**
+
+- Joint cosmic shear and Map3 — `H0`, `omegam`, `omegab`, `w`, `w0pwa`.
 
 Run from activated Cocoa with two MPI ranks, four OpenMP threads per rank
 and one BLAS thread.
