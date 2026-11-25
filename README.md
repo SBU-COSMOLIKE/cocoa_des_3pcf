@@ -42,6 +42,11 @@ marks inputs built on simulated or synthetic vectors. All five cases read
 the supplied simulation-estimated joint covariance, including its
 two-/three-point cross terms.
 
+The active examples use one massive neutrino with a total mass of 0.06 eV.
+The saved predictions and emulator Fisher results from the earlier
+three-species model retain their original settings. Comparing the current
+model requires fresh predictions and Fisher derivatives.
+
 | Case | Data | IA model | Likelihood | Rows kept | Dataset and example files |
 |---|---|---|---|---|---|
 | 1 | Observed (unblinded) Y3 measurements | NLA | [Percival](#percival), 796 simulations, `parameter_count = 15`, published 16-mode MOPED compression of the $`\xi`$ rows | 227 of 400 $`\xi`$ rows (Y3 cosmic-shear scale cuts) and all 80 Map3 rows; 96 after compression | `des_y3_joint1.dataset`; `EXAMPLE_EVALUATE1.yaml`, `EXAMPLE_MCMC1.yaml`, `EXAMPLE_NAUTILUS1.yaml`/`.py` |
