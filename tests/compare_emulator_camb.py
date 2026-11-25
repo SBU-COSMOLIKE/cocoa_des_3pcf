@@ -176,7 +176,29 @@ def main(*, fisher=False):
     source = (project / args.configuration).resolve()
     settings = yaml_load_file(str(source))
     # The likelihood sets the native team size at each evaluation.
-    settings["likelihood"]["des_3pcf.joint_shear"]["omp_threads"] = threads
+    native = settings["likelihood"]["des_3pcf.joint_shear"]
+    native["omp_threads"] = threads
+    fisher_accuracy = {}
+    if fisher and not args.validate_fisher_steps:
+        # The joint-vector Fisher study identified triangle interpolation as
+        # a sensitive axis. Refine that grid while holding the other settings.
+        controls = dict(native.get("threepcf_accuracy") or {})
+        triangle = float(controls.get("triangle_boost", 1.0))
+        camb = settings["theory"]["camb"].get("extra_args", {})
+        fisher_accuracy = {
+            "fisher_accuracy_likelihood": {
+                "accuracyboost": native.get("accuracyboost", 1.0),
+                "integration_accuracy": native.get("integration_accuracy", 0),
+                "threepcf_accuracy": controls | {"triangle_boost": 1.25 * triangle},
+            },
+            "fisher_accuracy_camb": {
+                "AccuracyBoost": camb.get("AccuracyBoost", 1.0),
+                "k_per_logint": camb.get("k_per_logint", 0),
+            },
+            "fisher_confirmation_settings": (
+                {"threepcf_accuracy": controls | {"triangle_boost": 1.5 * triangle}}, {},
+            ),
+        }
     os.chdir(root)
     with TemporaryDirectory(prefix="des_3pcf_emulator_") as scratch:
         configuration = Path(scratch) / source.name
@@ -202,6 +224,7 @@ def main(*, fisher=False):
             points_file=points_file,
             advisory=args.advisory,
             local_points_file=local_points,
+            **fisher_accuracy,
         )
     sys.exit(1 if failed else 0)
 
