@@ -144,6 +144,11 @@ python -m pytest -q projects/des_3pcf/tests/data_vector
 
 ## Hybrid-emulator accuracy test
 
+The [CPL benchmark](../fisher_reference/w0wa/) retains the observed joint
+selection and varies both dark-energy coordinates. Its matching Fisher
+reference and comparison are pending. The results below archive the
+comparison with $w_0=-1$ and $w_a=0$.
+
 <!-- hybrid-emulator figure -->
 **Emulator training range**
 

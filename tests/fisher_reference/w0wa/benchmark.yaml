@@ -1,0 +1,599 @@
+timing: true
+debug: false
+stop_at_error: true
+likelihood:
+  des_3pcf.joint_shear:
+    path: null
+    data_file: des_y3_joint1.dataset
+    external_baryon_response: false
+    external_baryon_suppression: false
+    omp_threads: 4
+    accuracyboost: 1.0
+    integration_accuracy: 0
+    fpt_internal_boost: 0.5
+    ell_internal: 192
+    interpolation_type: 1
+    threepcf_accuracy: null
+    zmax: 3.1
+    power_nz: 125
+    power_nk: 256
+    log10k_min: -5.0
+    log10k_max: 3.0
+    kmax_boltzmann: 5.0
+    source_nz: 9601
+    kernel_nz: 401
+    los_zmin: 0.005
+    los_nz: 129
+    table_boost: 8
+    fit_nz: 33
+    source_interpolation: pchip_midpoint
+    source_padding: zero_at_measured_edges
+    sas_theta_min_arcmin: 0.5
+    sas_theta_max_arcmin: 80.0
+    sas_ntheta: 20
+    sas_theta_lower_cut_arcmin: 8.0
+    phi_bins: 63
+    map_ell_min: 0.01
+    map_ell_max: 100000
+    minimum_fft_size: 512
+    map_lmax: 20
+    map_mmax: 20
+    map_nmu: 64
+    transform_options:
+      projection: centroid
+      window: false
+      npsi: 200
+      ordered_legs: true
+      padding: 0
+    projection_settings:
+      ell_min: 0.001
+      ell_max: 300000
+      epmu: 0.0001
+      nr: 32
+      nu: 24
+      nv: 24
+      np: 32
+      npu_log: 24
+      npu_linear: 24
+      nell: 64
+      npsi_log: 32
+      npsi_linear: 32
+      nmu_log: 32
+      nmu_linear: 32
+      lmax: 20
+      reference_mode: false
+      table_boost: 2
+      multipole_boost: 2
+      npsi: 80
+      nshape: 160
+      shape_stretch: 10.1062201
+      signed_baseline: 1
+      residual_scaling: 1
+      psi_scale: 0.02
+      prepare_multipoles: 1
+    projection_batch_size: 20
+    xi_ell:
+      lower: 1
+      upper: 40000
+      count: 4096
+      logarithmic: true
+    xi_theta_count: 32
+    power_mode: 2
+    params:
+      DES_DZ_S1:
+        prior:
+          dist: truncnorm
+          a: -5.555555555555556
+          b: 5.555555555555556
+          loc: 0.0
+          scale: 0.018
+        ref:
+          dist: norm
+          loc: 0.0
+          scale: 0.018
+        proposal: 0.005
+        latex: \Delta z_\mathrm{s,DES}^1
+      DES_DZ_S2:
+        prior:
+          dist: truncnorm
+          a: -6.666666666666667
+          b: 6.666666666666667
+          loc: 0.0
+          scale: 0.015
+        ref:
+          dist: norm
+          loc: 0.0
+          scale: 0.015
+        proposal: 0.005
+        latex: \Delta z_\mathrm{s,DES}^2
+      DES_DZ_S3:
+        prior:
+          dist: truncnorm
+          a: -9.090909090909092
+          b: 9.090909090909092
+          loc: 0.0
+          scale: 0.011
+        ref:
+          dist: norm
+          loc: 0.0
+          scale: 0.011
+        proposal: 0.005
+        latex: \Delta z_\mathrm{s,DES}^3
+      DES_DZ_S4:
+        prior:
+          dist: truncnorm
+          a: -5.88235294117647
+          b: 5.88235294117647
+          loc: 0.0
+          scale: 0.017
+        ref:
+          dist: norm
+          loc: 0.0
+          scale: 0.017
+        proposal: 0.005
+        latex: \Delta z_\mathrm{s,DES}^4
+      DES_A1_1:
+        prior:
+          min: -5.0
+          max: 5.0
+        ref:
+          dist: norm
+          loc: -0.33
+          scale: 0.5
+        proposal: 0.5
+        latex: A_\mathrm{1-IA,DES}^1
+      DES_A1_2:
+        prior:
+          min: -5.0
+          max: 5.0
+        ref:
+          dist: norm
+          loc: 2.81
+          scale: 0.5
+        proposal: 0.5
+        latex: \eta_\mathrm{1-IA,DES}
+      DES_A2_1:
+        prior:
+          min: -5.0
+          max: 5.0
+        ref:
+          dist: norm
+          loc: 0.65
+          scale: 0.5
+        proposal: 0.5
+        latex: A_\mathrm{2-IA,DES}^1
+      DES_A2_2:
+        prior:
+          min: -5.0
+          max: 5.0
+        ref:
+          dist: norm
+          loc: 1.69
+          scale: 0.5
+        proposal: 0.5
+        latex: \eta_\mathrm{2-IA,DES}
+      DES_BTA_1:
+        prior:
+          min: 0.0
+          max: 2.0
+        ref:
+          dist: norm
+          loc: 0.91
+          scale: 0.15
+        proposal: 0.1
+        latex: b_\mathrm{TA-IA,DES}
+      DES_M1:
+        prior:
+          dist: truncnorm
+          a: -10.296703296703297
+          b: 11.68131868131868
+          loc: -0.0063
+          scale: 0.0091
+        ref:
+          dist: norm
+          loc: -0.0063
+          scale: 0.0091
+        proposal: 0.004
+        latex: m_\mathrm{DES}^1
+      DES_M2:
+        prior:
+          dist: truncnorm
+          a: -10.282051282051283
+          b: 15.35897435897436
+          loc: -0.0198
+          scale: 0.0078
+        ref:
+          dist: norm
+          loc: -0.0198
+          scale: 0.0078
+        proposal: 0.004
+        latex: m_\mathrm{DES}^2
+      DES_M3:
+        prior:
+          dist: truncnorm
+          a: -9.98684210526316
+          b: 16.32894736842105
+          loc: -0.0241
+          scale: 0.0076
+        ref:
+          dist: norm
+          loc: -0.0241
+          scale: 0.0076
+        proposal: 0.004
+        latex: m_\mathrm{DES}^3
+      DES_M4:
+        prior:
+          dist: truncnorm
+          a: -8.302631578947368
+          b: 18.013157894736846
+          loc: -0.0369
+          scale: 0.0076
+        ref:
+          dist: norm
+          loc: -0.0369
+          scale: 0.0076
+        proposal: 0.004
+        latex: m_\mathrm{DES}^4
+    type: []
+    speed: -1
+    stop_at_error: false
+    version: null
+prior:
+  emulator_omegabh2_cap: 'lambda omegab, H0: 0.0 if omegab*(H0/100)**2 < 0.035 else
+    -np.inf'
+params:
+  As_1e9:
+    prior:
+      min: 1.0000000000000002
+      max: 3.5
+    ref:
+      dist: norm
+      loc: 2.1
+      scale: 0.2
+    proposal: 0.2
+    latex: 10^9 A_\mathrm{s}
+    drop: true
+    renames: A
+  ns:
+    prior:
+      min: 0.87
+      max: 1.07
+    ref:
+      dist: norm
+      loc: 0.96605
+      scale: 0.015
+    proposal: 0.015
+    latex: n_\mathrm{s}
+  H0:
+    prior:
+      min: 55
+      max: 84.99999999999999
+    ref:
+      dist: norm
+      loc: 67.32
+      scale: 3
+    proposal: 3
+    latex: H_0
+  omegab:
+    prior:
+      min: 0.03
+      max: 0.07
+    ref:
+      dist: norm
+      loc: 0.0495
+      scale: 0.004
+    proposal: 0.004
+    latex: \Omega_\mathrm{b}
+    drop: true
+  omegam:
+    prior:
+      min: 0.20000000000000004
+      max: 0.4999999999999999
+    ref:
+      dist: norm
+      loc: 0.316
+      scale: 0.015
+    proposal: 0.015
+    latex: \Omega_\mathrm{m}
+    drop: true
+  w:
+    prior:
+      min: -1.9999999999999998
+      max: -0.01
+    ref:
+      dist: norm
+      loc: -0.99
+      scale: 0.05
+    proposal: 0.05
+    latex: w_{0,\mathrm{DE}}
+  wa:
+    value: 'lambda w0pwa, w: w0pwa - w'
+    latex: w_{a,\mathrm{DE}}
+    derived: true
+  mnu:
+    value: 0.06
+  nnu:
+    value: 3.046
+  tau:
+    value: 0.0697186
+    latex: \tau_\mathrm{reio}
+  As:
+    value: 'lambda As_1e9: 1e-9 * As_1e9'
+    latex: A_\mathrm{s}
+    derived: true
+  omegabh2:
+    value: 'lambda omegab, H0: omegab*(H0/100)**2'
+    latex: \Omega_\mathrm{b} h^2
+    derived: true
+    renames:
+    - ombh2
+  omegach2:
+    value: 'lambda omegam, omegab, mnu, H0: (omegam-omegab)*(H0/100)**2-(mnu*(3.046/3)**0.75)/94.0708'
+    latex: \Omega_\mathrm{c} h^2
+    derived: true
+    renames:
+    - omch2
+  omegal:
+    latex: \Omega_\Lambda
+    derived: true
+    renames:
+    - omega_de
+  omegamh2:
+    derived: 'lambda omegam, H0: omegam*(H0/100)**2'
+    latex: \Omega_\mathrm{m} h^2
+  sigma8:
+    latex: \sigma_8
+    derived: true
+  s8h5:
+    derived: 'lambda sigma8, H0: sigma8*(H0*1e-2)**(-0.5)'
+    latex: \sigma_8/h^{0.5}
+  s8omegamp5:
+    derived: 'lambda sigma8, omegam: sigma8*omegam**0.5'
+    latex: \sigma_8 \Omega_\mathrm{m}^{0.5}
+  s8omegamp25:
+    derived: 'lambda sigma8, omegam: sigma8*omegam**0.25'
+    latex: \sigma_8 \Omega_\mathrm{m}^{0.25}
+  age:
+    latex: '{\rm{Age}}/\mathrm{Gyr}'
+    derived: true
+  rdrag:
+    latex: r_\mathrm{drag}
+    derived: true
+  yheused:
+    latex: Y_P^\mathrm{BBN}
+    derived: true
+    renames:
+    - YHe
+  omegan2:
+    latex: \Omega_\mathrm{\\nu} h^2
+    derived: true
+    renames:
+    - omnuh2
+  omegan:
+    derived: 'lambda omegan2, H0: omegan2/((H0/100)**2)'
+    latex: \Omega_\mathrm{\\nu}
+  DES_DZ_S1:
+    prior:
+      dist: truncnorm
+      a: -5.555555555555556
+      b: 5.555555555555556
+      loc: 0.0
+      scale: 0.018
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.018
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^1
+  DES_DZ_S2:
+    prior:
+      dist: truncnorm
+      a: -6.666666666666667
+      b: 6.666666666666667
+      loc: 0.0
+      scale: 0.015
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.015
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^2
+  DES_DZ_S3:
+    prior:
+      dist: truncnorm
+      a: -9.090909090909092
+      b: 9.090909090909092
+      loc: 0.0
+      scale: 0.011
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.011
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^3
+  DES_DZ_S4:
+    prior:
+      dist: truncnorm
+      a: -5.88235294117647
+      b: 5.88235294117647
+      loc: 0.0
+      scale: 0.017
+    ref:
+      dist: norm
+      loc: 0.0
+      scale: 0.017
+    proposal: 0.005
+    latex: \Delta z_\mathrm{s,DES}^4
+  DES_A1_1:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: -0.33
+      scale: 0.5
+    proposal: 0.5
+    latex: A_\mathrm{1-IA,DES}^1
+  DES_A1_2:
+    prior:
+      min: -5.0
+      max: 5.0
+    ref:
+      dist: norm
+      loc: 2.81
+      scale: 0.5
+    proposal: 0.5
+    latex: \eta_\mathrm{1-IA,DES}
+  DES_A2_1:
+    latex: A_\mathrm{2-IA,DES}^1
+    value: 0.0
+  DES_A2_2:
+    latex: \eta_\mathrm{2-IA,DES}
+    value: 0.0
+  DES_BTA_1:
+    latex: b_\mathrm{TA-IA,DES}
+    value: 0.0
+  DES_M1:
+    prior:
+      dist: truncnorm
+      a: -10.296703296703297
+      b: 11.68131868131868
+      loc: -0.0063
+      scale: 0.0091
+    ref:
+      dist: norm
+      loc: -0.0063
+      scale: 0.0091
+    proposal: 0.004
+    latex: m_\mathrm{DES}^1
+  DES_M2:
+    prior:
+      dist: truncnorm
+      a: -10.282051282051283
+      b: 15.35897435897436
+      loc: -0.0198
+      scale: 0.0078
+    ref:
+      dist: norm
+      loc: -0.0198
+      scale: 0.0078
+    proposal: 0.004
+    latex: m_\mathrm{DES}^2
+  DES_M3:
+    prior:
+      dist: truncnorm
+      a: -9.98684210526316
+      b: 16.32894736842105
+      loc: -0.0241
+      scale: 0.0076
+    ref:
+      dist: norm
+      loc: -0.0241
+      scale: 0.0076
+    proposal: 0.004
+    latex: m_\mathrm{DES}^3
+  DES_M4:
+    prior:
+      dist: truncnorm
+      a: -8.302631578947368
+      b: 18.013157894736846
+      loc: -0.0369
+      scale: 0.0076
+    ref:
+      dist: norm
+      loc: -0.0369
+      scale: 0.0076
+    proposal: 0.004
+    latex: m_\mathrm{DES}^4
+  w0pwa:
+    prior:
+      min: -3
+      max: -0.01
+    ref:
+      dist: norm
+      loc: -0.99
+      scale: 0.05
+    proposal: 0.05
+    latex: w_{0,\mathrm{DE}}+w_{a,\mathrm{DE}}
+    drop: true
+theory:
+  camb:
+    version: null
+    path: ./external_modules/code/CAMB
+    speed: 0.3
+    stop_at_error: true
+    extra_args:
+      halofit_version: takahashi
+      dark_energy_model: ppf
+      num_massive_neutrinos: 1
+      kmax: 5.0
+      k_per_logint: 0
+      WantCls: false
+    ignore_obsolete: false
+    use_renames: true
+    external_primordial_pk: false
+    use_non_linear_ratio: false
+    renames:
+      omegabh2: ombh2
+      omegach2: omch2
+      omegal: omega_de
+      omegak: omk
+      yhe: YHe
+      yheused: YHe
+      YpBBN: Y_p
+      omegan2: omnuh2
+  bihalofit:
+    baseline_z: null
+    baseline_logk: null
+    baseline_logu: null
+    baseline_v: null
+    baseline_nz: 49
+    baseline_nk: 193
+    baseline_nu: 97
+    baseline_nv: 33
+    baseline_zmax: 3.1
+    baseline_logk_min: -18.0
+    baseline_logk_max: 12.0
+    baseline_logu_min: -24.0
+    background_nz: 125
+    power_nk: 256
+    background_z: null
+    power_k: null
+    baseline_boost: 1
+    baseline_domain: error
+    block_size: 65536
+    fit_nz: 33
+    table_boost: 8
+    source_readers: false
+    variance_nodes: 1000
+    slope_nodes: 2000
+    radius_rtol: 1.0e-05
+    kmax_boltzmann: 5.0
+    variance_source: local
+    variance_module: null
+    variance_growth: factorized
+    variance_accuracy: null
+    speed: -1
+    stop_at_error: false
+    version: null
+sampler:
+  evaluate:
+    override:
+      omegam: 0.289
+      omegab: 0.0463
+      H0: 72.2
+      ns: 0.959
+      As_1e9: 1.8520355901334418
+      DES_A1_1: -0.33
+      DES_A1_2: 2.81
+      DES_M1: -0.0063
+      DES_M2: -0.0198
+      DES_M3: -0.0241
+      DES_M4: -0.0369
+      DES_DZ_S1: 0
+      DES_DZ_S2: 0
+      DES_DZ_S3: 0
+      DES_DZ_S4: 0
+      w: -1.0
+      w0pwa: -1.0
+output: ./projects/des_3pcf/chains/EXAMPLE_EVALUATE1
