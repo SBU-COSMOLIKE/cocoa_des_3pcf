@@ -1,4 +1,4 @@
-"""Compare the candidate matter emulator with CAMB at random des_3pcf cosmologies.
+"""Compare the candidate matter emulator with CAMB on the fixed CPL benchmark.
 
 Run from activated Cocoa (one project at a time):
     python projects/des_3pcf/tests/compare_emulator_camb.py
@@ -9,10 +9,10 @@ Run from activated Cocoa (one project at a time):
 MPI assigns independent parameter points or Fisher columns to each rank;
 OpenMP accelerates each rank's model evaluations. Keep BLAS at one thread.
 
-The shared Cocoa test uses the numbered example's cosmological priors,
-restricted to 0.2 < Omega_m < 0.5 and Omega_b*(H0/100)^2 < 0.035, with
-mnu fixed at 0.06 eV. Nuisance parameters stay at the example point.
-Both calculations use plain mead2020 and CAMB background distances. BiHalofit consumes the selected provider power.
+The shared Cocoa test replays the saved broad and focused parameter
+tables with one massive neutrino at 0.06 eV. Both routes use the same
+nuisance values, plain mead2020 and CAMB background distances. BiHalofit uses
+the selected provider power.
 The native mask and MOPED compression apply before covariance weighting.
 The Fisher overlay is the Gaussian fixed-covariance approximation.
 
@@ -119,6 +119,8 @@ def main(*, fisher=False):
                         help="Distribute points and Fisher columns across MPI ranks")
     args = parser.parse_args()
     benchmark = project / "tests/fisher_reference"
+    if not fisher:
+        benchmark /= "w0wa"
     benchmark_yaml = benchmark / "benchmark.yaml"
     if args.configuration is None:
         # CAMB supplies the cold field for evolving dark energy directly.
