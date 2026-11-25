@@ -1,7 +1,13 @@
 """Compare the candidate matter emulator with CAMB at random des_3pcf cosmologies.
 
-Run from activated Cocoa:
+Run from activated Cocoa (one project at a time):
     python projects/des_3pcf/tests/compare_emulator_camb.py
+    OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+      mpirun -n 2 --bind-to none python -m mpi4py \
+      projects/des_3pcf/tests/compare_emulator_camb.py --mpi
+
+MPI assigns independent parameter columns or cosmologies to each rank;
+OpenMP accelerates each rank's model evaluations. Keep BLAS at one thread.
 
 The shared Cocoa test uses the numbered example's cosmological priors,
 restricted to 0.2 < Omega_m < 0.5 and fixed mnu=0.06 eV. Nuisance parameters
@@ -101,11 +107,24 @@ if __name__ == "__main__":
     parser.add_argument("--local-points", type=Path,
                         default=None,
                         help="Replace the default bounded-Fisher local points")
+    parser.add_argument("--mpi", action="store_true",
+                        help="Distribute points and Fisher columns across MPI ranks")
     args = parser.parse_args()
+    # Each rank owns its Cobaya model and native state. The shared test
+    # distributes different jobs and lets rank zero write combined results.
+    # Cobaya's own MPI remains disabled; this driver owns the work split.
+    mpi_comm = None
+    if args.mpi:
+        from mpi4py import MPI
+        mpi_comm = MPI.COMM_WORLD
+    elif int(os.environ.get("OMPI_COMM_WORLD_SIZE", "1")) > 1:
+        parser.error("Use --mpi with mpirun to distribute work without duplicate writes.")
     if args.models < 1 or args.limit <= 0:
         parser.error("models and limit must be positive")
     points_file = args.points.resolve() if args.points is not None else None
     if args.plot_only is not None:
+        if mpi_comm is not None and mpi_comm.Get_rank() != 0:
+            sys.exit(0)
         output = args.plot_only.resolve()
         if args.resample_fisher:
             sample_matter_emulator_fisher(
@@ -127,6 +146,7 @@ if __name__ == "__main__":
     os.chdir(root)
     failed = run_matter_emulator_prior_check(
         project=project,
+        mpi_comm=mpi_comm,
         configuration=args.configuration,
         get_precision=get_precision,
         select_vector=ci.select_joint_data_vector,

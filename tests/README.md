@@ -266,6 +266,25 @@ conversion even though this example's mean barely responds to that field.
 
 ## Official hybrid-emulator test
 
+The command-line driver can distribute independent cosmologies and Fisher
+columns over MPI, following the LSST Y1 × DESI Fisher calculation. For one
+project with two ranks and four OpenMP threads per rank, run:
+
+```bash
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  mpirun -n 2 --bind-to none python -m mpi4py \
+  projects/des_3pcf/tests/compare_emulator_camb.py --mpi --advisory
+```
+
+Run one project at a time with this allocation. Each rank owns a separate
+model and evaluates different points or derivative columns. OpenMP works
+inside each evaluation; BLAS stays at one thread. Rank zero assembles and
+writes the combined results. The `--mpi` flag is required: simply launching
+the serial driver twice would repeat work and write to the same files.
+`python -m mpi4py` also stops the other ranks if an uncaught error terminates
+one rank. Plot-only runs use rank zero and need no MPI launch.
+
+
 The E5 test follows LSST Y1: fifty random cosmologies drawn from the
 numbered example, restricted to 0.2 < Omega_m < 0.5, fixed mnu=0.06 eV,
 and 10^9 A_s <= 3.5. Both routes use plain mead2020 and CAMB background

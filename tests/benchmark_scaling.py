@@ -129,7 +129,8 @@ def child(arguments):
     # ----------------------------------------------------------------------
     # Warm-up: the first call fills plans and caches; it is not timed.
     # ----------------------------------------------------------------------
-    model.logposterior(params_values=fiducial, cached=False)
+    if not np.isfinite(model.logposterior(params_values=fiducial, cached=False).loglike):
+        raise ValueError("Nonfinite warm-up likelihood.")
 
     full = np.empty(len(points))
     spent = np.empty((len(points), len(components)))
@@ -138,8 +139,10 @@ def child(arguments):
     for index, point in enumerate(points):
         before = [(c.timer.n, c.timer.time_sum) for c in components]
         start = time.perf_counter()
-        model.logposterior(params_values=point, cached=False)
+        result = model.logposterior(params_values=point, cached=False)
         full[index] = time.perf_counter() - start
+        if not np.isfinite(result.loglike):
+            raise ValueError(f"Point {index} returned a nonfinite likelihood.")
         for j, component in enumerate(components):
             calls[index, j] = component.timer.n - before[j][0]
             spent[index, j] = component.timer.time_sum - before[j][1]
@@ -152,6 +155,8 @@ def child(arguments):
 
 def summary(arguments):
     """Check the children's records and write the medians to summary.json."""
+    if not np.isfinite(arguments.tolerance) or arguments.tolerance < 0:
+        raise ValueError("Scaling tolerance must be finite and nonnegative.")
     records = {}
     for threads in arguments.threads:
         path = arguments.output / f"threads_{threads}.npz"
@@ -176,12 +181,22 @@ def summary(arguments):
             raise ValueError(f"{threads} threads: a component was not "
                              "evaluated exactly once at every point.")
         vectors = record["datavector"]
+        if (vectors.ndim != 2 or vectors.shape != reference.shape
+                or vectors.shape[0] != arguments.npoints or not vectors.shape[1]
+                or not np.all(np.isfinite(vectors))):
+            raise ValueError(f"{threads} threads: invalid or nonfinite data vectors.")
+        if (not np.all(np.isfinite(record["spent"])) or np.any(record["spent"] < 0)
+                or not np.all(np.isfinite(record["full"])) or np.any(record["full"] <= 0)):
+            raise ValueError(f"{threads} threads: invalid component or elapsed times.")
         for index in range(1, vectors.shape[0]):
             if np.array_equal(vectors[index], vectors[index - 1]):
                 raise ValueError(f"{threads} threads: points {index - 1} and "
                                  f"{index} gave the same vector.")
         scale = np.max(np.abs(reference), axis=1)
-        change = np.max(np.abs(vectors - reference), axis=1) / scale
+        difference = np.max(np.abs(vectors - reference), axis=1)
+        if np.any((scale == 0) & (difference != 0)):
+            raise ValueError(f"{threads} threads: nonzero prediction for a zero reference.")
+        change = np.divide(difference, scale, out=np.zeros_like(scale), where=scale > 0)
         agreement[threads] = float(np.max(change))
         if agreement[threads] > arguments.tolerance:
             raise ValueError(f"{threads} threads differ from "
@@ -220,7 +235,7 @@ def summary(arguments):
                     "processor": platform.processor(),
                     "cpu_count": os.cpu_count()},
     }
-    (arguments.output / "summary.json").write_text(json.dumps(result, indent=2))
+    (arguments.output / "summary.json").write_text(json.dumps(result, indent=2, allow_nan=False))
     return result
 
 
