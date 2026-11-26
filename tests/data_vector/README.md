@@ -153,10 +153,11 @@ curves on a uniform 9,601-point grid. The cosmic-shear projection reads
 this grid with the native linear interpolator and treats its redshifts
 as sample points. Map3 uses the reconstructed grid directly.
 
-At the fiducial point of `EXAMPLE_EVALUATE3.yaml`, the test changes the
-native cosmic-shear reader to a cubic spline, Steffen interpolation or
-a left-edge reading. The reconstructed input curves and all 80 Map3
-entries must remain identical. Restoring the default after each change
+The test uses the uncompressed joint vector at the fiducial point of
+`EXAMPLE_EVALUATE3.yaml`. It changes the native cosmic-shear reader to a
+cubic spline, Steffen interpolation or a left-edge reading. The
+reconstructed curves and all 80 Map3 entries must remain identical.
+Restoring the default after each change
 must reproduce the joint vector bit for bit. The test measures Δχ²
 using the marginal covariance of the 400 shear entries, then using the
 full 480-entry covariance including the shear–Map3 correlations.
