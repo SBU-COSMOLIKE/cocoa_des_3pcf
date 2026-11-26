@@ -307,6 +307,7 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         ci.init_accuracy_boost(
             accuracy_boost=self.accuracyboost,
             integration_accuracy=self.integration_accuracy,
+            integration_accuracy_ss=getattr(self, "integration_accuracy_ss", 1.0),
         )
         ci.init_fpt_internal_boost(internal_boost=self.fpt_internal_boost)
         ci.init_ntable_ell_internal(nell_internal=self.ell_internal)

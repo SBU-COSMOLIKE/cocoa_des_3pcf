@@ -8,6 +8,8 @@ external_baryon_suppression: false
 omp_threads: 1
 accuracyboost: 1.0
 integration_accuracy: 0
+# Multipliers for each probe’s radial integration resolution.
+integration_accuracy_ss: 1.0
 fpt_internal_boost: 0.5
 ell_internal: 192
 interpolation_type: 1
