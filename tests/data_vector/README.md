@@ -5,9 +5,10 @@
 3. [Physical tables and angular transforms](#physics)
 4. [The test files](#files)
 5. [Running the checks](#running)
-6. [Hybrid-emulator accuracy test](#hybrid-emulator-accuracy-test)
-7. [FoM convergence](#fom-convergence)
-8. [Appendix](#appendix)
+6. [Photo-z convention checks](#photoz-conventions)
+7. [Hybrid-emulator accuracy test](#hybrid-emulator-accuracy-test)
+8. [FoM convergence](#fom-convergence)
+9. [Appendix](#appendix)
     1. [FAQ: How do the setting-sequence tests compare a notebook with a fresh process?](#state)
     2. [FAQ: Why do grouped SIMD outputs keep identical bits?](#simd)
     3. [FAQ: How are invalid inputs tested?](#refusals)
@@ -118,6 +119,7 @@ explains which controls must be refined independently.
 | `test_feedback.py` | Paired matter feedback responses with exact constant-response predictions and the fixed-quadratic-IA approximation the model declares. |
 | `test_baryon_scenarios.py` | Physical feedback preparation and the installed paired BACCO API: normalization, cold/total amplitude, triangle and ordering mistakes. |
 | `test_bacco_feedback.py` | The BACCO neutrino closure, continuation and dynamic response cache, with analytic component sums. |
+| [test_photoz_conventions.py](test_photoz_conventions.py) | Change the native reader of the prepared source redshifts and compare the cosmic-shear and joint predictions. |
 
 The lane-invariance pair tests whether the numerical answer depends on
 how unrelated outputs are grouped for SIMD. Each comparison preserves
@@ -140,6 +142,59 @@ environment before Python starts; child processes inherit it.
 
 ```bash
 python -m pytest -q projects/des_3pcf/tests/data_vector
+```
+
+## Photo-z convention checks <a name="photoz-conventions"></a>
+
+[**Mechanism**](https://github.com/CosmoLike/cocoa-cosmolike-core/blob/main/README.md#dv_photoz).
+The source redshift file gives bin midpoints. The likelihood uses
+shape-preserving cubic interpolation (PCHIP) to reconstruct the shifted
+curves on a uniform 9,601-point grid. The cosmic-shear projection reads
+this grid with the native linear interpolator and treats its redshifts
+as sample points. Map3 uses the reconstructed grid directly.
+
+At the fiducial point of `EXAMPLE_EVALUATE3.yaml`, the test changes the
+native cosmic-shear reader to a cubic spline, Steffen interpolation or
+a left-edge reading. The reconstructed input curves and all 80 Map3
+entries must remain identical. Restoring the default after each change
+must reproduce the joint vector bit for bit. The test measures Δχ²
+using the marginal covariance of the 400 shear entries, then using the
+full 480-entry covariance including the shear–Map3 correlations.
+
+| Native reader change | Shear Δχ² | Joint Δχ² |
+| --- | ---: | ---: |
+| Cubic spline | 1.8×10⁻⁹ | 2.8×10⁻⁹ |
+| Steffen | 2.3×10⁻⁹ | 3.6×10⁻⁹ |
+| Left edges | 8×10⁻⁴ | 1.3×10⁻³ |
+
+The left-edge interpretation moves the native samples by half a grid
+interval and produces the largest difference.
+
+Run from the activated `Cocoa/` directory.
+
+**Step :one:** Set the thread counts.
+
+- Linux
+
+      export OMP_NUM_THREADS=1 COCOA_TEST_OMP_THREADS=2 OMP_DYNAMIC=FALSE \
+        OMP_PROC_BIND=close OMP_PLACES=cores \
+        OPENBLAS_NUM_THREADS=1 OPENBLAS_DEFAULT_NUM_THREADS=1 \
+        MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
+
+- macOS (arm)
+
+      export OMP_NUM_THREADS=1 COCOA_TEST_OMP_THREADS=2 OMP_DYNAMIC=FALSE \
+        OMP_PROC_BIND=disabled OMP_PLACES=cores \
+        OPENBLAS_NUM_THREADS=1 OPENBLAS_DEFAULT_NUM_THREADS=1 \
+        MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
+
+BLAS loads with the one-thread cap. The prediction requests two native
+OpenMP threads.
+
+**Step :two:** Run the photo-z check.
+
+```bash
+python -m pytest -s projects/des_3pcf/tests/data_vector/test_photoz_conventions.py
 ```
 
 ## Hybrid-emulator accuracy test
