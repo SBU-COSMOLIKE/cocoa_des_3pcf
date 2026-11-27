@@ -264,7 +264,7 @@ CAMB total spectra gives maximum fractional cold-power residuals of
 saved k=0.0001--5 1/Mpc and z=0,0.5,1,2 samples. This checks the field
 conversion even though this example's mean barely responds to that field.
 
-- [Hybrid-emulator accuracy test](data_vector/README.md#hybrid-emulator-accuracy-test)
+- [Matter-spectrum emulator accuracy test](data_vector/README.md#matter-spectrum-emulator-accuracy-test)
   covers the fixed comparison and its plots.
 - [FoM convergence](data_vector/README.md#fom-convergence)
   covers numerical sensitivity of the Fisher forecast.

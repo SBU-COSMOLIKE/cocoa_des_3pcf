@@ -1,4 +1,4 @@
-"""E5 hybrid-emulator comparison, following LSST Y1.
+"""E5 matter-spectrum emulator comparison with CAMB background quantities.
 
 The numerical sweep runs in a separate process to isolate compiled
 likelihood state. A saved Fisher reference can supply the contour. Missing model files skip
@@ -11,8 +11,8 @@ import unittest
 
 os.environ.setdefault("OMP_NUM_THREADS", os.environ.get("COCOA_TEST_OMP_THREADS", "4"))
 
-class TestHybridEmulator(unittest.TestCase):
-    """E5: current hybrid matter emulator, with an optional saved Fisher overlay.
+class TestMatterSpectrumEmulator(unittest.TestCase):
+    """E5: emulated matter spectra with an optional saved Fisher overlay.
 
     This uses saved benchmark priors, not frozen E1--E4 reference vectors.
     It runs when the candidate code and networks are installed. Broad-prior
@@ -21,7 +21,7 @@ class TestHybridEmulator(unittest.TestCase):
     fail the test. Saved Fisher contours do not affect the numerical verdict.
     """
 
-    def test_e5_hybrid_emulator_accuracy(self):
+    def test_e5_matter_spectrum_accuracy(self):
         """Compare the fixed broad and focused emulator accuracy points."""
         from datetime import datetime, timezone
         from pathlib import Path
@@ -50,7 +50,7 @@ class TestHybridEmulator(unittest.TestCase):
         ]
         missing = [str(path) for path in required if not path.is_file()]
         if missing:
-            self.skipTest("Hybrid emulator inputs are not installed: " + ", ".join(missing))
+            self.skipTest("Matter emulator inputs are not installed: " + ", ".join(missing))
 
         # Each invocation gets its own output folder. Earlier scientific
         # results are retained, including failed draws and their provenance.
@@ -60,7 +60,7 @@ class TestHybridEmulator(unittest.TestCase):
         environment["OPENBLAS_NUM_THREADS"] = "1"
         environment["MKL_NUM_THREADS"] = "1"
         environment["VECLIB_MAXIMUM_THREADS"] = "1"
-        print("E5 hybrid emulator vector accuracy:", output, flush=True)
+        print("E5 matter-spectrum emulator accuracy:", output, flush=True)
         frozen = project / "tests/fisher_reference/w0wa"
         prior = frozen / "prior_50.txt"
         focused = frozen / "focused_25.txt"

@@ -6,7 +6,7 @@
 4. [The test files](#files)
 5. [Running the checks](#running)
 6. [Photo-z convention checks](#photoz-conventions)
-7. [Hybrid-emulator accuracy test](#hybrid-emulator-accuracy-test)
+7. [Matter-spectrum emulator accuracy test](#matter-spectrum-emulator-accuracy-test)
 8. [FoM convergence](#fom-convergence)
 9. [Appendix](#appendix)
     1. [FAQ: How do the setting-sequence tests compare a notebook with a fresh process?](#state)
@@ -198,11 +198,14 @@ OpenMP threads.
 python -m pytest -s projects/des_3pcf/tests/data_vector/test_photoz_conventions.py
 ```
 
-## Hybrid-emulator accuracy test
+## Matter-spectrum emulator accuracy test <a name="matter-spectrum-emulator-accuracy-test"></a>
 
-**Mechanism.** Compare the candidate emulator's predictions with CAMB at
-the same saved cosmologies and nuisance values. Score the prediction
-differences using the benchmark mask and covariance.
+<a name="hybrid-emulator-accuracy-test"></a>
+
+**Mechanism.** Replace the matter power spectra with emulator predictions
+at the same saved cosmologies and nuisance values. Both routes use CAMB
+for the expansion and redshift-dependent density and growth inputs.
+Score the prediction differences using the benchmark mask and covariance.
 
 The observed joint vector contains 16 MOPED shear modes and 80 Map3
 measurements. The likelihood requests linear cold power. For CPL, the
