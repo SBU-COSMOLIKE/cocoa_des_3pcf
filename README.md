@@ -272,12 +272,12 @@ python ./projects/des_3pcf/EXAMPLE_NAUTILUS3.py --check
         --mca btl_tcp_if_exclude lo,docker0,virbr0,ib0,eno1,enp1s0f0np0 \
         --bind-to core:overload-allowed --report-bindings \
         --rank-by slot --map-by numa:pe=${OMP_NUM_THREADS} \
-        python ./projects/des_3pcf/EXAMPLE_NAUTILUS3.py --nlive 1000 --neff 10000 --maxfeval 100000
+        python ./projects/des_3pcf/EXAMPLE_NAUTILUS3.py --nlive 1000 --neff 15000
 
 - macOS (arm)
 
       mpirun -n 12 --oversubscribe \
-        python ./projects/des_3pcf/EXAMPLE_NAUTILUS3.py --nlive 1000 --neff 10000 --maxfeval 100000
+        python ./projects/des_3pcf/EXAMPLE_NAUTILUS3.py --nlive 1000 --neff 15000
 
 The rank counts are example allocations, matching the main README's
 Nautilus examples; size them to the machine. Launcher options, one per
@@ -286,13 +286,14 @@ flag:
 - `--input`: select another Cobaya YAML.
 - `--outroot`: change the chain basename.
 - `--root`: select the directory containing `chains/`.
-- `--nlive`, `--neff`, `--maxfeval`: live points, effective samples and
-  the evaluation budget.
+- `--nlive` sets the number of live points.
+- `--neff` sets the target effective posterior sample count, 15,000 by default.
+- `--maxfeval` sets the likelihood-evaluation budget, 5,000,000 by default.
 
 Outputs are GetDist `.1.txt` rows and `.paramnames`, an HDF5 checkpoint,
-and a YAML record with the evidence and convergence status. Existing
-records and chains are refused, as in the LSST driver; a run that reaches
-its budget can have `converged: false`.
+and a YAML record with the evidence and convergence status. Use an unused
+`--outroot` for a new run. Use `--resume` at the same prefix to continue
+a matching unfinished checkpoint.
 
 # Running on an HPC cluster <a name="hpc"></a>
 
@@ -393,7 +394,7 @@ the run; size the geometry to the machine.
 and, in place of the `cobaya-run` line,
 
 ```bash
-  python ./projects/des_3pcf/EXAMPLE_NAUTILUS1.py --nlive 1000 --neff 10000 --maxfeval 100000
+  python ./projects/des_3pcf/EXAMPLE_NAUTILUS1.py --nlive 1000 --neff 15000
 ```
 
 ## Rerunning the published DES Y3 analysis <a name="published_rerun"></a>
